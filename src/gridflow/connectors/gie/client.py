@@ -349,6 +349,7 @@ class GieConnector(BaseConnector):
                     total_pages=total_pages,
                     http_status=raw.status_code,
                     data_date=data_date,
+                    record_count=_record_count(body),
                 )
             )
 
@@ -416,13 +417,18 @@ class GieConnector(BaseConnector):
 
     @RETRY_POLICY
     async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET request."""
+        """Paced, retried HTTP GET request.
+
+        GIE allows 60 calls a minute, so every send, retries included, is paced
+        at ``rate_limit_per_second`` (1 in ``sources.yaml``).
+        """
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
         if self._semaphore is None:
             raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
 
         async with self._semaphore:
+            await self._throttle_request()
             resp = await self._client.get(path, params=params)
             resp.raise_for_status()
             return resp
@@ -458,6 +464,21 @@ def _as_optional_tuple(value: Any) -> tuple[str, ...] | None:
     if isinstance(value, str):
         return (value,)
     return tuple(value)
+
+
+def _record_count(body: bytes) -> int | None:
+    """The number of records in an AGSI body, stamped as ``record_count``.
+
+    An HTTP 200 ``{"data": []}`` (a gas day not yet published, a quiet window)
+    is a confirmed zero, so it is not evidence that advances the watermark
+    (C-8). ``None`` when the body has no ``data`` list to count.
+    """
+    try:
+        payload = json.loads(body)
+    except ValueError:  # not JSON, or not decodable text
+        return None
+    data = payload.get("data") if isinstance(payload, dict) else None
+    return len(data) if isinstance(data, list) else None
 
 
 def _last_page(body: bytes) -> int:

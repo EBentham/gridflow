@@ -41,11 +41,17 @@ trigger registration — add new sources there.
 ### Rate limiting + retries
 
 - **Rate limit:** `asyncio.Semaphore(self.config.rate_limit_per_second)` is
-  built in `__aenter__`. Wrap every HTTP call: `async with self._semaphore: ...`.
+  built in `__aenter__` and caps requests in flight. Wrap every HTTP call:
+  `async with self._semaphore: ...`. A vendor that limits the request rate
+  (ENTSO-E, GIE) also calls `await self._throttle_request()` inside it, which
+  starts the source's sends `1 / rate_limit_per_second` apart across every
+  connector instance in the process.
 - **Retry:** decorate the request method with `@RETRY_POLICY` from
-  `gridflow.utils.retry`. It's `stop_after_attempt(5)`,
-  `wait_exponential(min=2, max=60)`, retries on `httpx.TimeoutException` and
-  `httpx.HTTPStatusError`, `reraise=True`.
+  `gridflow.utils.retry`: five attempts with jittered exponential backoff, on
+  `httpx.TimeoutException`, `httpx.NetworkError` and HTTP 408, 429 and 5xx,
+  `reraise=True`. Any other status fails on the first attempt. A source with
+  another transient status uses `retry_policy(<status>)` (ENTSO-G retries a
+  404 that is not its empty marker).
 - A `CircuitBreaker` exists in `utils/retry.py` but is not applied automatically.
   Wire it in only if a vendor needs it.
 

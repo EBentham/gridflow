@@ -625,6 +625,11 @@ def status() -> None:
     con.close()
 
 
+# The time coordinates of a settlement-grain key. What is left of the key once
+# they are removed identifies one series for the gap check.
+_SETTLEMENT_TIME_COLUMNS = ("settlement_date", "settlement_period", "timestamp_utc")
+
+
 def _entity_key_for(
     source: str, dataset: str, available_columns: Iterable[str]
 ) -> list[str] | None:
@@ -765,21 +770,34 @@ def quality(
                         )
                     )
 
-            # Check time series gaps if timestamp exists
-            if "timestamp_utc" in df.columns:
+            entity_key = _entity_key_for(src, ds, df.columns)
+
+            # Gap check, one series per entity. Only a dataset on the
+            # settlement-period grain declares a cadence (half-hourly), and a
+            # constant period is a placeholder (NDFD's daily rows all carry 1);
+            # any other dataset is skipped rather than measured against a
+            # cadence it lacks. A frame missing a key column is left to the
+            # duplicate check below, which reports it.
+            if (
+                "timestamp_utc" in df.columns
+                and entity_key
+                and "settlement_period" in entity_key
+                and set(entity_key) <= set(df.columns)
+                and df["settlement_period"].n_unique() > 1
+            ):
                 reporter.add_result(
                     check_time_series_gaps(
                         df,
                         source=src,
                         dataset=ds,
                         expected_freq_minutes=settings.quality.expected_freq_minutes,
+                        group_by=[c for c in entity_key if c not in _SETTLEMENT_TIME_COLUMNS],
                     )
                 )
 
             # Check for duplicates on the dataset's own entity grain (F-16):
             # see _entity_key_for's docstring for why a hardcoded pair was
             # wrong and what stays unchanged for non-Elexon sources.
-            entity_key = _entity_key_for(src, ds, df.columns)
             if entity_key is not None:
                 reporter.add_result(
                     check_duplicates(

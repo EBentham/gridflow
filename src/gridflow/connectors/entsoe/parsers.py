@@ -440,6 +440,18 @@ def parse_timeseries_xml(
 
             if start_dt is None:
                 continue
+            if resolution_code not in _RESOLUTION_MAP:
+                # Point N starts N-1 resolutions after the period start, so
+                # without a known resolution no point after the first can be
+                # placed; guessing one would stamp them on the wrong instants.
+                logger.warning(
+                    "Skipping ENTSO-E period for document %s series %s: missing or "
+                    "unmapped resolution %r",
+                    document_metadata["document_mrid"],
+                    timeseries_mrid,
+                    resolution_code,
+                )
+                continue
 
             record_prefix = {**document_metadata}
             record_suffix = {
@@ -539,15 +551,6 @@ def parse_timeseries_xml(
                 logger.warning(
                     "Skipping ENTSO-E A03 forward-fill for document %s series %s: "
                     "missing or invalid period end",
-                    document_id,
-                    timeseries_mrid,
-                )
-                records.extend(record for _, record in declared_points)
-                continue
-            if resolution_code not in _RESOLUTION_MAP:
-                logger.warning(
-                    "Skipping ENTSO-E A03 forward-fill for document %s series %s: "
-                    "missing or unmapped resolution",
                     document_id,
                     timeseries_mrid,
                 )

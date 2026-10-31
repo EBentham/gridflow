@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import httpx
 import pytest
+from tenacity import wait_none
 
 from gridflow.pipeline.runner import describe_exception
 from gridflow.utils.retry import RETRY_POLICY
@@ -69,6 +70,34 @@ def test_deterministic_failures_are_not_retried(exc: Exception) -> None:
     with pytest.raises(type(exc)):
         always_bad()
     assert attempts == 1
+
+
+def _attempts_for_status(status: int) -> int:
+    """How many times RETRY_POLICY calls a function that always fails with ``status``."""
+    attempts = 0
+
+    def always_failing() -> None:
+        nonlocal attempts
+        attempts += 1
+        raise httpx.HTTPStatusError(
+            str(status), request=httpx.Request("GET", "http://x"), response=httpx.Response(status)
+        )
+
+    with pytest.raises(httpx.HTTPStatusError):
+        RETRY_POLICY(always_failing).retry_with(wait=wait_none())()
+    return attempts
+
+
+@pytest.mark.parametrize("status", [408, 429, 500, 503])
+def test_transient_statuses_use_every_attempt(status: int) -> None:
+    assert _attempts_for_status(status) == 5
+
+
+@pytest.mark.parametrize("status", [304, 400, 401, 403, 404])
+def test_deterministic_statuses_fail_on_the_first_attempt(status: int) -> None:
+    """A bad parameter, a bad key or a missing resource gets the same answer on
+    every attempt, so the four retries only slept through their backoff waits."""
+    assert _attempts_for_status(status) == 1
 
 
 def test_describe_exception_falls_back_to_the_class_name_when_str_is_empty() -> None:

@@ -113,6 +113,51 @@ async def test_aggregate_scope_uses_documented_request_params() -> None:
 
 @respx.mock
 @pytest.mark.asyncio
+@pytest.mark.parametrize("rows", [0, 3])
+async def test_storage_responses_carry_their_record_count(rows: int) -> None:
+    """An HTTP 200 ``{"data": []}`` for an unpublished gas day is a confirmed
+    zero (C-8), so the ingest boundary does not count it as evidence that
+    advances the watermark."""
+    _mock_storage(
+        lambda request: httpx.Response(
+            200,
+            content=_storage_body(TARGET_DATE, rows=rows),
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    async with GieConnector(_gie_config()) as connector:
+        responses = await connector.fetch(
+            "storage_reports",
+            START,
+            END,
+            scope=QueryScope.AGGREGATE_TYPE,
+            aggregate_types=("EU",),
+        )
+
+    assert [response.record_count for response in responses] == [rows]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_an_empty_unavailability_response_is_a_confirmed_zero() -> None:
+    """Not only storage: an empty non-storage AGSI listing is no evidence either."""
+    _mock_storage(
+        lambda request: httpx.Response(
+            200,
+            content=json.dumps({"last_page": 1, "data": []}).encode(),
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    async with GieConnector(_gie_config()) as connector:
+        responses = await connector.fetch("unavailability", START, END)
+
+    assert [response.record_count for response in responses] == [0]
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_country_scope_fetches_selected_countries_only() -> None:
     requests: list[httpx.Request] = []
 

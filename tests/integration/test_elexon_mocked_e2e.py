@@ -513,12 +513,16 @@ async def test_fetch_date_period_bounds_loop_by_dst_calendar(
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("status_code", [400, 401, 403, 404, 408, 429])
+@pytest.mark.parametrize(
+    ("status_code", "expected_attempts"),
+    [(400, 1), (401, 1), (403, 1), (404, 1), (408, 5), (429, 5)],
+)
 async def test_pn_period_4xx_surfaces_after_exact_retry_count(
     monkeypatch: pytest.MonkeyPatch,
     status_code: int,
+    expected_attempts: int,
 ) -> None:
-    """Every exhausted HTTP failure is fatal under the current retry policy."""
+    """Every HTTP failure is fatal; only a 408 or 429 is retried before it surfaces."""
     monkeypatch.setattr("asyncio.sleep", _no_sleep)
     attempts = 0
 
@@ -535,7 +539,7 @@ async def test_pn_period_4xx_surfaces_after_exact_retry_count(
         assert connector.last_skipped_units == 0
 
     assert exc_info.value.response.status_code == status_code
-    assert attempts == 5
+    assert attempts == expected_attempts
 
 
 @respx.mock

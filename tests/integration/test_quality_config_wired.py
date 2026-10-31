@@ -11,7 +11,7 @@ the real command and reads the persisted ``quality_reports.passed`` outcome.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING
 
 import duckdb
@@ -28,6 +28,7 @@ from gridflow.config.settings import (
 from gridflow.storage.parquet import write_parquet
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from pathlib import Path
 
     import pytest
@@ -120,10 +121,20 @@ def test_null_rate_threshold_config_flips_outcome(
 
 
 def _write_silver_hourly(data_dir: Path) -> None:
-    """A silver frame on a strict 60-minute cadence."""
+    """A settlement-grain silver frame on a strict 60-minute cadence.
+
+    The gap check only measures datasets on the settlement-period grain, so the
+    frame carries ``settlement_date``/``settlement_period`` (every other period).
+    """
     start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
     ts = [start + timedelta(minutes=60 * i) for i in range(6)]
-    df = pl.DataFrame({"timestamp_utc": ts})
+    df = pl.DataFrame(
+        {
+            "timestamp_utc": ts,
+            "settlement_date": [t.date() for t in ts],
+            "settlement_period": [2 * i + 1 for i in range(6)],
+        }
+    )
     write_parquet(df, data_dir / "silver" / "hourlysrc" / "hourlyds" / "part-0.parquet")
 
 
@@ -162,3 +173,110 @@ def test_gap_check_config_freq_flips_outcome(
         "hourly data must pass once expected_freq_minutes is 60 — "
         "proves the gap cadence is configurable"
     )
+
+
+# --- (A3) the gap check measures each entity series, on the settlement grain --
+
+
+def _write_fuelhh(data_dir: Path, *, missing: tuple[str, int] | None = None) -> None:
+    """Two fuel types on the half-hourly grid, settlement periods 1-4 of one day."""
+    start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+    rows = [
+        {
+            "settlement_date": date(2024, 1, 1),
+            "settlement_period": period,
+            "timestamp_utc": start + timedelta(minutes=30 * (period - 1)),
+            "fuel_type": fuel,
+            "generation_mw": 100.0,
+        }
+        for fuel in ("CCGT", "WIND")
+        for period in range(1, 5)
+        if (fuel, period) != missing
+    ]
+    write_parquet(pl.DataFrame(rows), data_dir / "silver" / "elexon" / "fuelhh" / "part-0.parquet")
+
+
+def _gap_results(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, write: Callable[[Path], None]
+) -> list[bool]:
+    cfg = _make_settings(tmp_path, QualityConfig())
+    write(cfg.pipeline.data_dir)
+    monkeypatch.setattr(settings_module, "load_settings", lambda: cfg)
+
+    result = runner.invoke(app, ["quality", "--all"])
+    assert result.exit_code == 0, result.stdout
+    return _passed_for_check(cfg.pipeline.duckdb_path, "time_series_gaps")
+
+
+def test_gap_check_measures_each_entity_series(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Both fuel types share every timestamp; measured across them, a clean
+    multi-entity series was full of zero intervals and always failed."""
+    assert _gap_results(tmp_path, monkeypatch, _write_fuelhh) == [True]
+
+
+def test_gap_check_still_finds_a_gap_inside_one_series(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def write(data_dir: Path) -> None:
+        _write_fuelhh(data_dir, missing=("WIND", 2))
+
+    assert _gap_results(tmp_path, monkeypatch, write) == [False]
+
+
+def test_gap_check_leaves_a_frame_missing_a_key_column_to_the_duplicate_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """fuelhh's key names fuel_type; a frame without it must not crash the run."""
+
+    def write(data_dir: Path) -> None:
+        _write_fuelhh(data_dir)
+        path = data_dir / "silver" / "elexon" / "fuelhh" / "part-0.parquet"
+        write_parquet(pl.read_parquet(path).drop("fuel_type").unique(), path)
+
+    assert _gap_results(tmp_path, monkeypatch, write) == []
+
+
+def test_gap_check_skips_a_constant_placeholder_period(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """NDFD is daily and stamps every row settlement period 1: a placeholder,
+    not the half-hourly grain, so its daily steps are not gaps."""
+
+    def write(data_dir: Path) -> None:
+        start = datetime(2024, 1, 3, 0, 0, tzinfo=UTC)
+        days = [start + timedelta(days=i) for i in range(5)]
+        df = pl.DataFrame(
+            {
+                "settlement_date": [day.date() for day in days],
+                "settlement_period": [1] * 5,
+                "timestamp_utc": days,
+                "forecast_type": ["2_14_day"] * 5,
+                "published_at": [datetime(2024, 1, 1, 9, 0, tzinfo=UTC)] * 5,
+                "national_demand_mw": [30_000.0] * 5,
+            }
+        )
+        write_parquet(df, data_dir / "silver" / "elexon" / "ndfd" / "part-0.parquet")
+
+    assert _gap_results(tmp_path, monkeypatch, write) == []
+
+
+def test_gap_check_skips_a_dataset_without_a_settlement_cadence(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An hourly price series has no settlement period to declare a cadence, so
+    it is not measured against the half-hourly one it always failed."""
+
+    def write(data_dir: Path) -> None:
+        start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+        df = pl.DataFrame(
+            {
+                "timestamp_utc": [start + timedelta(hours=i) for i in range(6)],
+                "area_code": ["GB"] * 6,
+                "price_eur_mwh": [50.0] * 6,
+            }
+        )
+        write_parquet(df, data_dir / "silver" / "entsoe" / "day_ahead_prices" / "part-0.parquet")
+
+    assert _gap_results(tmp_path, monkeypatch, write) == []

@@ -24,10 +24,7 @@ from gridflow.connectors.entsog.endpoints import (
 )
 from gridflow.schemas.entsog import EntsogPhysicalFlow
 from gridflow.silver.entsog.datetime import filter_records_to_target_date
-from gridflow.silver.entsog.physical_flows import (
-    PhysicalFlowsTransformer,
-    _normalise_to_gwh_day,
-)
+from gridflow.silver.entsog.physical_flows import PhysicalFlowsTransformer
 from gridflow.silver.registry import list_transformers
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsog"
@@ -102,43 +99,35 @@ class TestEntsogEndpoints:
 
 
 class TestNormaliseToGwhDay:
-    def test_kwh_d_to_gwh_d(self):
-        # 1e6 kWh/d = 1 GWh/d
-        assert abs(_normalise_to_gwh_day(1_000_000.0, "kWh/d") - 1.0) < 1e-9
-
-    def test_kwh_h_to_gwh_d(self):
-        # 1e6 kWh/h * 24 = 24 GWh/d
-        assert abs(_normalise_to_gwh_day(1_000_000.0, "kWh/h") - 24.0) < 1e-9
-
-    def test_gwh_d_is_identity_not_mis_scaled(self):
-        """Issue 05 #3: GWh/d is already the target unit — it must pass through
-        unchanged, NOT be divided by 1e6.
-
-        FAILS on pre-fix code: the else-branch multiplied any non-kWh/h unit
-        by 1e-6, turning 15_000 GWh/d into 0.015.
-        """
-        assert abs(_normalise_to_gwh_day(15_000.0, "GWh/d") - 15_000.0) < 1e-9
-
-    def test_mwh_d_scaled_by_thousand_not_mis_scaled(self):
-        """MWh/d -> GWh/d divides by 1e3 (1000 MWh/d = 1 GWh/d), not 1e6."""
-        assert abs(_normalise_to_gwh_day(1_000.0, "MWh/d") - 1.0) < 1e-9
-
-    def test_unknown_unit_rejected_not_assumed_kwh_d(self):
-        """Issue 05 #3: an unrecognised unit must be rejected, not silently
-        assumed to be kWh/d.
-
-        FAILS on pre-fix code: 'unknown' fell through to the kWh/d branch.
-        """
-        with pytest.raises(ValueError):
-            _normalise_to_gwh_day(1_000_000.0, "unknown")
-
-    def test_zero_value(self):
-        assert _normalise_to_gwh_day(0.0, "kWh/d") == 0.0
-
-    def test_large_value(self):
-        # 15 billion kWh/d = 15,000 GWh/d
-        result = _normalise_to_gwh_day(15_000_000_000.0, "kWh/d")
-        assert abs(result - 15_000.0) < 0.01
+    @pytest.mark.parametrize(
+        ("value", "unit", "expected"),
+        [
+            (1_000_000.0, "kWh/d", 1.0),
+            (1_000_000.0, "kWh/h", 24.0),
+            # Issue 05 #3: GWh/d is already the target unit, not divided by 1e6.
+            (15_000.0, "GWh/d", 15_000.0),
+            # MWh/d divides by 1e3 (1000 MWh/d = 1 GWh/d), not 1e6.
+            (1_000.0, "MWh/d", 1.0),
+            (0.0, "kWh/d", 0.0),
+            (15_000_000_000.0, "kWh/d", 15_000.0),
+            (1_000_000.0, " KWH/D ", 1.0),
+        ],
+    )
+    def test_unit_scales_to_gwh_per_day(self, value: float, unit: str, expected: float):
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "IUK",
+                    "directionKey": "entry",
+                    "value": value,
+                    "unit": unit,
+                }
+            ]
+        )
+        result = _make_transformer().transform(raw)
+        assert result["flow_gwh_per_day"].to_list() == pytest.approx([expected])
 
 
 # ---------------------------------------------------------------------------
@@ -406,7 +395,9 @@ class TestPhysicalFlowsTransformer:
         assert "INFINITE" in caplog.text
         assert "inf" in caplog.text
 
-    def test_unparseable_value_without_unit_is_dropped(self, caplog):
+    def test_rows_without_a_unit_column_are_dropped_not_assumed_kwh_d(self, caplog):
+        """Issue 05 #3: a body with no unit column used to be scaled by 1e-6 and
+        labelled GWh/d anyway, the assumption the factor table forbids."""
         import logging
 
         raw = pl.DataFrame(
@@ -431,10 +422,43 @@ class TestPhysicalFlowsTransformer:
         with caplog.at_level(logging.WARNING):
             result = self.t.transform(raw)
 
-        assert result["point_key"].to_list() == ["GOOD"]
-        assert result["flow_gwh_per_day"][0] == 1.0
+        assert result.is_empty()
         assert "UNPARSEABLE" in caplog.text
         assert "abc" in caplog.text
+        assert "missing or unrecognised unit" in caplog.text
+
+    def test_null_unit_row_is_dropped_without_failing_the_date(self, caplog):
+        """A null unit used to reach the per-row conversion, which raised and
+        failed the whole date's transform."""
+        import logging
+
+        raw = pl.DataFrame(
+            [
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "GOOD",
+                    "directionKey": "entry",
+                    "value": 1_000_000.0,
+                    "unit": "kWh/d",
+                },
+                {
+                    "indicator": "Physical Flow",
+                    "periodFrom": "2024-01-15T06:00:00Z",
+                    "pointKey": "NULL_UNIT",
+                    "directionKey": "entry",
+                    "value": 1_000_000.0,
+                    "unit": None,
+                },
+            ]
+        )
+
+        with caplog.at_level(logging.WARNING):
+            result = self.t.transform(raw)
+
+        assert result["point_key"].to_list() == ["GOOD"]
+        assert result["flow_gwh_per_day"].to_list() == [1.0]
+        assert "missing or unrecognised unit" in caplog.text
 
     def test_gas_day_offset_converted_to_utc(self):
         """ENGOP-04 (VT4): a gas-day periodFrom bearing a real offset (winter CET

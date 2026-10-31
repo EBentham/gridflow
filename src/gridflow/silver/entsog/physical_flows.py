@@ -32,8 +32,8 @@ _KWH_H_TO_GWH_D = 24.0 * 1e-6
 
 # Issue 05 #3 (code-review-2026-05): explicit unit -> GWh/day factor table.
 # The previous `else` fallthrough multiplied EVERY non-kWh/h unit by 1e-6,
-# silently mis-scaling already-GWh/d values by 1e6 and MWh/d by 1e3. An
-# unrecognised unit must be rejected, never assumed kWh/d. Keys are
+# silently mis-scaling already-GWh/d values by 1e6 and MWh/d by 1e3. A missing
+# or unrecognised unit must be rejected, never assumed kWh/d. Keys are
 # lower-cased and stripped; daily and hourly spellings both covered.
 _UNIT_TO_GWH_DAY: dict[str, float] = {
     "kwh/d": _KWH_D_TO_GWH_D,
@@ -49,24 +49,6 @@ _UNIT_TO_GWH_DAY: dict[str, float] = {
     "gwh/h": 24.0,
     "gwh/hr": 24.0,
 }
-
-
-def _normalise_to_gwh_day(value: float | None, unit: str) -> float | None:
-    """Normalise a gas flow value to GWh/day.
-
-    Raises:
-        ValueError: if ``unit`` is not in the explicit factor table. Callers
-            must handle this (the transformer log-and-drops the row) rather
-            than letting an unknown unit be silently mis-scaled.
-    """
-    if value is None:
-        return None
-
-    unit_key = unit.lower().strip()
-    factor = _UNIT_TO_GWH_DAY.get(unit_key)
-    if factor is None:
-        raise ValueError(f"Unrecognised ENTSO-G flow unit: {unit!r}")
-    return value * factor
 
 
 class PhysicalFlowsTransformer(BaseSilverTransformer):
@@ -194,40 +176,37 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
             if df.is_empty():
                 return pl.DataFrame()
 
-        if "value" in df.columns and "unit" in df.columns:
-            df = df.with_columns(pl.col("value").cast(pl.Float64, strict=False).alias("value"))
-            # Issue 05 #3: drop rows whose unit is not in the explicit factor
-            # table BEFORE normalising, with a logged count, rather than
-            # silently mis-scaling them by assuming kWh/d. "Never silently
-            # dropped" (CLAUDE.md): the drop is surfaced via a WARNING.
-            recognised = pl.col("unit").cast(pl.Utf8).str.strip_chars().str.to_lowercase()
-            is_known = recognised.is_in(list(_UNIT_TO_GWH_DAY.keys()))
-            unknown = df.filter(~is_known)
-            if not unknown.is_empty():
-                bad_units = sorted({u for u in unknown["unit"].to_list() if u is not None})
+        if "value" in df.columns:
+            if "unit" not in df.columns:
+                df = df.with_columns(pl.lit(None, dtype=pl.Utf8).alias("unit"))
+            # Issue 05 #3: drop rows whose unit is missing, null or not in the
+            # explicit factor table BEFORE normalising, with a logged count,
+            # rather than silently mis-scaling them by assuming kWh/d. "Never
+            # silently dropped" (CLAUDE.md): the drop is surfaced via a WARNING.
+            factor = (
+                pl.col("unit")
+                .cast(pl.Utf8)
+                .str.strip_chars()
+                .str.to_lowercase()
+                .replace_strict(_UNIT_TO_GWH_DAY, default=None, return_dtype=pl.Float64)
+            )
+            df = df.with_columns(
+                pl.col("value").cast(pl.Float64, strict=False), factor.alias("_gwh_day_factor")
+            )
+            unscalable = df.filter(pl.col("_gwh_day_factor").is_null())
+            if not unscalable.is_empty():
                 logger.warning(
-                    "Dropping %d ENTSO-G physical-flow row(s) with unrecognised "
-                    "unit(s) %s (not mis-scaling as kWh/d)",
-                    unknown.height,
-                    bad_units,
+                    "Dropping %d ENTSO-G physical-flow row(s) with missing or "
+                    "unrecognised unit(s) %s (not mis-scaling as kWh/d)",
+                    unscalable.height,
+                    sorted(set(unscalable["unit"].to_list()), key=str),
                 )
-                df = df.filter(is_known)
+                df = df.filter(pl.col("_gwh_day_factor").is_not_null())
             if df.is_empty():
                 return pl.DataFrame()
             df = df.with_columns(
-                pl.struct(["value", "unit"])
-                .map_elements(
-                    lambda row: _normalise_to_gwh_day(row["value"], row["unit"] or ""),
-                    return_dtype=pl.Float64,
-                )
-                .alias("flow_gwh_per_day")
-            )
-        elif "value" in df.columns:
-            df = df.with_columns(
-                (pl.col("value").cast(pl.Float64, strict=False) * _KWH_D_TO_GWH_D).alias(
-                    "flow_gwh_per_day"
-                )
-            )
+                (pl.col("value") * pl.col("_gwh_day_factor")).alias("flow_gwh_per_day")
+            ).drop("_gwh_day_factor")
         else:
             df = df.with_columns(pl.lit(None, dtype=pl.Float64).alias("flow_gwh_per_day"))
 
@@ -245,8 +224,8 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
                 pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
                 # VTA-ENTSOG-UNITLABEL-01 (F-ENTSOG-UNITLABEL): flow_gwh_per_day is
                 # post-normalisation, so the raw vendor unit ("kWh/d") would
-                # contradict the value. Unrecognised units are already dropped
-                # above, so every surviving row is genuinely GWh/day.
+                # contradict the value. Rows without a recognised unit are
+                # already dropped above, so every surviving row is genuinely GWh/day.
                 pl.lit("GWh/d").alias("unit"),
             ]
         )

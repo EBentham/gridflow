@@ -187,7 +187,8 @@ class NesoHttpStatusError(httpx.HTTPStatusError, NesoDataPortalError):
     """A non-2xx response, rendered without the request URL.
 
     Subclasses ``httpx.HTTPStatusError`` deliberately: ``RETRY_POLICY`` retries
-    on that type, so a 5xx must remain retryable. What it does NOT do is let
+    a 408, 429 or 5xx of that type, so those must remain retryable (a 404 or 403
+    fails on the first attempt). What it does NOT do is let
     httpx build the message — ``raise_for_status()`` interpolates the complete
     signed URL, and tenacity's ``before_sleep_log`` then writes that string to
     the log before every retry. The message here is built from a
@@ -660,6 +661,8 @@ class NesoDataPortalConnector(BaseConnector):
             NesoUnsafeRedirectError: The target failed D-08's policy. Not an
                 ``httpx`` error type, so it propagates on the first attempt
                 instead of being retried five times.
+            httpx.ConnectError: The target's host is temporarily unresolvable,
+                retried like any other network error.
             httpx.HTTPStatusError: The response was neither 2xx nor a redirect
                 carrying a ``Location`` — including a 304 and a
                 ``Location``-less 3xx, which an ``is_error`` gate would return
@@ -725,8 +728,8 @@ class NesoDataPortalConnector(BaseConnector):
         CKAN lane (1 req/s) by default, and the datastore lane (2 req/min) for
         dump downloads and ``datastore_search`` calls (ADR-035). The interval
         holds across connector instances, dataset handoffs and, once bound,
-        processes. Not hoisted into ``BaseConnector``: that would change the
-        pacing of every other source.
+        processes. It overrides the base pacer, which has one lane and holds
+        within one process only.
 
         Gates **every** outbound send without exception: each CKAN action call,
         the redirector request, each redirect hop, and each retry attempt —
@@ -759,6 +762,9 @@ class NesoDataPortalConnector(BaseConnector):
                 address that is not globally routable. Every address, not any:
                 an answer mixing a public and a private address passes an
                 any-check while httpx may connect to the private one.
+            httpx.ConnectError: The resolver failed temporarily (``EAI_AGAIN``).
+                That is a network blip, not a policy refusal, so it is raised as
+                an error the retry policy retries.
         """
         if url.scheme != "https":
             raise NesoUnsafeRedirectError(
@@ -777,6 +783,10 @@ class NesoDataPortalConnector(BaseConnector):
         try:
             addresses = await _resolve_host_addresses(host, port)
         except OSError as exc:
+            if isinstance(exc, socket.gaierror) and exc.errno == socket.EAI_AGAIN:
+                raise httpx.ConnectError(
+                    f"{url}: host {host!r} is temporarily unresolvable ({exc})"
+                ) from exc
             raise NesoUnsafeRedirectError(
                 f"refusing to send to {url}: host {host!r} did not resolve ({exc})"
             ) from exc
@@ -1665,11 +1675,12 @@ class NesoDataPortalConnector(BaseConnector):
         goes through the dump leg (:meth:`_dump_member`, ADR-035) and is
         ``captured``, or ``unchanged`` when its body is byte-identical to its
         newest capture or a frozen-class dump is not yet due; an upload member
-        whose newest usable capture carries the live ``last_modified`` is
-        ``unchanged``; every other member is downloaded, admitted (P-7) and
-        yielded as ``captured``. A per-member failure is a ``failed`` event and
-        the family continues. Only one body is alive at a time: the consumer
-        publishes each capture before the next download starts.
+        whose newest usable capture carries the live ``last_modified`` and still
+        hashes to its recorded body is ``unchanged``; every other member is
+        downloaded, admitted (P-7) and yielded as ``captured``. A per-member
+        failure is a ``failed`` event and the family continues. Only one body
+        is alive at a time: the consumer publishes each capture before the next
+        download starts.
 
         Args:
             dataset: A registry family key.
@@ -1751,13 +1762,16 @@ class NesoDataPortalConnector(BaseConnector):
             capture = newest.get(resource_id)
             live_modified = resource.get("last_modified")
             # A dump capture is never the skip basis for an upload (ADR-035 P-6):
-            # its last_modified is not a file stamp (decision 9).
+            # its last_modified is not a file stamp (decision 9). The scan checks
+            # only the body's size, so it is re-hashed before it is trusted, as
+            # the dump leg does: a damaged body would otherwise stay the basis.
             if (
                 capture is not None
                 and capture.url_type != "datastore"
                 and isinstance(live_modified, str)
                 and live_modified
                 and capture.ckan_last_modified == live_modified
+                and _verified_basis(capture, dataset) is not None
             ):
                 yield MemberEvent(
                     resource_id,
@@ -2473,16 +2487,13 @@ def _dump_provenance_params(
 ) -> dict[str, Any]:
     """Build a dump capture's ``request_params`` (ADR-035 P-5).
 
-    D-12's keys from :func:`_provenance_params`, with ``ckan_last_modified``
-    as the CKAN string or ``""`` (never ``"None"``) and ``resource_filename``
+    D-12's keys from :func:`_provenance_params`, with ``resource_filename``
     as the resource id (a dump has no vendor filename); then A's member keys,
     and two evidence keys for the open class-3 questions:
     ``ckan_metadata_modified`` and ``response_last_modified``.
     """
     params = _provenance_params(package, package_payload, resource, dump.body)
-    last_modified = resource.get("last_modified")
     metadata_modified = resource.get("metadata_modified")
-    params["ckan_last_modified"] = last_modified if isinstance(last_modified, str) else ""
     params["resource_filename"] = str(resource.get("id", ""))
     params.update(
         {
@@ -2515,13 +2526,15 @@ def _provenance_params(
     """
     url = str(resource.get("url", ""))
     filename = url.rstrip("/").rsplit("/", 1)[-1] if url else ""
+    last_modified = resource.get("last_modified")
     return {
         "package": package,
         "package_id": str(package_payload.get("id", "")),
         "resource_id": str(resource.get("id", "")),
         "resource_name": str(resource.get("name", "")),
         "resource_filename": filename,
-        "ckan_last_modified": str(resource.get("last_modified", "")),
+        # A null last_modified is recorded as "", never as the string "None".
+        "ckan_last_modified": last_modified if isinstance(last_modified, str) else "",
         "ckan_format": str(resource.get("format", "")),
         "body_sha256": hashlib.sha256(body).hexdigest(),
     }

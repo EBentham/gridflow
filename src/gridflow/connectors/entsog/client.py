@@ -16,7 +16,7 @@ from gridflow.connectors.entsog.endpoints import (
     build_params,
 )
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.retry import retry_policy
 from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
@@ -132,17 +132,17 @@ class EntsogConnector(BaseConnector):
             data_date=data_date,
         )
 
-    @RETRY_POLICY
+    @retry_policy(404)
     async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
         """Rate-limited, retried HTTP GET request.
 
         ENTSO-G empty convention is HTTP 404 + body
         ``{"message": "No result found"}``. That case short-circuits
-        to an empty-bronze response so RETRY_POLICY does not waste
-        budget on an expected vendor outcome (V2-FIX-07). Any other
-        4xx/5xx (including a 404 with a different body) falls through
-        to the standard `raise_for_status()` path and is retried per
-        the surrounding RETRY_POLICY.
+        to an empty-bronze response so the retry policy does not waste
+        budget on an expected vendor outcome (V2-FIX-07). A 404 with a
+        different body falls through to `raise_for_status()` and is
+        retried, like a 408, 429 or 5xx; any other 4xx fails on the
+        first attempt.
         """
         if self._client is None:
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")

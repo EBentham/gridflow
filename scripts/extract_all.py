@@ -21,30 +21,25 @@ extract -- that run was verified row-for-row against silver (628/628 and
 3589/3589, zero rows dropped, dedup ratio 1.000) -- but every one is live for
 the NEXT run, especially over the wider catalogue. Filed, not fixed.
 
-1. `settlement_period` is in `METADATA_COLUMNS`, so it is excluded from the
-   dedup subset. Rows differing ONLY by settlement period collapse. This
-   contravenes the repo rule that settlement data is never deduplicated on
-   `(date, period)` alone. Fixing it means editing a frozenset that gates
-   every one of the ~163 datasets -- enumerate the callers first.
-2. A missing `_latest` relation falls back to the raw silver relation without
+1. A missing `_latest` relation falls back to the raw silver relation without
    checking the dataset's update strategy, so APPEND_ONLY datasets can export
    duplicate vintages while still reporting `chartable=true`. Same class as
    the `export-csv` defect in the extract's own FINDINGS.md section 2.
-3. Every fetch checkpoint counts as completed regardless of status, so
+2. Every fetch checkpoint counts as completed regardless of status, so
    `FETCH_ERROR` and vendor-parked datasets are never retried and a later run
    can export stale pre-existing silver as fresh chart data.
-4. CSV and `manifest.json` writes go straight to their final paths. An
+3. CSV and `manifest.json` writes go straight to their final paths. An
    interrupted run can leave a truncated CSV referenced by the old manifest,
    or a partially written manifest. The repo convention is `os.replace()`.
-5. `--datasets` without `--source` is silently treated as an unscoped run,
+4. `--datasets` without `--source` is silently treated as an unscoped run,
    which fetches the whole catalogue and wholesale-overwrites the manifest --
    the exact clobbering the scoping flags were added to prevent.
-6. Checkout, interpreter and DuckDB paths are hard-coded rather than resolved
+5. Checkout, interpreter and DuckDB paths are hard-coded rather than resolved
    through `PathBuilder`, so another checkout fails or, worse, reads an
    unrelated database.
-7. `--full-history` materialises the whole relation in memory, then builds a
+6. `--full-history` materialises the whole relation in memory, then builds a
    second frame to deduplicate it.
-8. A `--full-history` export still stamps the fixed 1-5 Aug window into
+7. A `--full-history` export still stamps the fixed 1-5 Aug window into
    `manifest.json` and `SUMMARY.txt`, contradicting the series it just wrote.
    (Observed: the 2026-08-21 manifest declares that window while holding
    `historic_generation_mix` rows from 2009.) The front-end distiller reads
@@ -95,7 +90,8 @@ from typing import Any
 
 import duckdb
 import polars as pl
-import yaml
+
+from gridflow.config.settings import DatasetConfig, load_settings
 
 REPO = Path(r"C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow")
 PY = REPO / ".venv" / "Scripts" / "python.exe"
@@ -118,7 +114,8 @@ VENDOR_FAILURE_LIMIT = 3
 TIME_COLUMNS = ("settlement_date", "event_time", "timestamp_utc", "gas_day")
 
 # Present on every silver frame; carries provenance, not signal. Excluded from
-# both the duplicate comparison and the numeric-column scan.
+# both the duplicate comparison and the numeric-column scan, except that
+# settlement_period stays in the duplicate comparison.
 METADATA_COLUMNS = frozenset(
     {
         "ingested_at",
@@ -150,21 +147,23 @@ def log(msg: str) -> None:
 
 def load_catalogue(
     scope: set[tuple[str, str]] | None = None,
-) -> list[tuple[str, str, dict[str, Any]]]:
+) -> list[tuple[str, str, DatasetConfig]]:
     """Load the (source, dataset, config) catalogue, optionally scoped.
+
+    Read through ``load_settings()``, so the script sees the catalogue the CLI
+    does, loader defaults included, rather than parsing the YAML itself.
 
     Args:
         scope: if given, only (source, dataset) pairs present in this set
             are returned. ``None`` (the default) returns the full catalogue,
             preserving the original unscoped behaviour.
     """
-    cfg = yaml.safe_load((REPO / "config" / "sources.yaml").read_text(encoding="utf-8"))
     out = []
-    for source, scfg in (cfg.get("sources") or cfg).items():
-        for ds, dcfg in ((scfg or {}).get("datasets") or {}).items():
+    for source, scfg in load_settings().sources.items():
+        for ds, dcfg in scfg.datasets.items():
             if scope is not None and (source, ds) not in scope:
                 continue
-            out.append((source, ds, dcfg or {}))
+            out.append((source, ds, dcfg))
     return out
 
 
@@ -215,7 +214,7 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
     done = already_done()
     log(f"catalogue: {len(catalogue)} datasets | {len(done)} already fetched")
 
-    by_source: dict[str, list[tuple[str, str, dict]]] = {}
+    by_source: dict[str, list[tuple[str, str, DatasetConfig]]] = {}
     for s, d, c in catalogue:
         by_source.setdefault(s, []).append((s, d, c))
 
@@ -246,7 +245,7 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
                     }
                 )
                 continue
-            if cfg.get("max_query_days", 1) == 0:
+            if cfg.max_query_days == 0:
                 checkpoint(
                     {
                         "phase": "fetch",
@@ -391,8 +390,11 @@ def export_all(
             # Duplicate resolution. Compare on every non-metadata column: if the
             # duplicates are identical there, collapsing them is lossless. If
             # they differ, the disagreement is real and this script must not
-            # pick a winner.
-            signal = [c for c in df.columns if c not in METADATA_COLUMNS]
+            # pick a winner. settlement_period is compared too: rows that differ
+            # only by period are different settlement data, never duplicates.
+            signal = [
+                c for c in df.columns if c == "settlement_period" or c not in METADATA_COLUMNS
+            ]
             before = df.height
             deduped = df.unique(subset=signal, keep="first", maintain_order=True)
             removed = before - deduped.height

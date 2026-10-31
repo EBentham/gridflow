@@ -18,6 +18,7 @@ from gridflow.config.settings import (
     QualityConfig,
     SourceConfig,
 )
+from gridflow.connectors import base as connector_base
 from gridflow.connectors.base import RawResponse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -42,6 +43,12 @@ def _clear_gridflow_path_env(monkeypatch: pytest.MonkeyPatch) -> None:
         return loaded
 
     monkeypatch.setattr(settings_module, "load_dotenv", load_dotenv_without_path_env)
+
+
+@pytest.fixture(autouse=True)
+def _fresh_connector_send_slots(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Connector pacing is shared process-wide, so no test inherits another's slots."""
+    monkeypatch.setattr(connector_base, "_NEXT_SEND_AT", {})
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
