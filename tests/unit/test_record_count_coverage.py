@@ -362,6 +362,18 @@ class TestEntsoeParseOnceHelpers:
         xml = b'<root xmlns="urn:x"><TimeSeries/><TimeSeries/></root>'
         assert count_timeseries_or_none(xml) == 2
 
+    def test_counts_reservebid_series_elements(self) -> None:
+        """A37 replies name their series Bid_TimeSeries; counting only
+        TimeSeries stamped every bids page 0 and stopped the pager at page one."""
+        from gridflow.connectors.entsoe.client import count_timeseries_or_none
+
+        xml = (
+            b'<ReserveBid_MarketDocument xmlns="urn:x">'
+            b"<Bid_TimeSeries/><Bid_TimeSeries/><Bid_TimeSeries/>"
+            b"</ReserveBid_MarketDocument>"
+        )
+        assert count_timeseries_or_none(xml) == 3
+
     def test_is_zero_for_a_valid_empty_document(self) -> None:
         from gridflow.connectors.entsoe.client import count_timeseries_or_none
 

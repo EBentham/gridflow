@@ -179,19 +179,24 @@ EVENT_WINDOW_FILTER_EXEMPT: dict[str, str] = {
         "would delete nearly the whole dataset"
     ),
     "outages_generation": (
-        "unavailability of generation units -- open-ended revision horizon, never trimmed"
+        "unavailability of generation units -- open-ended revision horizon; the transformer "
+        "clips each outage step to the partition day itself (silver/entsoe/_outages.py)"
     ),
     "outages_consumption": (
-        "aggregated unavailability of consumption units -- open-ended revision horizon"
+        "aggregated unavailability of consumption units -- open-ended revision horizon; "
+        "steps clipped to the partition day by the transformer"
     ),
     "outages_transmission": (
-        "unavailability of transmission infrastructure -- open-ended revision horizon"
+        "unavailability of transmission infrastructure -- open-ended revision horizon; "
+        "steps clipped to the partition day by the transformer"
     ),
     "outages_offshore_grid": (
-        "unavailability of offshore grid infrastructure -- open-ended revision horizon"
+        "unavailability of offshore grid infrastructure -- open-ended revision horizon; "
+        "steps clipped to the partition day by the transformer"
     ),
     "outages_production": (
-        "unavailability of production units -- open-ended revision horizon, never trimmed"
+        "unavailability of production units -- open-ended revision horizon; the transformer "
+        "clips each outage step to the partition day itself (silver/entsoe/_outages.py)"
     ),
     "generation_units_master_data": (
         "date_param snapshot query (Implementation_DateAndOrTime) -- no periodStart/"
@@ -898,10 +903,11 @@ EVENT_WINDOW_CLASSIFICATION: dict[str, DatasetClassification] = {
             "returned real EMPTY, and GB is EMPTY per vault (R3-RESEARCH.md:74)."
         ),
         limitation=(
-            "Never observed populated; fixture-only prior evidence is not "
-            "trusted alone (a sibling fixture assumption, A87, was directly "
-            "falsified this session, Sec 1.4/5). The record supports no window "
-            "verdict."
+            "Superseded in part (2026-10-24): bronze for 2026-08-01..05 is "
+            "populated for FR, NL and BE (A03 PT1M curves, area at document "
+            "level). On 2026-08-01 every point fell inside the UTC request day "
+            "(00:00-23:59). That is one day, not a window review, so the "
+            "verdict stays UNKNOWN and the filter stays off."
         ),
         probes=("entsoe_A86_current_balancing_state_DE_20260601.xml",),
         family="_H8BalancingTransformer",

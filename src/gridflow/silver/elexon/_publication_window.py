@@ -6,18 +6,18 @@ precedent ``silver/openmeteo/historical.py:29-38``): everything else in
 :func:`publication_window_params` and the two dicts below, never by
 importing ``connectors.elexon.endpoints`` directly.
 
-**Scope (G-2, ``R2-A-PLAN.md`` S1.7).** 24 of the 33 registered Elexon
+**Scope (G-2, ``R2-A-PLAN.md`` S1.7).** 23 of the 33 registered Elexon
 datasets are in scope — ``PUBLISH_DATETIME`` param style with the DEFAULT
 ``publishDateTimeFrom``/``publishDateTimeTo`` param names (not an override
 like ``from``/``to`` or ``measurementDateTimeFrom/To``, whose semantics are
-undocumented or actively different from the default's). Of those 24, 22 are
+undocumented or actively different from the default's). Of those 23, 20 are
 filtered on ``published_at`` and one — ``remit`` — is filtered on
 ``timestamp_utc`` (its own derived, deterministic copy of the same publish
-instant; S-2). The remaining 2 in-scope-but-unusable datasets and the 9
-out-of-scope datasets make up :data:`PUBLICATION_WINDOW_EXEMPT` (11 entries,
+instant; S-2). The remaining 2 in-scope-but-unusable datasets and the 10
+out-of-scope datasets make up :data:`PUBLICATION_WINDOW_EXEMPT` (12 entries,
 each machine-checked and reasoned) — see ``A-11``.
 
-:func:`publication_window_params` derives the 22 filtered + 2 exempt
+:func:`publication_window_params` derives the 21 filtered + 2 exempt
 "in scope" set directly from ``ENDPOINTS`` rather than hand-listing it a
 second time, so a future new dataset is classified correctly by construction
 (right param style + right param names) without needing this module edited
@@ -31,9 +31,9 @@ from gridflow.connectors.elexon.endpoints import ENDPOINTS, ParamStyle
 
 #: Reasons are recorded verbatim from the plan's measurement (S1.7) so a
 #: reviewer can audit each exemption against the endpoint registry directly.
-#: Combines the 2 in-scope-but-unusable datasets (N-12) and the 9
-#: out-of-scope datasets (wrong param style or an undocumented param-name
-#: override) into one machine-checked table (A-11).
+#: Combines the 2 in-scope-but-unusable datasets (N-12) and the 10
+#: out-of-scope datasets (wrong param style or a param-name override) into
+#: one machine-checked table (A-11).
 PUBLICATION_WINDOW_EXEMPT: dict[str, str] = {
     # --- N-12: PUBLISH_DATETIME + default param names, but no usable dimension ---
     "fuelinst": (
@@ -61,6 +61,11 @@ PUBLICATION_WINDOW_EXEMPT: dict[str, str] = {
     "netbsad": (
         "bare from/to params (endpoints.py) — undocumented "
         "(TODO in endpoints.py); do not invent semantics for the override"
+    ),
+    "nonbm": (
+        "overrides to from/to (endpoints.py) — the vendor ignores the default "
+        "names on NONBM (live A/B 2026-10-16); bodies fetched with them are "
+        "excluded in nonbm.py instead"
     ),
     "freq": (
         "overrides to measurementDateTimeFrom/To — sending "

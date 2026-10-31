@@ -53,6 +53,7 @@ from gridflow.schemas.entsoe import (
     EntsoeWaterReservoirs,
     EntsoeWindSolarForecast,
 )
+from gridflow.silver.entsoe._outages import parse_outage_xml
 from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
 from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
@@ -487,6 +488,10 @@ def _make_entsoe_transformer(cls, dataset: str | None = None):
     t.bronze_dir = Path(f"/tmp/test/bronze/entsoe/{ds}")
     t.silver_dir = Path(f"/tmp/test/silver/entsoe/{ds}")
     return t
+
+
+def _make_outage_df(filename: str) -> pl.DataFrame:
+    return pl.DataFrame(parse_outage_xml((FIXTURES / filename).read_bytes()))
 
 
 def _make_df_from_xml(filename: str, value_tag: str) -> pl.DataFrame:
@@ -1133,7 +1138,7 @@ class TestOutagesGenerationTransformer:
         self.t = _make_entsoe_transformer(OutagesGenerationTransformer)
 
     def test_transform_basic(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         assert not result.is_empty()
         assert "unavailable_mw" in result.columns
@@ -1141,24 +1146,25 @@ class TestOutagesGenerationTransformer:
         assert "unit_name" in result.columns
         assert "outage_type" in result.columns
         assert "area_code" in result.columns
-        assert "production_type" not in result.columns
+        assert "production_type" in result.columns
+        assert "step_end_utc" in result.columns
         assert "available_capacity_mw" not in result.columns
 
     def test_unit_mrid_values(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         mrids = set(result["unit_mrid"].to_list())
         assert mrids == {"UNIT-DRAX-3", "UNIT-HEYSHAM-2"}
 
     def test_unit_name_values(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         names = set(result["unit_name"].to_list())
         assert "Drax Unit 3" in names
         assert "Heysham 2" in names
 
     def test_outage_type_mapping(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         types = set(result["outage_type"].to_list())
         assert types == {"planned", "unplanned"}
@@ -1168,12 +1174,12 @@ class TestOutagesGenerationTransformer:
         assert heysham["outage_type"][0] == "unplanned"
 
     def test_four_records(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         assert len(result) == 4
 
     def test_unavailable_mw_values(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw).sort(["unit_mrid", "timestamp_utc"])
         drax = result.filter(pl.col("unit_mrid") == "UNIT-DRAX-3")
         assert abs(drax["unavailable_mw"][0] - 800) < 0.1
@@ -1181,23 +1187,23 @@ class TestOutagesGenerationTransformer:
         assert abs(heysham["unavailable_mw"][0] - 1200) < 0.1
 
     def test_dedup_on_timestamp_unit(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         doubled = pl.concat([raw, raw])
         result = self.t.transform(doubled)
         assert len(result) == 4
 
     def test_timestamp_dtype(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
 
     def test_ingested_at_present(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         assert "ingested_at" in result.columns
 
     def test_data_provider(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         assert result["data_provider"][0] == "entsoe"
 
@@ -1242,7 +1248,7 @@ class TestPhaseH7Endpoints:
 
 class TestPhaseH7OutageTransformers:
     def test_consumption_transformer_preserves_document_fields(self):
-        raw = _make_df_from_xml("outages_consumption_gb.xml", "quantity")
+        raw = _make_outage_df("outages_consumption_gb.xml")
         transformer = _make_entsoe_transformer(OutagesConsumptionTransformer)
 
         result = transformer.transform(raw)
@@ -1254,7 +1260,7 @@ class TestPhaseH7OutageTransformers:
         assert result["document_status"][0] == "A05"
 
     def test_transmission_transformer_preserves_asset_and_domains(self):
-        raw = _make_df_from_xml("outages_transmission_gb_fr.xml", "quantity")
+        raw = _make_outage_df("outages_transmission_gb_fr.xml")
         transformer = _make_entsoe_transformer(OutagesTransmissionTransformer)
 
         result = transformer.transform(raw)
@@ -1266,7 +1272,7 @@ class TestPhaseH7OutageTransformers:
         assert result["asset_name"][0] == "IFA Interconnector Circuit 1"
 
     def test_offshore_grid_transformer_preserves_asset(self):
-        raw = _make_df_from_xml("outages_offshore_grid_gb.xml", "quantity")
+        raw = _make_outage_df("outages_offshore_grid_gb.xml")
         transformer = _make_entsoe_transformer(OutagesOffshoreGridTransformer)
 
         result = transformer.transform(raw)
@@ -1277,7 +1283,7 @@ class TestPhaseH7OutageTransformers:
         assert result["document_mrid"][0] == "fixture-offshore-grid-outage-gb-20240115"
 
     def test_production_transformer_preserves_unit_identity(self):
-        raw = _make_df_from_xml("outages_production_gb.xml", "quantity")
+        raw = _make_outage_df("outages_production_gb.xml")
         transformer = _make_entsoe_transformer(OutagesProductionTransformer)
 
         result = transformer.transform(raw)
@@ -1289,13 +1295,14 @@ class TestPhaseH7OutageTransformers:
         assert result["production_type"][0] == "B02"
 
     def test_existing_generation_outage_transformer_stays_unit_level(self):
-        raw = _make_df_from_xml("outages_generation_gb.xml", "quantity")
+        raw = _make_outage_df("outages_generation_gb.xml")
         result = _make_entsoe_transformer(OutagesGenerationTransformer).transform(raw)
 
         assert "unit_mrid" in result.columns
         assert "unit_name" in result.columns
         assert "asset_mrid" not in result.columns
-        assert "document_mrid" not in result.columns
+        assert "document_mrid" in result.columns
+        assert "revision_number" in result.columns
 
 
 # ---------------------------------------------------------------------------
@@ -1419,6 +1426,7 @@ class TestEntsoeOutagesGenerationSchema:
     def test_valid_record(self):
         r = EntsoeOutagesGeneration(
             timestamp_utc=self._TS,
+            step_end_utc=self._TS,
             area_code="10YGB----------A",
             unit_mrid="UNIT-DRAX-3",
             unit_name="Drax Unit 3",
@@ -1434,6 +1442,7 @@ class TestEntsoeOutagesGenerationSchema:
     def test_unit_name_optional(self):
         r = EntsoeOutagesGeneration(
             timestamp_utc=self._TS,
+            step_end_utc=self._TS,
             area_code="10YGB----------A",
             unit_mrid="UNIT-DRAX-3",
             outage_type="planned",
@@ -1447,6 +1456,7 @@ class TestEntsoeOutagesGenerationSchema:
         with pytest.raises(ValidationError):
             EntsoeOutagesGeneration(
                 timestamp_utc=datetime(2024, 1, 15),
+                step_end_utc=self._TS,
                 area_code="10YGB----------A",
                 unit_mrid="UNIT-DRAX-3",
                 outage_type="planned",
@@ -1460,6 +1470,7 @@ class TestEntsoeH7OutageSchemas:
     def test_consumption_record(self):
         record = EntsoeOutagesConsumption(
             timestamp_utc=self._TS,
+            step_end_utc=self._TS,
             area_code="10YGB----------A",
             outage_type="planned",
             unavailable_mw=150.0,
@@ -1473,6 +1484,7 @@ class TestEntsoeH7OutageSchemas:
     def test_transmission_record(self):
         record = EntsoeOutagesTransmission(
             timestamp_utc=self._TS,
+            step_end_utc=self._TS,
             in_area_code="10YGB----------A",
             out_area_code="10YFR-RTE------C",
             asset_mrid="ASSET-IFA-1",
@@ -1487,6 +1499,7 @@ class TestEntsoeH7OutageSchemas:
     def test_offshore_grid_record(self):
         record = EntsoeOutagesOffshoreGrid(
             timestamp_utc=self._TS,
+            step_end_utc=self._TS,
             area_code="10YGB----------A",
             asset_mrid="ASSET-OFFSHORE-HUB-1",
             outage_type="",
@@ -1498,6 +1511,7 @@ class TestEntsoeH7OutageSchemas:
     def test_production_record(self):
         record = EntsoeOutagesProduction(
             timestamp_utc=self._TS,
+            step_end_utc=self._TS,
             area_code="10YGB----------A",
             unit_mrid="PROD-DRAX-3",
             unit_name="Drax Production Unit 3",
@@ -2247,11 +2261,15 @@ class TestParserA03ForwardFill:
         assert "document-a03" in caplog.text
         assert "series-a03" in caplog.text
 
+    @pytest.mark.parametrize("a03_as_steps", [False, True])
     @pytest.mark.parametrize("curve_type", ["A03", "A01"])
     @pytest.mark.parametrize("resolution", ["PT5M", ""])
-    def test_unmapped_resolution_refuses_the_period(self, caplog, curve_type: str, resolution: str):
+    def test_unmapped_resolution_refuses_the_period(
+        self, caplog, curve_type: str, resolution: str, a03_as_steps: bool
+    ):
         """Position 2 of a PT5M series starts at 04:05; the old one-hour default
-        stamped it 05:00. A period whose resolution is unknown is refused."""
+        stamped it 05:00. A period whose resolution is unknown is refused, in
+        the outage step mode as well."""
         records = parse_timeseries_xml(
             self._xml(
                 """
@@ -2261,6 +2279,7 @@ class TestParserA03ForwardFill:
                 resolution=resolution,
             ),
             value_tag="quantity",
+            a03_as_steps=a03_as_steps,
         )
 
         assert records == []

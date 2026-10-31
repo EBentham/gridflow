@@ -33,6 +33,10 @@ def _hardened_parser() -> Any:
 # only (30d / 365d); the actual point timestamps for those codes are computed
 # via _advance_calendar() which uses real calendar arithmetic.
 _RESOLUTION_MAP: dict[str, timedelta] = {
+    # PT1M: current balancing state (A86) and every outage document type
+    # (A76-A80). Unmapped, it fell back to one hour, so point N landed N-1
+    # hours after the period start instead of N-1 minutes.
+    "PT1M": timedelta(minutes=1),
     "PT15M": timedelta(minutes=15),
     "PT30M": timedelta(minutes=30),
     "PT60M": timedelta(hours=1),
@@ -173,9 +177,18 @@ _VALUE_TAG_ALIASES_BY_DOC_ROOT: dict[str, dict[str, frozenset[str]]] = {
 }
 
 
+def _point_timestamp(start: datetime, position: int, code: str, resolution: timedelta) -> datetime:
+    """Return the start of the point at 1-based ``position`` in a Period."""
+    if code in _CALENDAR_RESOLUTIONS:
+        return _advance_calendar(start, position, code)
+    return start + (position - 1) * resolution
+
+
 def parse_timeseries_xml(
     xml_bytes: bytes,
     value_tag: str = "price.amount",
+    *,
+    a03_as_steps: bool = False,
 ) -> list[dict[str, Any]]:
     """Parse a generic ENTSO-E TimeSeries XML response into records.
 
@@ -184,6 +197,14 @@ def parse_timeseries_xml(
         value_tag: The tag name containing the numeric value (e.g.
             ``"price.amount"`` for day-ahead prices, ``"quantity"`` for load /
             generation / flows).
+        a03_as_steps: When ``True``, emit one record per declared point with
+            an explicit ``step_end_utc`` instead of forward-filling A03
+            (variable-sized block) curves onto the resolution grid. An A03
+            step ends at the next declared point or at the Period end; any
+            other curve's point ends one resolution later. Step records also
+            carry ``period_start_utc`` and ``period_end_utc``. Outage
+            documents need this: their PT1M Periods run for months, which a
+            forward-fill would turn into a row per minute.
 
     Returns:
         List of dicts with keys: ``timestamp_utc``, ``value``,
@@ -192,7 +213,8 @@ def parse_timeseries_xml(
         ``resolution`` (the ENTSO-E ISO code, e.g. ``"PT60M"``),
         ``currency_unit`` (e.g. ``"EUR"``/``"GBP"`` for price documents),
         ``document_created_at`` (the document ``<createdDateTime>`` publication
-        vintage, string-or-empty), ``unit_mrid``, ``unit_name``. Fields absent
+        vintage, string-or-empty), ``unit_mrid``, ``unit_name``, plus the
+        step fields above when ``a03_as_steps`` is set. Fields absent
         from a given TimeSeries element are returned as empty strings
         (backward-compatible).
     """
@@ -210,6 +232,12 @@ def parse_timeseries_xml(
 
     records: list[dict[str, Any]] = []
     document_metadata = _root_document_metadata(root)
+    # Balancing_MarketDocument replies (A15 procured capacity, A24 aggregated
+    # bids, A86 current balancing state) carry the area once, beside the root,
+    # and never inside a TimeSeries; a series-level area still wins.
+    document_area_domain = _first_child_text(
+        root, {"area_Domain.mRID", "Area_Domain.mRID", "area_domain.mRID"}
+    )
 
     root_name = _strip_ns(root.tag)
     series_tags = _SERIES_TAGS_BY_DOC_ROOT.get(root_name, _DEFAULT_SERIES_TAGS)
@@ -277,6 +305,9 @@ def parse_timeseries_xml(
         # Capture it so a GBP price is never silently labelled EUR downstream.
         currency_unit = ""
         timeseries_mrid = asset_mrid = asset_name = document_status = ""
+        # Outage documents (A77-A80) name the generation unit inside the
+        # production unit, and its nominal power, in flattened child tags.
+        generation_unit_mrid = generation_unit_name = nominal_p = ""
         # G9 ENTSOE-02: TimeSeries-level Reason.code (e.g. A87 financial
         # documents carry per-series reason classifiers). Extracted below
         # via a dedicated walk so this loop's elif chain stays linear.
@@ -320,6 +351,7 @@ def parse_timeseries_xml(
             elif tag in {
                 "Type_MarketAgreement.Type",
                 "type_MarketAgreement.Type",
+                "type_MarketAgreement.type",
                 "MarketAgreement.Type",
                 "marketAgreement.Type",
             }:
@@ -346,7 +378,7 @@ def parse_timeseries_xml(
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
                         production_type = (sub.text or "").strip()
-            elif tag == "generatingUnit_PSRType.psrType":
+            elif tag in {"generatingUnit_PSRType.psrType", "mktPSRType.psrType"}:
                 production_type = (child.text or "").strip()
             elif tag == "registeredResource.mRID":
                 unit_mrid = (child.text or "").strip()
@@ -386,6 +418,12 @@ def parse_timeseries_xml(
                 asset_name = unit_name
             elif tag == "production_RegisteredResource.pSRType.psrType":
                 production_type = (child.text or "").strip()
+            elif tag == "production_RegisteredResource.pSRType.powerSystemResources.mRID":
+                generation_unit_mrid = text
+            elif tag == "production_RegisteredResource.pSRType.powerSystemResources.name":
+                generation_unit_name = text
+            elif tag == "production_RegisteredResource.pSRType.powerSystemResources.nominalP":
+                nominal_p = text
 
         # G9 ENTSOE-02: capture the first Reason.code descendant of the
         # TimeSeries (A87 financial documents carry per-series Reason
@@ -459,7 +497,7 @@ def parse_timeseries_xml(
                 "out_domain": out_domain,
                 "production_type": production_type,
                 "control_area_domain": control_area_domain,
-                "area_domain": area_domain,
+                "area_domain": area_domain or document_area_domain,
                 "connecting_domain": connecting_domain,
                 "acquiring_domain": acquiring_domain,
                 "business_type": business_type,
@@ -476,11 +514,15 @@ def parse_timeseries_xml(
                 "asset_name": asset_name,
                 "document_status": document_status or document_metadata["document_status"],
                 "reason_code": reason_code,
+                "generation_unit_mrid": generation_unit_mrid,
+                "generation_unit_name": generation_unit_name,
+                "nominal_p": nominal_p,
             }
 
             def build_record(
                 timestamp: datetime,
                 value: float,
+                price: float | None,
                 prefix: dict[str, Any] = record_prefix,
                 suffix: dict[str, Any] = record_suffix,
             ) -> dict[str, Any]:
@@ -489,6 +531,7 @@ def parse_timeseries_xml(
                     "timestamp_utc": timestamp,
                     "value": value,
                     **suffix,
+                    "price_amount": price,
                 }
 
             declared_points: list[tuple[int, dict[str, Any]]] = []
@@ -497,6 +540,7 @@ def parse_timeseries_xml(
                     continue
                 position: int | None = None
                 value: float | None = None
+                point_price: float | None = None
                 accepted_hits = 0  # D-11: occurrences, not distinct names
                 for child in point_el:
                     tag = _strip_ns(child.tag)
@@ -514,6 +558,9 @@ def parse_timeseries_xml(
                             accepted_hits += 1  # occurrences, not distinct names
                         with contextlib.suppress(ValueError):
                             value = float(child.text or "nan")
+                    if value_tag != "price.amount" and _matches_value_tag(tag, "price.amount"):
+                        with contextlib.suppress(ValueError):
+                            point_price = float(child.text or "nan")
 
                 if value_tag_ambiguity_possible and accepted_hits > 1:
                     logger.error(
@@ -536,11 +583,23 @@ def parse_timeseries_xml(
                 # per month, leap years for years). Use calendar arithmetic
                 # rather than timedelta multiplication so monthly/yearly
                 # bucket alignment matches the vendor's documented buckets.
-                if resolution_code in _CALENDAR_RESOLUTIONS:
-                    timestamp = _advance_calendar(start_dt, position, resolution_code)
-                else:
-                    timestamp = start_dt + (position - 1) * resolution
-                declared_points.append((position, build_record(timestamp, value)))
+                timestamp = _point_timestamp(start_dt, position, resolution_code, resolution)
+                declared_points.append((position, build_record(timestamp, value, point_price)))
+
+            if a03_as_steps:
+                records.extend(
+                    _as_steps(
+                        declared_points,
+                        start_dt=start_dt,
+                        end_dt=end_dt,
+                        resolution_code=resolution_code,
+                        resolution=resolution,
+                        is_a03=curve_type == "A03",
+                        document_id=document_metadata["document_mrid"],
+                        timeseries_mrid=timeseries_mrid,
+                    )
+                )
+                continue
 
             if curve_type != "A03":
                 records.extend(record for _, record in declared_points)
@@ -579,10 +638,7 @@ def parse_timeseries_xml(
             previous_record: dict[str, Any] | None = None
             position = 1
             while True:
-                if resolution_code in _CALENDAR_RESOLUTIONS:
-                    timestamp = _advance_calendar(start_dt, position, resolution_code)
-                else:
-                    timestamp = start_dt + (position - 1) * resolution
+                timestamp = _point_timestamp(start_dt, position, resolution_code, resolution)
                 if timestamp >= end_dt:
                     break
                 if position > 100_000:
@@ -639,6 +695,80 @@ def parse_timeseries_xml(
             )
 
     return records
+
+
+def _as_steps(
+    declared_points: list[tuple[int, dict[str, Any]]],
+    *,
+    start_dt: datetime,
+    end_dt: datetime | None,
+    resolution_code: str,
+    resolution: timedelta,
+    is_a03: bool,
+    document_id: str,
+    timeseries_mrid: str,
+) -> list[dict[str, Any]]:
+    """Turn one Period's declared points into step records with explicit ends.
+
+    Args:
+        declared_points: ``(position, record)`` pairs as parsed, in document order.
+        start_dt: The Period start.
+        end_dt: The Period end, or ``None`` when the document omits it.
+        resolution_code: The Period's ISO resolution code.
+        resolution: The resolution as a timedelta (approximate for P1M/P1Y).
+        is_a03: Whether the series is an A03 (variable-sized block) curve.
+        document_id: Document mRID, for log messages.
+        timeseries_mrid: Series mRID, for log messages.
+
+    Returns:
+        One record per distinct position, sorted by position, each carrying
+        ``step_end_utc``, ``period_start_utc`` and ``period_end_utc``.
+    """
+    by_position: dict[int, dict[str, Any]] = {}
+    for position, record in declared_points:
+        if position in by_position:
+            logger.warning(
+                "ENTSO-E document %s series %s: duplicate point position %d; keeping the last",
+                document_id,
+                timeseries_mrid,
+                position,
+            )
+        by_position[position] = record
+
+    positions = sorted(by_position)
+    steps: list[dict[str, Any]] = []
+    for index, position in enumerate(positions):
+        record = by_position[position]
+        start = record["timestamp_utc"]
+        one_step_end = _point_timestamp(start_dt, position + 1, resolution_code, resolution)
+        if end_dt is not None and start >= end_dt:
+            logger.warning(
+                "ENTSO-E document %s series %s: point position %d starts at/after the "
+                "period end; emitting a one-resolution step",
+                document_id,
+                timeseries_mrid,
+                position,
+            )
+            step_end = one_step_end
+        elif not is_a03:
+            step_end = one_step_end
+        elif index + 1 < len(positions):
+            step_end = _point_timestamp(start_dt, positions[index + 1], resolution_code, resolution)
+            if end_dt is not None:
+                step_end = min(step_end, end_dt)
+        elif end_dt is not None:
+            step_end = end_dt
+        else:
+            step_end = one_step_end
+        steps.append(
+            {
+                **record,
+                "step_end_utc": step_end,
+                "period_start_utc": start_dt,
+                "period_end_utc": end_dt,
+            }
+        )
+    return steps
 
 
 def parse_generation_units_master_data_xml(xml_bytes: bytes) -> list[dict[str, Any]]:
