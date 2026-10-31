@@ -58,6 +58,7 @@ __all__ = [
     "UnmappedResourceEditionError",
     "UnmappedResourceFormatError",
     "UnparsedDatetimeError",
+    "UnresolvedFileFormatError",
     "edition_for",
     "epoch_for",
     "epoch_formats",
@@ -113,6 +114,10 @@ class UnmappedResourceEditionError(Exception):
 
 class UnparsedDatetimeError(Exception):
     """A non-null cell of an ``alt_formats`` column parses under none of its formats (ADR-043)."""
+
+
+class UnresolvedFileFormatError(Exception):
+    """A ``file_formats`` column's file parses fully under no candidate, or under several."""
 
 
 @dataclass
@@ -171,6 +176,8 @@ def record_dtypes(record: SchemaRecord) -> dict[str, str]:
         out[EDITION] = "int64"
     if record.latest_partition == "resource_id":
         out["resource_id"] = "string"
+    if record.occurrence_column is not None:
+        out[record.occurrence_column] = "int64"
     out.update(
         {
             "timestamp_utc": "datetime",
@@ -209,7 +216,9 @@ def epoch_formats(epoch: HeaderEpoch, resource_filename: str) -> dict[str, str |
         resource_filename: The capture's sidecar ``resource_filename``.
 
     Returns:
-        Vendor column -> format (``None`` for a column without one).
+        Vendor column -> format (``None`` for a column without one, and for a
+        ``file_formats`` column, whose format the body decides in
+        :func:`type_child`).
 
     Raises:
         UnmappedResourceFormatError: A mapped column lists no entry for the file.
@@ -323,6 +332,44 @@ def _check_parsed(
             )
 
 
+def _file_formats(
+    frame: pl.DataFrame, specs: tuple[ColumnSpec, ...], formats: dict[str, str | None]
+) -> dict[str, str | None]:
+    """Choose each ``file_formats`` column's one format for this body.
+
+    The chosen candidate is the only one under which every non-null cell of the
+    column parses. The choice is per body, never per cell: a day-first file and
+    a month-first file can both be read, but one body is never read both ways.
+
+    Raises:
+        UnresolvedFileFormatError: No candidate, or more than one, parses every
+            non-null cell (naming the column, the fitting candidates and up to
+            five sample cells). Nothing is coerced and nothing is excluded.
+    """
+    resolved = dict(formats)
+    for spec in specs:
+        if spec.file_formats is None:
+            continue
+        cells = frame.get_column(spec.source).drop_nulls()
+        if cells.is_empty():
+            # No cell to decide on: every candidate types an all-null column alike.
+            resolved[spec.source] = spec.file_formats[0]
+            continue
+        fitting = [
+            fmt
+            for fmt in spec.file_formats
+            if cells.str.strptime(pl.Date, fmt, strict=False).null_count() == 0
+        ]
+        if len(fitting) != 1:
+            raise UnresolvedFileFormatError(
+                f"column {spec.name!r} ({spec.source}): every cell parses under {fitting} of the "
+                f"candidates {list(spec.file_formats)}; exactly one must fit the whole file; "
+                f"samples: {cells.head(_SAMPLE_LIMIT).to_list()}"
+            )
+        resolved[spec.source] = fitting[0]
+    return resolved
+
+
 def _null_tokens(spec: ColumnSpec) -> pl.Expr:
     col = pl.col(spec.source)
     if not spec.null_tokens:
@@ -390,6 +437,8 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
             the capture's ``resource_filename``.
         UnparsedDatetimeError: A non-null cell of an ``alt_formats`` column
             parses under none of its formats (ADR-043).
+        UnresolvedFileFormatError: A ``file_formats`` column fits no candidate,
+            or several, across the whole body.
         polars.exceptions.PolarsError: A value outside the declared null
             tokens did not cast (D-41: the capture fails, nothing is coerced).
     """
@@ -415,6 +464,7 @@ def type_child(table: ChildTable, record: SchemaRecord, ctx: CaptureContext) -> 
     tokened = [_null_tokens(spec) for spec in specs if spec.null_tokens]
     if tokened:
         frame = frame.with_columns(tokened)
+    formats = _file_formats(frame, specs, formats)
     _check_parsed(frame, specs, formats)
     frame = frame.select([_cast(spec, formats.get(spec.source)).alias(spec.name) for spec in specs])
 
@@ -563,6 +613,20 @@ def finish_capture(
             f"({dict(sorted(tally.counts.items()))}); nothing is written"
         )
 
+    if record.occurrence_column is not None:
+        # Before any join (``_with_timestamp_utc``) can reorder rows: the
+        # ordinal is the body order. Per-capture stamps are constant here, so
+        # counting over the typed key columns alone is the same partition.
+        counted = [
+            column
+            for column in record.entity_key
+            if column != record.occurrence_column and column in frame.columns
+        ]
+        frame = frame.with_columns(
+            pl.int_range(1, pl.len() + 1, dtype=pl.Int64)
+            .over(counted)
+            .alias(record.occurrence_column)
+        )
     frame = _with_timestamp_utc(frame, record, ctx)
     if record.vintage == "issue_time_evidenced":
         published = pl.col("issue_time").cast(_UTC_DATETIME)

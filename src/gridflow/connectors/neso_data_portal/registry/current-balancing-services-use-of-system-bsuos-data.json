@@ -38,7 +38,10 @@
                 "source": "Settlement Date",
                 "name": "settlement_date",
                 "dtype": "date",
-                "format": "%Y-%m-%dT%H:%M:%S ",
+                "file_formats": [
+                  "%Y-%m-%dT%H:%M:%S ",
+                  "%d-%m-%Y "
+                ],
                 "nullable": false
               },
               {
@@ -130,7 +133,10 @@
                 "source": "Settlement Date",
                 "name": "settlement_date",
                 "dtype": "date",
-                "format": "%Y-%m-%dT%H:%M:%S ",
+                "file_formats": [
+                  "%Y-%m-%dT%H:%M:%S ",
+                  "%d-%m-%Y "
+                ],
                 "nullable": false
               },
               {
@@ -222,7 +228,10 @@
                 "source": "Settlement Date",
                 "name": "settlement_date",
                 "dtype": "date",
-                "format": "%Y-%m-%dT%H:%M:%S ",
+                "file_formats": [
+                  "%Y-%m-%dT%H:%M:%S ",
+                  "%d-%m-%Y "
+                ],
                 "nullable": false
               },
               {

@@ -30,7 +30,7 @@
       "name_regex": null,
       "transformer": null,
       "record": {
-        "version": "1",
+        "version": "2",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
@@ -63,7 +63,8 @@
         },
         "entity_key": [
           "resource_id",
-          "dtm"
+          "dtm",
+          "dtm_occurrence"
         ],
         "latest": "whole_capture",
         "latest_partition": "resource_id",
@@ -73,9 +74,10 @@
         "vintage": "ckan_last_modified",
         "eligibility": {
           "status": "held",
-          "question": "TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 repeat, so October 2014 fails its duplicate key (adjudicated, ADR-040), and the December 2014 to January 2015 edge cannot be overlap-checked until the zone is documented.",
+          "question": "TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 repeat with different readings and are told apart only by dtm_occurrence (body order), and the December 2014 to January 2015 edge cannot be overlap-checked until the zone is documented.",
           "unit": "H-R1"
-        }
+        },
+        "occurrence_column": "dtm_occurrence"
       }
     },
     {

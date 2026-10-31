@@ -172,6 +172,14 @@ class ColumnSpec(_Frozen):
             order, for a cell ``format`` does not parse (one column's rendering
             variants). A cell that no format parses fails the capture. ``None``,
             the default, is omitted from every ``exclude_none`` dump (ADR-043).
+        file_formats: ``date`` only, instead of ``format``: candidate
+            ``strptime`` formats for a column whose rendering changed between
+            uploads of one resource. Each file takes exactly one: the single
+            candidate under which every non-null cell of that file parses. No
+            candidate, or more than one, fails the capture, so a day-first and a
+            month-first reading are never chosen cell by cell (an all-null
+            column has nothing to decide and types null under any candidate).
+            ``None``, the default, is omitted from every ``exclude_none`` dump.
     """
 
     source: str
@@ -179,6 +187,7 @@ class ColumnSpec(_Frozen):
     dtype: Dtype
     format: str | None = None
     formats_by_filename: tuple[tuple[str, str], ...] | None = None
+    file_formats: tuple[str, ...] | None = None
     null_tokens: tuple[str, ...] = ()
     nullable: bool
     min: float | None = None
@@ -195,7 +204,9 @@ class ColumnSpec(_Frozen):
             raise ValueError(f"column name {self.name!r} is not {SILVER_NAME_PATTERN.pattern}")
         if self.alt_formats is not None:
             self._alternative_formats(self.alt_formats)
-        if self.formats_by_filename is not None:
+        if self.file_formats is not None:
+            self._file_formats(self.file_formats)
+        elif self.formats_by_filename is not None:
             self._filename_formats()
         elif self.dtype in ("date", "datetime"):
             if not self.format:
@@ -270,6 +281,33 @@ class ColumnSpec(_Frozen):
                 )
         if len(set(alternatives)) != len(alternatives):
             raise ValueError(f"column {self.name!r}: alt_formats repeats an entry")
+
+    def _file_formats(self, candidates: tuple[str, ...]) -> None:
+        """The per-file candidates' shape: ``date`` only, alone, two or more, distinct."""
+        if self.dtype != "date":
+            raise ValueError(f"column {self.name!r}: file_formats applies to date columns only")
+        if self.format is not None or self.formats_by_filename is not None:
+            raise ValueError(
+                f"column {self.name!r}: file_formats replaces format and formats_by_filename"
+            )
+        if len(candidates) < 2:
+            raise ValueError(f"column {self.name!r}: file_formats needs two or more candidates")
+        if any(not candidate for candidate in candidates):
+            raise ValueError(f"column {self.name!r}: a file_formats entry is empty")
+        if len(set(candidates)) != len(candidates):
+            raise ValueError(f"column {self.name!r}: file_formats repeats an entry")
+        # A body's cells cannot tell a day-first from a month-first reading of one
+        # shape when every day is 12 or less, so a mixed body could fit one of them
+        # and be misread without a failure. Such a pair is never a candidate set.
+        # Whitespace is dropped first: the parser treats it as optional, so
+        # ``%m-%d-%Y `` reads exactly what ``%m-%d-%Y`` reads.
+        shapes = ["".join(c.split()) for c in candidates]
+        swapped = {s.replace("%d", "\0").replace("%m", "%d").replace("\0", "%m") for s in shapes}
+        if any(s in swapped and "%d" in s and "%m" in s for s in shapes):
+            raise ValueError(
+                f"column {self.name!r}: file_formats holds a day-first and a month-first "
+                "reading of one shape; the cells cannot decide between them"
+            )
 
     def _filename_formats(self) -> None:
         """The per-filename map's shape: ``date`` only, alone, non-empty, unique."""
@@ -629,6 +667,13 @@ class SchemaRecord(_Frozen):
             together form one series: reconcile checks their union for keys
             served by two resources (ADR-043, V-21). ``None``, the default, is
             omitted from every ``exclude_none`` dump.
+        occurrence_column: An ``int64`` output naming each row's 1-based
+            occurrence, in body order, of its other ``entity_key`` values, for
+            a body that repeats a key label with different readings (October
+            2014's system frequency repeats the hour 01:00 to 01:59). It is part
+            of ``entity_key``; nothing about the repeat is inferred beyond its
+            order. ``None``, the default, is omitted from every ``exclude_none``
+            dump.
     """
 
     version: str = Field(min_length=1)
@@ -649,6 +694,7 @@ class SchemaRecord(_Frozen):
     edition_by_filename: tuple[tuple[str, int], ...] | None = None
     xlsx_blocks: tuple[XlsxBlock, ...] | None = None
     overlap_group: str | None = None
+    occurrence_column: str | None = None
 
     @model_validator(mode="after")
     def _shape(self) -> SchemaRecord:
@@ -811,11 +857,24 @@ def validate_record(
     outputs = set(dtypes)
     issue = has_issue_time(record)
     key_set = set(record.entity_key)
+    occurrence = record.occurrence_column
+    if occurrence is not None:
+        if not SILVER_NAME_PATTERN.fullmatch(occurrence):
+            raise _fail("V-22", f"occurrence_column {occurrence!r} is not a silver name")
+        if occurrence in outputs or occurrence in RESERVED:
+            raise _fail("V-22", f"occurrence_column {occurrence!r} collides with another column")
+        if occurrence not in key_set:
+            raise _fail("V-22", f"occurrence_column {occurrence!r} must be in entity_key")
+        if not key_set & outputs:
+            raise _fail(
+                "V-22", "occurrence_column counts repeats of a typed entity_key column; none"
+            )
     admissible = (
         outputs
         | {"issue_time"}
         | ({"resource_id"} if record.latest_partition else set())
         | ({EDITION} if record.edition_by_filename is not None else set())
+        | ({occurrence} if occurrence is not None else set())
     )
     if not key_set <= admissible:
         raise _fail(
@@ -951,7 +1010,7 @@ def _grain_dtype(record: SchemaRecord, name: str) -> str:
     columns = silver_columns(record)
     if name in columns:
         return columns[name].dtype
-    return "int64" if name == EDITION else "datetime"
+    return "int64" if name in (EDITION, record.occurrence_column) else "datetime"
 
 
 def _check_scenario(record: SchemaRecord, key_set: set[str]) -> None:
