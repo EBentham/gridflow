@@ -263,27 +263,12 @@ gridflow export-csv entsog --all
 
 ## Running from Python (IDE Debugging)
 
-### Option 1: `python -m gridflow`
+Run the CLI as a module, under the debugger if you like:
 
 ```bash
 python -m gridflow ingest elexon system_prices --last 24h
 python -m gridflow pipeline elexon --all --last 7d --gold system_marginal_price
 python -m gridflow status
-```
-
-### Option 2: IDE Debug Script — `scripts/run_pipeline.py`
-
-```bash
-python scripts/run_pipeline.py --step bronze --source elexon --dataset system_prices --last 24h
-python scripts/run_pipeline.py --step all --source elexon --dataset system_prices --last 24h
-```
-
-### Option 3: IDE Debug Script — `scripts/run_all_sources.py`
-
-```bash
-python scripts/run_all_sources.py
-python scripts/run_all_sources.py --date 2024-06-15
-python scripts/run_all_sources.py --public-only
 ```
 
 ---
@@ -304,4 +289,3 @@ untracked repo-root `.env`.
 | CSV exports | `<data-root>/exports/{source}/{dataset}.csv` |
 | DuckDB catalogue | `<data-root>/gridflow.duckdb` |
 | Logs | `logs/` |
-| IDE debug scripts | `scripts/run_pipeline.py`, `scripts/run_all_sources.py` |

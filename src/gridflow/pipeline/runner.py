@@ -131,9 +131,8 @@ _TRANSFORMER_MODULES = [
     "gridflow.silver.neso_data_portal",
 ]
 
-# The gold-dataset name tuple, shared by the runner and every adapter for the
-# ``--all`` expansion (was duplicated as an inline dict in cli.build and
-# run_pipeline.run_gold). Class resolution lives in the gold registry
+# The gold-dataset name tuple, shared by the runner and the CLI's ``--all``
+# expansion. Class resolution lives in the gold registry
 # (``gridflow.gold.registry``); ``run_build`` asserts the two stay in lockstep.
 # Kept as a plain tuple so importing the runner never pulls in the gold build
 # modules — the registry is populated lazily, inside ``run_build``.
@@ -707,10 +706,10 @@ def resolve_incremental_window(
 def safe_error_message(message: str) -> str:
     """Redact sensitive query parameters from a stored/displayed error message.
 
-    Centralised here so EVERY adapter's stored ``pipeline_runs.error_message`` is
-    clean (the cli used to do this; run_pipeline stored raw exceptions, leaking
-    securityToken). The value class stops at the URL boundary (whitespace /
-    closing paren) to avoid eating trailing prose.
+    Centralised here so every stored ``pipeline_runs.error_message`` is clean: a
+    raw exception message can carry a request URL with its securityToken. The
+    value class stops at the URL boundary (whitespace / closing paren) to avoid
+    eating trailing prose.
     """
     from gridflow.bronze.sanitize import sanitize_url
 
@@ -1704,10 +1703,10 @@ def run_build(
     """Build gold-layer modelling-ready datasets from silver.
 
     Unknown gold dataset names are skipped (a ``DatasetResult`` with status
-    ``"failed"`` and an ``"Unknown gold dataset"`` error) — preserving cli.build,
-    which echoes the unknown line and continues. A builder exception is also
-    recorded as a failed result and the loop continues; the adapter decides the
-    exit code (cli.build historically exits 0 even on builder failure).
+    ``"failed"`` and an ``"Unknown gold dataset"`` error), so the remaining
+    targets still build. A builder exception is also recorded as a failed result
+    and the loop continues; the CLI exits 1 once the loop ends if any target
+    failed.
 
     Args:
         ctx: Open pipeline context.

@@ -334,11 +334,13 @@ def build(
         results = runner.run_build(ctx, targets, start_dt, end_dt)
     runner.refresh_views(settings)
 
-    # build historically NEVER aborts: an unknown dataset and a builder failure
-    # both print a line and the command STILL exits 0 with "Build complete".
-    # Preserve that (the runner records both as 'failed' results; the adapter
-    # decides — and here it does NOT translate to a non-zero exit).
     _echo_build_results(results)
+    failures = [r for r in results if r.status == "failed"]
+    if failures:
+        typer.echo(f"Build failed for {len(failures)} dataset(s):", err=True)
+        for r in failures:
+            typer.echo(f"  {r.dataset}: {r.error}", err=True)
+        raise typer.Exit(1)
     typer.echo("Build complete")
 
 
@@ -422,7 +424,7 @@ def backfill(
     runner.refresh_views(settings)
 
     # R3-F03: surface any failed ingest/transform step and exit non-zero, mirroring
-    # cli.ingest / scripts/backfill.py. Only per-dataset step failures are echoed
+    # cli.ingest. Only per-dataset step failures are echoed
     # here; an infra exception outside the runner's per-dataset guards still
     # propagates and exits non-zero, just without this summary.
     failures = [r for r in all_results if r.status == "failed"]
@@ -504,8 +506,8 @@ def pipeline(
     views once after it closes. Inlining the stages (rather than delegating to a
     runner orchestration) is deliberate: it preserves the abort-on-bronze-failure
     short-circuit and the exact per-stage echo ordering. The old form re-resolved
-    dates 2-3x across separate sub-command calls. A bronze (or silver) failure
-    aborts before the completion marker and exits 1.
+    dates 2-3x across separate sub-command calls. A bronze, silver or gold
+    failure exits 1 without the completion marker.
     """
     from gridflow.config.settings import load_settings
     from gridflow.utils.logging import setup_logging
@@ -532,6 +534,7 @@ def pipeline(
     # ECHO sequence below reproduces the old delegated output exactly: each
     # stage's per-dataset lines, then that stage's terminal status line, in order.
     silver_failures: list[DatasetResult] = []
+    gold_failures: list[DatasetResult] = []
     with runner.build_context(settings) as ctx:
         # Bronze
         typer.echo("\n--- Bronze (ingest) ---")
@@ -567,15 +570,23 @@ def pipeline(
                 typer.echo("\n--- Gold (build) ---")
                 gold_results = runner.run_build(ctx, [gold_dataset], start_dt, end_dt)
                 _echo_build_results(gold_results)
-                typer.echo("Build complete")
+                gold_failures = [r for r in gold_results if r.status == "failed"]
+                if not gold_failures:
+                    typer.echo("Build complete")
 
     # Connection closed; refresh once (transform/the completed pipeline always
-    # refreshed). A silver failure refreshed-then-exited in the old form — match.
+    # refreshed). A silver or gold failure refreshes first, then exits 1: the
+    # silver written before a gold failure must still become queryable.
     runner.refresh_views(settings)
     if silver_failures:
         typer.echo(f"Transform failed for {len(silver_failures)} dataset(s):", err=True)
         for r in silver_failures:
             typer.echo(f"  {source}/{r.dataset}: {r.error}", err=True)
+        raise typer.Exit(1)
+    if gold_failures:
+        typer.echo(f"Build failed for {len(gold_failures)} dataset(s):", err=True)
+        for r in gold_failures:
+            typer.echo(f"  {r.dataset}: {r.error}", err=True)
         raise typer.Exit(1)
     typer.echo("\n=== Pipeline complete ===")
 

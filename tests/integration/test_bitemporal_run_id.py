@@ -141,6 +141,8 @@ def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
+    """--reingest takes available_at from the bronze sidecar and still stamps
+    the transform run's id on every silver row."""
     paths = _isolated_env(tmp_path, monkeypatch)
     sidecar_time = datetime(2024, 1, 16, 9, 30, tzinfo=UTC)
     _write_fuelhh_bronze(paths.data_dir, fetched_at=sidecar_time)
@@ -164,64 +166,15 @@ def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
     silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
     assert set(silver["available_at"].to_list()) == {sidecar_time}
 
-
-def test_script_silver_step_threads_run_id_and_reingest(
-    tmp_path: Path,
-    monkeypatch,
-) -> None:
-    """CH4-01: the script's silver step is now ``runner.run_transform`` (the
-    duplicated ``run_pipeline.run_silver`` was deduplicated into the shared
-    runner). Assert the runner threads ``run_id`` + ``reingest`` identically."""
-    from gridflow.config.settings import load_settings
-    from gridflow.pipeline import runner as pipeline_runner
-
-    paths = _isolated_env(tmp_path, monkeypatch)
-    sidecar_time = datetime(2024, 1, 16, 10, 15, tzinfo=UTC)
-    _write_fuelhh_bronze(paths.data_dir, fetched_at=sidecar_time)
-
-    from gridflow.storage.duckdb import get_connection, init_catalogue
-
-    settings = load_settings()
-    pipeline_runner.import_transformers()
-    init_catalogue(paths.duckdb_path, paths.data_dir)
-    con = get_connection(paths.duckdb_path)
-    try:
-        start_dt = datetime(2024, 1, 15, tzinfo=UTC)
-        ctx = pipeline_runner.PipelineContext(con=con, settings=settings)
-        pipeline_runner.run_transform(
-            ctx,
-            "elexon",
-            ["fuelhh"],
-            start_dt,
-            start_dt,
-            reingest=True,
-        )
-    finally:
-        con.close()
-
-    silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
-    run_ids = set(silver["source_run_id"].to_list())
-    assert len(run_ids) == 1
-    assert set(silver["available_at"].to_list()) == {sidecar_time}
-
     con = get_connection(paths.duckdb_path, read_only=True)
     try:
         runs = con.execute(
             """
-            SELECT run_id, source, dataset, operation, status
-            FROM pipeline_runs
+            SELECT run_id FROM pipeline_runs
             WHERE source = 'elexon' AND dataset = 'fuelhh' AND operation = 'transform'
             """
         ).fetchall()
     finally:
         con.close()
-
-    assert runs == [
-        (
-            next(iter(run_ids)),
-            "elexon",
-            "fuelhh",
-            "transform",
-            "completed_with_warnings",
-        )
-    ]
+    assert len(runs) == 1
+    assert set(silver["source_run_id"].to_list()) == {runs[0][0]}

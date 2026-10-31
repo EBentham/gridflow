@@ -1,10 +1,8 @@
 """CH4-01 golden characterization tests — the behavior oracle for the runner refactor.
 
 These pin the *observable* CLI behavior (stdout/stderr text + exit code) of the
-five pipeline commands (``ingest``/``transform``/``build``/``pipeline``/``backfill``)
-plus a ``run_pipeline.main()`` smoke test. They MUST pass on the pre-refactor code
-and stay green after ``cli`` commands become thin adapters over
-``gridflow.pipeline.runner`` — equivalence is the whole point.
+five pipeline commands (``ingest``/``transform``/``build``/``pipeline``/``backfill``),
+which are thin adapters over ``gridflow.pipeline.runner``.
 
 No HTTP: the connector is replaced in the registry by a minimal async-CM fake;
 transformers run against tiny on-disk bronze fixtures. Gold SQL view registration
@@ -302,31 +300,30 @@ def test_build_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     assert "Build complete" in result.output
 
 
-def test_build_failure_exits_0_and_prints_complete(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """LOAD-BEARING: a builder failure does NOT abort build today — it prints the
-    FAILED line, logs, and STILL exits 0 with ``Build complete`` (cli.build:373-380
-    catches-and-continues, never raises Exit). This pins the exit code so the
-    runner refactor must NOT change it to 1."""
+class _BoomBuilder:
+    """A gold builder whose run always raises."""
+
+    def __init__(self, data_dir: Path) -> None:
+        pass
+
+    def run(self, start: date, end: date) -> int:
+        raise RuntimeError("simulated build failure")
+
+
+def test_build_failure_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A builder failure exits 1 without ``Build complete``, so a scheduler or
+    shell chain sees the broken gold build (it used to exit 0)."""
     _isolated_env(tmp_path, monkeypatch)
-
-    class _BoomBuilder:
-        def __init__(self, data_dir: Path) -> None:
-            pass
-
-        def run(self, start: date, end: date) -> int:
-            raise RuntimeError("simulated build failure")
-
     monkeypatch.setattr(
         "gridflow.gold.system_marginal_price.SystemMarginalPriceBuilder", _BoomBuilder
     )
     result = runner.invoke(
         app, ["build", "system_marginal_price", "--start", "2026-05-01", "--end", "2026-05-01"]
     )
-    assert result.exit_code == 0, result.output
+    assert result.exit_code == 1, result.output
     assert "system_marginal_price: FAILED - simulated build failure" in result.output
-    assert "Build complete" in result.output
+    assert "Build failed for 1 dataset(s):" in result.output
+    assert "Build complete" not in result.output
 
 
 def test_build_no_target_bad_parameter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -337,16 +334,16 @@ def test_build_no_target_bad_parameter(tmp_path: Path, monkeypatch: pytest.Monke
     assert "Specify a gold dataset name or use --all" in _plain(result.output)
 
 
-def test_build_unknown_dataset_skips(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """An unknown gold dataset prints the unknown line and still exits 0
-    (cli.build:363-365)."""
+def test_build_unknown_dataset_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An unknown gold dataset prints the unknown line and exits 1: the runner
+    records it as a failed result."""
     _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(
         app, ["build", "no_such_gold", "--start", "2026-05-01", "--end", "2026-05-01"]
     )
-    assert result.exit_code == 0, result.output
+    assert result.exit_code == 1, result.output
     assert "Unknown gold dataset: no_such_gold" in result.output
-    assert "Build complete" in result.output
+    assert "Build complete" not in result.output
 
 
 # --------------------------------------------------------------------------- #
@@ -415,6 +412,45 @@ def test_pipeline_with_gold(
     assert "system_marginal_price: 1 rows built" in result.output
     assert "Build complete" in result.output
     assert "=== Pipeline complete ===" in result.output
+
+
+def test_pipeline_gold_failure_exits_1(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """A failed --gold build after a good bronze and silver exits 1 without
+    ``Build complete`` or the completion marker, and still refreshes the views
+    once for the silver just written."""
+    from gridflow.pipeline import runner as pipeline_runner
+
+    data_dir = tmp_path / "data"
+    _isolated_env(tmp_path, monkeypatch)
+    _write_fuelhh_bronze(data_dir)
+    monkeypatch.setattr(
+        "gridflow.gold.system_marginal_price.SystemMarginalPriceBuilder", _BoomBuilder
+    )
+    refreshes: list[object] = []
+    monkeypatch.setattr(pipeline_runner, "refresh_views", refreshes.append)
+    result = runner.invoke(
+        app,
+        [
+            "pipeline",
+            "elexon",
+            "fuelhh",
+            "--start",
+            "2024-01-15",
+            "--end",
+            "2024-01-15",
+            "--gold",
+            "system_marginal_price",
+        ],
+    )
+    assert result.exit_code == 1, result.output
+    assert "Transform complete" in result.output
+    assert "system_marginal_price: FAILED - simulated build failure" in result.output
+    assert "Build failed for 1 dataset(s):" in result.output
+    assert "Build complete" not in result.output
+    assert "=== Pipeline complete ===" not in result.output
+    assert len(refreshes) == 1
 
 
 def test_pipeline_bronze_failure_aborts(
@@ -562,51 +598,6 @@ def test_backfill_chunk_ingest_does_not_write_watermark(
 
 
 # --------------------------------------------------------------------------- #
-# run_pipeline.py smoke (script entrypoint had NO tests)
-# --------------------------------------------------------------------------- #
-
-
-def test_run_pipeline_main_smoke(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
-) -> None:
-    """scripts/run_pipeline.py main() runs bronze+silver end-to-end without error
-    on real bronze and a stubbed connector. Smoke only — run_pipeline behavior is
-    intentionally allowed to CHANGE in the refactor (exits, redaction, refresh),
-    so this asserts a clean exit, not exact stdout."""
-    import importlib.util
-    from pathlib import Path as _Path
-
-    data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
-    _write_fuelhh_bronze(data_dir)
-
-    script_path = _Path(__file__).parent.parent.parent / "scripts" / "run_pipeline.py"
-    spec = importlib.util.spec_from_file_location("run_pipeline_smoke", script_path)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    monkeypatch.setattr(
-        "sys.argv",
-        [
-            "run_pipeline.py",
-            "--step",
-            "silver",
-            "--source",
-            "elexon",
-            "--dataset",
-            "fuelhh",
-            "--start",
-            "2024-01-15",
-            "--end",
-            "2024-01-15",
-        ],
-    )
-    # Should complete without raising (silver step over real bronze).
-    module.main()
-
-
-# --------------------------------------------------------------------------- #
 # runner.run_backfill — multi-chunk connection reuse on a real temp DuckDB
 # --------------------------------------------------------------------------- #
 
@@ -681,32 +672,3 @@ def test_run_backfill_chunk_ingest_does_not_advance_watermark(
         con.close()
     assert row is not None
     assert row[0].replace(tzinfo=UTC) == existing
-
-
-def test_backfill_script_in_process(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
-) -> None:
-    """scripts/backfill.py runs in-process (no subprocess) over multiple chunks
-    and exits cleanly on a stubbed connector + empty bronze."""
-    import importlib.util
-    from datetime import date as _date
-    from pathlib import Path as _Path
-
-    _isolated_env(tmp_path, monkeypatch)
-
-    script_path = _Path(__file__).parent.parent.parent / "scripts" / "backfill.py"
-    spec = importlib.util.spec_from_file_location("backfill_smoke", script_path)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    # Should complete without raising SystemExit (all chunks succeed: empty fetch
-    # + empty-bronze transform are both non-failing).
-    module.backfill(
-        source="elexon",
-        dataset="fuelhh",
-        start=_date(2024, 1, 15),
-        end=_date(2024, 1, 18),
-        chunk_days=1,
-    )
-    assert len(_FakeConnector.calls) == 3

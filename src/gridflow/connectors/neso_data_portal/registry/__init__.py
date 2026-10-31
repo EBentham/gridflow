@@ -3,8 +3,9 @@
 The registry is the single source of truth for which gridflow dataset key
 (a *family*) owns which CKAN resource, how each resource is dispositioned, and
 the per-family download contract. It was seeded once from the ratified dataset
-matrix by ``scripts/seed_neso_registry.py``; the JSON files beside this module
-are the artifact, edited by registry commits from then on.
+matrix by a one-shot script in commit ``d7cf513`` (deleted since); the JSON
+files beside this module are the artifact, edited by registry commits from then
+on.
 
 Layout. Every ``*.json`` here whose name does not start with ``_`` is one
 package. The three ``_``-prefixed ledgers are read by their own loaders and are
