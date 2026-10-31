@@ -1704,10 +1704,10 @@ def run_build(
     """Build gold-layer modelling-ready datasets from silver.
 
     Unknown gold dataset names are skipped (a ``DatasetResult`` with status
-    ``"failed"`` and an ``"Unknown gold dataset"`` error) — preserving cli.build,
-    which echoes the unknown line and continues. A builder exception is also
-    recorded as a failed result and the loop continues; the adapter decides the
-    exit code (cli.build historically exits 0 even on builder failure).
+    ``"failed"`` and an ``"Unknown gold dataset"`` error), so the remaining
+    targets still build. A builder exception is also recorded as a failed result
+    and the loop continues; the CLI exits 1 once the loop ends if any target
+    failed.
 
     Args:
         ctx: Open pipeline context.
