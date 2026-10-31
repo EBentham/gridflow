@@ -35,7 +35,7 @@ in-code header contracts and `_select_resource` unchanged.
 
 **Registry.** `connectors/neso_data_portal/registry/<package>.json`, one file per package,
 shipped as package data; seeded once from the snapshot of record and the ratified dataset
-matrix by `scripts/seed_neso_registry.py` (310 families: 275 tabular, 35 files). Every
+matrix by a one-shot seeder script in commit `d7cf513`, deleted since (310 families: 275 tabular, 35 files). Every
 resource carries exactly one disposition: SILVER (its own tabular family), DOC, GIS, or HOLD
 (XLSX/XLSM/ZIP and the 39 CSV-declared ZIP bodies of `system-frequency-data`, all for
 X-R; the two HOLD(N) packages are held at package level). `endpoints.FAMILIES`,
