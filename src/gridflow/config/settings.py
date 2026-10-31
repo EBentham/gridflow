@@ -140,12 +140,6 @@ class PipelineSettings(BaseSettings):
     # Flip to True only when a downstream tool genuinely needs the live sidecar.
     write_silver_csv: bool = False
 
-    # Secrets (loaded from .env)
-    elexon_api_key: str = Field(default="")
-    entsoe_api_key: str = Field(default="")
-    entsog_api_key: str = Field(default="")
-    gie_api_key: str = Field(default="")
-
     @model_validator(mode="after")
     def _resolve_paths(self) -> PipelineSettings:
         if not self.data_dir.is_absolute():
@@ -276,19 +270,5 @@ def load_settings() -> GridflowConfig:
     sources: dict[str, SourceConfig] = {}
     for name, src_data in sources_data.get("sources", {}).items():
         sources[name] = SourceConfig(**src_data)
-
-    # Resolve API keys from pipeline settings into source configs.
-    # AGSI+ and ALSI are two GIE endpoints sharing one credential, so both
-    # source configs map to the single gie_api_key field.
-    key_map = {
-        "elexon": pipeline.elexon_api_key,
-        "entsoe": pipeline.entsoe_api_key,
-        "entsog": pipeline.entsog_api_key,
-        "gie_agsi": pipeline.gie_api_key,
-        "gie_alsi": pipeline.gie_api_key,
-    }
-    for name, key in key_map.items():
-        if name in sources and key:
-            sources[name].api_key = key
 
     return GridflowConfig(pipeline=pipeline, quality=quality, sources=sources)

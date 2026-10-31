@@ -765,7 +765,7 @@ sources:
     timeout: 120
     max_retries: 3
     # Keyless: 24 live probes returned 2xx and NESO's guidance mentions no API
-    # key, so there is no key_map entry and no PipelineSettings field (D-29).
+    # key, so api_key_env is empty (D-29).
     datasets:
       # >>> generated: neso_data_portal datasets
       daily_wind_availability:
