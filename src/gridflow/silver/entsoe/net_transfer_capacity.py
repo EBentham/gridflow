@@ -31,7 +31,7 @@ class NetTransferCapacityTransformer(BaseSilverTransformer):
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR: window-bounded
     single Point, curveType A03 (R3-RESEARCH.md:53); see
-    ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION``."""
+    ADR-026 Appendix A."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

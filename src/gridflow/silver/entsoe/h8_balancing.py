@@ -201,7 +201,7 @@ class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
     )
     # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, lower edge
     # coincides exactly with the request start (R3-RESEARCH.md:56, B-7);
-    # see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -265,7 +265,7 @@ class ProcuredBalancingCapacityTransformer(_H8BalancingTransformer):
     unique_subset = ("timestamp_utc", "area_code", "document_mrid", "series_mrid")
     # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, CET-boundary
     # over-span, same shape as the already-proven A44 case (R3-RESEARCH.md:55,
-    # B-7); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # B-7); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 

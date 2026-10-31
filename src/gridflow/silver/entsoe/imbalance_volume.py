@@ -32,7 +32,7 @@ class ImbalanceVolumeTransformer(BaseSilverTransformer):
     """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
     populated data, PT15M (R3-RESEARCH.md:68); window-bound comparison not
     shown in the abridged vault text, see
-    ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION``."""
+    ADR-026 Appendix A."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)

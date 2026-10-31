@@ -137,7 +137,7 @@ class DcLinkIntradayTransferLimitsTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
     # to the directly-verified quantity family (R3-RESEARCH.md:57); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -145,7 +145,7 @@ class CommercialSchedulesTransformer(_H6QuantityTransformer):
     dataset = "commercial_schedules"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR 2026-05-06, window-
-    # bounded (R3-RESEARCH.md:51); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # bounded (R3-RESEARCH.md:51); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -156,7 +156,7 @@ class RedispatchingCrossBorderTransformer(_H6QuantityTransformer):
     dataset = "redispatching_cross_border"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:58); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:58); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -164,7 +164,7 @@ class RedispatchingInternalTransformer(_H6QuantityTransformer):
     dataset = "redispatching_internal"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:59); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:59); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -172,7 +172,7 @@ class CountertradingTransformer(_H6QuantityTransformer):
     dataset = "countertrading"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:60); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:60); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -180,7 +180,7 @@ class OfferedTransferCapacityContinuousTransformer(_H6QuantityTransformer):
     dataset = "offered_transfer_capacity_continuous"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:61); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:61); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -189,7 +189,7 @@ class OfferedTransferCapacityImplicitTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault + live probe real EMPTY across 3
     # independent probes (R3-RESEARCH.md:62); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -197,7 +197,7 @@ class OfferedTransferCapacityExplicitTransformer(_H6QuantityTransformer):
     dataset = "offered_transfer_capacity_explicit"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:63); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:63); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -206,7 +206,7 @@ class TransferCapacityUseTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault + 2 live probes real EMPTY, quantity
     # schema (R3-RESEARCH.md:64); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -215,7 +215,7 @@ class TotalNominatedCapacityTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR 2026-05-06, window
     # matches exactly (R3-RESEARCH.md:52); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -224,7 +224,7 @@ class TotalCapacityAllocatedTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY, sister to
     # total_nominated_capacity (R3-RESEARCH.md:65); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -233,7 +233,7 @@ class NetPositionsTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, live probe FR 2026-06-01, window matches
     # exactly (R3-RESEARCH.md:54); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 

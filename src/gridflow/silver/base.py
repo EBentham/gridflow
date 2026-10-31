@@ -705,9 +705,9 @@ class BaseSilverTransformer(ABC):
     partition's own request at all (the vendor's measured CET/CEST
     delivery-day over-span, S1.4), so there is no ownership question and no
     neighbour-durability proof to make before excluding it — it is always
-    dropped, counted, and logged. See ``silver/entsoe/_event_window.py``
-    (``EVENT_WINDOW_CLASSIFICATION``) for the full dataset -> verdict ->
-    citation -> transformer-family map and the exemption table with reasons.
+    dropped, counted, and logged. See ADR-026 Appendix A for each dataset's
+    verdict and citation, and ``silver/entsoe/_event_window.py`` for the
+    exemption table with reasons.
     **B4 (N-9): the opt-in set is R2-A's original 7 plus B4's 19
     evidence-classified FILTER_SAFE datasets (R3-RESEARCH.md Sec 1.1). A
     `TODO`-marked minority remains genuinely unclassified, so F-10 and the

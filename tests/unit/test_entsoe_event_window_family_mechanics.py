@@ -11,7 +11,7 @@ plus the five single-class families added in T5 (``cross_border_flows``,
 ``activated_balancing_prices``). These tests exercise both request
 boundaries in the mechanics layer; they cannot and do not upgrade the
 *vendor* evidence recorded in
-``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION`` (Sec 9 step
+ADR-026 Appendix A (Sec 9 step
 5) -- some opted-in families rest on an untested boundary or a sample never
 interval-compared, and this file's job is only to pin the filter mechanic,
 not the vendor's real-world behaviour.

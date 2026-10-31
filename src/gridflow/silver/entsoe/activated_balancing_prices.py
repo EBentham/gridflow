@@ -34,7 +34,7 @@ class ActivatedBalancingPricesTransformer(BaseSilverTransformer):
     populated Balancing_MarketDocument, processType=A16 Realised
     (R3-RESEARCH.md:66); window-bound comparison not shown in the abridged
     vault text, see
-    ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION``."""
+    ADR-026 Appendix A."""
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
