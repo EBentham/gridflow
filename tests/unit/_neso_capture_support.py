@@ -49,23 +49,27 @@ async def capture_legacy(
 
 
 def record_sends(monkeypatch: pytest.MonkeyPatch) -> list[int]:
-    """Stamp a tag on every request handed to ``_send``; the tags, in order.
+    """Stamp a fresh tag on every attempt ``_send`` makes; the tags, in order.
 
     The tag rides ``request.extensions``, which httpx carries to the transport but
     never puts on the wire. respx records a copy of each request, so object
-    identity cannot tell which requests came through ``_send``.
+    identity cannot tell which requests came through ``_send``. The stamp sits
+    inside ``_send``'s own retry policy (the same ``Retrying`` object), so each
+    retried attempt carries its own tag.
     """
     sent: list[int] = []
-    send = NesoDataPortalConnector._send
+    retrying = NesoDataPortalConnector._send.retry  # type: ignore[attr-defined]
+    attempt = NesoDataPortalConnector._send.__wrapped__  # type: ignore[attr-defined]
 
     async def _recording(
         self: NesoDataPortalConnector, request: httpx.Request, *args: Any, **kwargs: Any
     ) -> httpx.Response:
         request.extensions[_SENT] = len(sent)
         sent.append(len(sent))
-        return await send(self, request, *args, **kwargs)
+        response: httpx.Response = await attempt(self, request, *args, **kwargs)
+        return response
 
-    monkeypatch.setattr(NesoDataPortalConnector, "_send", _recording)
+    monkeypatch.setattr(NesoDataPortalConnector, "_send", retrying.wraps(_recording))
     return sent
 
 

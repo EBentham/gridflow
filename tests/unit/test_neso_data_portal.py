@@ -1017,6 +1017,26 @@ class TestTransportMarkerProof:
         assert unsent(recorded, sends) == [], "a request reached the transport outside _send"
         assert len(sends) == len(recorded), "a send never reached the transport"
 
+    @pytest.mark.usefixtures("no_retry_backoff")
+    def test_a_retried_send_is_one_attempt_per_tag(
+        self, router: respx.MockRouter, sends: list[int]
+    ) -> None:
+        """A 503 then 200 on ``package_show`` is two attempts inside ``_send``, each
+        tagged, so a legitimate retry is never reported as a bypass."""
+        router.get(url__startswith=PACKAGE_SHOW_URL).mock(
+            side_effect=[httpx.Response(503), httpx.Response(200, json=_package_show_payload())]
+        )
+        router.get(url__startswith=DAILY_WIND_RESOURCE_URL).mock(
+            return_value=httpx.Response(200, content=DAILY_WIND_CSV)
+        )
+
+        _run_capture(_source_config())
+
+        recorded = [call.request for call in router.calls]
+        assert len(recorded) == 3, "package_show twice, then the file"
+        assert unsent(recorded, sends) == []
+        assert len(sends) == len(recorded)
+
     def test_the_recorded_traffic_covers_all_five_inventory_kinds(
         self, router: respx.MockRouter
     ) -> None:
