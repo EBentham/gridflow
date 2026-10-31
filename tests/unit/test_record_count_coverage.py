@@ -61,11 +61,7 @@ REGISTRY: dict[str, _RegistryEntry] = {
             "HTTP 404 + 'No result found' body, already excluded by http_status < 400"
         ),
     ),
-    "gie/client.py:_fetch_paginated": _RegistryEntry(
-        "EXEMPT",
-        1,
-        reason="module parsers run on other paths; no parse at this construction site",
-    ),
+    "gie/client.py:_fetch_paginated": _RegistryEntry("STAMPED", 1),
     "gie/client.py:_fetch_country": _RegistryEntry(
         "EXEMPT",
         1,
