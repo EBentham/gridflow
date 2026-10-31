@@ -232,6 +232,12 @@ def parse_timeseries_xml(
 
     records: list[dict[str, Any]] = []
     document_metadata = _root_document_metadata(root)
+    # Balancing_MarketDocument replies (A15 procured capacity, A24 aggregated
+    # bids, A86 current balancing state) carry the area once, beside the root,
+    # and never inside a TimeSeries; a series-level area still wins.
+    document_area_domain = _first_child_text(
+        root, {"area_Domain.mRID", "Area_Domain.mRID", "area_domain.mRID"}
+    )
 
     root_name = _strip_ns(root.tag)
     series_tags = _SERIES_TAGS_BY_DOC_ROOT.get(root_name, _DEFAULT_SERIES_TAGS)
@@ -345,6 +351,7 @@ def parse_timeseries_xml(
             elif tag in {
                 "Type_MarketAgreement.Type",
                 "type_MarketAgreement.Type",
+                "type_MarketAgreement.type",
                 "MarketAgreement.Type",
                 "marketAgreement.Type",
             }:
@@ -371,7 +378,7 @@ def parse_timeseries_xml(
                 for sub in child:
                     if _strip_ns(sub.tag) == "psrType":
                         production_type = (sub.text or "").strip()
-            elif tag == "generatingUnit_PSRType.psrType":
+            elif tag in {"generatingUnit_PSRType.psrType", "mktPSRType.psrType"}:
                 production_type = (child.text or "").strip()
             elif tag == "registeredResource.mRID":
                 unit_mrid = (child.text or "").strip()
@@ -478,7 +485,7 @@ def parse_timeseries_xml(
                 "out_domain": out_domain,
                 "production_type": production_type,
                 "control_area_domain": control_area_domain,
-                "area_domain": area_domain,
+                "area_domain": area_domain or document_area_domain,
                 "connecting_domain": connecting_domain,
                 "acquiring_domain": acquiring_domain,
                 "business_type": business_type,
@@ -503,6 +510,7 @@ def parse_timeseries_xml(
             def build_record(
                 timestamp: datetime,
                 value: float,
+                price: float | None,
                 prefix: dict[str, Any] = record_prefix,
                 suffix: dict[str, Any] = record_suffix,
             ) -> dict[str, Any]:
@@ -511,6 +519,7 @@ def parse_timeseries_xml(
                     "timestamp_utc": timestamp,
                     "value": value,
                     **suffix,
+                    "price_amount": price,
                 }
 
             declared_points: list[tuple[int, dict[str, Any]]] = []
@@ -519,6 +528,7 @@ def parse_timeseries_xml(
                     continue
                 position: int | None = None
                 value: float | None = None
+                point_price: float | None = None
                 accepted_hits = 0  # D-11: occurrences, not distinct names
                 for child in point_el:
                     tag = _strip_ns(child.tag)
@@ -536,6 +546,9 @@ def parse_timeseries_xml(
                             accepted_hits += 1  # occurrences, not distinct names
                         with contextlib.suppress(ValueError):
                             value = float(child.text or "nan")
+                    if value_tag != "price.amount" and _matches_value_tag(tag, "price.amount"):
+                        with contextlib.suppress(ValueError):
+                            point_price = float(child.text or "nan")
 
                 if value_tag_ambiguity_possible and accepted_hits > 1:
                     logger.error(
@@ -559,7 +572,7 @@ def parse_timeseries_xml(
                 # rather than timedelta multiplication so monthly/yearly
                 # bucket alignment matches the vendor's documented buckets.
                 timestamp = _point_timestamp(start_dt, position, resolution_code, resolution)
-                declared_points.append((position, build_record(timestamp, value)))
+                declared_points.append((position, build_record(timestamp, value, point_price)))
 
             if a03_as_steps:
                 records.extend(

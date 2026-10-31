@@ -682,11 +682,15 @@ class EntsoeTransmissionMarketAmount(BaseSchema):
 
 
 class EntsoeBalancingState(BaseSchema):
-    """Silver-layer schema for current balancing state quantities (A86/B33)."""
+    """Silver-layer schema for current balancing state quantities (A86/B33).
+
+    One row per minute, area and direction (A01 up, A02 down).
+    """
 
     timestamp_utc: datetime
     area_code: str
     quantity_mw: float
+    direction: str = ""
     business_type: str = "B33"
     resolution: str = ""
     published_at: datetime | None = None
@@ -707,6 +711,8 @@ class EntsoeBalancingEnergyBid(BaseSchema):
     timestamp_utc: datetime
     area_code: str
     quantity_mw: float
+    energy_price: float | None = None  # A37 only; absent from aggregated bids
+    currency_unit: str = ""
     business_type: str = ""
     bid_mrid: str = ""
     direction: str = ""
@@ -726,13 +732,25 @@ class EntsoeBalancingEnergyBid(BaseSchema):
 
 
 class EntsoeBalancingCapacity(BaseSchema):
-    """Silver-layer schema for H8 single-area balancing capacity quantities."""
+    """Silver-layer schema for H8 single-area balancing capacity quantities.
+
+    One row per procured series (offer) per point; procured MW for an area is
+    the sum over series, not any single row.
+    """
 
     timestamp_utc: datetime
     area_code: str
     quantity_mw: float
+    procurement_price: float | None = None
+    currency_unit: str = ""
     market_agreement_type: str = ""
+    direction: str = ""
+    standard_market_product: str = ""
+    original_market_product: str = ""
+    psr_type: str = ""
     business_type: str = ""
+    document_mrid: str = ""
+    series_mrid: str = ""
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
