@@ -190,20 +190,3 @@ def sample_raw_response(sample_elexon_response_data: dict) -> RawResponse:
         total_pages=1,
         http_status=200,
     )
-
-
-@pytest.fixture
-def elexon_source_config() -> SourceConfig:
-    """Elexon source config for testing."""
-    return SourceConfig(
-        base_url="https://data.elexon.co.uk/bmrs/api/v1",
-        api_key="test-key",
-        api_key_header="x-api-key",
-        rate_limit_per_second=100,
-        timeout=5,
-        datasets={
-            "system_prices": DatasetConfig(
-                endpoint="/balancing/settlement/system-prices",
-            ),
-        },
-    )
