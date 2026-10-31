@@ -18,6 +18,7 @@ from gridflow.storage.paths import PathBuilder
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gridflow.silver.latest_views import LatestViewSpec
     from gridflow.silver.owned_relations import RegisteredRelationsTransformer
 
 logger = logging.getLogger(__name__)
@@ -180,6 +181,7 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
     # Track which source(s) own each dataset NAME so the alias pass can tell
     # single-source names (safe to alias) from collision names (must NOT).
     dataset_sources: dict[str, set[str]] = {}
+    latest_bases: list[tuple[str, LatestViewSpec | None]] = []
     if silver_root.exists():
         for source_dir in silver_root.iterdir():
             if not source_dir.is_dir():
@@ -193,27 +195,21 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
                     continue
                 view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
                 pattern = str(dataset_dir / _SAFE_PARQUET_GLOB).replace("\\", "/")
-                _try_create_view(con, view_name, pattern)
                 spec = LATEST_VIEW_SPECS.get((source_dir.name, dataset_dir.name))
-                if spec is not None and _view_exists(con, view_name):
-                    # Order/rank terms adapt to the view's actual columns (live-feed
-                    # system_prices has no run_type; legacy files lack available_at).
-                    latest_name = f"{view_name}_latest"
-                    sql = latest_view_sql(
-                        view_name,
-                        latest_name,
-                        spec,
-                        available_columns=_view_columns(con, view_name),
-                    )
-                    if sql is not None:
-                        con.execute(sql)
-                    else:
-                        # A previously-registered projection that can no longer be
-                        # built must not linger as a binder-error trap.
-                        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
+                if not _try_create_view(con, view_name, pattern):
+                    # The failed CREATE OR REPLACE leaves an earlier init's view in
+                    # place, bound to a glob that no longer matches (a pruned
+                    # dataset keeps its directory); its _latest would then abort
+                    # init on the dead glob.
+                    for name in (f"{view_name}_latest", view_name):
+                        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(name)}")
+                elif spec is not None:
+                    latest_bases.append((view_name, spec))
 
     if owners:
-        _register_owned_relations(con, silver_root.parent, owners)
+        latest_bases += _register_owned_relations(con, silver_root.parent, owners)
+
+    _register_latest_views(con, latest_bases)
 
     if silver_root.exists():
         _register_silver_aliases(con, dataset_sources)
@@ -281,15 +277,20 @@ def _register_owned_relations(
     con: duckdb.DuckDBPyConnection,
     data_dir: Path,
     owners: dict[tuple[str, str], type[RegisteredRelationsTransformer]],
-) -> None:
+) -> list[tuple[str, LatestViewSpec | None]]:
     """Register every owner's relations, unconditionally (ADR-034 I-1).
 
     Support relations first (a ``_latest`` may read them), once per name; then
-    per owner its base view and its ``_latest``. Each base or support view is
+    per owner its base view; :func:`_register_latest_views` adds the ``_latest``
+    views afterwards. Each base or support view is
     over its Parquet when any exists, else typed-empty. Relation EXISTENCE has
     one input, registration; what the relations return is the selection over
     whatever silver and the ledger hold, and any disagreement between the two
     is reconcile's to report, never the catalogue's.
+
+    Returns:
+        Each owner's base view name with its ``_latest`` spec, ``None`` when it
+        has none, in registration order.
     """
     paths = PathBuilder(data_dir)
     seen: set[str] = set()
@@ -299,22 +300,49 @@ def _register_owned_relations(
                 seen.add(support.name)
                 _register_view_or_empty(con, support.name, support.directory, support.columns)
 
+    bases: list[tuple[str, LatestViewSpec | None]] = []
     for source, dataset in sorted(owners):
         cls = owners[(source, dataset)]
         view_name = f"silver_{source}_{dataset}"
         _register_view_or_empty(
             con, view_name, paths.silver_dir(source, dataset), cls.output_columns()
         )
+        bases.append((view_name, LATEST_VIEW_SPECS.get((source, dataset))))
+    return bases
+
+
+def _register_latest_views(
+    con: duckdb.DuckDBPyConnection, bases: Sequence[tuple[str, LatestViewSpec | None]]
+) -> None:
+    """Create or drop each base view's ``_latest``, in order, from one column snapshot.
+
+    One unfiltered ``information_schema.columns`` read replaces a filtered read
+    per view: each filtered read enumerated the whole catalogue, so init time
+    grew with the view count. Every base and support view a ``_latest`` reads
+    is registered before this runs. A base view that is absent, or has no spec,
+    gets no ``_latest``.
+    """
+    columns: dict[str, set[str]] = {}
+    for table_name, column_name in con.execute(
+        "SELECT c.table_name, c.column_name FROM information_schema.columns c "
+        "JOIN information_schema.views v "
+        "ON v.table_schema = c.table_schema AND v.table_name = c.table_name "
+        "WHERE c.table_schema = 'main'"
+    ).fetchall():
+        columns.setdefault(table_name, set()).add(column_name)
+    for view_name, spec in bases:
         latest_name = f"{view_name}_latest"
-        spec = LATEST_VIEW_SPECS.get((source, dataset))
+        available = columns.get(view_name)
         sql = None
-        if spec is not None and _view_exists(con, view_name):
-            sql = latest_view_sql(
-                view_name, latest_name, spec, available_columns=_view_columns(con, view_name)
-            )
+        if spec is not None and available is not None:
+            # Order/rank terms adapt to the view's actual columns (live-feed
+            # system_prices has no run_type; legacy files lack available_at).
+            sql = latest_view_sql(view_name, latest_name, spec, available_columns=available)
         if sql is not None:
             con.execute(sql)
         else:
+            # A previously-registered projection that can no longer be built
+            # must not linger as a binder-error trap.
             con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
 
@@ -400,25 +428,6 @@ def _quote_identifier(name: str) -> str:
     name safe and closes the local injection surface.
     """
     return '"' + name.replace('"', '""') + '"'
-
-
-def _view_exists(con: duckdb.DuckDBPyConnection, view_name: str) -> bool:
-    """Return whether a view is registered in DuckDB's main schema."""
-    row = con.execute(
-        "SELECT 1 FROM information_schema.views WHERE table_schema = ? AND table_name = ?",
-        ["main", view_name],
-    ).fetchone()
-    return row is not None
-
-
-def _view_columns(con: duckdb.DuckDBPyConnection, view_name: str) -> set[str]:
-    """Return the column names of a registered view."""
-    rows = con.execute(
-        "SELECT column_name FROM information_schema.columns "
-        "WHERE table_schema = ? AND table_name = ?",
-        ["main", view_name],
-    ).fetchall()
-    return {row[0] for row in rows}
 
 
 def _quote_string_literal(value: str) -> str:
@@ -540,7 +549,7 @@ def _is_benign_absent_gold_view(exc: Exception) -> bool:
     return missing_name in expected_names
 
 
-def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
+def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> bool:
     """Create a view over the Parquet files, if any have been written.
 
     The view name is quoted as an identifier and the glob is escaped as a
@@ -548,6 +557,9 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
     binder failure is surfaced loudly (raise under strict mode, WARNING+ in
     production); only the benign "parquet not yet written" case is swallowed at
     DEBUG, preserving the F15-D / PBI-05 production-swallow contract.
+
+    Returns:
+        Whether the view was created; ``False`` only for a swallowed failure.
     """
     try:
         con.execute(
@@ -569,6 +581,8 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
                 view_name,
                 e,
             )
+        return False
+    return True
 
 
 def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:

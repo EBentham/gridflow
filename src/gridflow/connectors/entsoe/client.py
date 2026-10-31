@@ -460,11 +460,13 @@ class EntsoeConnector(BaseConnector):
             message = f"ENTSO-E API error {response.status_code} for url '{url}'"
             if reason:
                 message = f"{message}: {reason}"
+            # `from None`: the chained httpx error's message is the raw URL,
+            # securityToken included, and any rendered traceback would print it.
             raise httpx.HTTPStatusError(
                 message,
                 request=exc.request,
                 response=exc.response,
-            ) from exc
+            ) from None
 
 
 def _extract_acknowledgement_reason(content: bytes) -> str:
