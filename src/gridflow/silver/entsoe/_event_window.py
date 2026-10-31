@@ -179,19 +179,24 @@ EVENT_WINDOW_FILTER_EXEMPT: dict[str, str] = {
         "would delete nearly the whole dataset"
     ),
     "outages_generation": (
-        "unavailability of generation units -- open-ended revision horizon, never trimmed"
+        "unavailability of generation units -- open-ended revision horizon; the transformer "
+        "clips each outage step to the partition day itself (silver/entsoe/_outages.py)"
     ),
     "outages_consumption": (
-        "aggregated unavailability of consumption units -- open-ended revision horizon"
+        "aggregated unavailability of consumption units -- open-ended revision horizon; "
+        "steps clipped to the partition day by the transformer"
     ),
     "outages_transmission": (
-        "unavailability of transmission infrastructure -- open-ended revision horizon"
+        "unavailability of transmission infrastructure -- open-ended revision horizon; "
+        "steps clipped to the partition day by the transformer"
     ),
     "outages_offshore_grid": (
-        "unavailability of offshore grid infrastructure -- open-ended revision horizon"
+        "unavailability of offshore grid infrastructure -- open-ended revision horizon; "
+        "steps clipped to the partition day by the transformer"
     ),
     "outages_production": (
-        "unavailability of production units -- open-ended revision horizon, never trimmed"
+        "unavailability of production units -- open-ended revision horizon; the transformer "
+        "clips each outage step to the partition day itself (silver/entsoe/_outages.py)"
     ),
     "generation_units_master_data": (
         "date_param snapshot query (Implementation_DateAndOrTime) -- no periodStart/"

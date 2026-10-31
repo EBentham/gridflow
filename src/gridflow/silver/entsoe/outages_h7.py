@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import (
     EntsoeOutagesConsumption,
     EntsoeOutagesOffshoreGrid,
@@ -16,198 +14,93 @@ from gridflow.schemas.entsoe import (
     EntsoeOutagesTransmission,
 )
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._outages import (
+    OUTAGE_COMMON_COLUMNS,
+    latest_revision_steps,
+    prepare_outage_frame,
+    read_outage_partition,
+)
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
+    from datetime import date
+
     from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 
 class _H7OutageTransformer(BaseSilverTransformer):
-    """Shared outage transformer preserving document and asset metadata."""
+    """Shared outage transformer: one row per step of each document's latest revision.
 
-    value_tag = "quantity"
+    Rows are clipped to the partition's UTC day (see ``_outages.py``).
+    ``identity`` names one step of one document together with
+    ``timestamp_utc``; ``document_status`` ``A09`` marks a cancelled outage.
+    """
+
     schema_cls: ClassVar[type[BaseModel]] = EntsoeOutagesConsumption
-    output_cols: list[str] = []
-    required_domain_cols: set[str] = {"in_domain"}
-    rename_cols: dict[str, str] = {"in_domain": "area_code"}
-    dedup_subset: list[str] = []
+    DATASET_VERSION: ClassVar[str] = "2.0.0"
+    identity_cols: ClassVar[tuple[str, ...]] = ()
+    required_domain_cols: ClassVar[frozenset[str]] = frozenset({"in_domain"})
+    rename_cols: ClassVar[dict[str, str]] = {"in_domain": "area_code"}
+    lead_cols: ClassVar[tuple[str, ...]] = ()
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         bronze_path = self._bronze_path_for_date(target_date)
         if bronze_path is None:
             return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            if xml_file.name.endswith(".meta.json"):
-                continue
-            try:
-                rows.extend(
-                    parse_timeseries_xml(
-                        xml_file.read_bytes(),
-                        value_tag=self.value_tag,
-                    )
-                )
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
+        return read_outage_partition(bronze_path, target_date)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
             return pl.DataFrame()
 
-        required = {"timestamp_utc", "value"} | self.required_domain_cols
+        required = {"timestamp_utc", "step_end_utc", "value"} | self.required_domain_cols
         missing = required - set(raw_df.columns)
         if missing:
             logger.error("Missing required columns in %s: %s", self.dataset, missing)
             return pl.DataFrame()
 
-        df = raw_df.rename({"value": "unavailable_mw", **self.rename_cols})
-        for column in (
-            "business_type",
-            "document_mrid",
-            "document_status",
-            "timeseries_mrid",
-            "resolution",
-            "unit_mrid",
-            "unit_name",
-            "production_type",
-            "asset_mrid",
-            "asset_name",
-        ):
-            if column not in df.columns:
-                df = df.with_columns(pl.lit("").alias(column))
-
-        if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
-
-        df = df.with_columns(
-            [
-                pl.col("unavailable_mw").cast(pl.Float64),
-                pl.when(pl.col("business_type") == "A53")
-                .then(pl.lit("planned"))
-                .when(pl.col("business_type") == "A54")
-                .then(pl.lit("unplanned"))
-                .otherwise(pl.col("business_type"))
-                .alias("outage_type"),
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(datetime.now(UTC)).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        df = df.unique(subset=self.dedup_subset, keep="last").sort(self.dedup_subset)
+        df = prepare_outage_frame(raw_df.rename(self.rename_cols))
+        df = latest_revision_steps(df, ("document_mrid", "timeseries_mrid", *self.identity_cols))
         # ADR-025 P1.1: carry the document publication vintage (createdDateTime)
         # as published_at before the hard select; typed-null when absent.
         df = with_published_at(df, dataset=self.dataset)
-        df = df.select(self.output_cols)
-
-        return df
+        return df.select(["timestamp_utc", "step_end_utc", *self.lead_cols, *OUTAGE_COMMON_COLUMNS])
 
 
 class OutagesConsumptionTransformer(_H7OutageTransformer):
     source = "entsoe"
     dataset = "outages_consumption"
     schema_cls = EntsoeOutagesConsumption
-    output_cols = [
-        "timestamp_utc",
-        "area_code",
-        "outage_type",
-        "unavailable_mw",
-        "business_type",
-        "document_mrid",
-        "document_status",
-        "timeseries_mrid",
-        "resolution",
-        "published_at",
-        "data_provider",
-        "ingested_at",
-    ]
-    dedup_subset = ["timestamp_utc", "area_code", "business_type", "timeseries_mrid"]
+    lead_cols = ("area_code",)
 
 
 class OutagesTransmissionTransformer(_H7OutageTransformer):
     source = "entsoe"
     dataset = "outages_transmission"
     schema_cls = EntsoeOutagesTransmission
-    required_domain_cols = {"in_domain", "out_domain"}
+    required_domain_cols = frozenset({"in_domain", "out_domain"})
     rename_cols = {"in_domain": "in_area_code", "out_domain": "out_area_code"}
-    output_cols = [
-        "timestamp_utc",
-        "in_area_code",
-        "out_area_code",
-        "asset_mrid",
-        "asset_name",
-        "outage_type",
-        "unavailable_mw",
-        "business_type",
-        "document_mrid",
-        "document_status",
-        "timeseries_mrid",
-        "resolution",
-        "published_at",
-        "data_provider",
-        "ingested_at",
-    ]
-    dedup_subset = [
-        "timestamp_utc",
-        "in_area_code",
-        "out_area_code",
-        "asset_mrid",
-        "timeseries_mrid",
-    ]
+    identity_cols = ("asset_mrid",)
+    lead_cols = ("in_area_code", "out_area_code", "asset_mrid", "asset_name")
 
 
 class OutagesOffshoreGridTransformer(_H7OutageTransformer):
     source = "entsoe"
     dataset = "outages_offshore_grid"
     schema_cls = EntsoeOutagesOffshoreGrid
-    output_cols = [
-        "timestamp_utc",
-        "area_code",
-        "asset_mrid",
-        "asset_name",
-        "outage_type",
-        "unavailable_mw",
-        "business_type",
-        "document_mrid",
-        "document_status",
-        "timeseries_mrid",
-        "resolution",
-        "published_at",
-        "data_provider",
-        "ingested_at",
-    ]
-    dedup_subset = ["timestamp_utc", "area_code", "asset_mrid", "timeseries_mrid"]
+    identity_cols = ("asset_mrid",)
+    lead_cols = ("area_code", "asset_mrid", "asset_name", "nominal_mw")
 
 
 class OutagesProductionTransformer(_H7OutageTransformer):
     source = "entsoe"
     dataset = "outages_production"
     schema_cls = EntsoeOutagesProduction
-    output_cols = [
-        "timestamp_utc",
-        "area_code",
-        "unit_mrid",
-        "unit_name",
-        "production_type",
-        "outage_type",
-        "unavailable_mw",
-        "business_type",
-        "document_mrid",
-        "document_status",
-        "timeseries_mrid",
-        "resolution",
-        "published_at",
-        "data_provider",
-        "ingested_at",
-    ]
-    dedup_subset = ["timestamp_utc", "area_code", "unit_mrid", "timeseries_mrid"]
+    identity_cols = ("unit_mrid",)
+    lead_cols = ("area_code", "unit_mrid", "unit_name", "production_type", "nominal_mw")
 
 
 _TRANSFORMERS = [
