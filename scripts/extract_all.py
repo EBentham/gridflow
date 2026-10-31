@@ -90,7 +90,8 @@ from typing import Any
 
 import duckdb
 import polars as pl
-import yaml
+
+from gridflow.config.settings import DatasetConfig, load_settings
 
 REPO = Path(r"C:\Users\Bobbo\OneDrive\Desktop\Python\gridflow")
 PY = REPO / ".venv" / "Scripts" / "python.exe"
@@ -146,21 +147,23 @@ def log(msg: str) -> None:
 
 def load_catalogue(
     scope: set[tuple[str, str]] | None = None,
-) -> list[tuple[str, str, dict[str, Any]]]:
+) -> list[tuple[str, str, DatasetConfig]]:
     """Load the (source, dataset, config) catalogue, optionally scoped.
+
+    Read through ``load_settings()``, so the script sees the catalogue the CLI
+    does, loader defaults included, rather than parsing the YAML itself.
 
     Args:
         scope: if given, only (source, dataset) pairs present in this set
             are returned. ``None`` (the default) returns the full catalogue,
             preserving the original unscoped behaviour.
     """
-    cfg = yaml.safe_load((REPO / "config" / "sources.yaml").read_text(encoding="utf-8"))
     out = []
-    for source, scfg in (cfg.get("sources") or cfg).items():
-        for ds, dcfg in ((scfg or {}).get("datasets") or {}).items():
+    for source, scfg in load_settings().sources.items():
+        for ds, dcfg in scfg.datasets.items():
             if scope is not None and (source, ds) not in scope:
                 continue
-            out.append((source, ds, dcfg or {}))
+            out.append((source, ds, dcfg))
     return out
 
 
@@ -211,7 +214,7 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
     done = already_done()
     log(f"catalogue: {len(catalogue)} datasets | {len(done)} already fetched")
 
-    by_source: dict[str, list[tuple[str, str, dict]]] = {}
+    by_source: dict[str, list[tuple[str, str, DatasetConfig]]] = {}
     for s, d, c in catalogue:
         by_source.setdefault(s, []).append((s, d, c))
 
@@ -242,7 +245,7 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
                     }
                 )
                 continue
-            if cfg.get("max_query_days", 1) == 0:
+            if cfg.max_query_days == 0:
                 checkpoint(
                     {
                         "phase": "fetch",

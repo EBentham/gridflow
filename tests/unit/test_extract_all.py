@@ -4,9 +4,12 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import duckdb
+
+from gridflow.config.settings import DatasetConfig, SourceConfig
 
 if TYPE_CHECKING:
     from types import ModuleType
@@ -48,3 +51,16 @@ def test_rows_differing_only_by_settlement_period_are_not_collapsed(
     assert record["status"] == "OK"
     assert record["rows"] == 2
     assert record["duplicate_rows_removed"] == 0
+
+
+def test_the_catalogue_is_read_through_load_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The script used to walk sources.yaml with yaml.safe_load, so anything the
+    loader adds (defaults, fills) never reached it."""
+    mod = _load_script()
+    snapshot, daily = DatasetConfig(max_query_days=0), DatasetConfig()
+    source = SourceConfig(base_url="https://example.test", datasets={"snap": snapshot, "d": daily})
+    settings = SimpleNamespace(sources={"fake": source})
+    monkeypatch.setattr(mod, "load_settings", lambda: settings, raising=False)
+
+    assert mod.load_catalogue() == [("fake", "snap", snapshot), ("fake", "d", daily)]
+    assert mod.load_catalogue({("fake", "d")}) == [("fake", "d", daily)]
