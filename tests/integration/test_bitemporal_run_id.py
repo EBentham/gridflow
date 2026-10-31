@@ -141,6 +141,8 @@ def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
     tmp_path: Path,
     monkeypatch,
 ) -> None:
+    """--reingest takes available_at from the bronze sidecar and still stamps
+    the transform run's id on every silver row."""
     paths = _isolated_env(tmp_path, monkeypatch)
     sidecar_time = datetime(2024, 1, 16, 9, 30, tzinfo=UTC)
     _write_fuelhh_bronze(paths.data_dir, fetched_at=sidecar_time)
@@ -163,3 +165,16 @@ def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
 
     silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
     assert set(silver["available_at"].to_list()) == {sidecar_time}
+
+    con = get_connection(paths.duckdb_path, read_only=True)
+    try:
+        runs = con.execute(
+            """
+            SELECT run_id FROM pipeline_runs
+            WHERE source = 'elexon' AND dataset = 'fuelhh' AND operation = 'transform'
+            """
+        ).fetchall()
+    finally:
+        con.close()
+    assert len(runs) == 1
+    assert set(silver["source_run_id"].to_list()) == {runs[0][0]}
