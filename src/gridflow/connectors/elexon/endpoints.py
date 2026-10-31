@@ -191,10 +191,16 @@ ENDPOINTS: dict[str, ElexonEndpoint] = {
         description="Initial National Demand Outturn (Daily Total)",
         param_style=ParamStyle.PUBLISH_DATETIME,
     ),
+    # NONBM filters on from/to (Swagger: the data publish time window). Sent
+    # publishDateTimeFrom/To it ignores the window and returns its latest record
+    # (1 Apr 2026 SP22) every time — live A/B on the 1 Aug 2026 window,
+    # 2026-10-16: those names gave that record, from/to gave an empty list.
     "nonbm": ElexonEndpoint(
         path="/datasets/NONBM",
         description="Non-BM STOR Generation",
         param_style=ParamStyle.PUBLISH_DATETIME,
+        from_param="from",
+        to_param="to",
     ),
     # --- Indicated / day-ahead datasets ---
     "inddem": ElexonEndpoint(
