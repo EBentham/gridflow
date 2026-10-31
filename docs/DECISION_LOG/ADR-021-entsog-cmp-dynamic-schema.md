@@ -172,3 +172,25 @@ datasets materialises, the honest pin (not Option B as written) is:
 4. Remove `TODO_HUMAN_FILL_COLUMNS` so
    `test_canonical_schema_alignment.py` begins enforcing the contract,
    and supersede this ADR.
+
+## Amendment (2026-10-24): the date filter was the defect
+
+The "date-filter coincidence" above was not harmless. The CMP endpoints
+(and the ten capacity indicators) serve every record whose capacity or
+period window overlaps the requested day, and the start-date filter kept
+a record only when that window began on the fetched day. Silver kept 0 of
+54 real `cmp_auction_premiums` records a day, 25 of 291
+`cmp_unavailable_firm_capacity` records on 1 Aug 2026 only, and 2 of 43
+`cmp_unsuccessful_requests` records (BACKLOG 18a, 18b).
+
+`GenericEntsogJsonTransformer` now keeps, for these 13 datasets, every
+record whose window overlaps the partition's gas day (06:00 to 06:00
+Europe/Brussels), plus everything the start-date rule kept. Each kept
+row is that record ON that gas day: `timestamp_utc` is the later of the
+record's start and the gas-day start, and `period_from`/`capacity_from`
+keep the record's own window. A record is never expanded to days that
+were not fetched. Rule 2 above ("do not modify the transformer") is
+superseded for the date filter only; the rest of the decision stands.
+Real records now arrive every day, so the envelope columns appear far
+more uniformly, and the tolerant readers are still relied on for the
+rest.

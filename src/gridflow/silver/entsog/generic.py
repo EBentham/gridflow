@@ -22,9 +22,11 @@ from gridflow.silver.base import (
     BronzeReadSelection,
 )
 from gridflow.silver.entsog.datetime import (
+    gas_day_stamp,
     log_undated_records,
     parse_entsog_datetime_expr,
     partition_records_to_target_date,
+    partition_validity_records_to_gas_day,
 )
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
@@ -57,6 +59,20 @@ _TIMESTAMP_PRIORITY = [
     "valid_from",
     "last_update_date_time",
 ]
+_GAS_DAY_STAMP_FIELD = "gfGasDayStamp"
+"""Transient raw field carrying a validity record's gas-day stamp into ``transform``.
+
+Added by the read hook to every record of a validity-window dataset (where the
+partition's gas day is known) and dropped by ``transform`` once it has become
+``timestamp_utc``.
+"""
+_GAS_DAY_STAMP_COLUMN = "gf_gas_day_stamp"
+_COLUMN_ALIASES = {"dataset": "data_set"}
+"""Vendor spellings folded onto one column.
+
+ENTSO-G's "no capacity" statement rows send ``dataset`` where the valued rows
+send ``dataSet``, with the same codes (CMP unavailable 4, CMP unsuccessful 2).
+"""
 _NUMERIC_SUFFIXES = (
     "_value",
     "_price",
@@ -101,6 +117,7 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
     response_key: str
     reference_dataset: bool = False
     date_window_dataset: bool = False
+    validity_window_dataset: bool = False
     LOCKSTEP_BRONZE_READ: ClassVar[bool] = True
 
     def _bronze_read_selection(self) -> BronzeReadSelection:
@@ -154,7 +171,21 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", path, exc)
                 continue
             records = _extract_records(payload, self.response_key)
-            if self.date_window_dataset and records:
+            if self.date_window_dataset and records and self.validity_window_dataset:
+                records, undated = partition_validity_records_to_gas_day(
+                    records, target_date, _RAW_TIMESTAMP_PRIORITY, _RAW_VALIDITY_WINDOWS
+                )
+                undated_total += undated
+                records = [
+                    {
+                        **record,
+                        _GAS_DAY_STAMP_FIELD: gas_day_stamp(
+                            record, target_date, _RAW_VALIDITY_WINDOWS
+                        ).isoformat(),
+                    }
+                    for record in records
+                ]
+            elif self.date_window_dataset and records:
                 records, undated = partition_records_to_target_date(
                     records, target_date, _RAW_TIMESTAMP_PRIORITY
                 )
@@ -182,9 +213,20 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
             if column in _DATETIME_COLUMNS:
                 df = df.with_columns(parse_entsog_datetime_expr(column).alias(column))
 
-        timestamp_source = next((col for col in _TIMESTAMP_PRIORITY if col in df.columns), None)
-        if timestamp_source and "timestamp_utc" not in df.columns:
-            df = df.with_columns(pl.col(timestamp_source).alias("timestamp_utc"))
+        if _GAS_DAY_STAMP_COLUMN in df.columns:
+            # A validity record stands for its gas day in this partition.
+            df = df.with_columns(
+                parse_entsog_datetime_expr(_GAS_DAY_STAMP_COLUMN).alias("timestamp_utc")
+            ).drop(_GAS_DAY_STAMP_COLUMN)
+
+        # Row-wise: a candidate column can exist yet be null on every row
+        # (cmp_unsuccessful_requests sends periodFrom null, the registers send
+        # validFrom null), so the first PRESENT column is not enough.
+        timestamp_sources = [col for col in _TIMESTAMP_PRIORITY if col in df.columns]
+        if timestamp_sources and "timestamp_utc" not in df.columns:
+            df = df.with_columns(
+                pl.coalesce([pl.col(col) for col in timestamp_sources]).alias("timestamp_utc")
+            )
 
         for column in list(df.columns):
             if _looks_numeric(column):
@@ -299,11 +341,32 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
 # day, so the shared date-window filter drops every row on a normal run. Scope the
 # silver date-window off for exactly these two datasets — the connector already
 # partitions the fetch by request window, so the partition is the right slice.
-# This is deliberately NOT applied to any cmp_* dataset (also requires_dates=True):
-# those share the generic path and are owned by the deferred
-# fix/entsog-cmp-schema-drift (ADR-021). `requires_dates` at the endpoint level is
-# unchanged (it drives the connector's from/to params, not the silver filter).
+# `requires_dates` at the endpoint level is unchanged (it drives the connector's
+# from/to params, not the silver filter).
 _DATE_WINDOW_EXEMPT = frozenset({"tariffs", "tariff_simulations"})
+
+# Capacity indicators and CMP records carry a validity window (period or
+# capacity product) that usually starts long before the fetched day; ENTSO-G
+# serves each record on every day its window overlaps. The start-date filter
+# kept almost none of them, so these keep each record in force on the
+# partition's gas day, stamped on that gas day (ADR-021 amendment, 2026-10-24).
+_VALIDITY_WINDOW_DATASETS = frozenset(
+    {
+        "firm_technical",
+        "firm_available",
+        "firm_booked",
+        "interruptible_available",
+        "interruptible_booked",
+        "interruptible_total",
+        "available_through_oversubscription",
+        "available_through_surrender",
+        "available_through_uioli_long_term",
+        "available_through_uioli_short_term",
+        "cmp_auction_premiums",
+        "cmp_unavailable_firm_capacity",
+        "cmp_unsuccessful_requests",
+    }
+)
 
 
 def register_generic_entsog_transformers() -> None:
@@ -330,6 +393,7 @@ def _make_transformer_class(
             "response_key": endpoint.response_key,
             "reference_dataset": endpoint.reference,
             "date_window_dataset": endpoint.requires_dates,
+            "validity_window_dataset": dataset in _VALIDITY_WINDOW_DATASETS,
             "__module__": __name__,
         },
     )
@@ -361,7 +425,8 @@ def _camel_to_snake(value: str) -> str:
 def _normalise_column_names(df: pl.DataFrame) -> pl.DataFrame:
     normalised: dict[str, list[str]] = {}
     for column in df.columns:
-        normalised.setdefault(_camel_to_snake(column), []).append(column)
+        snake = _camel_to_snake(column)
+        normalised.setdefault(_COLUMN_ALIASES.get(snake, snake), []).append(column)
 
     result = df
     collisions = {target: columns for target, columns in normalised.items() if len(columns) > 1}
@@ -395,4 +460,8 @@ _RAW_TIMESTAMP_PRIORITY = (
     "capacityFrom",
     "validFrom",
     "lastUpdateDateTime",
+)
+_RAW_VALIDITY_WINDOWS = (
+    ("periodFrom", "periodTo"),
+    ("capacityFrom", "capacityTo"),
 )
