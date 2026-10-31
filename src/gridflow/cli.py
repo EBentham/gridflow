@@ -424,7 +424,7 @@ def backfill(
     runner.refresh_views(settings)
 
     # R3-F03: surface any failed ingest/transform step and exit non-zero, mirroring
-    # cli.ingest / scripts/backfill.py. Only per-dataset step failures are echoed
+    # cli.ingest. Only per-dataset step failures are echoed
     # here; an infra exception outside the runner's per-dataset guards still
     # propagates and exits non-zero, just without this summary.
     failures = [r for r in all_results if r.status == "failed"]

@@ -1,10 +1,8 @@
 """CH4-01 golden characterization tests — the behavior oracle for the runner refactor.
 
 These pin the *observable* CLI behavior (stdout/stderr text + exit code) of the
-five pipeline commands (``ingest``/``transform``/``build``/``pipeline``/``backfill``)
-plus a ``run_pipeline.main()`` smoke test. They MUST pass on the pre-refactor code
-and stay green after ``cli`` commands become thin adapters over
-``gridflow.pipeline.runner`` — equivalence is the whole point.
+five pipeline commands (``ingest``/``transform``/``build``/``pipeline``/``backfill``),
+which are thin adapters over ``gridflow.pipeline.runner``.
 
 No HTTP: the connector is replaced in the registry by a minimal async-CM fake;
 transformers run against tiny on-disk bronze fixtures. Gold SQL view registration
@@ -600,51 +598,6 @@ def test_backfill_chunk_ingest_does_not_write_watermark(
 
 
 # --------------------------------------------------------------------------- #
-# run_pipeline.py smoke (script entrypoint had NO tests)
-# --------------------------------------------------------------------------- #
-
-
-def test_run_pipeline_main_smoke(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
-) -> None:
-    """scripts/run_pipeline.py main() runs bronze+silver end-to-end without error
-    on real bronze and a stubbed connector. Smoke only — run_pipeline behavior is
-    intentionally allowed to CHANGE in the refactor (exits, redaction, refresh),
-    so this asserts a clean exit, not exact stdout."""
-    import importlib.util
-    from pathlib import Path as _Path
-
-    data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
-    _write_fuelhh_bronze(data_dir)
-
-    script_path = _Path(__file__).parent.parent.parent / "scripts" / "run_pipeline.py"
-    spec = importlib.util.spec_from_file_location("run_pipeline_smoke", script_path)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    monkeypatch.setattr(
-        "sys.argv",
-        [
-            "run_pipeline.py",
-            "--step",
-            "silver",
-            "--source",
-            "elexon",
-            "--dataset",
-            "fuelhh",
-            "--start",
-            "2024-01-15",
-            "--end",
-            "2024-01-15",
-        ],
-    )
-    # Should complete without raising (silver step over real bronze).
-    module.main()
-
-
-# --------------------------------------------------------------------------- #
 # runner.run_backfill — multi-chunk connection reuse on a real temp DuckDB
 # --------------------------------------------------------------------------- #
 
@@ -719,32 +672,3 @@ def test_run_backfill_chunk_ingest_does_not_advance_watermark(
         con.close()
     assert row is not None
     assert row[0].replace(tzinfo=UTC) == existing
-
-
-def test_backfill_script_in_process(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
-) -> None:
-    """scripts/backfill.py runs in-process (no subprocess) over multiple chunks
-    and exits cleanly on a stubbed connector + empty bronze."""
-    import importlib.util
-    from datetime import date as _date
-    from pathlib import Path as _Path
-
-    _isolated_env(tmp_path, monkeypatch)
-
-    script_path = _Path(__file__).parent.parent.parent / "scripts" / "backfill.py"
-    spec = importlib.util.spec_from_file_location("backfill_smoke", script_path)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-
-    # Should complete without raising SystemExit (all chunks succeed: empty fetch
-    # + empty-bronze transform are both non-failing).
-    module.backfill(
-        source="elexon",
-        dataset="fuelhh",
-        start=_date(2024, 1, 15),
-        end=_date(2024, 1, 18),
-        chunk_days=1,
-    )
-    assert len(_FakeConnector.calls) == 3
