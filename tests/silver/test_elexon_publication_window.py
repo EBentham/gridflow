@@ -469,14 +469,9 @@ class TestRemitColumnOverride:
 
 class TestScopeClassification:
     def test_every_elexon_dataset_is_filtered_or_exempt_with_a_reason(self) -> None:
-        """``bod`` is excluded -- see the identical exclusion + rationale in
-        ``test_elexon_exact_partition_read.py`` (a pre-existing cross-test
-        registry-pollution artifact, out of scope for R2-A)."""
         registered = list_transformers("elexon")
         assert registered, "elexon transformers must be registered before this test runs"
         for _source, dataset in registered:
-            if dataset == "bod":
-                continue
             in_scope = publication_window_params(dataset) is not None
             exempt = dataset in PUBLICATION_WINDOW_EXEMPT
             assert in_scope or exempt, f"{dataset} is neither filtered nor exempt with a reason"

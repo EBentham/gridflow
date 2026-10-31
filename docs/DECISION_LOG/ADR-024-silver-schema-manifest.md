@@ -71,7 +71,9 @@ registered by `src/gridflow/silver/elexon/__init__.py`, but the retained
 transformer module still self-registers when imported directly by legacy
 tests. The manifest therefore maintains an explicit decommissioned
 registry skip for `elexon/bod` while keeping the strict missing-date-column
-failure for every other registered transformer.
+failure for every other registered transformer. (2026-10-31: the `bod`
+transformer, its schema and the skip were deleted, so the manifest covers
+every registered transformer with no exception.)
 
 GIE AGSI `unavailability` is designated by `ingested_at` in this
 manifest. Its event-overlap handling remains a follow-up: the transformer

@@ -15,7 +15,6 @@ from gridflow.silver.elexon.agws import AGWSTransformer
 from gridflow.silver.elexon.atl import ATLTransformer
 from gridflow.silver.elexon.bmunits import BMUnitsTransformer
 from gridflow.silver.elexon.boal import BOALTransformer
-from gridflow.silver.elexon.bod import BODTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer, NDFDTransformer
 from gridflow.silver.elexon.disbsad import DISBSADTransformer
 from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer
@@ -517,55 +516,6 @@ class TestBOALTransformer:
         result = self.t.transform(raw)
         timestamps = result["timestamp_utc"].to_list()
         assert timestamps == sorted(timestamps)
-
-
-# ---------------------------------------------------------------------------
-# BOD
-# ---------------------------------------------------------------------------
-
-
-class TestBODTransformer:
-    def setup_method(self):
-        self.t = _make_transformer(BODTransformer)
-
-    def test_transform_basic(self):
-        data = json.loads((FIXTURES / "bod_response.json").read_text())
-        raw = pl.DataFrame(data["data"])
-        result = self.t.transform(raw)
-
-        assert not result.is_empty()
-        assert "bm_unit_id" in result.columns
-        assert "bid_price" in result.columns
-        assert "offer_price" in result.columns
-        assert "timestamp_utc" in result.columns
-
-    def test_dedup_on_pair_number(self):
-        """Same (date, period, bm_unit, pair_number) rows are deduplicated."""
-        raw = pl.DataFrame(
-            [
-                {
-                    "settlementDate": "2024-01-15",
-                    "settlementPeriod": 1,
-                    "bmUnit": "T_DRAXX-1",
-                    "bidOfferPairNumber": 1,
-                    "bidPrice": -50.0,
-                    "offerPrice": 75.0,
-                },
-                {
-                    "settlementDate": "2024-01-15",
-                    "settlementPeriod": 1,
-                    "bmUnit": "T_DRAXX-1",
-                    "bidOfferPairNumber": 1,
-                    "bidPrice": -55.0,
-                    "offerPrice": 80.0,
-                },  # duplicate
-            ]
-        )
-        result = self.t.transform(raw)
-        assert len(result) == 1
-
-    def test_empty_input(self):
-        assert self.t.transform(pl.DataFrame()).is_empty()
 
 
 # ---------------------------------------------------------------------------

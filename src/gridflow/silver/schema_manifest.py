@@ -95,18 +95,10 @@ _SILVER_BITEMPORAL_COLUMNS: tuple[str, ...] = (
 
 _PARTITION_COLUMNS: tuple[str, str] = ("year", "month")
 
-# WHY: the vendor Elexon BOD endpoint is decommissioned. The transformer file is
-# retained for historical tests and self-registers when imported directly, so the
-# runtime manifest must ignore that legacy registry entry without weakening the
-# strict date-column drift alarm for any other registered transformer.
-DECOMMISSIONED_DATASETS: frozenset[tuple[str, str]] = frozenset({("elexon", "bod")})
-
 # Ratified from gridflow_models' F18 inventory on 2026-07-09, then filtered
 # against the live registry after importing the six silver subpackages. The five
-# serving seed aliases are represented separately in _SERVING_ALIASES. The old
-# Elexon BOD endpoint remains intentionally absent: src/gridflow/silver/elexon
-# keeps the transformer file but does not import/register it because the vendor
-# endpoint is decommissioned. elexon/system_prices was present only as a seed row
+# serving seed aliases are represented separately in _SERVING_ALIASES.
+# elexon/system_prices was present only as a seed row
 # in the models inventory, so its settlement_date convention is carried here as
 # the sole registered transformer whose date column was derived after seed
 # removal.
@@ -472,11 +464,7 @@ def get_silver_schema_manifest(
     """
 
     _ensure_silver_transformers_registered()
-    registered = sorted(
-        transformer
-        for transformer in list_transformers()
-        if transformer not in DECOMMISSIONED_DATASETS
-    )
+    registered = sorted(list_transformers())
     aliases = _deprecated_aliases(registered)
     entries = [_silver_entry(source, dataset, aliases) for source, dataset in registered]
     if include_serving_aliases:

@@ -28,11 +28,6 @@ from gridflow.silver.registry import get_transformer_class, list_transformers
 
 GOLDEN_MAP_PATH = Path(__file__).parent.parent / "fixtures" / "entity_keys_golden.json"
 
-# See test_elexon_exact_partition_read.py's identical exclusion for the
-# cross-test registry-pollution rationale (bod.py imported directly by other
-# test modules, outside the elexon.__init__ registration path).
-_REGISTRY_POLLUTION_EXEMPT = frozenset({"bod"})
-
 
 def _load_golden_map() -> dict[str, dict[str, list[str]]]:
     data = json.loads(GOLDEN_MAP_PATH.read_text())
@@ -41,11 +36,7 @@ def _load_golden_map() -> dict[str, dict[str, list[str]]]:
 
 def test_golden_map_is_committed_and_covers_every_registered_dataset() -> None:
     golden = _load_golden_map()
-    registered = {
-        f"{source}/{dataset}"
-        for source, dataset in list_transformers("elexon")
-        if dataset not in _REGISTRY_POLLUTION_EXEMPT
-    }
+    registered = {f"{source}/{dataset}" for source, dataset in list_transformers("elexon")}
     assert registered.issubset(golden.keys()), registered - golden.keys()
 
 
@@ -56,22 +47,17 @@ def test_every_elexon_transformer_declares_an_entity_key() -> None:
 
     checked = 0
     for source, dataset in registered:
-        if dataset in _REGISTRY_POLLUTION_EXEMPT:
-            continue
         cls = get_transformer_class(source, dataset)
         assert cls is not None
         assert cls.ENTITY_KEY_COLUMNS, f"{source}/{dataset} declares no ENTITY_KEY_COLUMNS"
         checked += 1
 
-    expected = len([d for _s, d in registered if d not in _REGISTRY_POLLUTION_EXEMPT])
-    assert checked == expected
+    assert checked == len(registered)
 
 
 def test_resolved_entity_keys_match_the_golden_map() -> None:
     golden = _load_golden_map()
     for source, dataset in list_transformers("elexon"):
-        if dataset in _REGISTRY_POLLUTION_EXEMPT:
-            continue
         cls = get_transformer_class(source, dataset)
         assert cls is not None
         golden_entry = golden[f"{source}/{dataset}"]

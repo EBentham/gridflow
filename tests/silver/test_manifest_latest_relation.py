@@ -27,7 +27,6 @@ from gridflow.silver import schema_manifest
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS
 from gridflow.silver.registry import get_transformer, list_transformers
 from gridflow.silver.schema_manifest import (
-    DECOMMISSIONED_DATASETS,
     SilverSchemaEntry,
     get_silver_schema_manifest,
 )
@@ -527,7 +526,7 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     ``pytest ...::test_append_only_set_equals_latest_spec_set`` as the
     order-independence proof.
     """
-    registered = sorted(key for key in list_transformers() if key not in DECOMMISSIONED_DATASETS)
+    registered = sorted(list_transformers())
     append_only = {
         (source, dataset)
         for source, dataset in registered

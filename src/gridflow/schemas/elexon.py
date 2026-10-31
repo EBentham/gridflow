@@ -163,29 +163,6 @@ class ElexonBOAL(BaseSchema):
         return v
 
 
-class ElexonBOD(BaseSchema):
-    """Silver schema: Bid/Offer Data."""
-
-    settlement_date: date
-    settlement_period: int = Field(ge=1, le=50)
-    timestamp_utc: datetime
-    bm_unit_id: str
-    bid_offer_pair_number: int | None = None
-    bid_offer_level_from: float | None = None
-    bid_offer_level_to: float | None = None
-    bid_price: float | None = None
-    offer_price: float | None = None
-    data_provider: str = Field(default="elexon")
-    ingested_at: datetime | None = None
-
-    @field_validator("timestamp_utc")
-    @classmethod
-    def must_be_utc(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
-        return v
-
-
 class ElexonMID(BaseSchema):
     """Silver schema: Market Index Data."""
 
