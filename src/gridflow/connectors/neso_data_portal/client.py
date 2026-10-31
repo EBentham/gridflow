@@ -2487,16 +2487,13 @@ def _dump_provenance_params(
 ) -> dict[str, Any]:
     """Build a dump capture's ``request_params`` (ADR-035 P-5).
 
-    D-12's keys from :func:`_provenance_params`, with ``ckan_last_modified``
-    as the CKAN string or ``""`` (never ``"None"``) and ``resource_filename``
+    D-12's keys from :func:`_provenance_params`, with ``resource_filename``
     as the resource id (a dump has no vendor filename); then A's member keys,
     and two evidence keys for the open class-3 questions:
     ``ckan_metadata_modified`` and ``response_last_modified``.
     """
     params = _provenance_params(package, package_payload, resource, dump.body)
-    last_modified = resource.get("last_modified")
     metadata_modified = resource.get("metadata_modified")
-    params["ckan_last_modified"] = last_modified if isinstance(last_modified, str) else ""
     params["resource_filename"] = str(resource.get("id", ""))
     params.update(
         {
@@ -2529,13 +2526,15 @@ def _provenance_params(
     """
     url = str(resource.get("url", ""))
     filename = url.rstrip("/").rsplit("/", 1)[-1] if url else ""
+    last_modified = resource.get("last_modified")
     return {
         "package": package,
         "package_id": str(package_payload.get("id", "")),
         "resource_id": str(resource.get("id", "")),
         "resource_name": str(resource.get("name", "")),
         "resource_filename": filename,
-        "ckan_last_modified": str(resource.get("last_modified", "")),
+        # A null last_modified is recorded as "", never as the string "None".
+        "ckan_last_modified": last_modified if isinstance(last_modified, str) else "",
         "ckan_format": str(resource.get("format", "")),
         "body_sha256": hashlib.sha256(body).hexdigest(),
     }

@@ -443,6 +443,22 @@ class TestUnchangedSkip:
         _wire(router, _payload([_live(1, FFFD_NAME)]), {_rid(1): CSV_BODY})
         assert _present(_consume(data_dir, "alpha_series")[0]) == ["captured"]
 
+    def test_a_null_last_modified_is_recorded_empty_not_as_none(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """The sidecar is immutable: a null last_modified must read as no value, as
+        it does on the dump leg, not as the string "None" posing as a timestamp."""
+        _registry(tmp_path, monkeypatch)
+        _wire(router, _payload([_live(1, FFFD_NAME, last_modified=None)]), {_rid(1): CSV_BODY})
+
+        _events, (path,) = _consume(data_dir, "alpha_series")
+
+        assert _meta(path)["request_params"]["ckan_last_modified"] == ""
+
     def test_a_damaged_newest_capture_is_never_a_skip_basis(
         self,
         router: respx.MockRouter,
