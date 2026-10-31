@@ -1675,11 +1675,12 @@ class NesoDataPortalConnector(BaseConnector):
         goes through the dump leg (:meth:`_dump_member`, ADR-035) and is
         ``captured``, or ``unchanged`` when its body is byte-identical to its
         newest capture or a frozen-class dump is not yet due; an upload member
-        whose newest usable capture carries the live ``last_modified`` is
-        ``unchanged``; every other member is downloaded, admitted (P-7) and
-        yielded as ``captured``. A per-member failure is a ``failed`` event and
-        the family continues. Only one body is alive at a time: the consumer
-        publishes each capture before the next download starts.
+        whose newest usable capture carries the live ``last_modified`` and still
+        hashes to its recorded body is ``unchanged``; every other member is
+        downloaded, admitted (P-7) and yielded as ``captured``. A per-member
+        failure is a ``failed`` event and the family continues. Only one body
+        is alive at a time: the consumer publishes each capture before the next
+        download starts.
 
         Args:
             dataset: A registry family key.
@@ -1761,13 +1762,16 @@ class NesoDataPortalConnector(BaseConnector):
             capture = newest.get(resource_id)
             live_modified = resource.get("last_modified")
             # A dump capture is never the skip basis for an upload (ADR-035 P-6):
-            # its last_modified is not a file stamp (decision 9).
+            # its last_modified is not a file stamp (decision 9). The scan checks
+            # only the body's size, so it is re-hashed before it is trusted, as
+            # the dump leg does: a damaged body would otherwise stay the basis.
             if (
                 capture is not None
                 and capture.url_type != "datastore"
                 and isinstance(live_modified, str)
                 and live_modified
                 and capture.ckan_last_modified == live_modified
+                and _verified_basis(capture, dataset) is not None
             ):
                 yield MemberEvent(
                     resource_id,

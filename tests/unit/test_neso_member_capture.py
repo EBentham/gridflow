@@ -443,6 +443,28 @@ class TestUnchangedSkip:
         _wire(router, _payload([_live(1, FFFD_NAME)]), {_rid(1): CSV_BODY})
         assert _present(_consume(data_dir, "alpha_series")[0]) == ["captured"]
 
+    def test_a_damaged_newest_capture_is_never_a_skip_basis(
+        self,
+        router: respx.MockRouter,
+        data_dir: Path,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """Same size, different bytes: the scan's size check passes, so only the
+        re-hash stops a damaged body being trusted as unchanged on every run."""
+        _registry(tmp_path, monkeypatch)
+        _wire(router, _payload([_live(1, FFFD_NAME)]), {_rid(1): CSV_BODY})
+        _events, (path,) = _consume(data_dir, "alpha_series")
+        path.write_bytes(CSV_BODY.replace(b"1", b"7"))
+        # Different bytes so the refetch cannot collide with the first capture's
+        # name inside the same second (a real rerun is seconds apart).
+        _wire(router, _payload([_live(1, FFFD_NAME)]), {_rid(1): CSV_BODY + b"2026-10-07,2\n"})
+
+        events, published = _consume(data_dir, "alpha_series")
+
+        assert _present(events) == ["captured"]
+        assert len(published) == 1
+
     def test_negative_control_an_unusable_newest_capture_is_never_a_skip_basis(
         self,
         router: respx.MockRouter,
