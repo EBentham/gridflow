@@ -1,5 +1,19 @@
 name: CI
-on: [push, pull_request]
+on:
+  # Branch pushes run through their pull_request run, so only master runs here.
+  push:
+    branches: [master]
+    # Prose only. docs/ also holds test inputs (the endpoint catalogues,
+    # CANONICAL_SCHEMA.yaml, docs/neso_data_portal/), so it is not ignored whole.
+    # Not on pull_request: its run is the required check and must always start.
+    paths-ignore:
+      - "*.md"
+      - "docs/*.md"
+      - "docs/DECISION_LOG/**"
+      - "docs/audit/**"
+      - "docs/endpoints/**"
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   lint-and-test:
