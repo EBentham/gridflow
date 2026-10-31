@@ -231,7 +231,10 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     ("gie_agsi", "news_item"): "gas_day",
     ("gie_agsi", "storage"): "gas_day",
     ("gie_agsi", "storage_reports"): "gas_day",
-    ("gie_agsi", "unavailability"): "ingested_at",
+    # The calendar day the outage notice overlaps (one row per notice per day),
+    # not the transform stamp: the vendor window bounds are naive with mixed
+    # clocks, so a DATE is the honest grain to window on.
+    ("gie_agsi", "unavailability"): "outage_date",
     ("gie_alsi", "lng"): "gas_day",
     ("neso", "carbon_intensity"): "timestamp_utc",
     ("neso", "generation"): "timestamp_utc",
