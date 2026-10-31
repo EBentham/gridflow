@@ -187,7 +187,8 @@ class NesoHttpStatusError(httpx.HTTPStatusError, NesoDataPortalError):
     """A non-2xx response, rendered without the request URL.
 
     Subclasses ``httpx.HTTPStatusError`` deliberately: ``RETRY_POLICY`` retries
-    on that type, so a 5xx must remain retryable. What it does NOT do is let
+    a 408, 429 or 5xx of that type, so those must remain retryable (a 404 or 403
+    fails on the first attempt). What it does NOT do is let
     httpx build the message — ``raise_for_status()`` interpolates the complete
     signed URL, and tenacity's ``before_sleep_log`` then writes that string to
     the log before every retry. The message here is built from a
