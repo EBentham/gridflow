@@ -204,11 +204,14 @@ def write_registry(
     frozen: list[dict[str, str]] | None = None,
     adjudications: list[dict[str, str]] | None = None,
     reconcile_adjudications: list[dict[str, Any]] | None = None,
+    observed_before_target: list[dict[str, str]] | None = None,
 ) -> Path:
-    """Write a registry directory (package files plus the three ledgers).
+    """Write a registry directory (package files plus the four ledgers).
 
     The reconcile adjudication ledger is always written (default ``[]``): reconcile
-    refuses a registry directory without it (ADR-040 P-1).
+    refuses a registry directory without it (ADR-040 P-1). So is the
+    observed-before-target policy (default ``[]``), which the eligibility report
+    and the skeleton read (ADR-044).
     """
     directory.mkdir(parents=True, exist_ok=True)
     for document in packages:
@@ -227,6 +230,9 @@ def write_registry(
             reconcile_adjudications if reconcile_adjudications is not None else []
         ),
         encoding="utf-8",
+    )
+    (directory / "_observed_before_target.json").write_text(
+        registry_module.dump_json(observed_before_target or []), encoding="utf-8"
     )
     return directory
 

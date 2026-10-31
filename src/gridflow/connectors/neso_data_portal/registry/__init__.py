@@ -7,7 +7,7 @@ matrix by ``scripts/seed_neso_registry.py``; the JSON files beside this module
 are the artifact, edited by registry commits from then on.
 
 Layout. Every ``*.json`` here whose name does not start with ``_`` is one
-package. The three ``_``-prefixed ledgers are read by their own loaders and are
+package. The four ``_``-prefixed ledgers are read by their own loaders and are
 never parsed as packages:
 
 - ``_frozen_keys.json`` — keys that have bronze and therefore cannot be renamed
@@ -17,6 +17,9 @@ never parsed as packages:
 - ``_reconcile_adjudications.json`` — vendor-caused reconcile gaps a seat ruling
   accepts on named captures; reconcile reports them apart from open gaps
   (ADR-040).
+- ``_observed_before_target.json`` — held families whose rows gridflow observed
+  before their target start may be read through the observed-before-target
+  selectors (ADR-044). The schema records stay untouched.
 
 **Test seam.** Runtime consumers call :func:`load_registry` through this module
 attribute at call time and never keep a module-level copy, so a test can
@@ -56,7 +59,10 @@ if TYPE_CHECKING:
 __all__ = [
     "CAPTURE_ID_PATTERN",
     "KEY_PATTERN",
+    "LABEL_ANCHOR_DATE_COLUMNS",
     "LEGACY_KEYS",
+    "OBSERVED_BEFORE_TARGET_FILE",
+    "OBSERVED_TARGET_KINDS",
     "RECONCILE_ADJUDICATIONS_FILE",
     "Adjudication",
     "ChildEntry",
@@ -66,6 +72,7 @@ __all__ = [
     "FamilyEntry",
     "FrozenKey",
     "Held",
+    "ObservedBeforeTarget",
     "PackageEntry",
     "Registry",
     "ReconcileAdjudication",
@@ -78,8 +85,10 @@ __all__ = [
     "key_collisions",
     "load_adjudications",
     "load_frozen_keys",
+    "load_observed_before_target",
     "load_reconcile_adjudications",
     "load_registry",
+    "observed_before_target_problems",
     "reconcile_adjudication_problems",
 ]
 
@@ -94,6 +103,31 @@ LEGACY_KEYS: frozenset[str] = frozenset(
 FROZEN_KEYS_FILE = "_frozen_keys.json"
 ADJUDICATIONS_FILE = "_adjudications.json"
 RECONCILE_ADJUDICATIONS_FILE = "_reconcile_adjudications.json"
+OBSERVED_BEFORE_TARGET_FILE = "_observed_before_target.json"
+
+OBSERVED_TARGET_KINDS: frozenset[str] = frozenset({"utc_instant", "sp_pair", "date_sp1"})
+"""Temporal kinds whose ``timestamp_utc`` is an evidenced target start (ADR-044).
+
+``none`` is the capture time, ``month`` and ``local_instant`` carry no start
+evidenced for this rule, and a ``date_sp1`` record anchored on a
+:data:`LABEL_ANCHOR_DATE_COLUMNS` column is a label, not a start.
+"""
+
+LABEL_ANCHOR_DATE_COLUMNS: frozenset[str] = frozenset(
+    {
+        "service_delivery_date",
+        "forecast_target_date",
+        "efa_date",
+        "delivery_date",
+        "notification_issued_date",
+    }
+)
+"""``date_sp1`` date columns that label a day whose first block may start before SP1.
+
+The K-AS-1 and K-DFS label anchors of ``gridflow.silver.date_columns``: EFA 1
+starts 23:00 local on the previous day, so SP1 of the labelled date is not the
+target start (ADR-044).
+"""
 
 # One committed capture: both body-name stamp forms (production seconds, the
 # test helper's microseconds). Anchored, so a wildcard, ``-`` or a directory
@@ -309,6 +343,34 @@ class ReconcileAdjudication(_Frozen):
         for capture in self.captures:
             capture_partition(capture)
         for name in ("reason", "question", "evidence"):
+            if not _one_line(getattr(self, name)):
+                raise ValueError(f"{name} must be one non-empty line")
+        return self
+
+
+class ObservedBeforeTarget(_Frozen):
+    """A held family whose rows observed before their target start may be read (ADR-044).
+
+    The family stays held. Its rows whose row version gridflow first saw in a
+    complete capture strictly before the row's target start are readable through
+    ``gridflow.silver.neso_data_portal.first_seen.observed_snapshot`` and
+    ``observed_archive``, with known-at = that first capture. The guarantee is
+    that the record content was observed before its target start, not that it
+    is a forecast; the family's own column semantics stand.
+
+    Attributes:
+        family: The family key.
+        rationale: Why first sight answers the family's hold (one line).
+        evidence: Where the evidence lives (one line).
+    """
+
+    family: str = Field(pattern=KEY_PATTERN.pattern)
+    rationale: str
+    evidence: str
+
+    @model_validator(mode="after")
+    def _narrow(self) -> Self:
+        for name in ("rationale", "evidence"):
             if not _one_line(getattr(self, name)):
                 raise ValueError(f"{name} must be one non-empty line")
         return self
@@ -672,13 +734,15 @@ def _load(path: Path | None) -> Registry:
     _validate_silver_targets(file_names, packages, families)
     _validate_covered(file_names, packages, families, resources)
     packages.sort(key=lambda entry: entry.package)
-    return Registry(
+    registry = Registry(
         root=path,
         packages=tuple(packages),
         families=families,
         resources=resources,
         _names=names,
     )
+    load_observed_before_target(path, registry=registry)
+    return registry
 
 
 def load_registry(path: Path | None = None) -> Registry:
@@ -698,7 +762,8 @@ def load_registry(path: Path | None = None) -> Registry:
             key, a non-compiling ``name_regex``, a frozen schema record breaking
             V-1..V-10 or V-13, an ungrounded COVERED grant (V-12), a
             SILVER target whose reader does not fit the body's shape (V-15,
-            V-15b)).
+            V-15b), or an ``_observed_before_target.json`` that is missing or
+            admits a family the rule cannot reach (ADR-044)).
     """
     return _load(None if path is None else Path(path))
 
@@ -801,6 +866,89 @@ def reconcile_adjudication_problems(
                 problems.append(
                     f"{where}: resource {match['rid']} is not in package {package.package!r}"
                 )
+    return problems
+
+
+def load_observed_before_target(
+    path: Path | None = None, *, registry: Registry | None = None
+) -> tuple[ObservedBeforeTarget, ...]:
+    """Load and validate ``_observed_before_target.json`` (``None`` = package data).
+
+    Args:
+        path: A registry directory, or ``None`` for the package data.
+        registry: The registry loaded from ``path``; loaded when ``None``.
+
+    Returns:
+        The entries, in file order.
+
+    Raises:
+        RegistryError: The file is missing or unreadable (absent is never read
+            as empty), an entry fails the model, a family repeats, or
+            :func:`observed_before_target_problems` finds an entry the registry
+            does not admit.
+    """
+    try:
+        entries = tuple(
+            ObservedBeforeTarget.model_validate(row)
+            for row in _ledger(path, OBSERVED_BEFORE_TARGET_FILE)
+        )
+    except ValidationError as exc:
+        raise RegistryError(f"registry file {OBSERVED_BEFORE_TARGET_FILE}: {exc}") from exc
+    seen: set[str] = set()
+    for entry in entries:
+        if entry.family in seen:
+            raise RegistryError(
+                f"registry file {OBSERVED_BEFORE_TARGET_FILE}: family {entry.family!r} repeats"
+            )
+        seen.add(entry.family)
+    problems = observed_before_target_problems(
+        load_registry(path) if registry is None else registry, entries
+    )
+    if problems:
+        raise RegistryError(f"registry file {OBSERVED_BEFORE_TARGET_FILE}: " + "; ".join(problems))
+    return entries
+
+
+def observed_before_target_problems(
+    registry: Registry, entries: Iterable[ObservedBeforeTarget]
+) -> list[str]:
+    """Return every entry the registry does not admit to the rule (ADR-044).
+
+    An entry's family must exist and carry a record; its package must not be
+    held; the record's own eligibility must be ``Held`` (so the effective
+    eligibility is that hold); its temporal kind must be in
+    :data:`OBSERVED_TARGET_KINDS`, and a ``date_sp1`` one must not be anchored on
+    a :data:`LABEL_ANCHOR_DATE_COLUMNS` column; and it must not take
+    ``issue_time_evidenced``, which already dates its rows by another clock.
+
+    Args:
+        registry: The loaded registry.
+        entries: The ``_observed_before_target.json`` entries.
+
+    Returns:
+        One message per failing check; empty when every entry is admitted.
+    """
+    problems: list[str] = []
+    for entry in entries:
+        where = f"observed-before-target {entry.family}"
+        owner = registry.families.get(entry.family)
+        if owner is None or owner[1].record is None:
+            problems.append(f"{where}: family has no record")
+            continue
+        package, family = owner
+        record = family.record
+        assert record is not None
+        temporal = record.temporal
+        if isinstance(package.eligibility, Held):
+            problems.append(f"{where}: package {package.package!r} is held")
+        elif not isinstance(record.eligibility, Held):
+            problems.append(f"{where}: the record is not held")
+        if temporal.kind not in OBSERVED_TARGET_KINDS:
+            problems.append(f"{where}: temporal {temporal.kind} has no evidenced target start")
+        elif temporal.kind == "date_sp1" and temporal.date_column in LABEL_ANCHOR_DATE_COLUMNS:
+            problems.append(f"{where}: {temporal.date_column} is a label anchor, not a start")
+        if record.vintage == "issue_time_evidenced":
+            problems.append(f"{where}: issue_time_evidenced already dates its rows")
     return problems
 
 

@@ -454,6 +454,7 @@ class TestInstallDoesNotSelfInvalidate:
         (directory / f"{SLUG}.json").write_text(dump_json(world.doc()), encoding="utf-8")
         (directory / "_frozen_keys.json").write_text("[]\n", encoding="utf-8")
         (directory / "_adjudications.json").write_text("[]\n", encoding="utf-8")
+        (directory / "_observed_before_target.json").write_text("[]\n", encoding="utf-8")
         loaded = registry_module.load_registry(directory)
         inputs = gather_inputs(
             world.install(), world.data, Site(COVERED, None), COVERING, "eq_old", CUTOFF

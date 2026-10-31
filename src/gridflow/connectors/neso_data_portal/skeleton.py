@@ -31,6 +31,7 @@ from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import (
     describe_eligibility,
     effective_eligibility,
+    observed_families,
 )
 from gridflow.connectors.neso_data_portal.evidence import (
     EvidenceError,
@@ -302,7 +303,7 @@ def _cadence(package: PackageEntry, snapshot_package: Mapping[str, Any]) -> list
     return lines
 
 
-def _holds(package: PackageEntry) -> list[str]:
+def _holds(package: PackageEntry, observed: frozenset[str]) -> list[str]:
     lines = ["## Holds", ""]
     held: list[str] = []
     if isinstance(package.eligibility, Held):
@@ -312,7 +313,8 @@ def _holds(package: PackageEntry) -> list[str]:
             continue
         eligibility = effective_eligibility(package, family)
         if isinstance(eligibility, Held):
-            held.append(f"- `{family.key}`: {_cell(describe_eligibility(eligibility))}")
+            text = describe_eligibility(eligibility, observed=family.key in observed)
+            held.append(f"- `{family.key}`: {_cell(text)}")
     lines += held or ["- none"]
     lines.append("")
     return lines
@@ -363,7 +365,7 @@ def render_package(
         f"- Licence: {_cell(str(licence)) if licence else _DASH}",
         f"- Attribution: {ATTRIBUTION}",
         "",
-        *_holds(package),
+        *_holds(package, observed_families(registry)),
     ]
     while lines and lines[-1] == "":
         lines.pop()

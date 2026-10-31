@@ -104,6 +104,9 @@ def _write_package(directory: Path, document: dict[str, object]) -> None:
     (directory / f"{document['package']}.json").write_text(
         json.dumps(document, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
+    policy = directory / "_observed_before_target.json"
+    if not policy.exists():
+        policy.write_text("[]\n", encoding="utf-8")
 
 
 def _synthetic_package(**overrides: object) -> dict[str, object]:
