@@ -661,6 +661,8 @@ class NesoDataPortalConnector(BaseConnector):
             NesoUnsafeRedirectError: The target failed D-08's policy. Not an
                 ``httpx`` error type, so it propagates on the first attempt
                 instead of being retried five times.
+            httpx.ConnectError: The target's host is temporarily unresolvable,
+                retried like any other network error.
             httpx.HTTPStatusError: The response was neither 2xx nor a redirect
                 carrying a ``Location`` — including a 304 and a
                 ``Location``-less 3xx, which an ``is_error`` gate would return
@@ -760,6 +762,9 @@ class NesoDataPortalConnector(BaseConnector):
                 address that is not globally routable. Every address, not any:
                 an answer mixing a public and a private address passes an
                 any-check while httpx may connect to the private one.
+            httpx.ConnectError: The resolver failed temporarily (``EAI_AGAIN``).
+                That is a network blip, not a policy refusal, so it is raised as
+                an error the retry policy retries.
         """
         if url.scheme != "https":
             raise NesoUnsafeRedirectError(
@@ -778,6 +783,10 @@ class NesoDataPortalConnector(BaseConnector):
         try:
             addresses = await _resolve_host_addresses(host, port)
         except OSError as exc:
+            if isinstance(exc, socket.gaierror) and exc.errno == socket.EAI_AGAIN:
+                raise httpx.ConnectError(
+                    f"{url}: host {host!r} is temporarily unresolvable ({exc})"
+                ) from exc
             raise NesoUnsafeRedirectError(
                 f"refusing to send to {url}: host {host!r} did not resolve ({exc})"
             ) from exc

@@ -1552,6 +1552,48 @@ class TestInitialUrlValidation:
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed"
 
 
+class TestTemporaryDnsFailure:
+    """A temporary resolver failure is a network blip and is retried like one;
+    a permanent failure is still refused on the first attempt."""
+
+    def _resolver_failing_first(self, monkeypatch: pytest.MonkeyPatch, errno: int) -> list[str]:
+        lookups: list[str] = []
+
+        async def _stub(host: str, port: int) -> list[Any]:
+            lookups.append(host)
+            if len(lookups) == 1:
+                raise socket.gaierror(errno, "name resolution failed")
+            return [ipaddress.ip_address("93.184.216.34")]
+
+        monkeypatch.setattr(client_module, "_resolve_host_addresses", _stub)
+        return lookups
+
+    def test_a_temporary_dns_failure_is_retried(
+        self, router: respx.MockRouter, monkeypatch: pytest.MonkeyPatch, no_retry_backoff: None
+    ) -> None:
+        _wire_package_show(router)
+        _wire_redirect_download(router)
+        lookups = self._resolver_failing_first(monkeypatch, socket.EAI_AGAIN)
+
+        responses = _run_fetch(_source_config())
+
+        assert len(responses) == 1
+        assert [_request_kind(c.request) for c in router.calls][0] == "package_show"
+        assert len(lookups) == len(router.calls) + 1, "the failed lookup was not retried"
+
+    def test_a_permanent_dns_failure_is_refused_on_the_first_attempt(
+        self, router: respx.MockRouter, monkeypatch: pytest.MonkeyPatch, no_retry_backoff: None
+    ) -> None:
+        _wire_package_show(router)
+        lookups = self._resolver_failing_first(monkeypatch, socket.EAI_NONAME)
+
+        with pytest.raises(NesoUnsafeRedirectError, match="did not resolve"):
+            _run_fetch(_source_config())
+
+        assert len(lookups) == 1
+        assert router.calls.call_count == 0
+
+
 class TestRedirectPolicy:
     """D-08: manual redirects, one VALIDATED hop at a time."""
 
