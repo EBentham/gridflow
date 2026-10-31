@@ -131,6 +131,7 @@ name = "gridflow"
 version = "0.16.0"
 source = { editable = "." }
 dependencies = [
+    { name = "certifi" },
     { name = "duckdb" },
     { name = "fastexcel" },
     { name = "httpx" },
@@ -158,6 +159,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "certifi", specifier = ">=2024.7.4" },
     { name = "duckdb", specifier = ">=1.0" },
     { name = "fastexcel", specifier = ">=0.21.0" },
     { name = "httpx", specifier = ">=0.27" },
