@@ -2261,11 +2261,15 @@ class TestParserA03ForwardFill:
         assert "document-a03" in caplog.text
         assert "series-a03" in caplog.text
 
+    @pytest.mark.parametrize("a03_as_steps", [False, True])
     @pytest.mark.parametrize("curve_type", ["A03", "A01"])
     @pytest.mark.parametrize("resolution", ["PT5M", ""])
-    def test_unmapped_resolution_refuses_the_period(self, caplog, curve_type: str, resolution: str):
+    def test_unmapped_resolution_refuses_the_period(
+        self, caplog, curve_type: str, resolution: str, a03_as_steps: bool
+    ):
         """Position 2 of a PT5M series starts at 04:05; the old one-hour default
-        stamped it 05:00. A period whose resolution is unknown is refused."""
+        stamped it 05:00. A period whose resolution is unknown is refused, in
+        the outage step mode as well."""
         records = parse_timeseries_xml(
             self._xml(
                 """
@@ -2275,6 +2279,7 @@ class TestParserA03ForwardFill:
                 resolution=resolution,
             ),
             value_tag="quantity",
+            a03_as_steps=a03_as_steps,
         )
 
         assert records == []

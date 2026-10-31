@@ -724,15 +724,6 @@ def _as_steps(
         One record per distinct position, sorted by position, each carrying
         ``step_end_utc``, ``period_start_utc`` and ``period_end_utc``.
     """
-    if resolution_code not in _RESOLUTION_MAP and any(pos > 1 for pos, _ in declared_points):
-        logger.warning(
-            "ENTSO-E document %s series %s: unmapped resolution %r; point times "
-            "after position 1 assume one hour",
-            document_id,
-            timeseries_mrid,
-            resolution_code,
-        )
-
     by_position: dict[int, dict[str, Any]] = {}
     for position, record in declared_points:
         if position in by_position:
