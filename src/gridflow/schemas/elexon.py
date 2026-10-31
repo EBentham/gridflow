@@ -3,23 +3,10 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-from enum import StrEnum
 
 from pydantic import Field, field_validator
 
 from gridflow.schemas.common import BaseSchema
-
-
-class SettlementRunType(StrEnum):
-    """Elexon settlement run type precedence (higher = more final)."""
-
-    II = "II"  # Interim Initial
-    SF = "SF"  # Settlement Final
-    R1 = "R1"  # Reconciliation Run 1
-    R2 = "R2"  # Reconciliation Run 2
-    R3 = "R3"  # Reconciliation Run 3
-    RF = "RF"  # Reconciliation Final
-    DF = "DF"  # Dispute Final
 
 
 class ElexonSystemPrice(BaseSchema):

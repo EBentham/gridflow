@@ -723,7 +723,7 @@ def quality(
     # :371, :516).
     runner.import_transformers()
 
-    reporter = QualityReporter(settings.pipeline.data_dir, settings.pipeline.duckdb_path)
+    reporter = QualityReporter(settings.pipeline.duckdb_path)
     silver_dir = settings.pipeline.data_dir / "silver"
 
     if not silver_dir.exists():

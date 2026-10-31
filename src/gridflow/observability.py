@@ -226,7 +226,7 @@ def _to_naive_utc(dt: datetime) -> datetime:
     The ``pipeline_watermarks`` columns are plain ``TIMESTAMP`` so DuckDB never
     invokes its named-timezone path (which requires pytz/ICU, absent in minimal
     environments such as CI). Callers pass tz-aware UTC; the tz-aware-UTC contract
-    is re-established on read in ``get_watermark``.
+    is re-established on read in ``read_watermark``.
     """
     if dt.tzinfo is not None:
         dt = dt.astimezone(UTC)
@@ -337,43 +337,6 @@ def read_watermark(
     return WatermarkRead(status="absent", value=None)
 
 
-def get_watermark(
-    con: duckdb.DuckDBPyConnection,
-    source: str,
-    dataset: str,
-) -> datetime | None:
-    """Return the last watermark for a source/dataset pair, or ``None``.
-
-    Args:
-        con: Open DuckDB connection.
-        source: Data source name.
-        dataset: Dataset name.
-
-    Returns:
-        The stored ``last_end`` as a tz-aware UTC datetime, or ``None`` if no
-        watermark exists for the pair OR the read failed. Thin wrapper over
-        :func:`read_watermark` -- contract unchanged from before this plan.
-    """
-    snapshot = read_watermark(con, source, dataset)
-    return snapshot.value if snapshot.status == "present" else None
-
-
-def _diagnostic_reread(
-    con: duckdb.DuckDBPyConnection,
-    source: str,
-    dataset: str,
-) -> datetime | None:
-    """Best-effort post-mismatch read for the emitter's diagnostic detail (D-20.4).
-
-    Runs strictly AFTER the write attempt and cannot influence the decision
-    already made; a failure here is swallowed to ``None`` (the record prints
-    ``unavailable``) so a telemetry hiccup on the diagnostic path never
-    escalates.
-    """
-    snap = read_watermark(con, source, dataset)
-    return snap.value if snap.status == "present" else None
-
-
 def advance_watermark(
     con: duckdb.DuckDBPyConnection,
     source: str,
@@ -434,7 +397,7 @@ def advance_watermark(
             changed = row[0] if row else 0
             if changed == 1:
                 return WatermarkWrite(outcome=WatermarkOutcome.ADVANCED)
-            observed = _diagnostic_reread(con, source, dataset)
+            observed = read_watermark(con, source, dataset).value
             return WatermarkWrite(outcome=WatermarkOutcome.CAS_MISMATCH, observed=observed)
         elif expected.status == "absent":
             now = _to_naive_utc(datetime.now(UTC))
@@ -448,7 +411,7 @@ def advance_watermark(
             changed = row[0] if row else 0
             if changed == 1:
                 return WatermarkWrite(outcome=WatermarkOutcome.ADVANCED)
-            observed = _diagnostic_reread(con, source, dataset)
+            observed = read_watermark(con, source, dataset).value
             return WatermarkWrite(outcome=WatermarkOutcome.CAS_MISMATCH, observed=observed)
         else:
             # D-20.5: "unreadable" is unreachable in practice (both call sites

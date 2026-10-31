@@ -35,7 +35,7 @@ from gridflow.silver.openmeteo.historical import (
     HistoricalDemandWeather,
     _pivot_openmeteo_json,
 )
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
 from gridflow.storage.paths import PathBuilder
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openmeteo"
@@ -469,9 +469,8 @@ class TestHistoricalReadBronzeTargetDateFilter:
         rows_written = transformer.run(day1, run_id="p08-historical-exact")
 
         assert rows_written == 24
-        df = read_parquet(
-            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
-        )
+        silver = PathBuilder(tmp_path).silver_dir("open_meteo", "historical_demand")
+        df = scan_parquet_dir(silver).collect()
         assert df["timestamp_utc"].dt.date().unique().to_list() == [day1]
 
     def test_covering_fallback_partition_filters_to_target_date(self, tmp_path: Path) -> None:
@@ -489,9 +488,8 @@ class TestHistoricalReadBronzeTargetDateFilter:
         rows_written = transformer.run(target_date, run_id="p08-historical-fallback")
 
         assert rows_written == 24
-        df = read_parquet(
-            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
-        )
+        silver = PathBuilder(tmp_path).silver_dir("open_meteo", "historical_demand")
+        df = scan_parquet_dir(silver).collect()
         assert df["timestamp_utc"].dt.date().unique().to_list() == [target_date]
 
     def test_long_malformed_time_value_kept_and_flows_to_null_timestamp(
@@ -519,9 +517,8 @@ class TestHistoricalReadBronzeTargetDateFilter:
         # matches target_date) and the malformed row (kept, fail-open hedge;
         # null timestamp_utc since it can't parse as a datetime either).
         assert rows_written == 2
-        df = read_parquet(
-            PathBuilder(tmp_path).silver_glob_pattern("open_meteo", "historical_demand")
-        )
+        silver = PathBuilder(tmp_path).silver_dir("open_meteo", "historical_demand")
+        df = scan_parquet_dir(silver).collect()
         assert df["timestamp_utc"].null_count() == 1
 
 
@@ -585,9 +582,7 @@ class TestForecastDemandWeather:
             run_id="test-run-id",
             reingest=True,
         )
-        df = read_parquet(
-            tmp_path / "silver" / "open_meteo" / "forecast_demand" / "**" / "*.parquet"
-        )
+        df = scan_parquet_dir(tmp_path / "silver" / "open_meteo" / "forecast_demand").collect()
 
         assert set(df["available_at"].to_list()) == {forecast_time}
 

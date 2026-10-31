@@ -52,8 +52,6 @@ trigger registration — add new sources there.
   `reraise=True`. Any other status fails on the first attempt. A source with
   another transient status uses `retry_policy(<status>)` (ENTSO-G retries a
   404 that is not its empty marker).
-- A `CircuitBreaker` exists in `utils/retry.py` but is not applied automatically.
-  Wire it in only if a vendor needs it.
 
 ### Auth patterns
 

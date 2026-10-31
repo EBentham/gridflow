@@ -20,7 +20,7 @@ from gridflow.silver.elexon.remit import REMITTransformer
 from gridflow.silver.entsoe.installed_capacity_units import (
     InstalledCapacityUnitsTransformer,
 )
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
 
 TARGET_DATE = date(2024, 1, 15)
 RUN_ID = "f7-test-run"
@@ -135,8 +135,7 @@ def _write_icu_bronze(data_dir: Path) -> None:
 
 
 def _read_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFrame:
-    pattern = data_dir / "silver" / source / dataset / "**" / "*.parquet"
-    return read_parquet(pattern)
+    return scan_parquet_dir(data_dir / "silver" / source / dataset).collect()
 
 
 def _assert_bitemporal_columns(

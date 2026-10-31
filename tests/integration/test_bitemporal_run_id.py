@@ -11,7 +11,7 @@ from typer.testing import CliRunner
 
 from gridflow.cli import app
 from gridflow.storage.duckdb import get_connection, init_catalogue
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
 TARGET_DATE = date(2024, 1, 15)
@@ -91,7 +91,7 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
 
     assert result.exit_code == 0, result.output
 
-    silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
+    silver = scan_parquet_dir(paths.data_dir / "silver" / "elexon" / "fuelhh").collect()
     run_ids = set(silver["source_run_id"].to_list())
     assert len(run_ids) == 1
 
@@ -163,7 +163,7 @@ def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
 
     assert result.exit_code == 0, result.output
 
-    silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
+    silver = scan_parquet_dir(paths.data_dir / "silver" / "elexon" / "fuelhh").collect()
     assert set(silver["available_at"].to_list()) == {sidecar_time}
 
     con = get_connection(paths.duckdb_path, read_only=True)

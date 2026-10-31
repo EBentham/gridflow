@@ -25,7 +25,7 @@ from gridflow.silver.openmeteo.historical import (
     HistoricalSolarWeather,
     HistoricalWindWeather,
 )
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -74,8 +74,7 @@ def _write_om_bronze(
 
 
 def _read_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFrame:
-    pattern = data_dir / "silver" / source / dataset / "**" / "*.parquet"
-    return read_parquet(pattern)
+    return scan_parquet_dir(data_dir / "silver" / source / dataset).collect()
 
 
 TARGET_DATE = date(2026, 5, 1)

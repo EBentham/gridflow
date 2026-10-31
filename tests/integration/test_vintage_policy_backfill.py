@@ -107,9 +107,8 @@ def test_run_backfill_reconstructs_availability(
     assert len(transforms) == 2
     assert all(item.status in {"success", "completed_with_warnings"} for item in transforms)
     assert sum(item.rows_out for item in transforms) == 2
-    frame = pl.read_parquet(
-        PathBuilder(sample_config.pipeline.data_dir).silver_glob_pattern("elexon", dataset)
-    ).sort("event_time")
+    silver = PathBuilder(sample_config.pipeline.data_dir).silver_dir("elexon", dataset)
+    frame = pl.read_parquet(str(silver / "**" / "[!.]*.parquet")).sort("event_time")
     lag = timedelta(minutes=35 if dataset == "mid" else 90)
     assert frame["available_at"].to_list() == [event + lag for event in calls]
     policy_name = (

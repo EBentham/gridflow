@@ -202,7 +202,7 @@ def test_write_report_db_failure_surfaces(
     data_dir.mkdir()
     duckdb_path = tmp_path / "q.duckdb"
 
-    reporter = QualityReporter(data_dir, duckdb_path)
+    reporter = QualityReporter(duckdb_path)
     reporter.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
 
     def boom(*args: object, **kwargs: object) -> object:
@@ -225,5 +225,5 @@ def test_write_report_empty_still_returns_zero(tmp_path: Path) -> None:
     """The legitimate empty-results path must still return 0 (not raise)."""
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    reporter = QualityReporter(data_dir, tmp_path / "q.duckdb")
+    reporter = QualityReporter(tmp_path / "q.duckdb")
     assert reporter.write_report() == 0
