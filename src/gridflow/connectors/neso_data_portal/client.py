@@ -54,7 +54,6 @@ import socket
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple, final
-from uuid import uuid4
 
 import httpx
 
@@ -85,12 +84,6 @@ if TYPE_CHECKING:
     from gridflow.connectors.neso_data_portal.endpoints import FamilySpec
 
 logger = logging.getLogger(__name__)
-
-# ``httpx.Request.extensions`` is a per-request dict httpx hands to the
-# transport and NEVER serialises onto the wire — the same channel httpx itself
-# uses for ``timeout``. So the attestation marker is invisible to NESO and
-# cannot perturb a presigned request (D-39 §1b).
-_VALIDATED_MARKER = "gridflow_neso_send_token"
 
 # httpx's default is ``accept-encoding: gzip, deflate``. Under any content
 # coding ``Content-Length`` describes the ENCODED representation while a decoded
@@ -555,7 +548,6 @@ class NesoDataPortalConnector(BaseConnector):
         """
         super().__init__(config)
         self._pacer: RunPacer = pacer if pacer is not None else pacer_module.shared_pacer(config)
-        self._issued_send_tokens: set[str] = set()
         self._entered_once = False
         self._bronze_root: Path | None = None
         self._data_paths: PathBuilder | None = None
@@ -599,7 +591,6 @@ class NesoDataPortalConnector(BaseConnector):
         """
         self._entered_once = True
         self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._issued_send_tokens = set()
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url,
             timeout=self.config.timeout,
@@ -642,8 +633,7 @@ class NesoDataPortalConnector(BaseConnector):
         re-resolves the host.
 
         Args:
-            request: The fully-built request. Its ``extensions`` are stamped
-                with a fresh single-use attestation token.
+            request: The fully-built request.
             stream: ``True`` for the file leg, so the body is consumed by
                 :meth:`_read_capped_body` rather than buffered by httpx.
             lane: The pacer lane this send is admitted on (ADR-035). A
@@ -672,16 +662,6 @@ class NesoDataPortalConnector(BaseConnector):
             raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
 
         await self._assert_safe_target(target)
-
-        # Per SEND ATTEMPT, never a per-session nonce: a session-long token
-        # would still sit in ``extensions`` on an already-sent request, so
-        # resending that object — or copying its extensions onto another —
-        # would satisfy the observer while bypassing validation and the
-        # throttle. A fresh token per attempt also attests each retry
-        # independently rather than letting it inherit the first attempt's word.
-        token = uuid4().hex
-        self._issued_send_tokens.add(token)
-        request.extensions[_VALIDATED_MARKER] = token
 
         async with self._semaphore:
             if lane is Lane.CKAN:
@@ -984,7 +964,7 @@ class NesoDataPortalConnector(BaseConnector):
         Raises:
             CkanActionError: The envelope reported failure, the body was not a
                 CKAN envelope, or the package is definitively absent (HTTP 404 —
-                ADR-023 definitive-absent; one dataset per ``fetch()``, so there
+                ADR-023 definitive-absent; one dataset per capture, so there
                 is no sibling to keep going for).
         """
         try:
@@ -1588,78 +1568,12 @@ class NesoDataPortalConnector(BaseConnector):
         end: datetime,
         **params: Any,
     ) -> list[RawResponse]:
-        """Capture one dataset's current whole-file snapshot.
+        """Not supported: every dataset of this source is captured by :meth:`iter_members`.
 
-        The window is **not a selector** (D-16): every resource is a whole-file
-        snapshot with no server-side date filter, so one ``fetch()`` issues
-        exactly one ``package_show``, one redirector request plus its hops, and
-        returns exactly one :class:`RawResponse`. Two invocations differing only
-        in ``start`` produce identical request URLs and params.
-
-        The window is not *unused*, though: ``end`` is screened by D-34 and is
-        what the bronze partition is derived from.
-
-        Args:
-            dataset: One of :data:`~...endpoints.DATASETS`.
-            start: Window start, tz-aware UTC.
-            end: Window end, tz-aware UTC. ``end.date()`` becomes the bronze
-                partition (D-13), so it agrees **by construction** with the last
-                date ``run_transform`` iterates — a download that crosses UTC
-                midnight cannot land where transform is not looking.
-            **params: Unused; accepted for the ``BaseConnector`` signature.
-
-        Returns:
-            A single-element list.
-
-        Raises:
-            ValueError: Unknown dataset, or a malformed window.
-            CkanActionError: The package is absent or CKAN reported failure —
-                definitive-absent for this dataset (ADR-023). Post-retry 5xx and
-                timeouts propagate as ``httpx`` errors.
+        ``run_ingest`` takes the member path for this connector (ADR-033 P-5), the
+        three legacy keys included; ``BaseConnector`` still requires the method.
         """
-        spec = DATASETS.get(dataset)
-        if spec is None:
-            if dataset in endpoints.FAMILIES:
-                raise ValueError(
-                    f"neso_data_portal dataset {dataset!r} is captured through iter_members "
-                    "(bounded) only; fetch() serves the three legacy keys"
-                )
-            raise ValueError(
-                f"unknown neso_data_portal dataset {dataset!r}; available: {sorted(DATASETS)}"
-            )
-
-        self.last_skipped_units = 0
-        self._assert_window_admissible(dataset, start, end)
-
-        package_payload = await self._package_show(spec.package)
-        resource, redirector = self._select_resource(package_payload, spec, dataset)
-        body, redirector_url, http_status, _declared = await self._download_resource(
-            resource, redirector, spec.max_download_bytes, dataset
-        )
-        self._assert_admissible_csv(body, spec, dataset, redirector_url)
-
-        return [
-            RawResponse(
-                body=body,
-                # From the CKAN format check, NEVER from the response header:
-                # the presigned host serves application/octet-stream, which the
-                # bronze writer maps to `.bin` — invisible to the transformer's
-                # `raw_*.csv` glob, so silver would read zero rows from a bronze
-                # tree that is not empty (D-10).
-                content_type="text/csv",
-                source=self.source_name,
-                dataset=dataset,
-                request_url=redirector_url,
-                request_params=_provenance_params(spec.package, package_payload, resource, body),
-                api_version="3",
-                # The status actually observed on the final leg, never a
-                # constant: this is written to the immutable bronze sidecar,
-                # and recording a status we did not see is false provenance
-                # whether or not the falsehood is currently reachable.
-                http_status=http_status,
-                data_date=end.date(),
-            )
-        ]
+        raise NotImplementedError("neso_data_portal captures through iter_members")
 
     # ------------------------------------------------------------------
     # Member capture (ADR-033 P-5..P-8)

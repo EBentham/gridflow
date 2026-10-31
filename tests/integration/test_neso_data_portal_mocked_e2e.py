@@ -23,6 +23,7 @@ import csv
 import io
 import json
 import logging
+import sys
 import tracemalloc
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
@@ -34,7 +35,11 @@ import pytest
 import respx
 from typer.testing import CliRunner
 
-import gridflow.silver.neso_data_portal  # noqa: F401 -- registers the transformers
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "unit"))
+
+from _neso_capture_support import capture_legacy  # noqa: E402
+
+import gridflow.silver.neso_data_portal  # noqa: F401, E402 -- registers the transformers
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.config.settings import load_settings
 from gridflow.connectors import base as connectors_base
@@ -141,9 +146,8 @@ def _window() -> tuple[datetime, datetime]:
 
 async def _fetch_one(config: SourceConfig, start: datetime, end: datetime) -> Any:
     async with NesoDataPortalConnector(config) as connector:
-        responses = await connector.fetch(DATASET, start, end)
-    assert len(responses) == 1, "D-16: the window is not a selector; one fetch, one response"
-    return responses[0]
+        (response,) = await capture_legacy(connector, DATASET, start, end)
+    return response
 
 
 def _partition_parts(bronze_path: Path) -> tuple[str, str, str]:
@@ -420,9 +424,8 @@ def _wire_dataset_legs(router: respx.MockRouter, dataset: str) -> None:
 
 async def _fetch_dataset(config: SourceConfig, dataset: str, start: datetime, end: datetime) -> Any:
     async with NesoDataPortalConnector(config) as connector:
-        responses = await connector.fetch(dataset, start, end)
-    assert len(responses) == 1, "D-16: the window is not a selector; one fetch, one response"
-    return responses[0]
+        (response,) = await capture_legacy(connector, dataset, start, end)
+    return response
 
 
 def _silver_files(data_dir: Path, dataset: str, day: Any) -> list[Path]:

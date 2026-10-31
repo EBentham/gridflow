@@ -979,6 +979,9 @@ class TestNesoDataPortalEndpointDefinitions:
         import ipaddress
         from datetime import timedelta
 
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "unit"))
+        from _neso_capture_support import capture_legacy
+
         from gridflow.connectors.neso_data_portal import client as ndp_client
         from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
 
@@ -1020,7 +1023,7 @@ class TestNesoDataPortalEndpointDefinitions:
 
             async def _run():
                 async with NesoDataPortalConnector(config) as connector:
-                    return await connector.fetch("daily_wind_availability", start, end)
+                    return await capture_legacy(connector, "daily_wind_availability", start, end)
 
             with respx.mock(assert_all_called=False) as router:
                 router.get(

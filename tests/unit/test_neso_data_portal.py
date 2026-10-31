@@ -31,6 +31,7 @@ import httpx
 import polars as pl
 import pytest
 import respx
+from _neso_capture_support import capture_legacy, record_sends, unsent
 from pydantic import Field
 from pydantic import ValidationError as PydanticValidationError
 from tenacity import wait_none
@@ -40,7 +41,6 @@ from gridflow.connectors.neso_data_portal import client as client_module
 from gridflow.connectors.neso_data_portal.client import (
     _MAX_INGEST_WINDOW,
     _MAX_REDIRECT_HOPS,
-    _VALIDATED_MARKER,
     CkanActionError,
     CkanPaginationMismatch,
     NesoDataPortalConnector,
@@ -186,17 +186,17 @@ def _wire_happy_path(router: respx.MockRouter) -> None:
     )
 
 
-def _fetch(
+def _capture(
     config: SourceConfig,
     start: datetime,
     end: datetime,
     dataset: str = DATASET,
 ) -> list[Any]:
-    """Drive one ``fetch()`` through the connector's real async entry point."""
+    """Capture one legacy key through the connector's real async entry point."""
 
     async def _run() -> list[Any]:
         async with NesoDataPortalConnector(config) as connector:
-            return await connector.fetch(dataset, start, end)
+            return await capture_legacy(connector, dataset, start, end)
 
     return asyncio.run(_run())
 
@@ -451,7 +451,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC)
 
-        responses = _fetch(_source_config(), end - timedelta(hours=24), end)
+        responses = _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert len(responses) == 1
         assert len(router.calls) == 2, "one package_show + one resource download"
@@ -485,7 +485,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
 
         with pytest.raises(ValueError):
-            _fetch(_source_config(), start, end)
+            _capture(_source_config(), start, end)
 
         assert len(router.calls) == 0, f"{case}: refused after a request was sent"
 
@@ -494,7 +494,7 @@ class TestWindowAdmission:
         now = datetime.now(UTC)
 
         with pytest.raises(ValueError):
-            _fetch(_source_config(), now, now - timedelta(hours=1))
+            _capture(_source_config(), now, now - timedelta(hours=1))
 
         assert len(router.calls) == 0
 
@@ -514,7 +514,7 @@ class TestWindowAdmission:
         end = datetime.now(UTC) + ahead
 
         with pytest.raises(NesoFutureWindowError) as excinfo:
-            _fetch(_source_config(), end - timedelta(hours=24), end)
+            _capture(_source_config(), end - timedelta(hours=24), end)
 
         message = str(excinfo.value)
         assert "--last 24h" in message
@@ -529,7 +529,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC) + timedelta(minutes=2)
 
-        responses = _fetch(_source_config(), end - timedelta(hours=24), end)
+        responses = _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert len(responses) == 1
 
@@ -540,7 +540,7 @@ class TestWindowAdmission:
         end = datetime.now(UTC) - timedelta(hours=49)
 
         with pytest.raises(NesoHistoricalWindowError) as excinfo:
-            _fetch(_source_config(), end - timedelta(hours=24), end)
+            _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert "neso_data_portal" in str(excinfo.value)
         assert len(router.calls) == 0
@@ -552,7 +552,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC) - timedelta(hours=47)
 
-        responses = _fetch(_source_config(), end - timedelta(hours=1), end)
+        responses = _capture(_source_config(), end - timedelta(hours=1), end)
 
         assert len(responses) == 1
 
@@ -563,7 +563,7 @@ class TestWindowAdmission:
         end = datetime.now(UTC)
 
         with pytest.raises(NesoWindowTooLongError) as excinfo:
-            _fetch(_source_config(), end - timedelta(days=8), end)
+            _capture(_source_config(), end - timedelta(days=8), end)
 
         message = str(excinfo.value)
         assert "8 days" in message
@@ -576,7 +576,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC)
 
-        responses = _fetch(_source_config(), end - timedelta(days=6), end)
+        responses = _capture(_source_config(), end - timedelta(days=6), end)
 
         assert len(responses) == 1
 
@@ -585,7 +585,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
 
         with pytest.raises(NesoWindowTooLongError):
-            _fetch(
+            _capture(
                 _source_config(),
                 datetime(2020, 1, 1, tzinfo=UTC),
                 datetime.now(UTC),
@@ -606,7 +606,7 @@ class TestWindowAdmission:
         end = datetime.now(UTC)
 
         with caplog.at_level(logging.WARNING, logger="gridflow.connectors.neso_data_portal.client"):
-            responses = _fetch(_source_config(max_query_days=1), end - timedelta(days=4), end)
+            responses = _capture(_source_config(max_query_days=1), end - timedelta(days=4), end)
 
         assert len(responses) == 1, "the window is not a selector; the fetch is not refused"
         warnings = [
@@ -646,7 +646,7 @@ class TestResolverStub:
         _wire_happy_path(router)
         end = datetime.now(UTC)
 
-        _fetch(_source_config(), end - timedelta(hours=24), end)
+        _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert stub_neso_resolver, "no send validated its target through the resolver helper"
         assert [host for host, _ in stub_neso_resolver] == ["api.neso.energy"] * len(
@@ -695,26 +695,10 @@ def _now_window() -> tuple[datetime, datetime]:
     return end - timedelta(hours=24), end
 
 
-def _run_fetch(
-    config: SourceConfig,
-    dataset: str = DATASET,
-    *,
-    sink: list[NesoDataPortalConnector] | None = None,
-) -> list[Any]:
-    """Drive ``fetch()`` over a ≈now window, capturing the live connector.
-
-    The connector is appended to ``sink`` BEFORE ``fetch()`` runs, so a test can
-    still interrogate ``_issued_send_tokens`` on a fetch that raises.
-    """
+def _run_capture(config: SourceConfig, dataset: str = DATASET) -> list[Any]:
+    """Capture one legacy key over a ≈now window."""
     start, end = _now_window()
-
-    async def _run() -> list[Any]:
-        async with NesoDataPortalConnector(config) as connector:
-            if sink is not None:
-                sink.append(connector)
-            return await connector.fetch(dataset, start, end)
-
-    return asyncio.run(_run())
+    return _capture(config, start, end, dataset)
 
 
 def _wire_package_show(
@@ -984,10 +968,16 @@ class TestResourceSelection:
         )
 
         with pytest.raises(CkanActionError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert router.calls[0].response.status_code == 200, "the vendor DID answer 200"
         assert "success=false" in str(excinfo.value)
+
+
+@pytest.fixture
+def sends(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """The tags ``_send`` stamped, in order (see :func:`record_sends`)."""
+    return record_sends(monkeypatch)
 
 
 class TestTransportMarkerProof:
@@ -996,61 +986,45 @@ class TestTransportMarkerProof:
     Not by matching source text. The set of syntactic forms that can send is
     open-ended — a module-level ``httpx.get``, a second ``AsyncClient``, an
     alias — and the set of requests that reach the transport is not. respx
-    patches httpx's transport globally, so a bypass is caught by its EFFECT.
+    patches httpx's transport globally, so a bypass is caught by its EFFECT:
+    a request at the transport that ``_send`` was never handed, or was handed
+    fewer times than it arrived.
     """
 
-    def _drive_all_five_kinds(
-        self, router: respx.MockRouter
-    ) -> tuple[NesoDataPortalConnector, list[httpx.Request]]:
+    def _drive_all_five_kinds(self, router: respx.MockRouter) -> list[httpx.Request]:
         _wire_package_show(router)
         _wire_redirect_download(router)
         _wire_catalog(router, [["alpha", "beta"]])
         _add_catch_all(router)
-
-        sink: list[NesoDataPortalConnector] = []
         start, end = _now_window()
 
         async def _run() -> None:
             async with NesoDataPortalConnector(_source_config()) as connector:
-                sink.append(connector)
-                await connector.fetch(DATASET, start, end)
+                await capture_legacy(connector, DATASET, start, end)
                 await connector.discover_catalog()
 
         asyncio.run(_run())
-        return sink[0], [call.request for call in router.calls]
+        return [call.request for call in router.calls]
 
-    def test_every_request_reaching_the_transport_carries_a_live_token(
-        self, router: respx.MockRouter
+    def test_every_request_reaching_the_transport_went_through_send(
+        self, router: respx.MockRouter, sends: list[int]
     ) -> None:
-        """Assertion (1): EVERY recorded request, iterated — not the ones we
-        expected. The observer CONSUMES each token, so a replayed request fails
-        on its second appearance exactly as an absent one fails on its first.
-        """
-        connector, recorded = self._drive_all_five_kinds(router)
-        issued = connector._issued_send_tokens
+        """EVERY recorded request, iterated — not the ones we expected — was
+        handed to ``_send``, once, and every send reached the transport."""
+        recorded = self._drive_all_five_kinds(router)
 
         assert recorded, "no traffic was recorded at all"
-        for request in recorded:
-            token = request.extensions.get(_VALIDATED_MARKER)
-            assert token is not None, f"unmarked request reached the transport: {request.url}"
-            assert token in issued, (
-                f"request to {request.url} carried a token the connector never issued "
-                "(or one already consumed — tokens are single-use)"
-            )
-            issued.remove(token)
-
-        assert issued == set(), (
-            "the connector issued tokens for sends that never reached the transport"
-        )
+        assert unsent(recorded, sends) == [], "a request reached the transport outside _send"
+        assert len(sends) == len(recorded), "a send never reached the transport"
 
     def test_the_recorded_traffic_covers_all_five_inventory_kinds(
         self, router: respx.MockRouter
     ) -> None:
-        """Assertion (2): the coverage claim the proof rests on is itself
-        asserted. A stated-completeness claim that is off by one is how this
-        family decays — revision 6 said "four" and omitted ``package_list``.
+        """The coverage claim the proof rests on is itself asserted. A
+        stated-completeness claim that is off by one is how this family decays —
+        revision 6 said "four" and omitted ``package_list``.
         """
-        _connector, recorded = self._drive_all_five_kinds(router)
+        recorded = self._drive_all_five_kinds(router)
 
         kinds = {_request_kind(request) for request in recorded}
 
@@ -1062,82 +1036,25 @@ class TestTransportMarkerProof:
             "package_list",
         }, f"observed kinds {sorted(kinds)}"
 
-    def test_positive_control_an_unmarked_client_is_detected(
-        self, router: respx.MockRouter
+    def test_positive_control_a_bypass_and_a_replay_are_detected(
+        self, router: respx.MockRouter, sends: list[int]
     ) -> None:
-        """Assertion (3): a SEPARATE phase over a SEPARATE list.
+        """A rogue client's request, and an already-sent ``Request`` resent outside
+        ``_send``, are each exactly what the check reports — so the proof above
+        can fail."""
+        recorded = self._drive_all_five_kinds(router)
+        assert unsent(recorded, sends) == []
 
-        The control must not contaminate assertion (1)'s list, or it would force
-        an ad-hoc URL exemption inside the very property being proven — which is
-        the hole, not the proof. So: complete (1) over a snapshot, then issue an
-        unmarked request and inspect only what came after.
-        """
-        connector, recorded = self._drive_all_five_kinds(router)
-        already_seen = len(recorded)
-        assert all(request.extensions.get(_VALIDATED_MARKER) is not None for request in recorded)
-
-        async def _rogue() -> None:
+        async def _bypass() -> None:
             async with httpx.AsyncClient() as rogue_client:
                 await rogue_client.get("https://api.neso.energy/api/3/action/package_list")
+                await rogue_client.send(recorded[0])
 
-        asyncio.run(_rogue())
+        asyncio.run(_bypass())
 
-        new_calls = [call.request for call in router.calls][already_seen:]
-        assert len(new_calls) == 1, "the rogue request was not intercepted at all"
-        assert new_calls[0].extensions.get(_VALIDATED_MARKER) is None, (
-            "the rogue request carried a marker — the mechanism cannot detect a bypass"
-        )
-        assert new_calls[0].extensions.get(_VALIDATED_MARKER) not in connector._issued_send_tokens
-
-    def test_two_sends_yield_different_tokens(self, router: respx.MockRouter) -> None:
-        """Assertion (4a): a per-session nonce would be replayable."""
-        _connector, recorded = self._drive_all_five_kinds(router)
-
-        tokens = [request.extensions[_VALIDATED_MARKER] for request in recorded]
-
-        assert len(tokens) == len(set(tokens)), f"tokens repeated across sends: {tokens}"
-        assert len(tokens) >= 2
-
-    def test_a_replayed_request_is_rejected_because_its_token_was_consumed(
-        self, router: respx.MockRouter
-    ) -> None:
-        """Assertion (4c): resending an already-sent ``Request`` object must not
-        satisfy the observer.
-
-        This is the failure the per-attempt design exists to close: a
-        session-long nonce would still sit in ``extensions``, so a replay would
-        pass validation-by-attestation while bypassing the real check.
-        """
-        connector, recorded = self._drive_all_five_kinds(router)
-        already_seen = len(recorded)
-
-        # The observer runs over the real traffic and CONSUMES each token, on
-        # the connector's own set — not a local copy. Asserting against a copy
-        # after removing from it is a tautology, not a test.
-        for request in recorded:
-            connector._issued_send_tokens.remove(request.extensions[_VALIDATED_MARKER])
-        assert connector._issued_send_tokens == set()
-
-        replayed = recorded[0]
-        original_token = replayed.extensions[_VALIDATED_MARKER]
-
-        async def _resend() -> None:
-            async with httpx.AsyncClient() as replay_client:
-                await replay_client.send(replayed)
-
-        asyncio.run(_resend())
-
-        new_calls = [call.request for call in router.calls][already_seen:]
-        assert len(new_calls) == 1, "the replayed request was not intercepted"
-        observed = new_calls[0].extensions.get(_VALIDATED_MARKER)
-        assert observed == original_token, (
-            "precondition: the replay must carry the ORIGINAL token — _send never "
-            "touched it, so a session-long nonce would still be riding along here"
-        )
-        assert observed not in connector._issued_send_tokens, (
-            "a replayed request satisfied the observer — the token was not single-use, "
-            "so resending an already-sent Request would bypass validation and the throttle"
-        )
+        everything = [call.request for call in router.calls]
+        assert len(everything) == len(recorded) + 2, "the bypass was not intercepted"
+        assert unsent(everything, sends) == everything[len(recorded) :]
 
     def test_the_package_contains_no_retired_streaming_constructs(self) -> None:
         """Two textual assertions whose job is D-09's RETIREMENT, not bypass
@@ -1201,7 +1118,7 @@ class TestSendClassification:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        responses = _run_fetch(_source_config())
+        responses = _run_capture(_source_config())
 
         assert len(responses) == 1
         hops = [c for c in router.calls if _request_kind(c.request) == "resource_url"]
@@ -1232,7 +1149,7 @@ class TestSendClassification:
         )
 
         with pytest.raises(httpx.HTTPStatusError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed anyway"
 
@@ -1249,7 +1166,7 @@ class TestSendClassification:
             ]
         )
 
-        responses = _run_fetch(_source_config())
+        responses = _run_capture(_source_config())
 
         assert len(responses) == 1
         file_leg = [c for c in router.calls if _request_kind(c.request) == "resource_url"]
@@ -1262,7 +1179,7 @@ class TestSendClassification:
         router.get(url__startswith=PACKAGE_SHOW_URL).mock(return_value=httpx.Response(404))
 
         with pytest.raises(CkanActionError, match="does not exist"):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert len(router.calls) == 1
 
@@ -1279,7 +1196,7 @@ class TestSendClassification:
         )
 
         with pytest.raises(httpx.HTTPStatusError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1300,7 +1217,7 @@ class TestResponseLifecycle:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         redirect = next(r for r in sent_responses if r.has_redirect_location)
         assert redirect.is_closed, "the unread 302 leaked its connection"
@@ -1318,7 +1235,7 @@ class TestResponseLifecycle:
         _wire_redirect_download(router, file_response=httpx.Response(200, stream=stream))
 
         with pytest.raises(NesoResponseTooLargeError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         # The cap really was what fired, not the stream simply ending.
         assert stream.pulled < len(stream.chunks)
@@ -1335,7 +1252,7 @@ class TestResponseLifecycle:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         body_response = sent_responses[-1]
         assert not body_response.has_redirect_location
@@ -1361,7 +1278,7 @@ class TestResourceUrlShape:
         payload["result"]["resources"][0]["url"] = url
         _wire_package_show(router, payload)
         _add_catch_all(router)
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
     def test_an_already_resolved_presigned_url_is_refused(
         self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
@@ -1466,7 +1383,7 @@ class TestResourceUrlShape:
         _add_catch_all(router)
 
         with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "user:pass" not in str(excinfo.value), "the refusal echoed the credentials"
         downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
@@ -1483,7 +1400,7 @@ class TestResourceUrlShape:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         assert raw.request_url == DAILY_WIND_RESOURCE_URL
 
@@ -1545,7 +1462,7 @@ class TestInitialUrlValidation:
         self._resolver_good_then(monkeypatch, *addresses)
 
         with pytest.raises(NesoUnsafeRedirectError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
         assert downloads == [], f"{case}: a request reached the rejected target"
@@ -1575,7 +1492,7 @@ class TestTemporaryDnsFailure:
         _wire_redirect_download(router)
         lookups = self._resolver_failing_first(monkeypatch, socket.EAI_AGAIN)
 
-        responses = _run_fetch(_source_config())
+        responses = _run_capture(_source_config())
 
         assert len(responses) == 1
         assert [_request_kind(c.request) for c in router.calls][0] == "package_show"
@@ -1588,7 +1505,7 @@ class TestTemporaryDnsFailure:
         lookups = self._resolver_failing_first(monkeypatch, socket.EAI_NONAME)
 
         with pytest.raises(NesoUnsafeRedirectError, match="did not resolve"):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert len(lookups) == 1
         assert router.calls.call_count == 0
@@ -1605,7 +1522,7 @@ class TestRedirectPolicy:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         hops = [c for c in router.calls if _request_kind(c.request) == "redirect_hop"]
         assert len(hops) == 1
@@ -1626,7 +1543,7 @@ class TestRedirectPolicy:
             return_value=httpx.Response(200, content=DAILY_WIND_CSV)
         )
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         followed = [
             str(c.request.url) for c in router.calls if "/files/relative.csv" in str(c.request.url)
@@ -1674,7 +1591,7 @@ class TestRedirectPolicy:
         assert real_resolver is not _selective
 
         with pytest.raises(NesoUnsafeRedirectError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         sent_elsewhere = [
             str(c.request.url) for c in router.calls if "elsewhere.example" in str(c.request.url)
@@ -1691,7 +1608,7 @@ class TestRedirectPolicy:
         )
 
         with pytest.raises(client_module.NesoRedirectLoopError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         hops = [c for c in router.calls if _request_kind(c.request) == "redirect_hop"]
         assert len(hops) == _MAX_REDIRECT_HOPS, (
@@ -1711,7 +1628,7 @@ class TestCrossHostHygiene:
         _wire_package_show(router)
         _wire_redirect_download(router, with_cookies=True)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         hop = next(c for c in router.calls if _request_kind(c.request) == "redirect_hop")
         assert "cookie" not in {k.lower() for k in hop.request.headers}, (
@@ -1724,7 +1641,7 @@ class TestCrossHostHygiene:
         _wire_package_show(router)
         _wire_redirect_download(router, with_cookies=True)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         hop = next(c for c in router.calls if _request_kind(c.request) == "redirect_hop")
         assert hop.request.headers["host"] == httpx.URL(PRESIGNED_URL).netloc.decode()
@@ -1746,7 +1663,7 @@ class TestContentEncoding:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         for kind in ("resource_url", "redirect_hop"):
             call = next(c for c in router.calls if _request_kind(c.request) == kind)
@@ -1772,7 +1689,7 @@ class TestContentEncoding:
         )
 
         with pytest.raises(NesoUnexpectedEncodingError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "gzip" in str(excinfo.value)
         assert stream.pulled == 0, "the guard must fire before a byte is read"
@@ -1787,7 +1704,7 @@ class TestContentEncoding:
             ),
         )
 
-        assert len(_run_fetch(_source_config())) == 1
+        assert len(_run_capture(_source_config())) == 1
 
 
 class TestSizeCap:
@@ -1809,7 +1726,7 @@ class TestSizeCap:
         )
 
         with pytest.raises(NesoResponseTooLargeError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert stream.pulled == 0, "the body was read despite a declared oversize"
         assert str(cap) in str(excinfo.value)
@@ -1824,7 +1741,7 @@ class TestSizeCap:
         _wire_redirect_download(router, file_response=httpx.Response(200, stream=stream))
 
         with pytest.raises(NesoResponseTooLargeError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert stream.pulled < len(stream.chunks), (
             "the connector buffered the whole body instead of aborting mid-stream"
@@ -1846,7 +1763,7 @@ class TestSizeCap:
         )
 
         with pytest.raises(NesoResponseTooLargeError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert stream.pulled < len(stream.chunks), "the whole body was buffered"
 
@@ -1866,7 +1783,7 @@ class TestTransportCompleteness:
         )
 
         with pytest.raises(NesoTruncatedBodyError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         message = str(excinfo.value)
         assert "999999" in message
@@ -1882,7 +1799,7 @@ class TestTransportCompleteness:
         _wire_redirect_download(router, file_response=httpx.Response(200, stream=stream))
 
         with pytest.raises(NesoTruncatedBodyError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1903,7 +1820,7 @@ class TestTransportCompleteness:
         )
 
         with pytest.raises(NesoTruncatedBodyError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         attempts = [c for c in router.calls if _request_kind(c.request) == "resource_url"]
         assert len(attempts) == 1, f"the interrupted read was retried {len(attempts)} times"
@@ -1928,7 +1845,7 @@ class TestAdmissionLadder:
         )
 
         with pytest.raises((NotCsvBodyError, CsvHeaderDriftError)):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1942,7 +1859,7 @@ class TestAdmissionLadder:
         )
 
         with pytest.raises(NotCsvBodyError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1959,7 +1876,7 @@ class TestAdmissionLadder:
         )
 
         with pytest.raises(CsvHeaderDriftError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "MEGAWATTS" in str(excinfo.value)
         assert raw_response_spy == []
@@ -1983,7 +1900,7 @@ class TestAdmissionLadder:
         _wire_redirect_download(router, file_response=httpx.Response(200, content=body))
 
         with pytest.raises(NesoEmptyResourceError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == [], case
 
@@ -1998,11 +1915,7 @@ class TestRawResponseShape:
         _wire_redirect_download(router)
         start, end = _now_window()
 
-        async def _run() -> list[Any]:
-            async with NesoDataPortalConnector(_source_config()) as connector:
-                return await connector.fetch(DATASET, start, end)
-
-        (raw,) = asyncio.run(_run())
+        (raw,) = _capture(_source_config(), start, end)
 
         assert raw.content_type == "text/csv", "D-10: from CKAN metadata, not the header"
         assert raw.request_url == DAILY_WIND_RESOURCE_URL, "D-11: the redirector, never R2"
@@ -2019,7 +1932,7 @@ class TestRawResponseShape:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         assert set(raw.request_params) == {
             "package",
@@ -2030,6 +1943,11 @@ class TestRawResponseShape:
             "ckan_last_modified",
             "ckan_format",
             "body_sha256",
+            # The member path's own keys (ADR-033).
+            "capture_family",
+            "url_type",
+            "empty_capture",
+            "declared_content_length",
         }
         assert raw.request_params["package"] == "daily-wind-availability"
         assert raw.request_params["resource_filename"] == "windavailability.csv"
@@ -2077,7 +1995,7 @@ class TestThrottle:
 
         router.route(url__regex=r".*").mock(side_effect=_stamp)
 
-        _run_fetch(_source_config(rate_limit_per_second=1))
+        _run_capture(_source_config(rate_limit_per_second=1))
 
         assert len(sent_at) == 3, "a three-send happy path must record three timestamps"
         gaps = [b - a for a, b in zip(sent_at, sent_at[1:], strict=False)]
@@ -2112,7 +2030,7 @@ class TestThrottle:
             ]
         )
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         assert len(calls) == len(router.calls), (
             f"{len(calls)} throttle calls for {len(router.calls)} sends — a retry attempt "
@@ -2138,7 +2056,7 @@ class TestThrottle:
 
         router.route(url__regex=r".*").mock(side_effect=_stamp)
 
-        _run_fetch(_source_config(rate_limit_per_second=1))
+        _run_capture(_source_config(rate_limit_per_second=1))
 
         assert len(sent_at) == 3, "expected package_show + a failed attempt + its retry"
         gaps = [b - a for a, b in zip(sent_at, sent_at[1:], strict=False)]
@@ -2310,7 +2228,7 @@ class TestObservedHttpStatus:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         assert raw.http_status == 200
 
@@ -2332,7 +2250,7 @@ class TestObservedHttpStatus:
         )
 
         with pytest.raises(NesoUnexpectedStatusError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "206" in str(excinfo.value)
         assert raw_response_spy == [], "a partial body reached RawResponse construction"
@@ -2344,7 +2262,7 @@ class TestObservedHttpStatus:
         _wire_redirect_download(router, file_response=httpx.Response(203, content=DAILY_WIND_CSV))
 
         with pytest.raises(NesoUnexpectedStatusError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
 
 # The credential components of the presigned test URL. If either of these
@@ -2451,7 +2369,7 @@ class TestCredentialsCannotLeave:
         _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL, file_response=file_response)
 
         with caplog.at_level(logging.DEBUG), pytest.raises(expected) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         emitted = str(excinfo.value) + "\n" + _connector_log_text(caplog)
         assert _TEST_SIGNATURE not in emitted, f"{case}: X-Amz-Signature escaped"
@@ -2483,7 +2401,7 @@ class TestCredentialsCannotLeave:
         )
 
         with caplog.at_level(logging.DEBUG), pytest.raises(httpx.HTTPStatusError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         chain = "".join(
             traceback.format_exception(
@@ -2527,7 +2445,7 @@ class TestCredentialsCannotLeave:
         monkeypatch.setattr(client_module, "_resolve_host_addresses", _stub)
 
         with caplog.at_level(logging.DEBUG), pytest.raises(NesoUnsafeRedirectError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         emitted = str(excinfo.value) + "\n" + _connector_log_text(caplog)
         assert _TEST_SIGNATURE not in emitted
@@ -2540,7 +2458,7 @@ class TestCredentialsCannotLeave:
         _wire_package_show(router)
         _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         recorded = raw.request_url + "\n" + repr(raw.request_params)
         assert _TEST_SIGNATURE not in recorded
@@ -2733,7 +2651,7 @@ class TestCredentialsCannotLeave:
         _add_catch_all(router)
 
         with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         message = str(excinfo.value)
         assert "leaky-path-segment" not in message, "the unproven path was echoed"
@@ -2756,7 +2674,7 @@ class TestCredentialsCannotLeave:
         _add_catch_all(router)
 
         with pytest.raises(NesoUnsafeRedirectError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         message = str(excinfo.value)
         assert "not a resolvable URL" in message
