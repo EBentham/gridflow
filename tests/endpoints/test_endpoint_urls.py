@@ -101,7 +101,6 @@ class TestElexonNewDatasetParams:
             ("indo", "/datasets/INDO"),
             ("itsdo", "/datasets/ITSDO"),
             ("indod", "/datasets/INDOD"),
-            ("nonbm", "/datasets/NONBM"),
             ("inddem", "/datasets/INDDEM"),
             ("indgen", "/datasets/INDGEN"),
             ("tsdf", "/datasets/TSDF"),
@@ -155,7 +154,7 @@ class TestElexonDatePathParams:
 
 
 class TestElexonFromToParams:
-    """Verify from/to style PUBLISH_DATETIME endpoints (boal, disbsad, mid, netbsad)."""
+    """Verify from/to style PUBLISH_DATETIME endpoints (boal, disbsad, mid, netbsad, nonbm)."""
 
     @pytest.mark.parametrize(
         "dataset,expected_path",
@@ -164,6 +163,7 @@ class TestElexonFromToParams:
             ("disbsad", "/datasets/DISBSAD"),
             ("mid", "/datasets/MID"),
             ("netbsad", "/datasets/NETBSAD"),
+            ("nonbm", "/datasets/NONBM"),
         ],
     )
     def test_from_to_param_style(self, dataset: str, expected_path: str):

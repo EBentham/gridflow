@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
@@ -14,7 +14,42 @@ from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
 
+if TYPE_CHECKING:
+    from pathlib import Path
+
 logger = logging.getLogger(__name__)
+
+# NONBM ignores publishDateTimeFrom/To and returns its latest record whatever
+# the window (connectors/elexon/endpoints.py), so only a body whose sidecar
+# shows it was fetched with from/to is a response for its partition. Fail
+# closed: a body with no readable proof is excluded, because the stale record
+# looks like valid data. Excluded bodies stay in bronze (immutable).
+_HONOURED_WINDOW_PARAMS = frozenset({"from", "to"})
+_IGNORED_WINDOW_PARAMS = frozenset({"publishDateTimeFrom", "publishDateTimeTo"})
+
+
+def _window_exclusion_reason(raw_path: Path) -> str | None:
+    """Say why a NONBM bronze body cannot be trusted to match its window.
+
+    Args:
+        raw_path: Path of the ``raw_*.json`` body; its sidecar sits beside it.
+
+    Returns:
+        None when the sidecar records ``from``/``to`` and none of the ignored
+        names, else a short reason for the exclusion warning.
+    """
+    try:
+        meta = json.loads(raw_path.with_suffix(".meta.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as e:
+        return f"its sidecar cannot be read ({e})"
+    params = meta.get("request_params") if isinstance(meta, dict) else None
+    if not isinstance(params, dict):
+        return "its sidecar records no request_params"
+    if not _IGNORED_WINDOW_PARAMS.isdisjoint(params):
+        return "it was fetched with publishDateTimeFrom/To, which the vendor ignores"
+    if not _HONOURED_WINDOW_PARAMS.issubset(params):
+        return "its sidecar records no from/to window"
+    return None
 
 
 class NONBMTransformer(BaseSilverTransformer):
@@ -45,6 +80,11 @@ class NONBMTransformer(BaseSilverTransformer):
             try:
                 data = json.loads(f.read_text())
                 records = data.get("data", []) if isinstance(data, dict) else data
+                reason = _window_exclusion_reason(f)
+                if reason is not None:
+                    self.last_excluded_row_count += len(records)
+                    logger.warning("NONBM: excluded %d row(s) from %s: %s", len(records), f, reason)
+                    continue
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as e:
                 logger.warning(f"Failed to parse bronze file {f}: {e}")
