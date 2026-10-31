@@ -52,14 +52,29 @@ _ACK_REASON_NS = {
     "ack": "urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0",
 }
 
-# G9 ENTSOE-01: ENTSO-E caps high-cardinality endpoints (A37 balancing
-# energy bids, A15 procured balancing capacity, A38 cross-zonal capacity,
-# etc.) at 4800 TimeSeries elements per response and requires the caller
-# to page through results via the `offset` query parameter (0, 4800,
-# 9600, ...). Doc types that support pagination declare `"offset"` in
-# their optional_params. Below this constant the connector terminates
-# the paging loop.
-_ENTSOE_PAGE_SIZE = 4800
+# G9 ENTSOE-01: ENTSO-E pages high-cardinality endpoints (A37 balancing
+# energy bids, A15 procured balancing capacity) through the `offset` query
+# parameter. A reply carries at most 100 series and `offset=n` returns series
+# n+1..n+100 (live probe 2026-10-24, FR A37 and A15 for 2026-08-01: 100 series
+# at offsets 0, 100, 200 and 4800, with no overlap between pages, and the
+# A37 day only ran out past offset 30000). 4800 is the API guide's offset
+# ceiling, not the page size, and the vendor does not enforce it for A37.
+# Doc types that support pagination declare `"offset"` in their
+# optional_params; a page with fewer than _ENTSOE_PAGE_SIZE series ends the
+# loop.
+_ENTSOE_PAGE_SIZE = 100
+
+# Runaway guard: fail the fetch after this many pages (1,000,000 series)
+# rather than loop forever if the vendor ever keeps returning full pages.
+_ENTSOE_MAX_PAGES = 10_000
+
+# A37 replies (ReserveBid_MarketDocument) name their series Bid_TimeSeries;
+# every other document type uses TimeSeries.
+_SERIES_ELEMENT_NAMES = frozenset({"TimeSeries", "Bid_TimeSeries"})
+
+
+class EntsoePagingLimitError(RuntimeError):
+    """Raised when a paged ENTSO-E request still returns full pages at the page cap."""
 
 
 class EntsoeConnector(BaseConnector):
@@ -265,8 +280,8 @@ class EntsoeConnector(BaseConnector):
         (G9 ENTSOE-01 — A37 balancing energy bids, A15 procured balancing
         capacity, etc.), the function pages through results: starting at
         the doc type's default offset and incrementing by
-        ``_ENTSOE_PAGE_SIZE`` (4800) until a page returns fewer
-        TimeSeries elements than the page size.
+        ``_ENTSOE_PAGE_SIZE`` (100) until a page returns fewer
+        series elements than the page size.
         """
         query_params: dict[str, str] = {"documentType": doc_type.document_type}
         if doc_type.date_param:
@@ -301,12 +316,13 @@ class EntsoeConnector(BaseConnector):
             raw = await self._request(_ENTSOE_API_PATH, query_params)
             return self._raw_response_to_records(raw, dataset, query_params, data_date)
 
-        # G9 ENTSOE-01: page until a response carries < page-size TimeSeries.
+        # G9 ENTSOE-01: page until a response carries < page-size series.
         all_responses: list[RawResponse] = []
         try:
             offset = int(query_params.get("offset", "0"))
         except ValueError:
             offset = 0
+        pages_fetched = 0
         while True:
             query_params["offset"] = str(offset)
             raw = await self._request(_ENTSOE_API_PATH, query_params)
@@ -331,6 +347,15 @@ class EntsoeConnector(BaseConnector):
             ts_count = sum(count if count is not None else 0 for count in counts)
             if ts_count < _ENTSOE_PAGE_SIZE:
                 break
+            pages_fetched += 1
+            if pages_fetched >= _ENTSOE_MAX_PAGES:
+                # Fail the fetch rather than return a short one: a partial
+                # result would count as a successful ingest and move the
+                # watermark past series that were never fetched.
+                raise EntsoePagingLimitError(
+                    f"ENTSO-E {dataset} paging stopped after {_ENTSOE_MAX_PAGES} pages at "
+                    f"offset {offset} with full pages still arriving"
+                )
             offset += _ENTSOE_PAGE_SIZE
         return all_responses
 
@@ -451,14 +476,18 @@ def _extract_acknowledgement_reason(content: bytes) -> str:
 
 
 def count_timeseries_or_none(xml_bytes: bytes) -> int | None:
-    """Count `<TimeSeries>` elements in an ENTSO-E XML response, or None.
+    """Count series elements in an ENTSO-E XML response, or None.
+
+    Counts both ``<TimeSeries>`` and ``<Bid_TimeSeries>`` (the A37
+    ReserveBid_MarketDocument series name); counting only the former left
+    every A37 page at 0, so the pager never asked for page two.
 
     C-8/D-8/D-18: the primitive parse. Namespace-agnostic — checks the
     local-name part of each tag. Returns ``None`` (not ``0``) on an empty
     body, a missing lxml dependency, or a malformed document — a parse
     FAILURE must never be conflated with "zero records" (D-8): that would
     turn every malformed page into a permanent frontier freeze. A
-    well-formed document carrying no ``<TimeSeries>`` elements at all
+    well-formed document carrying no series elements at all
     correctly yields ``0``.
     """
     if not xml_bytes:
@@ -477,7 +506,7 @@ def count_timeseries_or_none(xml_bytes: bytes) -> int | None:
         tag = el.tag
         if isinstance(tag, str):
             local = tag.split("}", 1)[1] if "}" in tag else tag
-            if local == "TimeSeries":
+            if local in _SERIES_ELEMENT_NAMES:
                 count += 1
     return count
 

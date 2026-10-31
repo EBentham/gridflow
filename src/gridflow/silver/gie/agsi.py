@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import re
-from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, cast
+from datetime import UTC, date, datetime, timedelta
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -15,7 +15,7 @@ import polars as pl
 
 from gridflow.connectors.gie.client import classify_news_record_for_window
 from gridflow.connectors.gie.endpoints import parse_listing_inventory
-from gridflow.schemas.gie import GasStorage
+from gridflow.schemas.gie import GasStorage, GasStorageUnavailability
 from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
 from gridflow.silver.registry import register_transformer
 
@@ -532,9 +532,43 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
 
     dataset = "unavailability"
     fallback_to_latest_partition = False
+    # 1.1.0: a partition holds only the outages overlapping its day. Under 1.0.0
+    # every partition held the full bronze outage set (live start/end keys were
+    # never read), so the stamp is how a consumer tells the two regimes apart.
+    # 2.0.0: one row per (outage_date, vendor record), deduplicated on that key;
+    # country/company/facility flattened to code and name columns; published,
+    # start and end typed as naive datetimes and volume, injection and withdrawal
+    # as floats (all String under 1.x); designated date column outage_date
+    # instead of the ingest stamp.
+    DATASET_VERSION = "2.0.0"
+    schema_cls = GasStorageUnavailability
+    # The whole vendor record plus the day it overlaps. Nothing narrower is
+    # unique: the injection and withdrawal notices of one cancelled outage
+    # share facility, window, publication and figures and differ only in
+    # description (2 such pairs in the 2026-08 capture). Every publication is
+    # kept, so a revised notice sits beside the one it supersedes.
+    ENTITY_KEY_COLUMNS = (
+        "outage_date",
+        "country_code",
+        "country_name",
+        "company_eic",
+        "company_name",
+        "facility_eic",
+        "facility_name",
+        "published",
+        "start",
+        "end",
+        "type",
+        "end_flag",
+        "volume",
+        "injection",
+        "withdrawal",
+        "description",
+    )
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
+        undated_count = 0
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
@@ -542,9 +576,80 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
                 continue
             for record in self._records_from_payload(payload):
-                if _unavailability_record_overlaps(record, target_date):
-                    rows.append(record)
-        return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
+                classification = _classify_unavailability_record(record, target_date)
+                if classification == "outside":
+                    continue
+                if classification == "undated":
+                    undated_count += 1
+                rows.append(_flatten_unavailability_record(record, target_date))
+        if undated_count:
+            logger.warning(
+                "%s/%s: %d record(s) had no parseable start/end for target_date %s; "
+                "kept (fail-open hedge) rather than dropped",
+                self.source,
+                self.dataset,
+                undated_count,
+                target_date,
+            )
+        if not rows:
+            return pl.DataFrame()
+        return pl.DataFrame(rows, schema=_UNAVAILABILITY_RAW_SCHEMA)
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        """Deduplicate the vendor records as written, then type them.
+
+        ``published``, ``start`` and ``end`` stay naive: AGSI states no timezone
+        and its reporters mix clocks (Austrian and Dutch stamps move between
+        04:00 and 05:00 with summer time, so they read as UTC; French ones sit at
+        06:00 all year, so they read as local time). Converting them to UTC would
+        assert a zone the vendor never gave.
+
+        Args:
+            raw_df: Output of :meth:`read_bronze` (all-String vendor fields plus
+                ``outage_date``).
+
+        Returns:
+            One row per distinct vendor record and day, sorted deterministically.
+        """
+        if raw_df.is_empty():
+            return pl.DataFrame()
+        # On the vendor strings, before parsing: a date-only end and a midnight
+        # end mean different windows but type to one datetime, and unparseable
+        # values all type to null, so a typed-key dedup could merge real notices.
+        raw_df = raw_df.unique(keep="first", maintain_order=True)
+
+        unparseable = 0
+        rows: list[dict[str, Any]] = []
+        for raw in raw_df.to_dicts():
+            row: dict[str, Any] = dict(raw)
+            for column in ("published", "start", "end"):
+                row[column] = _naive_wall_clock(raw[column])
+                unparseable += raw[column] is not None and row[column] is None
+            for column in ("volume", "injection", "withdrawal"):
+                row[column] = _safe_float(raw[column])
+                unparseable += raw[column] is not None and row[column] is None
+            row["data_provider"] = "gie_agsi"
+            row["ingested_at"] = datetime.now(UTC)
+            rows.append(row)
+        if unparseable:
+            logger.warning(
+                "%s/%s: %d vendor value(s) could not be parsed and were written as null",
+                self.source,
+                self.dataset,
+                unparseable,
+            )
+
+        df = pl.DataFrame(rows, schema=_UNAVAILABILITY_SILVER_SCHEMA)
+        collisions = int(df.select(list(self.ENTITY_KEY_COLUMNS)).is_duplicated().sum())
+        if collisions:
+            logger.warning(
+                "%s/%s: %d row(s) are distinct vendor records that type to one key "
+                "(kept, never merged)",
+                self.source,
+                self.dataset,
+                collisions,
+            )
+        return df.sort(list(self.ENTITY_KEY_COLUMNS), nulls_last=True, maintain_order=True)
 
     def _bronze_files(self, target_date: date) -> list[Path]:
         files = self._bronze_files_for_date(target_date)
@@ -701,17 +806,182 @@ def _filter_news_records_to_target_date(
     return kept
 
 
-def _unavailability_record_overlaps(record: dict[str, Any], target_date: date) -> bool:
+_UNAVAILABILITY_START_KEYS = ("event_start", "start_at", "gas_day_start", "start")
+_UNAVAILABILITY_END_KEYS = ("event_end", "end_at", "gas_day_end", "end")
+
+
+def _classify_unavailability_record(
+    record: dict[str, Any], target_date: date
+) -> Literal["overlap", "outside", "undated"]:
+    """Classify an AGSI unavailability record against the calendar day ``target_date``.
+
+    Handles both record shapes: the live API's ``start``/``end``
+    (``"YYYY-MM-DD HH:MM:SS"``, naive) and the fixture's
+    ``eventStart``/``eventEnd`` (ISO 8601 with offset). The outage window
+    ``[start, end)`` overlaps the day ``[target_date 00:00, +1 day)``. A
+    date-only end covers that whole day. A missing bound is open-ended on
+    that side. A record whose bounds are all missing, or any present bound
+    fails to parse, is ``"undated"``: callers keep it and warn, never drop it.
+
+    Args:
+        record: One raw AGSI unavailability record (either shape).
+        target_date: The silver partition day.
+
+    Returns:
+        ``"overlap"``, ``"outside"`` or ``"undated"``.
+    """
     row = _normalise_row(record)
-    event_start = _safe_date(_first(row, "event_start", "start_at", "gas_day_start"))
-    event_end = _safe_date(_first(row, "event_end", "end_at", "gas_day_end"))
-    if event_start is None and event_end is None:
-        return True
-    # At least one bound is set (None-None handled above); coalescing an open-ended
-    # window collapses it to a point, so both are non-None here.
-    start = cast("date", event_start or event_end)
-    end = cast("date", event_end or event_start)
-    return start <= target_date <= end
+    raw_start = _first(row, *_UNAVAILABILITY_START_KEYS)
+    raw_end = _first(row, *_UNAVAILABILITY_END_KEYS)
+    start = _unavailability_bound(raw_start, is_end=False)
+    end = _unavailability_bound(raw_end, is_end=True)
+    if (raw_start is not None and start is None) or (raw_end is not None and end is None):
+        return "undated"
+    if start is None and end is None:
+        return "undated"
+
+    day_start = datetime(target_date.year, target_date.month, target_date.day)
+    day_end = day_start + timedelta(days=1)
+    if start is None:
+        overlaps = cast("datetime", end) > day_start
+    elif end is None:
+        overlaps = start < day_end
+    elif end <= start:
+        # Zero-length or inverted window: anchor the record on its start.
+        overlaps = day_start <= start < day_end
+    else:
+        overlaps = start < day_end and end > day_start
+    return "overlap" if overlaps else "outside"
+
+
+def _unavailability_bound(value: Any, *, is_end: bool) -> datetime | None:
+    """Parse an unavailability window bound to a naive wall-clock datetime.
+
+    Offset-aware values are converted to UTC. Naive values are kept as the
+    vendor's wall clock: AGSI does not state their timezone, and comparing
+    them at day granularity does not depend on it. A date-only end is
+    exclusive at the following midnight, so the named day is covered.
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        parsed = value
+    elif isinstance(value, date):
+        parsed = datetime(value.year, value.month, value.day)
+        return parsed + timedelta(days=1) if is_end else parsed
+    else:
+        text = str(value).strip()
+        try:
+            if len(text) == 10:
+                day = date.fromisoformat(text)
+                parsed = datetime(day.year, day.month, day.day)
+                return parsed + timedelta(days=1) if is_end else parsed
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            return None
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(UTC).replace(tzinfo=None)
+    return parsed
+
+
+_UNAVAILABILITY_RAW_SCHEMA: dict[str, pl.DataType] = {
+    "outage_date": pl.Date(),
+    "country_code": pl.String(),
+    "country_name": pl.String(),
+    "company_eic": pl.String(),
+    "company_name": pl.String(),
+    "facility_eic": pl.String(),
+    "facility_name": pl.String(),
+    "published": pl.String(),
+    "start": pl.String(),
+    "end": pl.String(),
+    "type": pl.String(),
+    "end_flag": pl.String(),
+    "volume": pl.String(),
+    "injection": pl.String(),
+    "withdrawal": pl.String(),
+    "description": pl.String(),
+}
+
+_UNAVAILABILITY_SILVER_SCHEMA: dict[str, pl.DataType] = {
+    **_UNAVAILABILITY_RAW_SCHEMA,
+    "published": pl.Datetime("us"),
+    "start": pl.Datetime("us"),
+    "end": pl.Datetime("us"),
+    "volume": pl.Float64(),
+    "injection": pl.Float64(),
+    "withdrawal": pl.Float64(),
+    "data_provider": pl.String(),
+    "ingested_at": pl.Datetime("us", "UTC"),
+}
+
+
+def _flatten_unavailability_record(record: dict[str, Any], target_date: date) -> dict[str, Any]:
+    """Flatten one AGSI unavailability record into String fields plus its day.
+
+    The live record nests ``country`` (``name``/``code``), ``company`` and
+    ``facility`` (``name``/``eic``). A bare string in one of those slots is read
+    as the code or EIC. Window bounds fall back to the older
+    ``eventStart``/``eventEnd`` spellings the overlap classifier also accepts.
+
+    Args:
+        record: One raw vendor record.
+        target_date: The calendar day the record overlaps (the partition day).
+
+    Returns:
+        A row matching ``_UNAVAILABILITY_RAW_SCHEMA``.
+    """
+    row = _normalise_row(record)
+
+    def text(value: Any) -> str | None:
+        if value is None:
+            return None
+        if isinstance(value, (dict, list)):
+            return _json_string(value)
+        stripped = str(value).strip()
+        return stripped or None
+
+    def nested(key: str, field: str) -> str | None:
+        value = row.get(key)
+        if isinstance(value, dict):
+            return text(value.get(field))
+        return text(value) if field in ("code", "eic") else None
+
+    return {
+        "outage_date": target_date,
+        "country_code": nested("country", "code"),
+        "country_name": nested("country", "name"),
+        "company_eic": nested("company", "eic"),
+        "company_name": nested("company", "name"),
+        "facility_eic": nested("facility", "eic"),
+        "facility_name": nested("facility", "name"),
+        "published": text(_first(row, "published", "updated_at")),
+        "start": text(_first(row, *_UNAVAILABILITY_START_KEYS)),
+        "end": text(_first(row, *_UNAVAILABILITY_END_KEYS)),
+        "type": text(row.get("type")),
+        "end_flag": text(row.get("end_flag")),
+        "volume": text(row.get("volume")),
+        "injection": text(row.get("injection")),
+        "withdrawal": text(row.get("withdrawal")),
+        "description": text(row.get("description")),
+    }
+
+
+def _naive_wall_clock(value: str | None) -> datetime | None:
+    """Parse a vendor stamp to a naive datetime, keeping the vendor's clock.
+
+    An offset-aware stamp is converted to UTC and its offset dropped, so the
+    column stays one naive type. A date-only stamp reads as midnight.
+    """
+    if value is None:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is not None:
+        parsed = parsed.astimezone(UTC).replace(tzinfo=None)
+    return parsed
 
 
 def _metadata_request_window_contains(path: Path, target_date: date) -> bool:

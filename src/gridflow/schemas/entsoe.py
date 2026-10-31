@@ -146,19 +146,34 @@ class EntsoeWindSolarForecast(BaseSchema):
 class EntsoeOutagesGeneration(BaseSchema):
     """Silver-layer schema for ENTSO-E unavailability of generation units (A80).
 
-    One row per (timestamp_utc, unit_mrid). unit_mrid uniquely identifies the
-    generation unit (from RegisteredResource.mRID); unit_name is the
-    human-readable name when present. outage_type is the mapped form of
-    ENTSO-E businessType: A53 -> "planned", A54 -> "unplanned".
-    unavailable_mw is the MW unavailable during the interval (XML <quantity>).
+    One row per step of one outage document's latest revision, clipped to the
+    partition's UTC day: ``timestamp_utc`` to ``step_end_utc``. unit_mrid is
+    the production unit (production_RegisteredResource.mRID) and
+    generation_unit_mrid the generation unit inside it; nominal_mw is that
+    unit's nominal power. outage_type is the mapped form of ENTSO-E
+    businessType: A53 -> "planned", A54 -> "unplanned". unavailable_mw is the
+    XML <quantity> of the Available_Period; whether that is the available or
+    the unavailable power is unverified (backlog 13am).
     """
 
     timestamp_utc: datetime
-    area_code: str  # control area / bidding zone EIC mRID
-    unit_mrid: str  # RegisteredResource mRID — unit identity
-    unit_name: str = ""  # human-readable unit name; may be absent
+    step_end_utc: datetime
+    area_code: str  # bidding zone EIC mRID
+    unit_mrid: str  # production unit mRID
+    unit_name: str = ""
+    generation_unit_mrid: str = ""
+    generation_unit_name: str = ""
+    production_type: str = ""
+    nominal_mw: float | None = None
     outage_type: str  # "planned" (A53) | "unplanned" (A54)
     unavailable_mw: float
+    business_type: str = ""
+    document_mrid: str = ""
+    revision_number: int | None = None
+    document_status: str = ""  # "A09" = cancelled
+    timeseries_mrid: str = ""
+    outage_start_utc: datetime | None = None
+    outage_end_utc: datetime | None = None
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
@@ -506,13 +521,17 @@ class EntsoeOutagesConsumption(BaseSchema):
     """Silver schema for aggregated consumption-unit outages (A76)."""
 
     timestamp_utc: datetime
+    step_end_utc: datetime
     area_code: str
     outage_type: str
     unavailable_mw: float
     business_type: str = ""
     document_mrid: str = ""
-    document_status: str = ""
+    revision_number: int | None = None
+    document_status: str = ""  # "A09" = cancelled
     timeseries_mrid: str = ""
+    outage_start_utc: datetime | None = None
+    outage_end_utc: datetime | None = None
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
@@ -530,6 +549,7 @@ class EntsoeOutagesTransmission(BaseSchema):
     """Silver schema for transmission infrastructure outages (A78)."""
 
     timestamp_utc: datetime
+    step_end_utc: datetime
     in_area_code: str
     out_area_code: str
     asset_mrid: str = ""
@@ -538,8 +558,11 @@ class EntsoeOutagesTransmission(BaseSchema):
     unavailable_mw: float
     business_type: str = ""
     document_mrid: str = ""
-    document_status: str = ""
+    revision_number: int | None = None
+    document_status: str = ""  # "A09" = cancelled
     timeseries_mrid: str = ""
+    outage_start_utc: datetime | None = None
+    outage_end_utc: datetime | None = None
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
@@ -557,15 +580,20 @@ class EntsoeOutagesOffshoreGrid(BaseSchema):
     """Silver schema for offshore-grid infrastructure outages (A79)."""
 
     timestamp_utc: datetime
+    step_end_utc: datetime
     area_code: str
     asset_mrid: str = ""
     asset_name: str = ""
+    nominal_mw: float | None = None
     outage_type: str = ""
     unavailable_mw: float
     business_type: str = ""
     document_mrid: str = ""
-    document_status: str = ""
+    revision_number: int | None = None
+    document_status: str = ""  # "A09" = cancelled
     timeseries_mrid: str = ""
+    outage_start_utc: datetime | None = None
+    outage_end_utc: datetime | None = None
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
@@ -583,16 +611,21 @@ class EntsoeOutagesProduction(BaseSchema):
     """Silver schema for production-unit outages (A77)."""
 
     timestamp_utc: datetime
+    step_end_utc: datetime
     area_code: str
     unit_mrid: str
     unit_name: str = ""
     production_type: str = ""
+    nominal_mw: float | None = None
     outage_type: str
     unavailable_mw: float
     business_type: str = ""
     document_mrid: str = ""
-    document_status: str = ""
+    revision_number: int | None = None
+    document_status: str = ""  # "A09" = cancelled
     timeseries_mrid: str = ""
+    outage_start_utc: datetime | None = None
+    outage_end_utc: datetime | None = None
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
@@ -649,11 +682,15 @@ class EntsoeTransmissionMarketAmount(BaseSchema):
 
 
 class EntsoeBalancingState(BaseSchema):
-    """Silver-layer schema for current balancing state quantities (A86/B33)."""
+    """Silver-layer schema for current balancing state quantities (A86/B33).
+
+    One row per minute, area and direction (A01 up, A02 down).
+    """
 
     timestamp_utc: datetime
     area_code: str
     quantity_mw: float
+    direction: str = ""
     business_type: str = "B33"
     resolution: str = ""
     published_at: datetime | None = None
@@ -674,6 +711,8 @@ class EntsoeBalancingEnergyBid(BaseSchema):
     timestamp_utc: datetime
     area_code: str
     quantity_mw: float
+    energy_price: float | None = None  # A37 only; absent from aggregated bids
+    currency_unit: str = ""
     business_type: str = ""
     bid_mrid: str = ""
     direction: str = ""
@@ -693,13 +732,25 @@ class EntsoeBalancingEnergyBid(BaseSchema):
 
 
 class EntsoeBalancingCapacity(BaseSchema):
-    """Silver-layer schema for H8 single-area balancing capacity quantities."""
+    """Silver-layer schema for H8 single-area balancing capacity quantities.
+
+    One row per procured series (offer) per point; procured MW for an area is
+    the sum over series, not any single row.
+    """
 
     timestamp_utc: datetime
     area_code: str
     quantity_mw: float
+    procurement_price: float | None = None
+    currency_unit: str = ""
     market_agreement_type: str = ""
+    direction: str = ""
+    standard_market_product: str = ""
+    original_market_product: str = ""
+    psr_type: str = ""
     business_type: str = ""
+    document_mrid: str = ""
+    series_mrid: str = ""
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")

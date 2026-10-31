@@ -13,6 +13,7 @@ from gridflow.connectors.gie.endpoints import AGSI_COUNTRIES, ALSI_COUNTRIES
 from gridflow.schemas.gie import GasStorage, LNGTerminal
 from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
 from gridflow.silver.gie.agsi import (
+    _UNAVAILABILITY_RAW_SCHEMA,
     AboutListingTransformer,
     AboutSummaryTransformer,
     GasStorageTransformer,
@@ -20,6 +21,7 @@ from gridflow.silver.gie.agsi import (
     NewsTransformer,
     StorageReportsTransformer,
     UnavailabilityTransformer,
+    _flatten_unavailability_record,
 )
 from gridflow.silver.gie.alsi import LNGTerminalTransformer
 from gridflow.silver.registry import list_transformers
@@ -460,24 +462,35 @@ class TestAgsiReferenceTransformers:
         assert result["turl"].to_list() == ["demo-news"]
 
     def test_unavailability_transform_basic(self):
+        """Detects the live record shape left as String or nested JSON: one flattened
+        record types its stamps naive, its figures Float64 and keeps its facility EIC."""
         transformer = _make_transformer(UnavailabilityTransformer)
-        result = transformer.transform(
-            pl.DataFrame(
-                [
-                    {
-                        "id": "unav-1",
-                        "status": "planned",
-                        "eventStart": "2026-05-01T06:00:00Z",
-                        "eventEnd": "2026-05-02T06:00:00Z",
-                        "unavailableCapacity": "12.5",
-                    }
-                ]
-            )
+        record = {
+            "published": "2026-04-30 05:50:09",
+            "country": {"name": "France", "code": "FR"},
+            "company": {"name": "Storengy", "eic": "21X000000001083B"},
+            "facility": {"name": "VGS SEDIANE B", "eic": "21W0000000000702"},
+            "start": "2026-05-01 06:00:00",
+            "end": "2026-05-02 06:00:00",
+            "volume": "0.000",
+            "injection": "0.0",
+            "withdrawal": "12.5",
+            "description": "N/A",
+            "end_flag": "Confirmed",
+            "type": "Planned",
+        }
+        raw = pl.DataFrame(
+            [_flatten_unavailability_record(record, date(2026, 5, 1))],
+            schema=_UNAVAILABILITY_RAW_SCHEMA,
         )
+        result = transformer.transform(raw)
 
         assert len(result) == 1
-        assert result["event_start"].dtype == pl.Datetime("us", "UTC")
-        assert result["unavailable_capacity"].to_list() == [12.5]
+        assert result["start"].dtype == pl.Datetime("us")
+        assert result["start"].to_list() == [datetime(2026, 5, 1, 6, 0)]
+        assert result["withdrawal"].to_list() == [12.5]
+        assert result["facility_eic"].to_list() == ["21W0000000000702"]
+        assert result["outage_date"].to_list() == [date(2026, 5, 1)]
 
     def test_about_listing_run_retains_target_date_midnight(
         self,

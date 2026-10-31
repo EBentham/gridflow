@@ -216,4 +216,4 @@ def test_every_elexon_dataset_is_filtered_or_exempt_with_a_reason() -> None:
         assert in_scope or exempt, f"{dataset} is neither filtered nor exempt with a reason"
         assert not (in_scope and exempt), f"{dataset} is both in scope and exempt"
 
-    assert len(PUBLICATION_WINDOW_EXEMPT) == 11
+    assert len(PUBLICATION_WINDOW_EXEMPT) == 12
