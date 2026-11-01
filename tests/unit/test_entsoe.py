@@ -2866,6 +2866,23 @@ class TestActualGenerationUnitsTransformer:
         assert len(result) == 4
 
 
+@pytest.mark.parametrize(
+    ("cls", "fixture"),
+    [
+        (ActualGenerationUnitsTransformer, "actual_generation_units_gb.xml"),
+        (InstalledCapacityUnitsTransformer, "installed_capacity_units_gb.xml"),
+    ],
+)
+def test_unit_series_without_a_unit_mrid_are_dropped(cls, fixture):
+    """A null or empty unit mRID leaves no unit to key on, so those rows go."""
+    raw = _make_df_from_xml(fixture, "quantity")
+    mrids = raw["unit_mrid"].to_list()
+    mrids[0], mrids[1] = None, ""
+    result = _make_entsoe_transformer(cls).transform(raw.with_columns(unit_mrid=pl.Series(mrids)))
+    assert set(result["unit_mrid"].to_list()) == set(mrids[2:])
+    assert result.height < raw.height
+
+
 class TestWaterReservoirsTransformer:
     def setup_method(self):
         self.t = _make_entsoe_transformer(WaterReservoirsTransformer)
