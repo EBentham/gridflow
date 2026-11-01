@@ -1,14 +1,20 @@
-"""Shared builders for the NESO generic silver engine tests (ADR-034).
+"""Shared builders for the NESO generic silver engine and records tests (ADR-034).
 
-Not a test module (no ``test_`` prefix). Three things live here so every test
-uses one copy of each:
+Not a test module (no ``test_`` prefix). Everything here exists once so every
+test uses the same copy:
 
 - :func:`write_capture` — a synthetic bronze capture in unit A's sidecar shape
   (``publish_capture`` output), streaming large bodies from a writer callable;
 - :func:`install_generated` — P-15's test seam: install a tmp registry and the
   generated transformer set, specs and ingest-only reasons through
   ``monkeypatch.setitem`` so nothing leaks into the registry-wide loops;
-- :func:`assert_same_output` — P-14's B7 equality helper.
+- :func:`assert_same_output` — P-14's B7 equality helper;
+- the records-test harness: :func:`write_recorded_capture` for a fixture
+  capture row, :func:`point_settings` for a data root (the short root itself is
+  ``tests/conftest.py``'s ``short_root``), :func:`record_of`,
+  :func:`silver_frame`, :func:`no_silver`, :func:`output_names`,
+  :func:`package_doc`, :func:`query`, :func:`both_as_of`, :func:`tree_bytes`
+  and :func:`run_cli`.
 
 Only the standard library is imported at module level, so the memory probe can
 import :func:`write_capture` in a fresh interpreter cheaply.
@@ -16,20 +22,22 @@ import :func:`write_capture` in a fresh interpreter cheaply.
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import io
 import json
 import os
 from datetime import UTC, date, datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, BinaryIO
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable
-    from pathlib import Path
 
     import polars as pl
     import pytest
 
-    from gridflow.connectors.neso_data_portal.registry import Registry
+    from gridflow.connectors.neso_data_portal.registry import Registry, SchemaRecord
 
 
 SOURCE = "neso_data_portal"
@@ -139,6 +147,48 @@ def write_capture(
     return body_path, sidecar
 
 
+def write_recorded_capture(
+    data_dir: Path,
+    meta: Any,
+    body: bytes,
+    *,
+    day: date,
+    package: str,
+    package_id: str,
+    **overrides: Any,
+) -> str:
+    """Write a recorded fixture capture with its real sidecar values; its capture id.
+
+    ``meta`` is a records test's capture row: ``family``, ``resource_id``,
+    ``name``, ``filename``, ``modified`` and ``written`` (an ISO instant). The
+    capture is an upload unless ``overrides`` says otherwise; ``overrides``
+    replaces any other :func:`write_capture` argument, ``key`` included.
+    """
+    from gridflow.silver.neso_data_portal.completion import capture_id_for
+
+    arguments: dict[str, Any] = {
+        "body": body,
+        "partition": day,
+        "package_slug": package,
+        "package_id": package_id,
+        "url_type": "upload",
+        **overrides,
+    }
+    for argument, field in (
+        ("key", "family"),
+        ("resource_id", "resource_id"),
+        ("resource_name", "name"),
+        ("resource_filename", "filename"),
+        ("ckan_last_modified", "modified"),
+    ):
+        if argument not in arguments:
+            arguments[argument] = getattr(meta, field)
+    if "written_at" not in arguments:
+        arguments["written_at"] = datetime.fromisoformat(meta.written).astimezone(UTC)
+    path, _sidecar = write_capture(data_dir, **arguments)
+    return capture_id_for(path, data_dir)
+
+
 def install_generated(
     monkeypatch: pytest.MonkeyPatch, directory: Path, packages: list[dict[str, Any]]
 ) -> tuple[Registry, Any]:
@@ -232,3 +282,126 @@ def frame_from(header: list[str], rows: list[list[str | None]]) -> pl.DataFrame:
 def utc(*parts: int) -> datetime:
     """A tz-aware UTC datetime."""
     return datetime(*parts, tzinfo=UTC)  # type: ignore[misc]
+
+
+# --------------------------------------------------------------------------- #
+# Records-test harness
+# --------------------------------------------------------------------------- #
+
+
+def point_settings(data_dir: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Point ``load_settings`` (and so the CLI) at ``data_dir``; no gold views."""
+    from gridflow.pipeline import runner as pipeline_runner
+
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(data_dir / "cat.duckdb"))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(data_dir / "logs"))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    pipeline_runner.import_transformers()
+
+
+def run_cli(*args: str) -> tuple[int, list[str]]:
+    """The reconcile CLI's ``main(args)`` with stdout captured: ``(exit code, lines)``."""
+    from gridflow.connectors.neso_data_portal.reconcile import main
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        code = main(list(args))
+    return code, buffer.getvalue().splitlines()
+
+
+def record_of(key: str) -> SchemaRecord:
+    """Family ``key``'s frozen record in the registry ``load_registry`` returns now."""
+    from gridflow.connectors.neso_data_portal import registry
+
+    record = registry.load_registry().families[key][1].record
+    assert record is not None, key
+    return record
+
+
+def silver_frame(data_dir: Path, key: str) -> pl.DataFrame:
+    """Every silver output file of family ``key`` under ``data_dir``, concatenated."""
+    import polars as pl
+
+    files = sorted((data_dir / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
+    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
+
+
+def no_silver(data_dir: Path, key: str) -> bool:
+    """Whether family ``key`` has no silver output file under ``data_dir``."""
+    return not list((data_dir / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
+
+
+def output_names(key: str) -> list[str]:
+    """The generic output columns of ``key``'s record, without the partition columns."""
+    from gridflow.silver.neso_data_portal import generic
+
+    return [
+        name
+        for name, _type in generic.output_columns(record_of(key))
+        if name not in ("year", "month")
+    ]
+
+
+def package_doc(name: str) -> dict[str, Any]:
+    """A committed registry package document, by slug or by file name."""
+    from gridflow.connectors.neso_data_portal import registry
+
+    filename = name if name.endswith(".json") else f"{name}.json"
+    path = Path(registry.__file__).parent / filename
+    document: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    return document
+
+
+def query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
+    """``sql`` on the catalogue at ``db``, read-only, as a Polars frame."""
+    import duckdb
+
+    con = duckdb.connect(str(db), read_only=True)
+    try:
+        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
+    finally:
+        con.close()
+
+
+def both_as_of(db: Path, data_dir: Path, key: str, as_of: datetime | None) -> list[str]:
+    """The catalogue's ``_latest`` (or P-3's parameterised select) = Polars; capture ids."""
+    import polars as pl
+
+    from gridflow.silver.latest_views import (
+        LATEST_VIEW_SPECS,
+        latest_select_sql,
+        select_latest_vintage,
+    )
+    from gridflow.silver.neso_data_portal.completion import scan_completions
+
+    def ids(frame: pl.DataFrame) -> list[str]:
+        return sorted(frame["bronze_capture_id"].to_list())
+
+    view = f"silver_{SOURCE}_{key}"
+    spec = LATEST_VIEW_SPECS[(SOURCE, key)]
+    if as_of is None:
+        sql = ids(query(db, f'SELECT * FROM "{view}_latest"'))
+    else:
+        columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        select = latest_select_sql(view, spec, columns, as_of_param=True)
+        assert select is not None
+        sql = ids(query(db, select, {"as_of": as_of.isoformat()}))
+    files = sorted((data_dir / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
+    polars: list[str] = []
+    if files:
+        lf = pl.scan_parquet(files, hive_partitioning=False)
+        polars = ids(
+            select_latest_vintage(lf, spec, as_of, completions=scan_completions(data_dir)).collect()
+        )
+    assert sql == polars, (key, as_of, sql, polars)
+    return sql
+
+
+def tree_bytes(data_dir: Path, top: str) -> dict[str, bytes]:
+    """Every file under ``data_dir / top`` by relative path, with its bytes."""
+    return {
+        p.relative_to(data_dir / top).as_posix(): p.read_bytes()
+        for p in sorted((data_dir / top).rglob("*"))
+        if p.is_file()
+    }

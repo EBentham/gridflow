@@ -11,31 +11,13 @@
     {
       "key": "upcoming_trades",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "REG",
-      "refresh": "daily",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "ID",
-              "Date",
-              "SP",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO_Flag",
-              "Reason",
-              "Note",
-              "Last_Updated"
-            ],
             "columns": [
               {
                 "source": "ID",
@@ -100,10 +82,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

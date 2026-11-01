@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from _neso_generic_support import point_settings, run_cli
 from test_neso_multi_resource import DAY, HEADER, KEY, capture_multi, install_multi
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -30,7 +31,6 @@ from gridflow.connectors.neso_data_portal.registry import (
     RECONCILE_ADJUDICATIONS_FILE,
     RegistryError,
 )
-from gridflow.pipeline import runner as pipeline_runner
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     completion_row,
@@ -53,29 +53,12 @@ def _t(hour: int, minute: int = 0) -> datetime:
     return datetime(2026, 10, 7, hour, minute, tzinfo=UTC)
 
 
-def point_settings(data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Point ``load_settings`` (and so the CLI) at ``data``; no gold views."""
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(data / "cat.duckdb"))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(data / "logs"))
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    pipeline_runner.import_transformers()
-
-
 @pytest.fixture
 def data(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
     root = tmp_path_factory.mktemp("j")
     point_settings(root, monkeypatch)
     return root
-
-
-def run_cli(*args: str) -> tuple[int, list[str]]:
-    """``main(args)`` with stdout captured; returns ``(exit code, lines)``."""
-    buffer = io.StringIO()
-    with contextlib.redirect_stdout(buffer):
-        code = main(list(args))
-    return code, buffer.getvalue().splitlines()
 
 
 def build_w0(data: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:

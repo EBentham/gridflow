@@ -16,12 +16,12 @@ import sys
 import textwrap
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import both_as_of, install_generated, query, write_capture
 from _neso_registry_support import (
     column,
     epoch,
@@ -36,7 +36,6 @@ from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import RegistryError, SchemaRecord
 from gridflow.connectors.neso_data_portal.registry.record import RESERVED, ColumnSpec
 from gridflow.silver.latest_views import (
-    LATEST_VIEW_SPECS,
     LatestViewSpec,
     latest_select_sql,
     select_latest_vintage,
@@ -49,10 +48,12 @@ from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     capture_id_for,
     read_completion,
-    scan_completions,
 )
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "neso_data_portal"
@@ -490,40 +491,6 @@ def data(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPat
     return tmp_path_factory.mktemp("m")
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
-def _ids(frame: pl.DataFrame) -> list[str]:
-    return sorted(frame["bronze_capture_id"].to_list())
-
-
-def both_as_of(db: Path, data: Path, key: str, as_of: datetime | None) -> list[str]:
-    """The catalogue's ``_latest`` (or P-3's parameterised select) = Polars; capture ids."""
-    view = f"silver_{SOURCE}_{key}"
-    spec = LATEST_VIEW_SPECS[(SOURCE, key)]
-    if as_of is None:
-        sql = _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
-    else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
-        select = latest_select_sql(view, spec, columns, as_of_param=True)
-        assert select is not None
-        sql = _ids(_query(db, select, {"as_of": as_of.isoformat()}))
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    polars: list[str] = []
-    if files:
-        lf = pl.scan_parquet(files, hive_partitioning=False)
-        polars = _ids(
-            select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
-        )
-    assert sql == polars, (key, as_of)
-    return sql
-
-
 class TestEngineAndCatalogue:
     """T-H5: three resources through ``run()``, the catalogue and Polars."""
 
@@ -564,7 +531,7 @@ class TestEngineAndCatalogue:
             assert stamped.len() > 0
             assert stamped.unique().to_list() == [by_capture[letter]]
 
-        views = _query(
+        views = query(
             db,
             "SELECT sql FROM duckdb_views() WHERE view_name = $name",
             {"name": f"silver_{SOURCE}_{KEY}_latest"},
@@ -672,6 +639,7 @@ class TestRecordRules:
 
     def test_t_h6_e_every_committed_record_loads_and_only_resource_partitioned_families_partition(
         self,
+        run_fresh: Callable[..., str],
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name (in a fresh
         interpreter, so nothing collection imported can mask it), and spot-checks named
@@ -693,17 +661,8 @@ class TestRecordRules:
             print("OK", len(recorded), partitioned)
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
     def test_t_h6_f_the_default_dump_carries_no_new_field(self) -> None:
         """Detects a non-``None`` default on the new field, which would change every

@@ -11,29 +11,12 @@
     {
       "key": "dc_forecast_4d",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Service_Type",
-              "EFA_1",
-              "EFA_2",
-              "EFA_3",
-              "EFA_4",
-              "EFA_5",
-              "EFA_6"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -83,10 +66,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -108,30 +88,12 @@
     {
       "key": "dc_forecast_4d_history",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Forecast_Created",
-              "Forecast_Target_Date",
-              "Service_Type",
-              "EFA_1",
-              "EFA_2",
-              "EFA_3",
-              "EFA_4",
-              "EFA_5",
-              "EFA_6"
-            ],
             "columns": [
               {
                 "source": "Forecast_Created",
@@ -188,10 +150,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

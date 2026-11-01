@@ -2,7 +2,7 @@
 
 Not a test module (no ``test_`` prefix). Tests substitute a registry through
 P-1's one seam: :func:`install_registry` monkeypatches
-``registry.load_registry`` and ``endpoints.FAMILIES`` together.
+``registry.load_registry``.
 """
 
 from __future__ import annotations
@@ -13,7 +13,6 @@ import json
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from gridflow.connectors.neso_data_portal import endpoints
 from gridflow.connectors.neso_data_portal import registry as registry_module
 
 if TYPE_CHECKING:
@@ -40,8 +39,6 @@ def family(
     archetype: str = "SER",
     empty_allowed: bool = False,
     max_download_bytes: int = 64 * 1024 * 1024,
-    legacy: bool = False,
-    name_regex: str | None = None,
     record: dict[str, Any] | None = None,
     refresh: str = "daily",
 ) -> dict[str, Any]:
@@ -49,13 +46,10 @@ def family(
     entry: dict[str, Any] = {
         "key": key,
         "kind": kind,
-        "legacy": legacy,
         "archetype": archetype,
         "refresh": refresh,
         "empty_allowed": empty_allowed,
         "max_download_bytes": max_download_bytes,
-        "name_regex": name_regex,
-        "transformer": "bespoke" if legacy else None,
     }
     if record is not None:
         entry["record"] = record
@@ -239,7 +233,6 @@ def install_registry(monkeypatch: pytest.MonkeyPatch, directory: Path) -> Regist
         return loaded if path is None else _REAL_LOAD(path)
 
     monkeypatch.setattr(registry_module, "load_registry", _load)
-    monkeypatch.setattr(endpoints, "FAMILIES", endpoints.build_families(loaded))
     return loaded
 
 
