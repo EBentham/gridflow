@@ -69,6 +69,7 @@ _CLIENT_METHODS: tuple[str, ...] = (
     "get_weather",
     "query",
     "reopen_readonly",
+    "require_con",
 )
 
 # deprecated_alias stays although its views are retired: gridflow_models checks
@@ -110,6 +111,11 @@ def test_client_methods_exist() -> None:
         name for name in _CLIENT_METHODS if not callable(getattr(GridflowClient, name, None))
     ]
     assert not missing, f"GridflowClient lost {missing}"
+
+
+def test_private_require_con_alias_kept_for_models() -> None:
+    # gridflow_models (84c6dde) still calls _require_con; drop this with the alias in 0.24.
+    assert GridflowClient._require_con is GridflowClient.require_con
 
 
 def test_manifest_entry_fields_exist() -> None:

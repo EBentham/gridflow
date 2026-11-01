@@ -133,7 +133,7 @@ def test_query_after_close_raises_clear_error(tiny_duckdb: Path) -> None:
 
 def test_get_tables_after_reopen_works(tiny_duckdb: Path) -> None:
     """get_tables() must work after a close→reopen cycle (covers the
-    second self._require_con() call site)."""
+    second self.require_con() call site)."""
     client = GridflowClient(db_path=tiny_duckdb)
     client.close()
     client.reopen_readonly()
