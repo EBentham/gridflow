@@ -9,6 +9,7 @@ import polars as pl
 
 from gridflow.schemas.elexon import ElexonSOSO
 from gridflow.silver.elexon._base import ElexonTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc_expr
 
@@ -103,14 +104,7 @@ class SOSOTransformer(ElexonTransformer):
         # datetime (indo.py W2.2 pattern) rather than dropping it at select —
         # there is no "event_time<=available_at" invariant to protect (X2-F03:
         # 802/1022 windfor rows legitimately invert it), so emit unconditionally.
-        if "published_at" in df.columns:
-            df = df.with_columns(
-                pl.col("published_at")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-            )
-        else:
-            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
+        df = with_published_at(df, "published_at", dataset=self.dataset)
 
         df = self.dedup_to_grain(df)
 

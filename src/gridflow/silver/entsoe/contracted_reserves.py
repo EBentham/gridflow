@@ -10,7 +10,7 @@ import polars as pl
 from gridflow.schemas.entsoe import EntsoeContractedReserves
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)

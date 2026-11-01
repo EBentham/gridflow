@@ -11,7 +11,7 @@ import polars as pl
 from gridflow.connectors.entsoe.area_codes import area_name_for
 from gridflow.schemas.entsoe import EntsoeActualGeneration
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
