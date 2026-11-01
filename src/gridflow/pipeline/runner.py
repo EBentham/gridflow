@@ -1818,9 +1818,10 @@ def run_backfill(
     For each dataset, walk ``[start_dt, end_dt)`` in ``chunk_days`` windows. Each
     chunk ingests (``write_watermark=False`` — a historical op must never move the
     forward frontier), then transforms the same window, so a final chunk that
-    ends mid-day still transforms its last day. A chunk whose ingest failed is
-    not transformed: partial silver would make a caller that counts silver rows
-    as "done" skip the chunk on retry.
+    ends mid-day still transforms its last day. A chunk whose ingest failed or
+    skipped units is not transformed: partial silver would make a caller that
+    counts silver rows as "done" skip the chunk on retry. A partial ingest is
+    only a warning on its own, so its chunk gets a failed transform result.
 
     One DuckDB connection is reused across all chunks (Windows-safe: no second RW
     handle), and views are refreshed once at the very end after it closes.
@@ -1868,8 +1869,19 @@ def run_backfill(
                     write_watermark=False,
                 )
                 results.extend(ingested)
-                if all(r.ok for r in ingested):
+                if all(r.status == "success" for r in ingested):
                     results.extend(run_transform(ctx, source, [ds], current, chunk_end))
+                elif all(r.ok for r in ingested):
+                    results.append(
+                        DatasetResult(
+                            source=source,
+                            dataset=ds,
+                            operation="transform",
+                            status="failed",
+                            error=f"not run: the chunk's ingest from {current.isoformat()} "
+                            "skipped units; backfill this chunk again",
+                        )
+                    )
                 current = chunk_end
     refresh_views(settings)
     return RunReport(results=results)

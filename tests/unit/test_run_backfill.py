@@ -123,6 +123,43 @@ def test_a_failed_ingest_skips_that_chunks_transform(
     ]
 
 
+def test_a_partial_ingest_skips_the_transform_and_fails_the_run(
+    sample_config: GridflowConfig,
+    calls: dict[str, list[tuple[datetime, datetime]]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """On the backfill path ``completed_with_warnings`` means units were skipped,
+    so the chunk is as incomplete as a failed one, yet on its own it would let
+    the run end ok with no silver for the chunk."""
+
+    def _ingest(
+        _ctx: object,
+        source: str,
+        datasets: list[str],
+        start: datetime,
+        end: datetime,
+        **_kwargs: Any,
+    ) -> list[DatasetResult]:
+        calls["ingest"].append((start, end))
+        return [
+            DatasetResult(source, datasets[0], "ingest", "completed_with_warnings", rows_skipped=1)
+        ]
+
+    monkeypatch.setattr(runner, "run_ingest", _ingest)
+
+    report = runner.run_backfill(
+        sample_config, "elexon", ["system_prices"], D, D + timedelta(days=1)
+    )
+
+    assert calls["transform"] == []
+    assert not report.ok
+    assert [(r.operation, r.status) for r in report.results] == [
+        ("ingest", "completed_with_warnings"),
+        ("transform", "failed"),
+    ]
+    assert "skipped units" in (report.results[1].error or "")
+
+
 def test_on_chunk_reports_each_chunk_once(
     sample_config: GridflowConfig, calls: dict[str, list[tuple[datetime, datetime]]]
 ) -> None:
