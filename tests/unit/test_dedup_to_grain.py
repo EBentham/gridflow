@@ -28,6 +28,7 @@ from gridflow.silver.elexon.melngc import MelNGCTransformer
 from gridflow.silver.elexon.pn import PNTransformer
 from gridflow.silver.elexon.soso import SOSOTransformer
 from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
+from gridflow.silver.entsoe.imbalance_volume import ImbalanceVolumeTransformer
 from gridflow.silver.registry import get_transformer_class, list_transformers
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
@@ -93,9 +94,7 @@ def test_every_transformer_declares_a_grain(source: str, dataset: str) -> None:
 def test_no_elexon_or_entsoe_module_dedups_inline() -> None:
     """The grain lives in ENTITY_KEY_COLUMNS only; an inline key drifts from it."""
     offenders = []
-    for path in sorted(
-        [*SILVER_ROOT.glob("elexon/*.py"), *SILVER_ROOT.glob("entsoe/*.py")]
-    ):
+    for path in sorted([*SILVER_ROOT.glob("elexon/*.py"), *SILVER_ROOT.glob("entsoe/*.py")]):
         for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if (
                 isinstance(node, ast.Call)
@@ -140,9 +139,7 @@ def _boal_row(time_from: str, level: float) -> dict[str, object]:
 )
 def test_segments_reach_silver(cls: type[BaseSilverTransformer], row) -> None:  # type: ignore[no-untyped-def]
     """Two segments of one unit-period are two rows, each with its ``time_from``."""
-    raw = pl.DataFrame(
-        [row("2026-09-14T23:00:00Z", 1.0), row("2026-09-14T23:29:00Z", 0.0)]
-    )
+    raw = pl.DataFrame([row("2026-09-14T23:00:00Z", 1.0), row("2026-09-14T23:29:00Z", 0.0)])
     transformer = _bare(cls)
 
     out = transformer.transform(raw)
@@ -200,12 +197,7 @@ def _soso_rows() -> list[dict[str, object]]:
         (UOU2T14DTransformer, _uou_rows(), "national_grid_bm_unit"),
         (SOSOTransformer, _soso_rows(), "trader_unit"),
     ],
-    ids=[
-        "imbalngc-boundary",
-        "melngc-boundary",
-        "uou2t14d-null-bmunit",
-        "soso-trader_unit",
-    ],
+    ids=["imbalngc-boundary", "melngc-boundary", "uou2t14d-null-bmunit", "soso-trader_unit"],
 )
 def test_grain_columns_preserved(
     cls: type[BaseSilverTransformer], rows: list[dict[str, object]], column: str
@@ -224,9 +216,7 @@ def test_grain_columns_preserved(
 
 
 def test_null_bm_unit_row_validates() -> None:
-    row = UOU2T14DTransformer.__new__(UOU2T14DTransformer).transform(
-        pl.DataFrame(_uou_rows())
-    )
+    row = UOU2T14DTransformer.__new__(UOU2T14DTransformer).transform(pl.DataFrame(_uou_rows()))
     ElexonUOU2T14D(**row.row(0, named=True))
 
 
@@ -248,3 +238,34 @@ def test_old_input_shapes_still_transform(
     out = _bare(cls).transform(pl.DataFrame(data["data"]))
 
     assert out.height == rows
+
+
+def test_unknown_enum_codes_preserve_every_row() -> None:
+    """Two unknown flow directions at one time and area stay two rows (ADR-022)."""
+    base = {
+        "timestamp_utc": datetime(2026, 9, 1, tzinfo=UTC),
+        "control_area_domain": "10YGB----------A",
+        "resolution": "PT15M",
+        "document_created_at": "2026-09-01T10:00:00Z",
+    }
+    raw = pl.DataFrame(
+        [
+            {**base, "flow_direction": "A03", "value": 10.0},
+            {**base, "flow_direction": "A99", "value": 20.0},
+        ]
+    )
+    transformer = _bare(ImbalanceVolumeTransformer)
+
+    out = transformer.transform(raw)
+
+    assert sorted(out["volume_mwh"].to_list()) == [10.0, 20.0]
+    assert transformer.last_unmapped_count == 2
+    assert transformer.last_excluded_row_count == 0
+
+    with_null = pl.DataFrame(
+        [
+            {**base, "flow_direction": None, "value": 10.0},
+            {**base, "flow_direction": "A99", "value": 20.0},
+        ]
+    )
+    assert _bare(ImbalanceVolumeTransformer).transform(with_null).height == 2

@@ -20,13 +20,15 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E contracted reserves (A81) bronze XML → silver Parquet.
 
     Maps businessType A95→"fcr", A96→"afrr", A97→"mfrr", A98→"rr" via replace_strict.
-    Deduplicates on (timestamp_utc, area_code, reserve_type).
+    Deduplicates on (timestamp_utc, area_code, business_type).
     """
 
     source = "entsoe"
     dataset = "contracted_reserves"
     schema_cls = EntsoeContractedReserves
-    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "reserve_type")
+    DATASET_VERSION = "2.0.0"
+    # The raw codes, not their labels: two unknown codes stay two rows (ADR-022).
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -65,6 +67,7 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
                 [
                     "timestamp_utc",
                     "area_code",
+                    "business_type",
                     "reserve_type",
                     "quantity_mw",
                     "resolution",
@@ -85,6 +88,7 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
         output_cols = [
             "timestamp_utc",
             "area_code",
+            "business_type",
             "reserve_type",
             "quantity_mw",
             "resolution",
@@ -100,7 +104,9 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
         )
         if self.last_unmapped_count > 0:
             raw_codes = raw_df.get_column("business_type").unique().to_list()
-            unmapped_codes = sorted(c for c in raw_codes if c not in {"A95", "A96", "A97", "A98"})
+            unmapped_codes = sorted(
+                str(c) for c in raw_codes if c not in {"A95", "A96", "A97", "A98"}
+            )
             logger.warning(
                 "%s/%s: %d unmapped business_type row(s) labelled %r; unmapped raw codes: %s",
                 self.source,

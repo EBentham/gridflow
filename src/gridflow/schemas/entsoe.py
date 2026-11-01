@@ -395,6 +395,7 @@ class EntsoeImbalancePrices(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str  # control area EIC mRID
+    business_type: str | None = None  # raw code, the grain (ADR-022)
     direction: str  # "long" | "short"
     price_eur_mwh: float
     currency: str = "EUR"
@@ -420,6 +421,7 @@ class EntsoeImbalanceVolume(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    flow_direction: str | None = None  # raw code, the grain (ADR-022)
     direction: str  # "long" | "short"
     volume_mwh: float
     resolution: str = ""
@@ -445,6 +447,8 @@ class EntsoeActivatedBalancingQty(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    business_type: str | None = None  # raw code, the grain (ADR-022)
+    flow_direction: str | None = None  # raw code, the grain (ADR-022)
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     direction: str  # "up" | "down"
     quantity_mwh: float
@@ -476,6 +480,8 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    business_type: str | None = None  # raw code, the grain (ADR-022)
+    flow_direction: str | None = None  # raw code, the grain (ADR-022)
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     direction: str  # "up" | "down"
     price_eur_mwh: float
@@ -502,6 +508,7 @@ class EntsoeContractedReserves(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    business_type: str | None = None  # raw code, the grain (ADR-022)
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     quantity_mw: float
     resolution: str = ""

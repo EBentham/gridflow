@@ -21,14 +21,16 @@ class ImbalancePricesTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E imbalance prices (A85) bronze XML → silver Parquet.
 
     Maps businessType A19→"long", A20→"short" via replace_strict.
-    Deduplicates on (timestamp_utc, area_code, direction).
+    Deduplicates on (timestamp_utc, area_code, business_type).
     """
 
     source = "entsoe"
     dataset = "imbalance_prices"
     value_tag = "price.amount"
     schema_cls = EntsoeImbalancePrices
-    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "direction")
+    DATASET_VERSION = "2.0.0"
+    # The raw codes, not their labels: two unknown codes stay two rows (ADR-022).
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
     populated data, PT15M (R3-RESEARCH.md:67); window-bound comparison not
@@ -82,6 +84,7 @@ class ImbalancePricesTransformer(EntsoeXmlTransformer):
                 [
                     "timestamp_utc",
                     "area_code",
+                    "business_type",
                     "direction",
                     "price_eur_mwh",
                     "currency",
@@ -103,6 +106,7 @@ class ImbalancePricesTransformer(EntsoeXmlTransformer):
         output_cols = [
             "timestamp_utc",
             "area_code",
+            "business_type",
             "direction",
             "price_eur_mwh",
             "currency",
@@ -117,7 +121,7 @@ class ImbalancePricesTransformer(EntsoeXmlTransformer):
         self.last_unmapped_count = int(df.filter(pl.col("direction") == UNMAPPED_SENTINEL).height)
         if self.last_unmapped_count > 0:
             raw_codes = raw_df.get_column("business_type").unique().to_list()
-            unmapped_codes = sorted(c for c in raw_codes if c not in {"A19", "A20"})
+            unmapped_codes = sorted(str(c) for c in raw_codes if c not in {"A19", "A20"})
             logger.warning(
                 "%s/%s: %d unmapped business_type row(s) labelled %r; unmapped raw codes: %s",
                 self.source,

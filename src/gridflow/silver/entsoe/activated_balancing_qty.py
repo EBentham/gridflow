@@ -21,13 +21,15 @@ class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
 
     Maps businessType A95→"fcr", A96→"afrr", A97→"mfrr", A98→"rr" via replace_strict.
     Maps flowDirection A01→"up", A02→"down" via replace_strict.
-    Deduplicates on (timestamp_utc, area_code, reserve_type, direction).
+    Deduplicates on (timestamp_utc, area_code, business_type, flow_direction).
     """
 
     source = "entsoe"
     dataset = "activated_balancing_qty"
     schema_cls = EntsoeActivatedBalancingQty
-    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "reserve_type", "direction")
+    DATASET_VERSION = "2.0.0"
+    # The raw codes, not their labels: two unknown codes stay two rows (ADR-022).
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type", "flow_direction")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -82,6 +84,8 @@ class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
                 [
                     "timestamp_utc",
                     "area_code",
+                    "business_type",
+                    "flow_direction",
                     "reserve_type",
                     "direction",
                     "quantity_mwh",
@@ -103,6 +107,8 @@ class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
         output_cols = [
             "timestamp_utc",
             "area_code",
+            "business_type",
+            "flow_direction",
             "reserve_type",
             "direction",
             "quantity_mwh",
@@ -123,8 +129,8 @@ class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
         if self.last_unmapped_count > 0:
             bt_codes = raw_df.get_column("business_type").unique().to_list()
             fd_codes = raw_df.get_column("flow_direction").unique().to_list()
-            unmapped_bt = sorted(c for c in bt_codes if c not in {"A95", "A96", "A97", "A98"})
-            unmapped_fd = sorted(c for c in fd_codes if c not in {"A01", "A02"})
+            unmapped_bt = sorted(str(c) for c in bt_codes if c not in {"A95", "A96", "A97", "A98"})
+            unmapped_fd = sorted(str(c) for c in fd_codes if c not in {"A01", "A02"})
             logger.warning(
                 "%s/%s: %d unmapped row(s) labelled %r; unmapped business_type: %s; "
                 "unmapped flow_direction: %s",
