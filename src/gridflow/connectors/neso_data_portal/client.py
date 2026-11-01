@@ -136,8 +136,9 @@ _HISTORICAL_WINDOW_TOLERANCE = timedelta(hours=48)
 # an ordinary command recurringly: ``ingest --incremental`` resolves each
 # dataset's start from its watermark widened by ``incremental_overlap_hours``
 # (72 h), so every run after the first resolves a span of roughly four days.
-# ``max_query_days`` is, additionally, dead config — no code in the repo reads
-# it. The coupling to the declared 168 h ceiling is pinned by assertion in
+# ``max_query_days`` feeds only the span notice in ``_assert_window_admissible``;
+# ``load_settings`` fills 0 for every portal dataset, which keeps that notice
+# quiet. The coupling to the declared 168 h ceiling is pinned by assertion in
 # ``tests/unit/test_neso_data_portal.py``, so widening that ceiling fails there
 # rather than silently turning this check into a false refusal.
 _MAX_INGEST_WINDOW = timedelta(days=7)

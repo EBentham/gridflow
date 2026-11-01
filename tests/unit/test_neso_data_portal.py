@@ -35,7 +35,12 @@ from _neso_capture_support import capture_legacy, record_sends, unsent
 from pydantic import Field
 from tenacity import wait_none
 
-from gridflow.config.settings import DatasetConfig, PipelineSettings, SourceConfig
+from gridflow.config.settings import (
+    DatasetConfig,
+    PipelineSettings,
+    SourceConfig,
+    load_settings,
+)
 from gridflow.connectors.neso_data_portal import client as client_module
 from gridflow.connectors.neso_data_portal.client import (
     _MAX_INGEST_WINDOW,
@@ -592,6 +597,23 @@ class TestWindowAdmission:
         assert "4 days" in message
         assert "1" in message
         assert "one" in message.lower() or "single" in message.lower()
+
+    def test_the_loaded_config_takes_the_incremental_span_without_a_notice(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Every portal dataset of the loaded config has ``max_query_days`` 0, so the
+        ~4-day ``--incremental`` span, normal for this source, logs no notice; at 1
+        it logged one WARNING per dataset on every incremental run."""
+        config = load_settings().get_source_config("neso_data_portal")
+        connector = NesoDataPortalConnector(config)
+        end = datetime.now(UTC)
+
+        with caplog.at_level(logging.WARNING, logger="gridflow.connectors.neso_data_portal.client"):
+            for dataset in config.datasets:
+                connector._assert_window_admissible(dataset, end - timedelta(days=4), end)
+
+        assert len(config.datasets) == 326
+        assert not [r for r in caplog.records if "max_query_days" in r.getMessage()]
 
     def test_max_ingest_window_is_coupled_to_the_declared_pipeline_ceiling(self) -> None:
         """The bound is not this plan's taste: it is the widest window
