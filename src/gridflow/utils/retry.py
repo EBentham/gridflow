@@ -1,10 +1,9 @@
-"""Retry, backoff, and circuit breaker helpers."""
+"""Retry and backoff helpers."""
 
 from __future__ import annotations
 
 import logging
 from collections.abc import Callable
-from datetime import UTC, datetime
 from typing import Any, TypeVar
 
 import httpx
@@ -78,45 +77,3 @@ def retry_policy(*extra_status_codes: int) -> Callable[[_F], _F]:
 
 
 RETRY_POLICY = retry_policy()
-
-
-class CircuitBreaker:
-    """Simple circuit breaker: closed -> open -> half_open.
-
-    After `failure_threshold` consecutive failures, enters open state
-    for `cooldown_seconds`. Prevents hammering a down API.
-    """
-
-    def __init__(self, failure_threshold: int = 10, cooldown_seconds: int = 300):
-        self.failure_threshold = failure_threshold
-        self.cooldown_seconds = cooldown_seconds
-        self._failures = 0
-        self._state = "closed"  # closed | open | half_open
-        self._opened_at: datetime | None = None
-
-    @property
-    def state(self) -> str:
-        return self._state
-
-    def record_success(self) -> None:
-        self._failures = 0
-        self._state = "closed"
-
-    def record_failure(self) -> None:
-        self._failures += 1
-        if self._failures >= self.failure_threshold:
-            self._state = "open"
-            self._opened_at = datetime.now(UTC)
-
-    def can_execute(self) -> bool:
-        if self._state == "closed":
-            return True
-        if self._state == "open":
-            if self._opened_at is None:
-                return True
-            elapsed = (datetime.now(UTC) - self._opened_at).total_seconds()
-            if elapsed >= self.cooldown_seconds:
-                self._state = "half_open"
-                return True
-            return False
-        return True  # half_open: allow one attempt

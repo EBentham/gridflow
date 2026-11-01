@@ -19,7 +19,6 @@ from gridflow.serving.client import _BITEMPORAL_EXCLUDE
 from gridflow.silver.registry import get_transformer, list_transformers
 from gridflow.silver.schema_manifest import (
     BITEMPORAL_EXCLUDE,
-    DECOMMISSIONED_DATASETS,
     DESIGNATED_DATE_COLS,
     SilverSchemaEntry,
     get_silver_schema_manifest,
@@ -47,18 +46,9 @@ def _silver_entry(source: str, dataset: str) -> SilverSchemaEntry:
 
 def test_manifest_covers_registered_transformers() -> None:
     manifest_keys = {(entry.source, entry.dataset) for entry in _silver_entries()}
-    registry_keys = set(list_transformers()) - DECOMMISSIONED_DATASETS
+    registry_keys = set(list_transformers())
 
     assert manifest_keys == registry_keys
-
-
-def test_manifest_excludes_decommissioned_even_when_registered() -> None:
-    import gridflow.silver.elexon.bod  # noqa: F401
-
-    entries = get_silver_schema_manifest()
-
-    assert ("elexon", "bod") in set(list_transformers())
-    assert not any(entry.source == "elexon" and entry.dataset == "bod" for entry in entries)
 
 
 def test_manifest_has_ratified_date_columns() -> None:
@@ -72,7 +62,6 @@ def test_manifest_has_ratified_date_columns() -> None:
     assert DESIGNATED_DATE_COLS[("entsog", "connection_points")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "interconnections")] == "ingested_at"
     assert DESIGNATED_DATE_COLS[("entsog", "operator_point_directions")] == "ingested_at"
-    assert ("elexon", "bod") not in DESIGNATED_DATE_COLS
     entry = _silver_entry("elexon", "system_prices")
     # system_prices is APPEND_ONLY with a registered _latest spec (N-5, D-1/D-2):
     # relation_name is the _latest projection; qualified_view keeps naming the
@@ -115,8 +104,6 @@ def test_manifest_designated_date_col_resolvable() -> None:
 
 def test_manifest_columns_match_schema_cls() -> None:
     for source, dataset in sorted(list_transformers()):
-        if (source, dataset) in DECOMMISSIONED_DATASETS:
-            continue
         transformer = get_transformer(source, dataset, Path("__schema_manifest_test__"))
         schema_cls = transformer.schema_cls
         if schema_cls is None:

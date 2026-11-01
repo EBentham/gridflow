@@ -26,7 +26,6 @@ from _gold_support import (
     query,
     register_held,
     run_family,
-    short_root,
     utc,
     view_columns,
 )
@@ -37,7 +36,7 @@ from gridflow.gold.contracts import contract_for, sql_path
 from gridflow.silver.schema_manifest import select_list_columns
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
     from pathlib import Path
 
 RELATION = "gold_gb_interconnector_limits"
@@ -261,10 +260,9 @@ def _build(data: Path, seed: Callable[[Path], None]) -> IcWorld:
 
 
 @pytest.fixture
-def world(seed_silver: Callable[..., None]) -> Iterator[IcWorld]:
+def world(short_root: Path, seed_silver: Callable[..., None]) -> IcWorld:
     """The G-3 world, built once per test; the held view is NOT registered yet."""
-    with short_root() as data:
-        yield _build(data, seed_silver)
+    return _build(short_root, seed_silver)
 
 
 def _view(db: Path) -> list[dict[str, Any]]:

@@ -11,26 +11,12 @@
     {
       "key": "metered_wind_output_monthly",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Sett_Date",
-              "Sett_Period",
-              "Scottish Wind Output",
-              "England/Wales Wind Output",
-              "Total"
-            ],
             "columns": [
               {
                 "source": "Sett_Date",
@@ -65,10 +51,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

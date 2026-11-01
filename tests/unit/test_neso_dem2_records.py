@@ -23,16 +23,13 @@ from __future__ import annotations
 
 import csv
 import io
-import os
-import tempfile
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import record_of, silver_frame, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held
@@ -45,11 +42,6 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.neso_data_portal.reconcile import reconcile
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "dem2"
@@ -144,20 +136,11 @@ SHAPES: dict[str, tuple[str, ...]] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (ADR-036: engine names pass MAX_PATH there); tmp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for these catalogues."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="d2", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def body(filename: str) -> bytes:
@@ -199,17 +182,6 @@ def _capture(data: Path, filename: str, *, as_filename: str | None = None) -> st
     return capture_id_for(path, data)
 
 
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
 def _run(data: Path, key: str) -> dict[str, str]:
     """Capture every fixture of ``key`` and transform them; filename -> capture id."""
     ids = {filename: _capture(data, filename) for filename in _filenames(key)}
@@ -240,7 +212,7 @@ def test_entity_key_is_unique_in_the_output(data: Path, key: str) -> None:
     """Detects a guard key that does not identify the output grain: the entity key must
     be unique across everything the family wrote."""
     _run(data, key)
-    silver = _silver(data, key)
+    silver = silver_frame(data, key)
     assert silver.height > 0
     assert silver.select(SHAPES[key]).is_duplicated().sum() == 0
 
@@ -252,7 +224,7 @@ def test_bm_names_survive_byte_identical(data: Path) -> None:
     source = [row["BM_Name"] for row in _table(body("bmunits_29_09_26.csv"))]
     assert "EEND01 " in source  # the fixture keeps the identifier that tests trimming
     _run(data, BMU)
-    silver = _silver(data, BMU)
+    silver = silver_frame(data, BMU)
     assert silver["bm_name"].to_list() == source
 
 
@@ -261,7 +233,7 @@ def test_transmission_losses_keep_the_published_values_and_labels(data: Path) ->
     day), a financial year parsed, and a published ``GB totals`` recomputed from the owner
     columns (63 of the real 161 months differ from the sum by up to 0.001 TWh)."""
     _run(data, LOSS_MAIN)
-    silver = _silver(data, LOSS_MAIN)
+    silver = silver_frame(data, LOSS_MAIN)
     source = _table(body("monthly-losses.csv"))
     assert silver.schema["month_vendor"] == pl.Utf8
     assert silver.schema["financial_year"] == pl.Utf8
@@ -282,7 +254,7 @@ def test_transmission_losses_keep_the_published_values_and_labels(data: Path) ->
     _run_fy = {filename: _capture(data, filename) for filename in _filenames(LOSS_FY)}
     assert _run_fy
     get_transformer(SOURCE, LOSS_FY, data).run(DAY, run_id="r")
-    annual = _silver(data, LOSS_FY)
+    annual = silver_frame(data, LOSS_FY)
     fy_source = _table(body("financial-year-losses.csv"))
     assert annual.schema["financial_year"] == pl.Utf8
     assert annual["financial_year"].to_list() == [row["Financial Year"] for row in fy_source]
@@ -297,7 +269,7 @@ def test_school_holiday_resources_with_different_date_formats_both_type(data: Pa
     side, and a day/month swap would put 2024-07-06 on 2024-06-07. Every date falls in its
     resource's holiday year."""
     ids = _run(data, SCHOOL)
-    silver = _silver(data, SCHOOL)
+    silver = silver_frame(data, SCHOOL)
     expected_start = {
         "school_holiday_2021_22.csv": date(2021, 6, 19),
         "school_holiday_2022_23.csv": date(2022, 6, 24),
@@ -351,7 +323,7 @@ def test_school_holiday_total_rows_are_kept_unscaled(data: Path) -> None:
     'percentage'): NESO has not stated its encoding, so the value is published as the vendor
     typed it and the family is held on it."""
     ids = _run(data, SCHOOL)
-    silver = _silver(data, SCHOOL).filter(
+    silver = silver_frame(data, SCHOOL).filter(
         pl.col("bronze_capture_id") == ids["school_holiday_2024_25.csv"]
     )
     totals = silver.filter(pl.col("local_authority") == "Total").sort("date")
@@ -367,7 +339,7 @@ def test_record_shapes_match_the_unit_table(key: str) -> None:
     recipe, CKAN vintage, whole-capture selection, ``temporal: none`` (no invented instant),
     the guard key (every column, never a value key), every column nullable with no invented
     null token or bound, and eligibility."""
-    record = _record(key)
+    record = record_of(key)
     assert record.reader == "csv"
     assert record.encoding == "utf-8"
     assert len(record.epochs) == 1
@@ -407,7 +379,7 @@ def test_record_shapes_match_the_unit_table(key: str) -> None:
 def test_transmission_loss_columns_are_the_vendor_headers() -> None:
     """Detects a renamed or re-typed loss column: the owner/GB columns are float64 (TWh,
     vendor-defined) and the month and financial-year labels are strings."""
-    main = {c.source: (c.name, c.dtype) for c in _record(LOSS_MAIN).epochs[0].columns}
+    main = {c.source: (c.name, c.dtype) for c in record_of(LOSS_MAIN).epochs[0].columns}
     assert main == {
         "Financial Year": ("financial_year", "string"),
         "Month": ("month_vendor", "string"),
@@ -416,7 +388,7 @@ def test_transmission_loss_columns_are_the_vendor_headers() -> None:
         "SHETL": ("shetl", "float64"),
         "GB totals": ("gb_totals", "float64"),
     }
-    annual = {c.source: (c.name, c.dtype) for c in _record(LOSS_FY).epochs[0].columns}
+    annual = {c.source: (c.name, c.dtype) for c in record_of(LOSS_FY).epochs[0].columns}
     assert annual == {
         "Financial Year": ("financial_year", "string"),
         "Sum of NGET": ("sum_of_nget", "float64"),

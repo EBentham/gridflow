@@ -64,8 +64,8 @@ def benchmark_catalogue(
         path = paths.silver_file("elexon", "mid", target_date)
         path.parent.mkdir(parents=True, exist_ok=True)
         silver.filter(pl.col("settlement_date") == target_date).write_parquet(path)
-    init_catalogue(paths.duckdb_path(), tmp_path)
-    return paths.duckdb_path(), policy
+    init_catalogue(tmp_path / "gridflow.duckdb", tmp_path)
+    return tmp_path / "gridflow.duckdb", policy
 
 
 def test_benchmark_registers_filters_and_preserves_values(
@@ -194,8 +194,8 @@ def test_benchmark_enforces_grain_across_overlapping_files(
         path = paths.silver_file("elexon", "mid", partition_date)
         path.parent.mkdir(parents=True, exist_ok=True)
         row.write_parquet(path)
-    init_catalogue(paths.duckdb_path(), tmp_path)
-    with duckdb.connect(str(paths.duckdb_path()), read_only=True) as con:
+    init_catalogue(tmp_path / "gridflow.duckdb", tmp_path)
+    with duckdb.connect(str(tmp_path / "gridflow.duckdb"), read_only=True) as con:
         assert con.execute("SELECT count(*) FROM silver_elexon_mid").fetchone() == (2,)
         result = con.execute("SELECT * FROM gold_gb_day_ahead_benchmark").pl()
     assert result.height == 1
@@ -215,8 +215,8 @@ def test_benchmark_refresh_preserves_nonempty_legacy_and_new_policy_partitions(
     legacy_path = paths.silver_file("elexon", "mid", legacy_date)
     legacy_path.parent.mkdir(parents=True, exist_ok=True)
     legacy.write_parquet(legacy_path)
-    init_catalogue(paths.duckdb_path(), tmp_path)
-    with GridflowClient(paths.duckdb_path()) as client:
+    init_catalogue(tmp_path / "gridflow.duckdb", tmp_path)
+    with GridflowClient(tmp_path / "gridflow.duckdb") as client:
         before = client.get_gb_day_ahead_benchmark(legacy_date, new_date)
     assert before.height == 1
     assert before["vintage_policy"].to_list() == [None]
@@ -225,8 +225,8 @@ def test_benchmark_refresh_preserves_nonempty_legacy_and_new_policy_partitions(
         pl.lit("ingest_time", dtype=pl.String).alias("vintage_policy")
     )
     new.write_parquet(paths.silver_file("elexon", "mid", new_date))
-    refresh_views(paths.duckdb_path(), tmp_path)
-    with GridflowClient(paths.duckdb_path()) as client:
+    refresh_views(tmp_path / "gridflow.duckdb", tmp_path)
+    with GridflowClient(tmp_path / "gridflow.duckdb") as client:
         after = client.get_gb_day_ahead_benchmark(legacy_date, new_date)
     assert after.height == 2
     assert after["settlement_date"].to_list() == [legacy_date, new_date]

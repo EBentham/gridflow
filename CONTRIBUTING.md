@@ -15,8 +15,7 @@ class BaseConnector(ABC):
     async def __aexit__(self, *exc) -> None: ...
     def _auth_headers(self) -> dict[str, str]: ...     # override for non-header auth
     @abstractmethod
-    async def fetch(self, dataset: str, start: datetime, end: datetime,
-                    **params: Any) -> list[RawResponse]: ...
+    async def fetch(self, dataset: str, start: datetime, end: datetime) -> list[RawResponse]: ...
     @abstractmethod
     def list_datasets(self) -> list[str]: ...
 ```
@@ -52,8 +51,6 @@ trigger registration — add new sources there.
   `reraise=True`. Any other status fails on the first attempt. A source with
   another transient status uses `retry_policy(<status>)` (ENTSO-G retries a
   404 that is not its empty marker).
-- A `CircuitBreaker` exists in `utils/retry.py` but is not applied automatically.
-  Wire it in only if a vendor needs it.
 
 ### Auth patterns
 

@@ -211,7 +211,7 @@ def test_l_t02_partial_failure_preserves_aggregated_fallbacks(
 
     probe.run = partial_run  # type: ignore[method-assign]
     start = datetime(2026, 9, 6, tzinfo=UTC)
-    result = _run_probe(monkeypatch, tmp_path, start, start + timedelta(days=1), probe)
+    result = _run_probe(monkeypatch, tmp_path, start, start + timedelta(days=2), probe)
     assert result.status == "failed"
     assert result.rows_publication_fallback == 3
     assert result.rows_skipped == result.rows_invalid == 0
@@ -242,9 +242,9 @@ def test_l_t02_cli_displays_fallback_and_window_counts(
     [
         # Explicit expected heuristic case: bounded historical single-date windows warn by design.
         ("2026-09-07T00:00Z", "2026-09-07T00:00Z", (1, -1, 0), True, 1),
-        ("2026-09-06T00:00Z", "2026-09-07T00:00Z", (1, -1, 0), True, 0),
+        ("2026-09-06T00:00Z", "2026-09-08T00:00Z", (1, -1, 0), True, 0),
         ("2026-09-06T23:30Z", "2026-09-07T00:30Z", (1,), True, 0),
-        ("2026-09-06T00:00Z", "2026-09-07T00:00Z", (2, 0), True, 1),
+        ("2026-09-06T00:00Z", "2026-09-08T00:00Z", (2, 0), True, 1),
         ("2026-09-07T00:00Z", "2026-09-07T00:00Z", (-1, 0), True, 0),
         ("2026-09-07T00:00Z", "2026-09-07T00:00Z", (2,), False, 0),
     ],

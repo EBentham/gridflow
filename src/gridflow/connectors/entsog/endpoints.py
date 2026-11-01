@@ -265,7 +265,6 @@ def build_params(
     *,
     start: datetime,
     end: datetime,
-    **overrides: Any,
 ) -> dict[str, Any]:
     """Build ENTSOG query parameters for an endpoint."""
     params: dict[str, Any] = {
@@ -277,7 +276,6 @@ def build_params(
         params["to"] = end.strftime("%Y-%m-%d")
 
     params.update(endpoint.default_params)
-    params.update({key: value for key, value in overrides.items() if value is not None})
     return {key: _encode_multi_value(value) for key, value in params.items() if value is not None}
 
 

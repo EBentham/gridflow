@@ -118,7 +118,9 @@ string in every epoch. The family is **held** (unit E-SEM) on the meaning of `NA
   on the untouched base (master `73fde80`): every generated family's `_latest` SQL in both
   as-of modes, every record's dump and output columns, and every DEM-1 fixture's engine
   output (`source_run_id` excluded). `test_neso_multi_resource.py::TestByteUnchanged`
-  compares the tree against it; the only addition is `historic_demand`.
+  compares the tree against it; the only addition is `historic_demand`. (2026-10-31: that golden
+  and its test were deleted. `tests/fixtures/neso_data_portal/h/base_pin.json` holds every one of
+  its families with equal values, and `test_neso_h_mechanism.py::TestByteUnchanged` checks it.)
 - **Selection.** `TestLeakageMatrix` (both renderers, per-resource corrections, a resource's
   first capture after the bound, valid-empty between populated captures, ties, incomplete
   and completion-less captures, `available_at == as_of`, one pair in two resources),

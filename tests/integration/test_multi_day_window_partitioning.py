@@ -512,7 +512,7 @@ async def test_entsog_multi_day_window_generic_family_data_loss(tmp_path) -> Non
     body PHYSICALLY CONTAINS the day-2 and day-3 record ids (as well as
     day-1's) — the data was genuinely fetched and written, not omitted by
     the mock. ``run(date(2026, 5, 2))`` and ``run(date(2026, 5, 3))`` both
-    return 0 (the generic family's ``_bronze_files`` is exact-partition-only,
+    return 0 (the generic family's ``_bronze_candidates`` is exact-partition-only,
     ``silver/entsog/generic.py:181-193`` — no covering-fallback for this
     family), while ``run(date(2026, 5, 1))`` returns 2 (the
     ``date_window_dataset`` filter, ``generic.py:102-105``, matches only

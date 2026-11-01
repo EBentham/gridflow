@@ -100,7 +100,7 @@ def publication_window_params(dataset: str) -> tuple[str, str] | None:
     """Return ``(from_param, to_param)`` for ``dataset`` if it is in scope, else ``None``.
 
     ``None`` for: any dataset in :data:`PUBLICATION_WINDOW_EXEMPT`; any
-    dataset absent from ``ENDPOINTS`` (unregistered, e.g. ``bod``); any
+    dataset absent from ``ENDPOINTS`` (e.g. one in ``EXCLUDED_ENDPOINTS``); any
     dataset whose ``param_style`` is not ``PUBLISH_DATETIME``; and any
     dataset whose ``from_param``/``to_param`` diverge from the
     ``publishDateTimeFrom``/``publishDateTimeTo`` defaults (an undocumented

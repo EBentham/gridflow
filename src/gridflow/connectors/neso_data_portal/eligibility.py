@@ -7,8 +7,7 @@ Usage::
 
 The committed report (``docs/neso_data_portal/eligibility.md`` by default,
 relative to the current directory) is a pure function of the registry, so
-``--check`` fails CI whenever a registry commit forgets to regenerate it, the
-same discipline as ``registry yaml --check``.
+``--check`` fails CI whenever a registry commit forgets to regenerate it.
 
 **Effective eligibility of an output** (the one rule, :func:`effective_eligibility`):
 
@@ -93,11 +92,7 @@ def _cell(text: str) -> str:
 
 def _family_row(package: PackageEntry, family: FamilyEntry) -> str:
     dash = "—"
-    if family.legacy:
-        output = "bespoke silver"
-        eligibility = describe_eligibility(effective_eligibility(package, family))
-        latest = temporal = clock = dash
-    elif family.record is not None:
+    if family.record is not None:
         record = family.record
         output = "silver"
         eligibility = describe_eligibility(effective_eligibility(package, family))
@@ -106,7 +101,7 @@ def _family_row(package: PackageEntry, family: FamilyEntry) -> str:
             if record.latest_partition is not None
             else record.latest
         )
-        temporal = record.temporal.kind
+        temporal: str = record.temporal.kind
         clock = CLOCK_LABELS[record.vintage]
     elif family.kind == "tabular":
         output = "ingest-only (no silver output)"
@@ -155,15 +150,13 @@ def render(registry: Registry) -> str:
     for package in registry.packages:
         for family in sorted(package.families, key=lambda f: f.key):
             lines.append(_family_row(package, family))
-            if family.legacy:
-                outputs["bespoke"] += 1
-            elif family.record is not None:
+            if family.record is not None:
                 outputs["recorded"] += 1
             elif family.kind == "tabular":
                 outputs["ingest_only"] += 1
             else:
                 outputs["files"] += 1
-            if (family.legacy or family.record is not None) and isinstance(
+            if family.record is not None and isinstance(
                 effective_eligibility(package, family), Held
             ):
                 held_outputs += 1
@@ -192,15 +185,13 @@ def render(registry: Registry) -> str:
     )
 
     families = sum(outputs.values())
-    silver = outputs["bespoke"] + outputs["recorded"]
     lines += [
         "",
         "## Totals",
         "",
         f"- Packages: {len(registry.packages)} (held: {held_packages})",
-        f"- Families: {families}: silver {silver} (bespoke {outputs['bespoke']}, recorded"
-        f" {outputs['recorded']}), ingest-only {outputs['ingest_only']}, catalogue only"
-        f" {outputs['files']}",
+        f"- Families: {families}: silver {outputs['recorded']}, ingest-only"
+        f" {outputs['ingest_only']}, catalogue only {outputs['files']}",
         f"- Silver outputs held: {held_outputs}",
         f"- Resources: {sum(totals.values())}",
         "",

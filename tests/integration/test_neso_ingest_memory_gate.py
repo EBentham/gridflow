@@ -5,7 +5,8 @@ independent. On master, ``fetch()`` returned the whole family as a list, so the
 peak grew with N (E15); the member branch publishes each capture before the
 next download, so 20 members must cost no more than 10 % over 5.
 
-Marked ``slow``: excluded from the local fast gate, run by CI (``-m "not live"``).
+Marked ``slow``: excluded from the local and PR gates, run by the weekly CI job
+(``-m "slow and not live"``).
 """
 
 from __future__ import annotations

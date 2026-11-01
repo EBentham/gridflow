@@ -10,27 +10,29 @@ reads connector-native `temperature_2m` before it becomes `temperature_2m_c`.
 from __future__ import annotations
 
 import json
-from datetime import date
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
+import polars as pl
 import pytest
 
 from gridflow.connectors.openmeteo.endpoints import (
     DEMAND_HOURLY_VARS,
     SOLAR_HOURLY_VARS,
     WIND_ARCHIVE_VARS,
+    WIND_FORECAST_VARS,
 )
 from gridflow.silver.openmeteo.historical import (
     HistoricalDemandWeather,
     HistoricalSolarWeather,
     HistoricalWindWeather,
 )
-from gridflow.storage.parquet import read_parquet
+from gridflow.silver.registry import get_transformer
+from gridflow.silver.schema_manifest import SilverSchemaEntry, get_silver_schema_manifest
+from gridflow.storage.parquet import scan_parquet_dir
 
 if TYPE_CHECKING:
     from pathlib import Path
-
-    import polars as pl
 
 
 def _make_open_meteo_json(
@@ -74,8 +76,7 @@ def _write_om_bronze(
 
 
 def _read_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFrame:
-    pattern = data_dir / "silver" / source / dataset / "**" / "*.parquet"
-    return read_parquet(pattern)
+    return scan_parquet_dir(data_dir / "silver" / source / dataset).collect()
 
 
 TARGET_DATE = date(2026, 5, 1)
@@ -175,3 +176,50 @@ def test_historical_solar_emits_canonical_radiation(tmp_path: Path) -> None:
     assert df["shortwave_radiation_wm2"].to_list()[0] == pytest.approx(200.0)
     assert "cloud_cover_pct" in df.columns
     assert df["cloud_cover_pct"].to_list()[0] == pytest.approx(50.0)
+
+
+_HOURLY_VARS: dict[str, tuple[str, ...]] = {
+    "historical_demand": DEMAND_HOURLY_VARS,
+    "forecast_demand": DEMAND_HOURLY_VARS,
+    "historical_wind": WIND_ARCHIVE_VARS,
+    "forecast_wind": WIND_FORECAST_VARS,
+    "historical_solar": SOLAR_HOURLY_VARS,
+    "forecast_solar": SOLAR_HOURLY_VARS,
+}
+
+# The ERA5 archive returns null at these hub heights, so historical_wind never
+# requests them, but the manifest declares the WindWeather schema it shares with
+# forecast_wind.
+_NOT_IN_ARCHIVE: dict[str, set[str]] = {
+    "historical_wind": {
+        f"wind_{measure}_{height}m_{unit}"
+        for height in (80, 120, 180)
+        for measure, unit in (("speed", "mps"), ("direction", "deg"))
+    },
+}
+
+
+@pytest.fixture(scope="module")
+def open_meteo_manifest() -> dict[str, SilverSchemaEntry]:
+    entries = get_silver_schema_manifest(include_serving_aliases=False)
+    return {entry.dataset: entry for entry in entries if entry.source == "open_meteo"}
+
+
+@pytest.mark.parametrize("dataset", sorted(_HOURLY_VARS))
+def test_silver_columns_equal_the_schema_manifest(
+    tmp_path: Path, dataset: str, open_meteo_manifest: dict[str, SilverSchemaEntry]
+) -> None:
+    """Each Open-Meteo dataset writes exactly the columns the schema manifest declares."""
+    row = {"time": "2026-05-01T12:00", "location": "london", "latitude": 51.5, "longitude": -0.1}
+    raw = pl.DataFrame([row | dict.fromkeys(_HOURLY_VARS[dataset], 10.0)])
+    transformer = get_transformer("open_meteo", dataset, tmp_path)
+    silver = transformer._add_bitemporal_columns(
+        transformer.transform(raw),
+        target_date=TARGET_DATE,
+        run_id="t6",
+        available_at=datetime(2026, 5, 2, tzinfo=UTC),
+    )
+
+    entry = open_meteo_manifest[dataset]
+    declared = set(entry.columns or ()) | set(entry.bitemporal_columns)
+    assert set(silver.columns) == declared - _NOT_IN_ARCHIVE.get(dataset, set())

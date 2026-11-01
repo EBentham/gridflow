@@ -11,6 +11,7 @@ numbers of the original body (1 is the header).
 | Fixture | Family | Resource id | Vendor file name | sha8 | Original rows | Lines kept |
 |---|---|---|---|---|---:|---|
 | `ii.csv` | `current_bsuos_ii` | `0eda5e28-1dc6-48da-8663-c00e12f2a1e2` | `current_ii_bsuos_data.csv` | `9423ae5f` | 8,736 | 1-97 (2026-04-01 and 2026-04-02) |
+| `ii_day_first.csv` | `current_bsuos_ii` | `0eda5e28-1dc6-48da-8663-c00e12f2a1e2` | `webprice_output_ii_2026-27_1610260959.csv` | `2e47c4f4` | 9,168 | 1-97, 578 (2026-04-01, 2026-04-02 and 13-04-2026 SP1: the 2026-10-16 upload's day-first `DD-MM-YYYY` dates, no BOM) |
 | `sf.csv` | `current_bsuos_sf` | `f0060fd0-1fc9-4288-a0b3-4af9b592b0cf` | `current_sf_bsuos_data.csv` | `e998c68b` | 8,016 | 1-97 |
 | `rf.csv` | `current_bsuos_rf` | `26b0f410-27d4-448a-9437-45277818b838` | `current_rf_bsuos_data.csv` | `c7c54b3c` | 6,672 | 1-97 |
 | `hi1.csv` | `current_bsuos_historic_ii` | `3372646d-419f-4599-97a9-6bb4e7e32862` | `2017-2023-ii.csv` | `70d3733d` | 105,167 | 1-49, 66436-66482 (every row of 2021-01-14: 47 periods, SP48 absent from the body) |

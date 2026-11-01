@@ -93,6 +93,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.INTENSITY,
         description="National carbon intensity forecast from a datetime forward 24 hours.",
         requires_window=True,
+        daily_iteration=True,
     ),
     "intensity_fw48h": NesoEndpoint(
         path_template="/intensity/{from_dt}/fw48h",
@@ -100,6 +101,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.INTENSITY,
         description="National carbon intensity forecast from a datetime forward 48 hours.",
         requires_window=True,
+        daily_iteration=True,
     ),
     "intensity_pt24h": NesoEndpoint(
         path_template="/intensity/{from_dt}/pt24h",
@@ -197,6 +199,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.REGIONAL,
         description="Regional intensity forecast for all regions forward 24 hours.",
         requires_window=True,
+        daily_iteration=True,
     ),
     "regional_intensity_fw24h_postcode": NesoEndpoint(
         path_template="/regional/intensity/{from_dt}/fw24h/postcode/{postcode}",
@@ -204,6 +207,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.REGIONAL,
         description="Regional intensity forecast for a postcode forward 24 hours.",
         requires_window=True,
+        daily_iteration=True,
         default_values={"postcode": DEFAULT_POSTCODE},
     ),
     "regional_intensity_fw24h_regionid": NesoEndpoint(
@@ -212,6 +216,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.REGIONAL,
         description="Regional intensity forecast for a region ID forward 24 hours.",
         requires_window=True,
+        daily_iteration=True,
         default_values={"regionid": DEFAULT_REGION_ID},
     ),
     "regional_intensity_fw48h": NesoEndpoint(
@@ -220,6 +225,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.REGIONAL,
         description="Regional intensity forecast for all regions forward 48 hours.",
         requires_window=True,
+        daily_iteration=True,
     ),
     "regional_intensity_fw48h_postcode": NesoEndpoint(
         path_template="/regional/intensity/{from_dt}/fw48h/postcode/{postcode}",
@@ -227,6 +233,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.REGIONAL,
         description="Regional intensity forecast for a postcode forward 48 hours.",
         requires_window=True,
+        daily_iteration=True,
         default_values={"postcode": DEFAULT_POSTCODE},
     ),
     "regional_intensity_fw48h_regionid": NesoEndpoint(
@@ -235,6 +242,7 @@ ENDPOINTS: dict[str, NesoEndpoint] = {
         parser_family=ParserFamily.REGIONAL,
         description="Regional intensity forecast for a region ID forward 48 hours.",
         requires_window=True,
+        daily_iteration=True,
         default_values={"regionid": DEFAULT_REGION_ID},
     ),
     "regional_intensity_pt24h": NesoEndpoint(

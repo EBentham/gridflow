@@ -1,11 +1,7 @@
-"""F-07: unit tests for the shared `with_published_at` ENTSO-E vintage helper.
+"""Unit tests for the shared ``with_published_at`` vintage parser.
 
-Before the fix, EVERY malformed/variant `createdDateTime` form (fractional
-seconds, explicit offset, space-separated, missing the `Z` marker) nulled
-`published_at` silently — zero warnings, regardless of how many rows were
-affected. The fix accepts the two unambiguous variants (`.000Z`, `+00:00`)
-and counts + warns (naming the dataset) on everything else that still fails
-to parse, mirroring the GIE/P0.8 counted-warning pattern.
+The nominal form and two unambiguous UTC variants parse; every other present
+value is nulled, counted and warned about once, naming the dataset.
 """
 
 from __future__ import annotations
@@ -16,7 +12,7 @@ from typing import TYPE_CHECKING
 
 import polars as pl
 
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 
 if TYPE_CHECKING:
     import pytest
@@ -94,13 +90,14 @@ class TestMalformedFormsCountedAndWarned:
         assert len(caplog.records) == 1
         assert "3" in caplog.records[0].message
 
-    def test_default_dataset_label_when_not_supplied(self, caplog: pytest.LogCaptureFixture):
-        """No dataset kwarg -> falls back to a generic 'entsoe' label rather
-        than crashing or omitting the dataset entirely."""
+    def test_elexon_column_parses_in_place(self, caplog: pytest.LogCaptureFixture):
+        frame = pl.DataFrame({"published_at": [_WELL_FORMED, "bad"], "x": [1, 2]})
         with caplog.at_level(logging.WARNING):
-            with_published_at(_df(["bad-value"]))
+            result = with_published_at(frame, "published_at", dataset="agpt")
+        assert result.columns == ["published_at", "x"]
+        assert result["published_at"].to_list() == [_EXPECTED, None]
         assert len(caplog.records) == 1
-        assert "entsoe" in caplog.records[0].message
+        assert "agpt" in caplog.records[0].message
 
 
 class TestNoFalsePositiveWarnings:
