@@ -1811,7 +1811,9 @@ def run_backfill(
 
     For each dataset, walk ``[start_dt, end_dt)`` in ``chunk_days`` windows. Each
     chunk ingests (``write_watermark=False`` — a historical op must never move the
-    forward frontier) then transforms. The transform end is ``chunk_end - 1 day``:
+    forward frontier) then transforms, unless the ingest failed: silver written from
+    partial bronze would read as a finished chunk and never be retried. The
+    transform end is ``chunk_end - 1 day``:
     ``chunk_end`` is the exclusive API boundary but transform date iteration is
     inclusive, so without the -1d the end date would warn "no bronze data"
     (preserved off-by-one from cli.backfill).
@@ -1841,19 +1843,13 @@ def run_backfill(
             current = start_dt
             while current < end_dt:
                 chunk_end = min(current + timedelta(days=chunk_days), end_dt)
-                results.extend(
-                    run_ingest(
-                        ctx,
-                        source,
-                        [ds],
-                        current,
-                        chunk_end,
-                        incremental=False,
-                        write_watermark=False,
-                    )
+                ingested = run_ingest(
+                    ctx, source, [ds], current, chunk_end, incremental=False, write_watermark=False
                 )
-                transform_end = chunk_end - timedelta(days=1)
-                results.extend(run_transform(ctx, source, [ds], current, transform_end))
+                results.extend(ingested)
+                if all(r.ok for r in ingested):
+                    transform_end = chunk_end - timedelta(days=1)
+                    results.extend(run_transform(ctx, source, [ds], current, transform_end))
                 current = chunk_end
     refresh_views(settings)
     return RunReport(results=results)
