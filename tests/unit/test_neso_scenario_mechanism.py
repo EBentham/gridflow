@@ -64,7 +64,7 @@ from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "neso_data_portal"
@@ -383,7 +383,7 @@ class TestRecordRules:
         assert again.epochs[1].unpivot is not None
         assert again.epochs[1].unpivot.years == (("FY32", 2032), ("2033", 2033))
 
-    def test_t_sc2_i_every_committed_record_loads(self) -> None:
+    def test_t_sc2_i_every_committed_record_loads(self, run_fresh: Callable[..., str]) -> None:
         """Detects a committed record broken by the new shape rules, V-4, V-18 or the
         reserved ``edition`` (in a fresh interpreter, so nothing imported can mask it)."""
         code = textwrap.dedent(
@@ -394,17 +394,8 @@ class TestRecordRules:
             print("OK", len(recorded))
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
     def test_t_sc2_j_epoch_outputs_is_the_identity_without_unpivot(self) -> None:
         """Detects ``epoch_outputs`` rebuilding (or extending) a non-unpivot epoch's specs,

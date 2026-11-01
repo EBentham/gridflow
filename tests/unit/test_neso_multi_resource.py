@@ -16,7 +16,7 @@ import sys
 import textwrap
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
@@ -53,6 +53,9 @@ from gridflow.silver.neso_data_portal.completion import (
 )
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "neso_data_portal"
@@ -672,6 +675,7 @@ class TestRecordRules:
 
     def test_t_h6_e_every_committed_record_loads_and_only_resource_partitioned_families_partition(
         self,
+        run_fresh: Callable[..., str],
     ) -> None:
         """Detects a committed record broken by V-4/V-17 or the reserved name, and any
         family other than the ninety-one resource-partitioned ones opting into the partition
@@ -785,17 +789,8 @@ class TestRecordRules:
             print("OK", len(recorded), partitioned)
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
     def test_t_h6_f_the_default_dump_carries_no_new_field(self) -> None:
         """Detects a non-``None`` default on the new field, which would change every

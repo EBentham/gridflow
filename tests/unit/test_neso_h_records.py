@@ -25,7 +25,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import textwrap
 import zipfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -56,7 +55,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -612,28 +611,16 @@ class TestFailureAccounting:
 # --------------------------------------------------------------------------- #
 
 
-def _assert_ok(code: str) -> None:
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=300,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout, result.stdout
-
-
 class TestRegistryPins:
-    def test_t_f11_the_package_layout_records_and_ledger(self) -> None:
+    def test_t_f11_the_package_layout_records_and_ledger(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
         """Detects any drift from P-1/P-2/P-6: the bronze home record-less, the five
         sibling-fed records exactly as specified, each resource on its rendering family by
         name month (12/48/12/27/53, all SILVER), the ZIP families holding exactly the 39
         child-bearing resources with each child on the same key, and P-6's entry verbatim
         and backed (in a fresh interpreter)."""
-        _assert_ok(
+        stdout = run_fresh(
             f"""
             import re
             from gridflow.connectors.neso_data_portal.registry import (
@@ -715,6 +702,7 @@ class TestRegistryPins:
             print('OK')
             """
         )
+        assert "OK" in stdout, stdout
 
     def test_t_f11_generated_artefacts_are_current_and_show_the_hold(self) -> None:
         """Detects a registry commit without regenerated ``sources.yaml`` or eligibility

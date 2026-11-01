@@ -29,10 +29,7 @@ import io
 import json
 import logging
 import os
-import subprocess
-import sys
 import tempfile
-import textwrap
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -63,7 +60,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -407,22 +404,6 @@ def _instant(value: str) -> datetime:
 def _package_doc(filename: str) -> dict[str, Any]:
     document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
     return document
-
-
-def _fresh_interpreter(code: str) -> Any:
-    """Run ``code`` in a fresh interpreter (nothing collection imported can mask it); the
-    JSON of its last stdout line."""
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    return json.loads(result.stdout.strip().splitlines()[-1])
 
 
 # --------------------------------------------------------------------------- #
@@ -1037,7 +1018,9 @@ ENCODING_ENTRY: dict[str, Any] = {
 """The ruled IC-2H entry (RULINGS 575), field for field."""
 
 
-def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
+def test_the_committed_ledger_carries_the_three_brit_ned_entries(
+    run_fresh: Callable[..., str],
+) -> None:
     """Detects the committed entries drifting from the ruled text (another capture, a wider
     scope, an edited reason or question), a ledger the registry rejects, an entry naming a
     resource that is not a BritNed weekly upload, or a stray entry for another family; in a
@@ -1050,8 +1033,8 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     FFR TR127 / TR136 amended-edition overlaps (798), the DFS archive utilisation report failed
     capture (804), the WS1 2025 capture (839) and the October 2014 system frequency capture (861),
     appended last."""
-    loaded = _fresh_interpreter(
-        """
+    loaded = json.loads(
+        run_fresh("""
         import json
         from gridflow.connectors.neso_data_portal.registry import (
             CAPTURE_ID_PATTERN, load_reconcile_adjudications, load_registry,
@@ -1073,7 +1056,7 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
             "names": names,
             "families": [e.family for e in entries],
         }))
-        """
+        """).splitlines()[-1]
     )
     assert loaded["families"] == [
         "metered_wind_output_monthly",

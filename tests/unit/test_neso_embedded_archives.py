@@ -39,10 +39,7 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
-import sys
 import tempfile
-import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -74,7 +71,7 @@ from gridflow.storage.duckdb import init_catalogue
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry import Registry, SchemaRecord
@@ -157,25 +154,6 @@ W_2025 = datetime(2026, 10, 8, 11, 0, 0, tzinfo=UTC)
 W_DUMP = datetime(2026, 10, 8, 10, 52, 46, tzinfo=UTC)
 
 
-def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
-    """Run ``code`` in a fresh interpreter with the project on its path."""
-    return subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code), *args],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-
-
-def _assert_ok(result: subprocess.CompletedProcess[str]) -> str:
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout, result.stdout
-    return result.stdout
-
-
 _CONSTANTS = f"""
 ARCHIVE = {ARCHIVE!r}
 LIVE = {LIVE!r}
@@ -193,7 +171,9 @@ DUMP_ID = {DUMP_ID!r}
 """
 
 
-def test_ef1_every_csv_resource_routes_to_one_owner_or_a_hold() -> None:
+def test_ef1_every_csv_resource_routes_to_one_owner_or_a_hold(
+    run_fresh: Callable[..., str],
+) -> None:
     """Detects an archive CSV resource left unrouted, routed to two owners, routed into
     the live family, or a record drifting from P-3/P-4 (criterion 1)."""
     code = (
@@ -269,10 +249,10 @@ assert ARCHIVE not in generated.transformers
 print("OK")
 """
     )
-    _assert_ok(_run(code))
+    assert "OK" in run_fresh(code)
 
 
-def test_ef8_the_raised_cap_is_this_family_only() -> None:
+def test_ef8_the_raised_cap_is_this_family_only(run_fresh: Callable[..., str]) -> None:
     """Detects the 2025 upload (645,655,728 B) still refused at the archive's cap, or a
     cap raised on any other family (P-2) beyond the one recorded raise: the EAC-BR sell
     orders' dump (K-AS-4b, 805,306,368 B, P1 estimated ~561 MB)."""
@@ -293,7 +273,7 @@ assert families["embedded_wind_solar_forecast_files"].max_download_bytes == 5368
 print("OK")
 """
     )
-    _assert_ok(_run(code))
+    assert "OK" in run_fresh(code)
 
 
 # --------------------------------------------------------------------------- #
@@ -686,7 +666,9 @@ class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
             live(alone).run(DAY, run_id="r")
             assert_same_output(mixed, snapshot(alone, LIVE), live.ENTITY_KEY_COLUMNS)
 
-    def test_c_registry_routes_only_the_live_resource_to_the_live_family(self) -> None:
+    def test_c_registry_routes_only_the_live_resource_to_the_live_family(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
         """Detects an archive resource disposed into the live family, a record
         reading the live family's directory, or the legacy selector widened."""
         code = (
@@ -710,7 +692,7 @@ assert names == frozenset({("Embedded Solar and Wind Forecast", "CSV")}), names
 print("OK")
 """
         )
-        _assert_ok(_run(code))
+        assert "OK" in run_fresh(code)
 
     def test_d_the_issue_token_matches_live_files_only(self) -> None:
         """16b: detects the live token pattern matching an archive filename, or no

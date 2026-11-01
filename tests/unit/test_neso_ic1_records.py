@@ -37,10 +37,7 @@ import hashlib
 import io
 import json
 import os
-import subprocess
-import sys
 import tempfile
-import textwrap
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -67,7 +64,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -1092,28 +1089,12 @@ def _package_doc(filename: str) -> dict[str, Any]:
     return document
 
 
-def _fresh_interpreter(code: str) -> Any:
-    """Run ``code`` in a fresh interpreter (nothing collection imported can mask it); the
-    JSON of its last stdout line."""
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    return json.loads(result.stdout.strip().splitlines()[-1])
-
-
-def test_the_committed_ledger_carries_the_nsl_entry() -> None:
+def test_the_committed_ledger_carries_the_nsl_entry(run_fresh: Callable[..., str]) -> None:
     """Detects the committed NSL entry drifting from the ruled text (another capture, a wider
     scope, an edited reason or question), a ledger the registry rejects, or an entry naming a
     resource that is not the family's archive; in a fresh interpreter."""
-    loaded = _fresh_interpreter(
-        """
+    loaded = json.loads(
+        run_fresh("""
         import json
         from gridflow.connectors.neso_data_portal.registry import (
             CAPTURE_ID_PATTERN, load_reconcile_adjudications, load_registry,
@@ -1132,7 +1113,7 @@ def test_the_committed_ledger_carries_the_nsl_entry() -> None:
             "names": names,
             "families": [e.family for e in entries],
         }))
-        """
+        """).splitlines()[-1]
     )
     # the ledger opens with the three families ruled by GEN-2H (RULINGS 547) and this unit; later
     # units append their own entries (K-IC-2: brit_ned) and pin the whole ledger themselves
@@ -1145,15 +1126,15 @@ def test_the_committed_ledger_carries_the_nsl_entry() -> None:
     assert loaded["names"] == ["Archived NSL NTC Data"]
 
 
-def test_the_viking_package_id_is_unchanged() -> None:
+def test_the_viking_package_id_is_unchanged(run_fresh: Callable[..., str]) -> None:
     """Detects an edit to ``viking.json``'s ``package_id`` (the FACTS note suspected a
     registry/catalogue mismatch; the seat measured both as the same id, RULINGS 565): the
     registry's id is the bronze sidecar's for both Viking resources, and the file's literal
     is unchanged."""
     expected = CAPTURES["B13"].package_id
     assert expected == CAPTURES["B14"].package_id == "53a942cc-f9ab-4ad3-a274-5beed51635ec"
-    loaded = _fresh_interpreter(
-        """
+    loaded = json.loads(
+        run_fresh("""
         import json
         from gridflow.connectors.neso_data_portal.registry import load_registry
         registry = load_registry()
@@ -1163,7 +1144,7 @@ def test_the_viking_package_id_is_unchanged() -> None:
                 k for k, (p, _f) in registry.families.items() if p.package == "viking"
             ),
         }))
-        """
+        """).splitlines()[-1]
     )
     assert loaded["package_id"] == expected
     assert loaded["families"] == ["viking_link_ntc", "viking_ntc"]

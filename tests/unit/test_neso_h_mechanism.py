@@ -43,7 +43,7 @@ from gridflow.silver.neso_data_portal.completion import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
 SOURCE = "neso_data_portal"
 DAY = date(2026, 10, 8)
@@ -863,12 +863,12 @@ class TestGroupOverlap:
 
 
 class TestCommittedGroup:
-    def test_t_f4_e_exactly_the_four_typed_families_form_the_group(self) -> None:
+    def test_t_f4_e_exactly_the_four_typed_families_form_the_group(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
         """Detects the raw 2014 family joining the typed group (FM-10), a typed family left
         out of it (its month edges unchecked), or any other record carrying a group (in a
         fresh interpreter, so nothing collection imported can mask it)."""
-        import subprocess
-        import sys
         import textwrap
 
         code = textwrap.dedent(
@@ -884,14 +884,5 @@ class TestCommittedGroup:
             print("OK")
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=300,
-            check=False,
-        )
-        assert result.returncode == 0, (result.stdout, result.stderr)
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout

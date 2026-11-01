@@ -27,8 +27,6 @@ import hashlib
 import io
 import json
 import os
-import subprocess
-import sys
 import tempfile
 import textwrap
 from datetime import UTC, date, datetime
@@ -60,7 +58,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -559,7 +557,7 @@ LEDGER_RESOURCES = {
 }
 
 
-def test_t_g2h_7_the_package_ledger_is_p9() -> None:
+def test_t_g2h_7_the_package_ledger_is_p9(run_fresh: Callable[..., str]) -> None:
     """T-G2H-7: detects the committed ledger drifting from the ruled entries (another
     capture, a wider scope, an edited reason or question) or naming a resource that is not
     the family's M08/M09 or B01/B02/B07 archive; in a fresh interpreter, so nothing
@@ -585,17 +583,8 @@ def test_t_g2h_7_the_package_ledger_is_p9() -> None:
                           "names": names}))
         """
     )
-    result = subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=Path(__file__).resolve().parents[2],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    loaded = json.loads(result.stdout.strip().splitlines()[-1])
+    stdout = run_fresh(code)
+    loaded = json.loads(stdout.strip().splitlines()[-1])
     # later units append their own families' entries (K-IC-1: nsl); this pin owns these two
     mine = [e for e in loaded["entries"] if e["family"] in LEDGER_RESOURCES]
     assert mine == LEDGER

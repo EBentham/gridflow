@@ -4,8 +4,12 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
+import sys
+import textwrap
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
@@ -20,6 +24,9 @@ from gridflow.config.settings import (
 )
 from gridflow.connectors import base as connector_base
 from gridflow.connectors.base import RawResponse
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env", override=False)
@@ -107,6 +114,31 @@ def tmp_data_dir(tmp_path: Path) -> Path:
     for layer in ["bronze", "silver", "gold"]:
         (tmp_path / layer).mkdir()
     return tmp_path
+
+
+def _run_fresh(code: str) -> str:
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent(code)],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=300,
+        check=False,
+    )
+    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    return result.stdout
+
+
+@pytest.fixture
+def run_fresh() -> Callable[..., str]:
+    """``run_fresh(code)``: run ``code`` in a new interpreter.
+
+    The interpreter starts at the project root with nothing imported, which is
+    what a cold-import or bootstrap check needs. A non-zero exit fails the
+    test with both streams; the return value is the child's stdout.
+    """
+    return _run_fresh
 
 
 @pytest.fixture

@@ -26,8 +26,6 @@ import io
 import json
 import os
 import re
-import subprocess
-import sys
 import tempfile
 import textwrap
 from datetime import UTC, date, datetime
@@ -53,7 +51,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -313,7 +311,9 @@ def test_t_h10_f_latest_serves_every_resource_and_no_overlap(data: Path) -> None
     assert "SUMMARY overlap 0" in report.lines()
 
 
-def test_t_h10_g_the_record_is_held_on_na_and_partitioned_per_resource() -> None:
+def test_t_h10_g_the_record_is_held_on_na_and_partitioned_per_resource(
+    run_fresh: Callable[..., str],
+) -> None:
     """Detects the family published before NESO defines ``NA``, a reworded hold
     question, and a record shape drifting from P-6 (key, selection, vintage, epochs).
 
@@ -340,17 +340,8 @@ def test_t_h10_g_the_record_is_held_on_na_and_partitioned_per_resource() -> None
         }}))
         """
     )
-    result = subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, "stdout:\n" + result.stdout + "\nstderr:\n" + result.stderr
-    record = json.loads(result.stdout)
+    stdout = run_fresh(code)
+    record = json.loads(stdout)
     assert record["status"] == "held"
     assert record["unit"] == "E-SEM"
     assert record["question"] == QUESTION

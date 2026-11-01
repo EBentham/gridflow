@@ -23,8 +23,6 @@ from __future__ import annotations
 
 import csv
 import io
-import subprocess
-import sys
 import tempfile
 import textwrap
 from dataclasses import dataclass
@@ -58,7 +56,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry import SchemaRecord
 
@@ -392,7 +390,7 @@ class TestPilot:
         assert eligibility.unit == "E-SEM"
         assert eligibility.question == QUESTION
 
-    def test_t_sc5_i_only_the_pilot_opts_in(self) -> None:
+    def test_t_sc5_i_only_the_pilot_opts_in(self, run_fresh: Callable[..., str]) -> None:
         """Detects any other committed record setting ``unpivot`` or ``edition_by_filename``
         (only the pilot, K-SCN-1b's nine regional FES records which map editions but never
         unpivot, and K-SCN-1c's three building block records, the main one unpivoted, and K-SCN-1d's
@@ -444,17 +442,8 @@ class TestPilot:
             print("OK", opted)
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
 
 # --------------------------------------------------------------------------- #

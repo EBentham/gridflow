@@ -27,8 +27,6 @@ import csv
 import io
 import logging
 import os
-import subprocess
-import sys
 import tempfile
 import textwrap
 from datetime import UTC, date, datetime
@@ -47,7 +45,7 @@ from gridflow.silver.neso_data_portal.completion import capture_id_for, read_com
 from gridflow.silver.registry import get_transformer
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -301,7 +299,7 @@ def test_blank_record_is_dropped_by_the_logged_reader_path(
     assert messages[0].startswith("dropped 1 blank row(s)")
 
 
-def test_the_gen2h_families_are_recorded_by_gen2h() -> None:
+def test_the_gen2h_families_are_recorded_by_gen2h(run_fresh: Callable[..., str]) -> None:
     """Detects a GEN-2 family losing its record: in a fresh interpreter the two families
     RULINGS 547 moved to unit GEN-2H (``metered_wind_output_monthly`` and
     ``wind_bmu_boa_volumes``) and this unit's family all have one."""
@@ -316,14 +314,5 @@ def test_the_gen2h_families_are_recorded_by_gen2h() -> None:
         print("OK")
         """
     )
-    result = subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout, result.stdout
+    stdout = run_fresh(code)
+    assert "OK" in stdout, stdout
