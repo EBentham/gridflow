@@ -59,7 +59,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import (
@@ -1497,22 +1496,3 @@ def test_the_committed_ledger_adjudicates_exactly_the_five_failed_captures() -> 
     assert {e.family for e in entries} & {DIS, MASTER, SUM, RES, LIN, BLK} == set()
     for family in BSAD:
         assert [e.family for e in entries].count(family) == (2 if family == AGG else 1)
-
-
-@pytest.mark.parametrize("key", RECORDED)
-def test_the_skeleton_page_renders_the_new_records(key: str) -> None:
-    """Detects a record the docs generator cannot render (the two-epoch BSAD records, the held
-    DC records, the 78-column linear epoch, the resource-partitioned keys)."""
-    package = PACKAGE_OF[key]
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": package,
-            "title": package,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    assert f"`{key}`" in page

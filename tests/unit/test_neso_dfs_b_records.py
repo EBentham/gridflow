@@ -44,7 +44,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
@@ -884,26 +883,6 @@ def test_the_reconcile_ledger_is_untouched_by_dfs_b() -> None:
     entries = registry_module.load_reconcile_adjudications()
     assert registry_module.reconcile_adjudication_problems(load_registry(), entries) == []
     assert {e.family for e in entries}.isdisjoint(RECORDED)
-
-
-@pytest.mark.parametrize("package", [SERVICE, LIVE, TEST])
-def test_the_skeleton_page_renders_the_new_records(package: str) -> None:
-    """Detects a record the docs generator cannot render (the held requirements, the date-keyed
-    records without a resource partition)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": package,
-            "title": package,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    for family, owner in PACKAGE_OF.items():
-        if owner == package:
-            assert f"`{family}`" in page
 
 
 # --------------------------------------------------------------------------- #

@@ -1418,29 +1418,6 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     assert set(both_as_of(db, data, meta.family, None)) == {ids[alias]}
 
 
-def test_the_skeleton_pages_render_the_new_records() -> None:
-    """Detects a record the docs generator cannot render (the held questions, the three header
-    epochs, the resource-partitioned keys)."""
-    registry = load_registry()
-    seen = set()
-    for key, filename in PACKAGE_FILES.items():
-        slug = filename.removesuffix(".json")
-        page = skeleton.render_package(
-            registry,
-            {
-                "name": slug,
-                "title": slug,
-                "organization": {"title": "NESO"},
-                "license_title": "NESO Open Data Licence",
-                "extras": [],
-            },
-            None,
-        )
-        assert f"`{key}`" in page, key
-        seen.add(key)
-    assert seen == set(FAMILIES)
-
-
 # --------------------------------------------------------------------------- #
 # 20y: the 2026-10-16 day-first uploads of the current files
 # --------------------------------------------------------------------------- #

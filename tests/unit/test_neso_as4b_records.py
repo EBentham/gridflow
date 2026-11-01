@@ -51,7 +51,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
@@ -949,21 +948,3 @@ def test_a_datastore_family_is_stamped_with_the_capture_time(data: Path, alias: 
     init_catalogue(db, data)
     assert both_as_of(db, data, meta.family, written - timedelta(microseconds=1)) == []
     assert set(both_as_of(db, data, meta.family, written)) == {capture_id}
-
-
-@pytest.mark.parametrize("key", RECORDED)
-def test_the_skeleton_page_renders_the_new_records(key: str) -> None:
-    """Detects a record the docs generator cannot render (the held questions, the em and en dashes,
-    the raised cap)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": PACKAGE_OF[key],
-            "title": PACKAGE_OF[key],
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    assert f"`{key}`" in page

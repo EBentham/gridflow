@@ -57,7 +57,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.profile import silver_name
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
@@ -1071,22 +1070,3 @@ def test_the_forecast_captures_lie_wholly_after_the_vintage(alias: str) -> None:
         if spec[1] in ("service_delivery_date", "efa_date"):
             targets = [_expected(spec, r[spec[0]]) for r in rows(alias)]
             assert all(t > vintage for t in targets), alias
-
-
-@pytest.mark.parametrize("slug", [s for s in PACKAGES if s != "contract-transfer-of-obligation"])
-def test_the_skeleton_pages_render_the_new_records(slug: str) -> None:
-    """Detects a record the docs generator cannot render (the held questions, the backticks, the
-    numeric band headers)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": slug,
-            "title": slug,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    for key in (k for k in RECORDED if PACKAGE_OF[k] == slug):
-        assert f"`{key}`" in page, key

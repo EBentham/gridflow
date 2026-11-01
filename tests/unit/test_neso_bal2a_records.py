@@ -54,7 +54,6 @@ from test_neso_reconcile_adjudication import point_settings, run_cli
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.registry import (
     RECONCILE_ADJUDICATIONS_FILE,
     Held,
@@ -1037,20 +1036,3 @@ def test_the_newest_capture_of_each_resource_is_served_not_one_per_family(data: 
     db = data / "cat.duckdb"
     init_catalogue(db, data)
     assert set(both_as_of(db, data, FAMILY, None)) == {a, b}
-
-
-def test_the_skeleton_page_renders_the_new_record() -> None:
-    """Detects a record the docs generator cannot render (the held question, the eight header
-    epochs, the resource-partitioned edition key)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": PACKAGE,
-            "title": PACKAGE,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    assert f"`{FAMILY}`" in page

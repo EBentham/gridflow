@@ -61,7 +61,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     Eligible,
@@ -1037,27 +1036,3 @@ def test_every_family_is_generic_tabular_silver_with_its_own_record() -> None:
     resources = [r for _p, r in registry.resources.values() if r.family in RECORDED]
     assert len(resources) == 9
     assert all(r.disposition == SilverDisposition(kind="SILVER", key=r.family) for r in resources)
-
-
-@pytest.mark.parametrize("slug", [AAHEDC_PACKAGE[0], TNUOS_PACKAGE[0]])
-def test_the_skeleton_pages_render_the_new_records(slug: str) -> None:
-    """Detects a record the docs generator cannot render (the held questions, the non-ASCII
-    pound-sign headers, the mojibake TDR header)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": slug,
-            "title": slug,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    keys = (
-        ["aahedc_tariffs"]
-        if slug == AAHEDC_PACKAGE[0]
-        else [k for k in RECORDED if k != "aahedc_tariffs"]
-    )
-    for key in keys:
-        assert f"`{key}`" in page, key

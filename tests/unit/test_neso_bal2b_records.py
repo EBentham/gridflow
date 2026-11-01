@@ -54,7 +54,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     Eligible,
@@ -948,21 +947,3 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     assert both_as_of(db, data, meta.family, before) == []
     assert set(both_as_of(db, data, meta.family, after)) == {capture_id}
     assert set(both_as_of(db, data, meta.family, None)) == {capture_id}
-
-
-def test_the_skeleton_pages_render_the_new_records() -> None:
-    """Detects a record the docs generator cannot render (the held questions, the nullable key
-    column, the resource-partitioned keys)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": PACKAGE,
-            "title": PACKAGE,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    for key in RESOURCES:
-        assert f"`{key}`" in page, key

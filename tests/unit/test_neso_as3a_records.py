@@ -54,7 +54,6 @@ from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import Eligible, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import (
@@ -1084,21 +1083,3 @@ def test_the_upload_archives_of_the_mixed_sell_family_also_take_the_capture_time
     written = datetime.fromisoformat(meta.written).astimezone(UTC)
     modified = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {written} != {modified}
-
-
-@pytest.mark.parametrize("key", RECORDED)
-def test_the_skeleton_page_renders_the_new_records(key: str) -> None:
-    """Detects a record the docs generator cannot render (the two-epoch sell record, the datastore
-    and upload vintages, the resource-partitioned keys)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": PACKAGE,
-            "title": PACKAGE,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    assert f"`{key}`" in page

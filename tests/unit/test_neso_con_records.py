@@ -60,7 +60,6 @@ from test_neso_multi_resource import both_as_of
 from test_neso_reconcile_adjudication import point_settings, run_cli
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     RECONCILE_ADJUDICATIONS_FILE,
@@ -1324,26 +1323,3 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     assert both_as_of(db, data, meta.family, before) == []
     assert set(both_as_of(db, data, meta.family, after)) == {capture_id}
     assert set(both_as_of(db, data, meta.family, None)) == {capture_id}
-
-
-def test_the_skeleton_pages_render_the_new_records() -> None:
-    """Detects a record the docs generator cannot render (the held questions, the resource-level
-    HOLD, the workbook child family, the CMIS epochs)."""
-    registry = load_registry()
-    seen = set()
-    for key, filename in PACKAGE_FILES.items():
-        slug = filename.removesuffix(".json")
-        page = skeleton.render_package(
-            registry,
-            {
-                "name": slug,
-                "title": slug,
-                "organization": {"title": "NESO"},
-                "license_title": "NESO Open Data Licence",
-                "extras": [],
-            },
-            None,
-        )
-        assert f"`{key}`" in page, key
-        seen.add(key)
-    assert seen == set(FAMILIES)

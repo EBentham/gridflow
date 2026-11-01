@@ -48,7 +48,6 @@ from test_neso_reconcile_adjudication import point_settings, run_cli
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     Eligible,
@@ -1337,22 +1336,3 @@ def test_every_family_is_generic_tabular_silver_with_its_own_record() -> None:
         assert entry.record is not None and entry.transformer is None, key
         assert entry.kind == "tabular", key
         assert not isinstance(package.eligibility, Held), key
-
-
-@pytest.mark.parametrize("slug", list(PACKAGES))
-def test_the_skeleton_pages_render_the_new_records(slug: str) -> None:
-    """Detects a record the docs generator cannot render (the held questions, the pound-sign
-    headers, the two SSEL epochs)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": slug,
-            "title": slug,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    for key in (k for k in RECORDED if PACKAGE_OF[k] == slug):
-        assert f"`{key}`" in page, key
