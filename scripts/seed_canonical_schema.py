@@ -8,7 +8,7 @@ The script walks list_transformers() and emits a YAML skeleton.  Six
 Open-Meteo entries are authored by hand (canonical post-F15-B names); all
 others get a TODO_HUMAN_FILL_COLUMNS: true marker for the curation pass.
 
-Cadence values are read from config/sources.yaml.  Atomic write (temp +
+Cadence values are read through load_settings().  Atomic write (temp +
 os.replace) per CLAUDE.md hard rule.
 """
 
@@ -30,10 +30,10 @@ import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401
 import gridflow.silver.neso  # noqa: F401
 import gridflow.silver.openmeteo  # noqa: F401
+from gridflow.config.settings import load_settings
 from gridflow.silver.registry import get_transformer_class, list_transformers
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
-_SOURCES_YAML = _REPO_ROOT / "config" / "sources.yaml"
 _POLICY_AVAILABLE_AT_SEMANTICS = (
     "coalesce(published_at, reconstructed event_time + lag when event_time < "
     "applies_before, else ingest stamp) — see ADR-031."
@@ -293,14 +293,16 @@ _OPEN_METEO_OVERRIDES: dict[tuple[str, str], dict[str, Any]] = {
 
 
 def _load_cadence_map() -> dict[tuple[str, str], str]:
-    """Build a (source, dataset) -> schedule map from sources.yaml."""
-    raw = yaml.safe_load(_SOURCES_YAML.read_text(encoding="utf-8"))
-    result: dict[tuple[str, str], str] = {}
-    for source, source_cfg in raw.get("sources", {}).items():
-        for dataset, dataset_cfg in source_cfg.get("datasets", {}).items():
-            schedule = dataset_cfg.get("schedule", "unknown")
-            result[(source, dataset)] = schedule
-    return result
+    """Build a (source, dataset) -> schedule map from the loaded settings.
+
+    Read through ``load_settings()``, so datasets the loader fills (the NESO
+    portal's, from its registry) carry their schedule too.
+    """
+    return {
+        (source, dataset): dataset_cfg.schedule
+        for source, source_cfg in load_settings().sources.items()
+        for dataset, dataset_cfg in source_cfg.datasets.items()
+    }
 
 
 def _skeleton_entry(source: str, dataset: str, cadence: str) -> dict[str, Any]:
