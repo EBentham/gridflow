@@ -20,7 +20,7 @@ class TempTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "temp"
     schema_cls = ElexonTemp
-    ENTITY_KEY_COLUMNS = ("timestamp_utc",)  # D-8: verbatim from unique() below
+    ENTITY_KEY_COLUMNS = ("timestamp_utc",)  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -65,7 +65,7 @@ class TempTransformer(ElexonTransformer):
         if "measurement_date" in df.columns:
             df = df.with_columns(pl.col("measurement_date").cast(pl.Date, strict=False))
 
-        df = df.unique(subset=["timestamp_utc"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

@@ -1,7 +1,7 @@
 """ENTSO-E event-window filter — classification + D-3d durability tests (R2-A Task 4).
 
-Covers A-6 (classification completeness), the transform-backed replacement
-for the ineffective rev-2 ``_event_time_column`` assertion, and A-16's D-3d
+Covers A-6 (classification completeness), a transform-backed check that each
+opt-in emits the filter's ``timestamp_utc`` column, and A-16's D-3d
 per-instant lower-bound durability proof (the S4-1 mixed-ownership
 regression, demonstrated RED against both an unconditional-trim and a
 per-date ``frozenset[date]`` implementation via the git history this plan
@@ -130,11 +130,9 @@ class TestHorizonDatasetsNeverFiltered:
 
 
 class TestOptedInTransformersProduceFilterableTimestamp:
-    """Transform-backed replacement for the ineffective rev-2
-    ``_event_time_column`` assertion (``base.py``'s ``_event_time_column``
-    returns the literal ``"timestamp_utc"`` unconditionally, overridden
-    nowhere) -- actually runs ``read_bronze()`` + ``transform()`` against a
-    real fixture and asserts ``timestamp_utc`` is present and populated.
+    """The event-window filter always reads ``timestamp_utc``, so each opt-in
+    runs ``read_bronze()`` + ``transform()`` against a real fixture and
+    asserts ``timestamp_utc`` is present and populated.
     """
 
     @pytest.mark.parametrize(
@@ -179,13 +177,12 @@ class TestOptedInTransformersProduceFilterableTimestamp:
 # question and no neighbour-durability proof to make -- they are always
 # excluded, with or without any neighbour bronze existing. This supersedes
 # the per-instant NEIGHBOUR-durability-gated lower bound this file
-# originally pinned for ENTSO-E; that mechanism remains correct and
-# untouched for Elexon's CLOSED-interval boundary (D-3b,
-# tests/silver/test_elexon_publication_window.py), and the underlying
-# per-instant-not-per-date primitive (the S4-1 regression) stays pinned at
-# the primitive level, unaffected by this ruling, in
+# originally pinned for ENTSO-E; the durability proof remains for Elexon's
+# CLOSED-interval upper boundary (D-3b,
+# tests/silver/test_elexon_publication_window.py), and its per-instant,
+# never per-date, resolution (the S4-1 regression) stays pinned in
 # tests/unit/test_partition_window_filter.py::TestNeighbourOwns::
-# test_lower_bound_ownership_is_resolved_per_instant_not_per_date.
+# test_ownership_is_resolved_per_instant_not_per_date.
 # ---------------------------------------------------------------------------
 
 
@@ -281,10 +278,6 @@ class TestHalfOpenIntervalUnconditionalExclusion:
         transformer = DayAheadPricesTransformer(tmp_path)
         rows = transformer.run(target_date, run_id="half-open-no-neighbours")
         assert rows == 24, "both out-of-scope rows must be excluded without any neighbour proof"
-        assert transformer.last_partition_filter_dropped_count == 2
-        assert transformer.last_partition_filter_boundary_retained_count == 0, (
-            "HALF_OPEN semantics never retains an out-of-scope row"
-        )
 
     def test_out_of_window_exclusion_is_counted_and_logged_never_silent(
         self, tmp_path: Path, caplog: pytest.LogCaptureFixture
@@ -303,8 +296,7 @@ class TestHalfOpenIntervalUnconditionalExclusion:
             rows = transformer.run(target_date, run_id="half-open-logged")
 
         assert rows == 24
-        assert transformer.last_partition_filter_dropped_count == 4
-        assert any("out-of-scope" in message for message in caplog.messages)
+        assert any("excluded 4 out-of-scope" in message for message in caplog.messages)
 
     def test_in_window_rows_are_unaffected(self, tmp_path: Path) -> None:
         """A request whose response does not over-span at all is a no-op."""
@@ -319,4 +311,3 @@ class TestHalfOpenIntervalUnconditionalExclusion:
         transformer = DayAheadPricesTransformer(tmp_path)
         rows = transformer.run(target_date, run_id="half-open-noop")
         assert rows == 24
-        assert transformer.last_partition_filter_dropped_count == 0

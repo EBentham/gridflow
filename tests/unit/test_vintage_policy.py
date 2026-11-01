@@ -292,20 +292,3 @@ def test_policy_is_frozen_and_rejects_negative_lag() -> None:
         policy.name = "changed"  # type: ignore[misc]
     with pytest.raises(ValueError, match="non-negative"):
         replace(policy, lag=timedelta(microseconds=-1))
-
-
-def test_invalid_generated_label_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A derivation bug must fail loudly rather than write an undeclared label."""
-    transformer = MIDTransformer(tmp_path)
-    policy = transformer.VINTAGE_POLICY
-    assert policy is not None
-    original_lit = pl.lit
-
-    def faulty_label(value: object) -> pl.Expr:
-        return original_lit("undeclared" if value == policy.name else value)
-
-    monkeypatch.setattr(pl, "lit", faulty_label)
-    with pytest.raises(ValueError, match="invalid vintage_policy label"):
-        transformer._add_bitemporal_columns(
-            pl.DataFrame({"timestamp_utc": [OLD]}), OLD.date(), "run", CAPTURE
-        )

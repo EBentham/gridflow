@@ -4,16 +4,13 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
-
-if TYPE_CHECKING:
-    import httpx
 
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.neso.endpoints import ENDPOINTS, NesoEndpoint, build_path
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +32,6 @@ class CarbonIntensityConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch one NESO Carbon Intensity API dataset.
 
@@ -53,7 +49,7 @@ class CarbonIntensityConnector(BaseConnector):
             raise ValueError(f"Unknown NESO dataset: {dataset!r}. Available: {list(ENDPOINTS)}")
 
         endpoint = ENDPOINTS[dataset]
-        requests = _request_specs(endpoint, start, end, params)
+        requests = _request_specs(endpoint, start, end)
         responses: list[RawResponse] = []
         failures: list[tuple[datetime, datetime, Exception]] = []
 
@@ -65,17 +61,13 @@ class CarbonIntensityConnector(BaseConnector):
                 **path_overrides,
             )
             try:
-                raw = await self._request(path, {})
+                raw = await self._get(path, {})
                 responses.append(
-                    RawResponse(
-                        body=raw.content,
-                        content_type=raw.headers.get("content-type", "application/json"),
+                    RawResponse.from_httpx(
+                        raw,
                         source="neso",
                         dataset=dataset,
-                        request_url=str(raw.url),
-                        request_params=path_values,
-                        api_version="v1",
-                        http_status=raw.status_code,
+                        params=path_values,
                         data_date=(None if endpoint.reference else window_start.date()),
                     )
                 )
@@ -108,42 +100,28 @@ class CarbonIntensityConnector(BaseConnector):
         )
         return responses
 
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET request."""
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            resp = await self._client.get(path, params=params)
-            resp.raise_for_status()
-            return resp
-
 
 def _request_specs(
     endpoint: NesoEndpoint,
     start: datetime,
     end: datetime,
-    base_overrides: dict[str, Any],
 ) -> list[tuple[datetime, datetime, dict[str, Any]]]:
     """Split date ranges into API request windows and path overrides."""
     if not endpoint.requires_window:
-        return [(start, end, base_overrides)]
+        return [(start, end, {})]
 
     if endpoint.daily_iteration:
+        # One request per UTC calendar day the window touches, so a window ending
+        # mid-day still fetches that day; a zero-width window keeps its one day.
         windows: list[tuple[datetime, datetime, dict[str, Any]]] = []
-        current = start
-        effective_end = end if end > start else start + timedelta(days=1)
-        while current < effective_end:
-            window_end = min(current + timedelta(days=1), effective_end)
+        for day_start, day_end in day_subwindows(start, end) or [
+            (start, start + timedelta(days=1))
+        ]:
             if endpoint.settlement_period_iteration:
-                for period in range(1, _settlement_period_count(current.date()) + 1):
-                    windows.append((current, window_end, {**base_overrides, "period": period}))
+                for period in range(1, _settlement_period_count(day_start.date()) + 1):
+                    windows.append((day_start, day_end, {"period": period}))
             else:
-                windows.append((current, window_end, base_overrides))
-            current = window_end
+                windows.append((day_start, day_end, {}))
         return windows
 
     effective_end = (
@@ -157,10 +135,10 @@ def _request_specs(
     chunk_delta = timedelta(days=_MAX_DAYS_PER_REQUEST)
     while chunk_start < effective_end:
         chunk_end = min(chunk_start + chunk_delta, effective_end)
-        windows.append((chunk_start, chunk_end, base_overrides))
+        windows.append((chunk_start, chunk_end, {}))
         chunk_start = chunk_end
     if not windows:
-        windows.append((start, start, base_overrides))
+        windows.append((start, start, {}))
     return windows
 
 

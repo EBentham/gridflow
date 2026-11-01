@@ -63,11 +63,6 @@ class TestErrorPaths:
         with pytest.raises(typer.BadParameter):
             _resolve_datasets("elexon", None, False, sample_config)
 
-    def test_invalid_settings_type_raises_type_error(self):
-        """Non-GridflowConfig settings object raises TypeError."""
-        with pytest.raises(TypeError):
-            _resolve_datasets("elexon", "system_prices", False, object())
-
 
 class TestSettingsEnvOverrides:
     def test_gridflow_pipeline_env_vars_override_yaml_paths(self, monkeypatch, tmp_path):

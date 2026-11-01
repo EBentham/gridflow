@@ -11,28 +11,12 @@
     {
       "key": "tresp_demand_pathways_gsp",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Building_block_id",
-              "tRESP_GSP_area",
-              "Pathway",
-              "Year",
-              "Value",
-              "Unit",
-              "DNO_licence_area"
-            ],
             "columns": [
               {
                 "source": "Building_block_id",
@@ -76,10 +60,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -105,27 +86,12 @@
     {
       "key": "tresp_demand_pathways_resp_region",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Building_block_id",
-              "RESP_region",
-              "Pathway",
-              "Year",
-              "Value",
-              "Unit"
-            ],
             "columns": [
               {
                 "source": "Building_block_id",
@@ -163,10 +129,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -192,28 +155,12 @@
     {
       "key": "tresp_demand_pathways_la_england",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Building_block_id",
-              "LAD24CD",
-              "LAD24NM",
-              "Pathway",
-              "Year",
-              "Unit",
-              "Value"
-            ],
             "columns": [
               {
                 "source": "Building_block_id",
@@ -257,10 +204,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -286,28 +230,12 @@
     {
       "key": "tresp_demand_pathways_la_scotland",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Building_block_id",
-              "LAD24CD",
-              "LAD24NM",
-              "Pathway",
-              "Year",
-              "Unit",
-              "Value"
-            ],
             "columns": [
               {
                 "source": "Building_block_id",
@@ -351,10 +279,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -380,28 +305,12 @@
     {
       "key": "tresp_demand_pathways_la_wales",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Building_block_id",
-              "LAD24CD",
-              "LAD24NM",
-              "Pathway",
-              "Year",
-              "Unit",
-              "Value"
-            ],
             "columns": [
               {
                 "source": "Building_block_id",
@@ -445,10 +354,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -473,38 +379,17 @@
     },
     {
       "key": "tresp_demand_pathways_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     },
     {
       "key": "tresp_building_block_definitions",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "xlsx",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Demand/ Generation/ Storage",
-              "Technology",
-              "FES BB ID Number",
-              "Technology Detail",
-              "Units"
-            ],
             "columns": [
               {
                 "source": "Demand/ Generation/ Storage",
@@ -536,10 +421,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -565,23 +447,12 @@
     {
       "key": "tresp_gsp_area_names",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "xlsx",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "tresp_gsp_area",
-              "tresp_gsp_area_name"
-            ],
             "columns": [
               {
                 "source": "tresp_gsp_area",
@@ -595,10 +466,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

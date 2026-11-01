@@ -201,7 +201,7 @@ gridflow init
 |--------|---------|-------------|
 | `--last` | `--last 24h`, `--last 7d`, `--last 30d` | Relative lookback from now |
 | `--start` | `--start 2024-06-01` | Start date (YYYY-MM-DD) |
-| `--end` | `--end 2024-06-07` | End date (YYYY-MM-DD), defaults to now if omitted |
+| `--end` | `--end 2024-06-07` | End date, inclusive (YYYY-MM-DD), or an exclusive ISO datetime; defaults to now if omitted |
 | *(none)* | | Uses default lookback (24 hours) |
 
 ---

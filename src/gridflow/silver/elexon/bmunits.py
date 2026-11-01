@@ -63,7 +63,7 @@ class BMUnitsTransformer(ElexonTransformer):
     # no longer implies the vendor did not send it -- the version stamp is how a
     # consumer tells the two regimes apart.
     DATASET_VERSION: ClassVar[str] = "1.1.0"
-    ENTITY_KEY_COLUMNS = ("bm_unit_id",)  # D-8: verbatim from unique() below
+    ENTITY_KEY_COLUMNS = ("bm_unit_id",)  # D-8
 
     def _bronze_candidates(self, target_date: date) -> list[Path]:
         """The newest body anywhere in the tree: reference data has no date partition.
@@ -79,7 +79,7 @@ class BMUnitsTransformer(ElexonTransformer):
         return bodies[:1]
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
         rows = [record for _, records in pairs for record in records]
         return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 
@@ -182,7 +182,7 @@ class BMUnitsTransformer(ElexonTransformer):
         if "registered_capacity_mw" in df.columns:
             df = df.with_columns(pl.col("registered_capacity_mw").cast(pl.Float64))
 
-        df = df.unique(subset=["bm_unit_id"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

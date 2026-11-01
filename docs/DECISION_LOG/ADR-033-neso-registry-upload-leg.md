@@ -41,7 +41,9 @@ resource carries exactly one disposition: SILVER (its own tabular family), DOC, 
 X-R; the two HOLD(N) packages are held at package level). `endpoints.FAMILIES`,
 `endpoints.DATASETS` (the legacy view) and the `config/sources.yaml` datasets block are
 generated from it; `python -m gridflow.connectors.neso_data_portal.registry yaml --check`
-pins the agreement.
+pins the agreement. *(Since the 2026-10-25 review: `FAMILIES`, the YAML block and its
+generator are gone; callers read the registry, and `load_settings()` fills the portal's
+datasets from it.)*
 
 **Key freeze (I-F).** A key with bronze cannot be renamed or removed. At runtime every bind
 refuses before its first send when a bronze directory is not a registry key (directory names

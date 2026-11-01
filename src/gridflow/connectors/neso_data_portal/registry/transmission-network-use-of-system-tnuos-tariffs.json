@@ -11,30 +11,12 @@
     {
       "key": "tnuos_tariffs_embedded_export",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "Zone_No",
-              "Zone_Name",
-              "Locational_£/kW",
-              "AGIC_£/kW",
-              "PhasedResidual_£/kW",
-              "EET(Floored)_£/kW"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -91,10 +73,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -118,30 +97,12 @@
     {
       "key": "tnuos_tariffs_half_hourly_hh_demand",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "Zone_No",
-              "Zone_Name",
-              "Peak_£/kW",
-              "YearRound_£/kW",
-              "HH_SGD_Adjustment_£/kW",
-              "HHTariff(Floored)_£/kW"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -198,10 +159,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -225,28 +183,12 @@
     {
       "key": "tnuos_tariffs_local_offshore_generator",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "OffshoreGenerator",
-              "Substation_£/kW",
-              "Circuit_£/kW",
-              "ETUoS_£/kW"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -291,10 +233,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -318,28 +257,12 @@
     {
       "key": "tnuos_tariffs_local_substation_tariff",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "Voltage",
-              "Sum of TEC at Connecting Substation",
-              "Connection Type",
-              "Tariff"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -384,10 +307,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -413,29 +333,12 @@
     {
       "key": "tnuos_tariffs_non_half_hourly_nhh_demand",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "Zone_No",
-              "Zone_Name",
-              "NHH_Zonal_p/kWh",
-              "NHH_SGD_Adjustment_p/kWh",
-              "NHHTariff(Floored)_p/kWh"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -486,10 +389,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -513,31 +413,12 @@
     {
       "key": "tnuos_tariffs_onshore_generator",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "Zone_No",
-              "Zone_Name",
-              "SystemPeak_£/kW",
-              "SharedYearRound_£/kW",
-              "NotSharedYearRound_£/kW",
-              "Residual_£/kW",
-              "SmallGenDiscount_£/kW"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -600,10 +481,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -627,26 +505,12 @@
     {
       "key": "tnuos_tariffs_onshore_local_circuit",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "Substation_Name",
-              "Tariff_£/kW"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -678,10 +542,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -705,27 +566,12 @@
     {
       "key": "tnuos_tariffs_transmission_demand",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Year_FY",
-              "Published_Date",
-              "TDR Band",
-              "TDR Tariff in Â£/(Site Day)",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -764,10 +610,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

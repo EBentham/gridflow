@@ -12,10 +12,7 @@ from __future__ import annotations
 
 import csv
 import io
-import os
 import sys
-import tempfile
-from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -35,27 +32,11 @@ from gridflow.silver.registry import get_transformer_class  # noqa: E402
 from gridflow.storage.duckdb import refresh_views  # noqa: E402
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator, Sequence
+    from collections.abc import Callable, Sequence
     from datetime import date
 
 SOURCE = "neso_data_portal"
 TS = pl.Datetime("us", "UTC")
-
-
-def _short_base() -> str:
-    """The drive root on Windows (family keys plus run-id names pass MAX_PATH under the
-    long per-user temp directory, ADR-036); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
-@contextmanager
-def short_root() -> Iterator[Path]:
-    """A temporary data root with a short path, removed on exit."""
-    with tempfile.TemporaryDirectory(
-        prefix="gg", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
 
 
 def utc(year: int, month: int, day: int, hour: int = 0, minute: int = 0) -> datetime:

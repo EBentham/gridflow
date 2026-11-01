@@ -28,7 +28,6 @@ from gridflow.silver.base import BaseSilverTransformer, UnparseableBronzeError
 from gridflow.silver.partition_window import request_window_from_sidecar
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
-from gridflow.storage.paths import PathBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for path in self._bronze_files(target_date):
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -88,7 +87,7 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
             case ParserFamily.REGIONAL:
                 return _transform_regional(raw_df)
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
         """Bronze bodies to read for ``target_date`` (P0-a-1: exact-read fix).
 
         WHY exact-only. ``CarbonIntensityConnector.fetch`` batches every
@@ -106,28 +105,6 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
         means each bronze body is read by exactly one target date -- its
         owner's.
 
-        WHY not ``_EXACT_PARTITION_ONLY_SOURCES`` (D-2). That frozenset
-        would give the same read effect but at a cost: its OTHER caller,
-        ``_bronze_date_dirs`` (feeding ``_available_at_from_bronze``), would
-        return ``[]`` for every date without an exact partition and fall
-        through to a FABRICATED ``datetime.now(UTC)`` vintage -- reachable
-        for ``intensity_factors`` (``reference_dataset=True``), whose own
-        ``_bronze_files`` override below ignores ``_bronze_path_for_date``
-        entirely and always returns a non-empty read. Membership would also
-        assert a docstring invariant that is true for entsoe/entsog
-        (per-day chunking) but FALSE for NESO, which deliberately batches up
-        to 14 days per request (``_MAX_DAYS_PER_REQUEST``). Scoping the fix
-        to this class instead buys the identical guarantee through NESO's
-        own transformer base -- every registered ``source == "neso"``
-        transformer is a ``GenericNesoJsonTransformer`` subclass (most via
-        ``_make_transformer_class`` from ``ENDPOINTS``; ``carbon_intensity``
-        via the special-cased ``CarbonIntensityTransformer``, which also
-        subclasses it), so each inherits the exact-read automatically
-        (pinned cold-process by
-        ``tests/integration/test_neso_registry_coldstart.py``) -- without
-        touching the shared frozenset's other caller or its stated
-        invariant.
-
         Detection-only covering lookup (D-6). On an exact-partition miss,
         ``_warn_if_covered_but_not_owned`` runs PURELY to classify and log
         the miss -- it never returns bronze to read. Both arms of this
@@ -142,17 +119,9 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
                 if not path.name.endswith(".meta.json")
             ][:1]
 
-        exact_dir = PathBuilder(self.data_dir).bronze_date_dir(
-            self.source, self.dataset, target_date
-        )
-        if exact_dir.exists():
-            bodies = [
-                path
-                for path in sorted(exact_dir.glob("raw_*.json"))
-                if not path.name.endswith(".meta.json")
-            ]
-            if bodies:
-                return bodies
+        bodies = super()._bronze_candidates(target_date)
+        if bodies:
+            return bodies
 
         self._warn_if_covered_but_not_owned(target_date)
         return []

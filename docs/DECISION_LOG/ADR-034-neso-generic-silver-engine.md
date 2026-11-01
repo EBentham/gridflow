@@ -4,7 +4,8 @@
 **Date:** 2026-10-07
 **Phase:** v0.22 unit B (generic silver engine)
 **Amends:** ADR-033 C-7 (closed by P-13 below).
-**Amended by:** v0.22 unit BAL-2aH (RULINGS 678/680), §Amendment 1
+**Amended by:** v0.22 unit BAL-2aH (RULINGS 678/680), §Amendment 1; the 2026-10-25 review
+(task 26, decisions 45-51), §Amendment 2 (P-8 superseded)
 **Cross-references:** ADR-022 (enum sentinels), ADR-024 (schema manifest), ADR-025 (`_latest`
 views), ADR-028 (bronze vouching), ADR-029 (bronze retention, silver rebuildability),
 ADR-030 (NESO source), ADR-033 (registry, upload leg).
@@ -54,7 +55,8 @@ populated with an output of exactly `row_count` rows, every row at the current
 `dataset_version` and, for the generic engine, exactly this capture's id). Skip-if-valid,
 bespoke adoption and reconcile all use it.
 
-**P-8 — the bespoke three keep their classes.** A post-run hook records each of their
+**P-8 — the bespoke three keep their classes.** *(Superseded by §Amendment 2: the three
+run on frozen records through the generic engine.)* A post-run hook records each of their
 outputs that passes `is_valid`; the drain adopts a valid output or re-transforms exactly as
 the per-file branch would. Two captures resolving to one bespoke path are both left
 unrecorded (`duplicated`).
@@ -173,3 +175,41 @@ captures from immutable bronze.
 **Residual R-1.** The opt-in is as wide as the evidence: a padded body in a non-opted epoch
 (the final F13-F15 epoch repeats both columns without the trim) or family still fails loud with
 `InvalidOperationError` and leaves a visible `failed` gap until a record change opts it in.
+
+## Amendment 2 — the bespoke three retire onto frozen records (P-8 superseded)
+
+**Decision.** `daily_wind_availability`, `historic_generation_mix` and
+`embedded_wind_solar_forecast` carry frozen records in their registry files and run through
+the generic engine like every other recorded family. Their bespoke classes, Pydantic
+contracts, hand-written `_latest` specs and designated-date entries, the post-run hook,
+the bespoke completion glue (five private base methods), reconcile's bespoke branches and
+V-9's legacy refusal are deleted. `legacy` now means only fetch-time admission through
+`endpoints.DATASETS`, which is unchanged.
+
+**Evidence.** The engine reproduced all 11 stored captures (3 / 5 / 3) exactly: per capture
+the same rows (10,894 / 1,553,399 / 1,872 in total), the same `published_at`, `available_at`,
+`event_time`, `issue_time` and every value column, and the same `_latest` winners; the
+generation mix's solar pin (`published_at = 2026-09-26T18:19:36.497453Z`) still holds
+310,931 rows.
+
+**What changes on disk.** Each output gains `bronze_capture_id` and `capture_written_at`
+(plus `datetime` for the generation mix, the record's name for the instant because
+`timestamp_utc` is reserved, and `date_gmt_raw` with a DST-safe `timestamp_utc` equal to
+`event_time` for the embedded forecast) and loses the constant `data_provider`. The file
+name gains the capture digest and `dataset_version` becomes `1+e1`, so the cutover moves
+the old files out before draining (gridflow_models' `union_by_name` read would otherwise
+double every row) and gridflow_models excludes the three new columns from automatic
+feature selection in the same change.
+
+**Behaviour that changes.** A duplicate entity key fails the capture
+(`DuplicateEntityKeyError`) instead of silently keeping one row; an out-of-calendar
+settlement period is excluded and counted in `rows_excluded` (the bespoke completion
+always said 0); a null value is kept uncounted and a null-key row is excluded and counted;
+a capture without a usable `ckan_last_modified` or filename issue token is a failure record
+and a reconcile `failed` gap instead of an unvouched skip; the embedded forecast's `_latest`
+orders by `issue_time` before `available_at`.
+
+**Riders.** The equivalence harness refuses a populated body marked `empty_capture`, as the
+engine does (`HARNESS_VERSION` 2; no COVERED grant was installed). Container readers take the
+resource the engine already resolved (`resource_of`: sidecar UUID, else name and format)
+instead of re-reading the sidecar UUID, so a rotated resource UUID no longer fails the read.

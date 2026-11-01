@@ -47,8 +47,7 @@ COMMENT ON COLUMN gold_uk_imbalance_context.carbon_intensity_actual_gco2_kwh IS
 -- CUTOFF, not historical point-in-time selection (ADR-025:117-120): an
 -- as_of that falls between vintages returns no row for that key, not the
 -- earlier vintage. Genuine historical PIT belongs against the all-vintage
--- base view (silver_elexon_system_prices) or its deprecated
--- silver_system_prices alias, both of which still return every vintage by
+-- base view (silver_elexon_system_prices), which returns every vintage by
 -- design; that primitive is consumer-side (gridflow_models), not built here.
 COMMENT ON COLUMN gold_uk_imbalance_context.available_at IS
     'Winning system-price vintage''s provenance stamp (ADR-025 §3); does not gate the carbon-intensity columns. Filtering it is a fail-closed cutoff, NOT historical point-in-time selection — an as_of between vintages returns no row. Genuine PIT needs the all-vintage base view (silver_elexon_system_prices).';
