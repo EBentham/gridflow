@@ -49,8 +49,6 @@ _PINNED_KNOWN_EMPTY: dict[tuple[str, str], str] = {
     # Event-driven — empty for a quiet week is normal
     ("entsog", "urgent_market_messages"): "event-driven, empty for quiet week",
     ("elexon", "remit"): "event-driven, empty for quiet week",
-    # Orphan silver transformer — no connector endpoint; can never receive bronze data
-    ("entsoe", "activated_balancing_qty"): "no connector endpoint defined; silver-only orphan",
 }
 
 
@@ -298,6 +296,11 @@ def test_skip_rationale_logic_generic_no_data_is_fail(tmp_path: Path) -> None:
     )
     assert verdict == "FAIL"
     assert err in ("BRONZE_MISSING", "NO_PIPELINE_RUN_RECORDED")
+
+
+def test_every_pinned_entry_is_a_registered_dataset() -> None:
+    """A pin for a deleted transformer never matches a case and only hides drift."""
+    assert set(_PINNED_KNOWN_EMPTY) - set(list_transformers()) == set()
 
 
 # ---------------------------------------------------------------------------
