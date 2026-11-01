@@ -20,11 +20,13 @@ class PNTransformer(ElexonTransformer):
     schema_cls = ElexonPN
     DATASET_VERSION = "2.0.0"
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
-    OPTIONAL_ENTITY_KEY_COLUMNS = ("time_from",)
+    # Some units carry only a National Grid id (bmUnit null), as in UOU2T14D.
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("time_from", "national_grid_bm_unit")
     COLUMN_MAP = {
         "settlementDate": "settlement_date",
         "settlementPeriod": "settlement_period",
         "bmUnit": "bm_unit_id",
+        "nationalGridBmUnit": "national_grid_bm_unit",
         "levelFrom": "level_from",
         "levelTo": "level_to",
         "timeFrom": "time_from",
@@ -33,6 +35,7 @@ class PNTransformer(ElexonTransformer):
     REQUIRED = ("settlement_date", "settlement_period", "bm_unit_id")
     CASTS = {
         "bm_unit_id": pl.Utf8(),
+        "national_grid_bm_unit": pl.Utf8(),
         "level_from": pl.Float64(),
         "level_to": pl.Float64(),
         "time_from": pl.Datetime("us", "UTC"),
@@ -43,6 +46,7 @@ class PNTransformer(ElexonTransformer):
         "settlement_period",
         "timestamp_utc",
         "bm_unit_id",
+        "national_grid_bm_unit",
         "time_from",
         "time_to",
         "level_from",
