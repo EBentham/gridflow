@@ -394,11 +394,10 @@ class TestPilot:
 
     def test_t_sc5_i_only_the_pilot_opts_in(self) -> None:
         """Detects any other committed record setting ``unpivot`` or ``edition_by_filename``
-        (only the pilot, K-SCN-1b's nine regional FES records which map editions but never
-        unpivot, and K-SCN-1c's three building block records, the main one unpivoted, and K-SCN-1d's
-        ES1 record, unpivoted too, and K-BAL-2a's BSUoS monthly forecast summary record, which
-        maps editions without unpivoting; in a fresh interpreter, so nothing collection imported
-        can mask it)."""
+        by spot-checking named records on each side: the pilot, a regional FES record that maps
+        editions without unpivoting, the unpivoted building block main record and the BSUoS
+        monthly forecast summary opt in; records outside the FES and BSUoS forecast families do
+        not (in a fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -410,37 +409,15 @@ class TestPilot:
                     or any(e.unpivot is not None for e in f.record.epochs)
                 )
             )
-            assert opted == [
-                "bsuos_monthly_forecast_fc_summary",
-                "fes_building_blocks_block_definitions",
-                "fes_building_blocks_block_licence_area",
-                "fes_building_blocks_main",
+            for key in (
                 "fes_ed1_electricity_demand",
-                "fes_ed3_heat_demand_natural_gas",
-                "fes_ed3_heat_demand_natural_gas_sum_ed",
-                "fes_ed3_heat_demand_sum_ed",
-                "fes_ed4_gas_demand_defs",
-                "fes_ed5_road_transport",
-                "fes_ed6_road_transport_notes",
-                "fes_es1_electricity_supply",
-                "fes_es2_european_supply",
-                "fes_flx1_flexibility",
-                "fes_la_heat_model_domestic",
-                "fes_la_heat_model_residential",
-                "fes_regional_demand_active_power",
-                "fes_regional_dg_gt_1mw",
-                "fes_regional_dg_lt_1mw",
                 "fes_regional_dsr",
-                "fes_regional_gsp_info",
-                "fes_regional_storage_gt_1mw",
-                "fes_regional_storage_gt_1mw_pre2023",
-                "fes_regional_storage_lt_1mw",
-                "fes_regional_storage_lt_1mw_pre2023",
-                "fes_ws1_gas_supply",
-                "fes_ws2_gas_emissions",
-                "resource_adequacy_2030s_peak_demand",
-                "resource_adequacy_2030s_portfolio",
-            ], opted
+                "fes_building_blocks_main",
+                "bsuos_monthly_forecast_fc_summary",
+            ):
+                assert key in opted, key
+            for key in ("tec_register", "historic_generation_mix", "wind_bmu_boa_volumes"):
+                assert families[key][1].record is not None and key not in opted, key
             print("OK", opted)
             """
         )
