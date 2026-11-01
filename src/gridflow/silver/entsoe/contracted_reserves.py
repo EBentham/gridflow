@@ -26,6 +26,7 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "contracted_reserves"
     schema_cls = EntsoeContractedReserves
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "reserve_type")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -70,7 +71,7 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
                     "published_at",
                 ]
             )
-            .unique(subset=["timestamp_utc", "area_code", "reserve_type"], keep="last")
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "area_code", "reserve_type"])
             .with_columns(
                 [

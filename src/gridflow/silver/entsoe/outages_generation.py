@@ -45,10 +45,11 @@ class OutagesGenerationTransformer(EntsoeXmlTransformer):
     schema_cls = EntsoeOutagesGeneration
     DATASET_VERSION: ClassVar[str] = "2.0.0"
 
-    identity: ClassVar[tuple[str, ...]] = (
+    ENTITY_KEY_COLUMNS = (
         "document_mrid",
         "timeseries_mrid",
         "generation_unit_mrid",
+        "timestamp_utc",
     )
 
     def _parse_bronze_body(self, path: Path) -> list[dict[str, Any]]:
@@ -85,7 +86,7 @@ class OutagesGenerationTransformer(EntsoeXmlTransformer):
             )
             .alias("outage_type")
         )
-        df = latest_revision_steps(df, self.identity)
+        df = self.dedup_to_grain(latest_revision_steps(df))
         # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as published_at.
         df = with_published_at(df, dataset=self.dataset)
 

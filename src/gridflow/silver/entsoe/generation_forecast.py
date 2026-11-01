@@ -27,6 +27,7 @@ class GenerationForecastTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "generation_forecast"
     schema_cls = EntsoeGenerationForecast
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "production_type")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
 
@@ -52,7 +53,7 @@ class GenerationForecastTransformer(EntsoeXmlTransformer):
                 pl.col("production_type").fill_null("unknown").alias("production_type")
             )
 
-        df = df.unique(subset=["timestamp_utc", "area_code", "production_type"], keep="last")
+        df = self.dedup_to_grain(df)
 
         # Issue 04: carry the document publication vintage (createdDateTime)
         # as published_at; typed-null when the source lacks it.

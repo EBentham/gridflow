@@ -26,7 +26,7 @@ class INDOTransformer(ElexonTransformer):
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
-    )  # D-8: verbatim from unique() below
+    )  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -83,7 +83,7 @@ class INDOTransformer(ElexonTransformer):
             # do carry it).
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        df = df.unique(subset=["settlement_date", "settlement_period"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

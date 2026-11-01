@@ -27,6 +27,7 @@ class InstalledCapacityTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "installed_capacity"
     schema_cls = EntsoeInstalledCapacity
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "production_type")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -50,7 +51,7 @@ class InstalledCapacityTransformer(EntsoeXmlTransformer):
                 pl.col("production_type").fill_null("unknown").alias("production_type")
             )
 
-        df = df.unique(subset=["timestamp_utc", "area_code", "production_type"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

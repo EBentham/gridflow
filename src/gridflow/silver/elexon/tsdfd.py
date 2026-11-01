@@ -20,7 +20,7 @@ class TSDFDTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "tsdfd"
     schema_cls = ElexonTSDFD
-    ENTITY_KEY_COLUMNS = ("forecast_date",)  # D-8: verbatim from unique() below
+    ENTITY_KEY_COLUMNS = ("forecast_date",)  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -68,7 +68,7 @@ class TSDFDTransformer(ElexonTransformer):
             # carry it).
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        df = df.unique(subset=["forecast_date"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

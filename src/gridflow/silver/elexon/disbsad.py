@@ -24,7 +24,7 @@ class DISBSADTransformer(ElexonTransformer):
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
-    )  # D-8: verbatim from unique() below
+    )  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("adjustment_action_id", "component")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -87,12 +87,7 @@ class DISBSADTransformer(ElexonTransformer):
             .alias("timestamp_utc")
         )
 
-        dedup_cols = ["settlement_date", "settlement_period"]
-        if "adjustment_action_id" in df.columns:
-            dedup_cols.append("adjustment_action_id")
-        if "component" in df.columns:
-            dedup_cols.append("component")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

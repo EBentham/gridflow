@@ -22,6 +22,7 @@ class CrossBorderFlowsTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "cross_border_flows"
     schema_cls = EntsoeCrossborderFlow
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "in_area_code", "out_area_code")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, live-probed FR-BE 2026-08-01 -- period.time
     Interval matches the request window exactly (R3-RESEARCH.md:50); see
@@ -50,7 +51,7 @@ class CrossBorderFlowsTransformer(EntsoeXmlTransformer):
 
         df = df.with_columns(pl.col("flow_mw").cast(pl.Float64))
 
-        df = df.unique(subset=["timestamp_utc", "in_area_code", "out_area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

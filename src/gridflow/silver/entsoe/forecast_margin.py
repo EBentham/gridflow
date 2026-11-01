@@ -21,6 +21,7 @@ class ForecastMarginTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "forecast_margin"
     schema_cls = EntsoeForecastMargin
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -38,7 +39,7 @@ class ForecastMarginTransformer(EntsoeXmlTransformer):
             df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
 
         df = df.with_columns(pl.col("forecast_margin_mw").cast(pl.Float64))
-        df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

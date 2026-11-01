@@ -27,25 +27,21 @@ class WindForecastTransformer(ElexonTransformer):
     schema_cls = ElexonWindForecast
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     # D-8: the static base key -- the PRIMARY (settlement-coordinate) shape.
-    # transform()'s own dedup_cols (below) has a real timestamp_utc-only
-    # FALLBACK when neither settlement_date nor settlement_period is
-    # present at all. That alternate shape is NOT expressible as an
-    # additive ENTITY_KEY_COLUMNS + OPTIONAL_ENTITY_KEY_COLUMNS refinement
-    # (it swaps the REQUIRED columns, not just an optional suffix), so
-    # resolve_entity_key() is overridden below to mirror transform()'s exact
-    # conditional instead. These two class attributes stay declared for the
-    # golden-map / completeness contract (A-4, A-13) and remain correct for
-    # the primary shape.
+    # Bronze without settlement_date and settlement_period falls back to a
+    # timestamp_utc grain. That swaps the REQUIRED columns, which no additive
+    # OPTIONAL_ENTITY_KEY_COLUMNS refinement can express, so
+    # resolve_entity_key() is overridden below. These two class attributes
+    # stay declared for the golden-map / completeness contract (A-4, A-13)
+    # and remain correct for the primary shape.
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")
     OPTIONAL_ENTITY_KEY_COLUMNS = ("published_at",)
 
     @classmethod
     def resolve_entity_key(cls, available_columns: Iterable[str]) -> tuple[str, ...]:
-        """Mirror transform()'s own dedup_cols conditional exactly (below):
-        settlement_date + settlement_period when both are present, else the
-        timestamp_utc-only fallback; published_at appended when present
-        (transform() always emits it -- typed-null when bronze lacks the
-        publish field, see the ``else`` branch below)."""
+        """The grain ``dedup_to_grain`` enforces: settlement_date +
+        settlement_period when both are present, else the timestamp_utc-only
+        fallback; published_at appended when present (transform() always
+        emits it -- typed-null when bronze lacks the publish field)."""
         available = set(available_columns)
         key: tuple[str, ...]
         if "settlement_date" in available and "settlement_period" in available:
@@ -130,12 +126,7 @@ class WindForecastTransformer(ElexonTransformer):
             # carry it).
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        dedup_cols = ["timestamp_utc"]
-        if "settlement_date" in df.columns and "settlement_period" in df.columns:
-            dedup_cols = ["settlement_date", "settlement_period"]
-        if "published_at" in df.columns:
-            dedup_cols.append("published_at")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

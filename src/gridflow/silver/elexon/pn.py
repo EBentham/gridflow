@@ -67,10 +67,7 @@ class PNTransformer(ElexonTransformer):
             .alias("timestamp_utc")
         )
 
-        df = df.unique(
-            subset=["settlement_date", "settlement_period", "bm_unit_id"],
-            keep="last",
-        )
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

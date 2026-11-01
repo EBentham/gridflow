@@ -27,6 +27,7 @@ class NetTransferCapacityTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "net_transfer_capacity"
     schema_cls = EntsoeNetTransferCapacity
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "in_area_code", "out_area_code")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR: window-bounded
     single Point, curveType A03 (R3-RESEARCH.md:53); see
@@ -55,7 +56,7 @@ class NetTransferCapacityTransformer(EntsoeXmlTransformer):
 
         df = df.with_columns(pl.col("ntc_mw").cast(pl.Float64))
 
-        df = df.unique(subset=["timestamp_utc", "in_area_code", "out_area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

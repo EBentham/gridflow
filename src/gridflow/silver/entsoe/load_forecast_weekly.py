@@ -26,6 +26,7 @@ class LoadForecastWeeklyTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "load_forecast_weekly"
     schema_cls = EntsoeLoadForecastWeekly
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -44,7 +45,7 @@ class LoadForecastWeeklyTransformer(EntsoeXmlTransformer):
 
         df = df.with_columns(pl.col("load_forecast_mw").cast(pl.Float64))
 
-        df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         # Issue 04: carry the document publication vintage (createdDateTime)
         # as published_at; typed-null when the source lacks it.

@@ -22,6 +22,7 @@ class ActualLoadTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "actual_load"
     schema_cls = EntsoeActualLoad
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
 
@@ -42,7 +43,7 @@ class ActualLoadTransformer(EntsoeXmlTransformer):
 
         df = df.with_columns(pl.col("load_mw").cast(pl.Float64))
 
-        df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

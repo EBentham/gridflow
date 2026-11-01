@@ -27,6 +27,7 @@ class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "activated_balancing_qty"
     schema_cls = EntsoeActivatedBalancingQty
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "reserve_type", "direction")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -88,7 +89,7 @@ class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
                     "published_at",
                 ]
             )
-            .unique(subset=["timestamp_utc", "area_code", "reserve_type", "direction"], keep="last")
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "area_code", "reserve_type", "direction"])
             .with_columns(
                 [

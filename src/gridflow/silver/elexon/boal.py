@@ -89,10 +89,7 @@ class BOALTransformer(ElexonTransformer):
             .alias("timestamp_utc")
         )
 
-        dedup_cols = ["settlement_date", "settlement_period", "bm_unit_id"]
-        if "acceptance_number" in df.columns:
-            dedup_cols.append("acceptance_number")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

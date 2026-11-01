@@ -41,7 +41,7 @@ class MIDTransformer(ElexonTransformer):
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
-    )  # D-8: verbatim from unique() below
+    )  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("data_provider_id",)
     DATASET_VERSION = "1.1.0"
 
@@ -95,10 +95,7 @@ class MIDTransformer(ElexonTransformer):
             .alias("timestamp_utc")
         )
 
-        dedup_cols = ["settlement_date", "settlement_period"]
-        if "data_provider_id" in df.columns:
-            dedup_cols.append("data_provider_id")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

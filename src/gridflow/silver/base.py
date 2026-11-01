@@ -72,6 +72,10 @@ class VintagePolicy:
 _VALIDATION_SAMPLE_LIMIT = 5
 """Max distinct validation-error strings logged per ``run()`` (fail-soft; bounded)."""
 
+_NON_VALUE_COLUMNS = frozenset({"published_at", "ingested_at", "data_provider"})
+"""Columns :meth:`BaseSilverTransformer.dedup_to_grain` never compares as values:
+two copies of one row from different fetches differ only in these."""
+
 _BRONZE_VINTAGE_COLUMN = "gf_bronze_vintage"
 """Transient per-row bronze vintage carrier for ``LOCKSTEP_BRONZE_READ`` reads.
 
@@ -726,7 +730,9 @@ class BaseSilverTransformer(ABC):
     partition directory and downstream readers apply ``QUALIFY``-style
     selection at read time. See ``docs/DECISION_LOG/ADR-018-append-only-
     run-suffixed-files.md`` for the trade-off discussion. Only datasets that
-    publish meaningful revisions (REMIT, FOU2T14D) should opt in.
+    keep several vintages per business key (REMIT, the forecast datasets with
+    ``published_at`` in their grain) opt in, each with a ``LATEST_VIEW_SPECS``
+    entry.
     """
     VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = False
     """Opt in to assigning one availability timestamp per bronze raw file.
@@ -775,13 +781,12 @@ class BaseSilverTransformer(ABC):
     dataset with a finer grain (e.g. ``fuelhh``'s ``fuel_type``) as a
     duplicate.
 
-    Declared verbatim from each transformer's own ``.unique(subset=...)``
-    dedup key where one exists; sourced from ``LATEST_VIEW_SPECS`` (cited
-    in-comment) for the two APPEND_ONLY datasets with no in-transform
-    ``unique()`` call at all (``system_prices``, ``remit`` — no
-    ``unique(subset=...)`` to hoist). Empty (``()``) is a bug for any
-    REGISTERED dataset — ``test_every_elexon_transformer_declares_an_entity_key``
-    (A-4) pins 33/33.
+    It is also the dedup key: :meth:`dedup_to_grain` enforces it, so it must
+    be the TRUE grain, including the vintage column (``published_at``) when
+    bronze carries several observations per business key. A column left out
+    is a row silently lost. ``system_prices`` and ``remit`` keep every
+    vintage without a dedup and declare their ``LATEST_VIEW_SPECS`` key.
+    Empty (``()``) is a bug for any registered Elexon or ENTSO-E dataset.
 
     **D-8 order-insensitivity contract**: this is SET semantics
     (``unique(subset=...)`` behaves as a set of columns, not an ordered
@@ -822,6 +827,34 @@ class BaseSilverTransformer(ABC):
         return tuple(cls.ENTITY_KEY_COLUMNS) + tuple(
             c for c in cls.OPTIONAL_ENTITY_KEY_COLUMNS if c in available
         )
+
+    def dedup_to_grain(self, df: pl.DataFrame) -> pl.DataFrame:
+        """Keep one row per declared grain and count the conflicting rows dropped.
+
+        Repeats with the same silver values (overlapping fetches) drop quietly.
+        Rows that share the grain but differ in a schema value keep the last one
+        read (bronze is read in fetch order, so "last read" is not "newest") and
+        count into ``last_excluded_row_count``, so the run completes with
+        warnings instead of losing them silently.
+        """
+        key = self.resolve_entity_key(df.columns)
+        if not key:
+            raise ValueError(f"{self.source}/{self.dataset} declares no ENTITY_KEY_COLUMNS")
+        kept = df.unique(subset=list(key), keep="last", maintain_order=True)
+        fields = self.schema_cls.model_fields if self.schema_cls is not None else df.columns
+        values = [c for c in df.columns if c in fields and c not in key]
+        values = [c for c in values if c not in _NON_VALUE_COLUMNS]
+        lost = df.unique(subset=[*key, *values]).height - kept.height
+        if lost:
+            self.last_excluded_row_count += lost
+            logger.warning(
+                "%s/%s: %d row(s) share grain %s with different values; kept the last read",
+                self.source,
+                self.dataset,
+                lost,
+                list(key),
+            )
+        return kept
 
     def __init__(self, data_dir: Path):
         if self.PARTITION_DATE_COLUMN is not None and self.LOCKSTEP_BRONZE_READ:

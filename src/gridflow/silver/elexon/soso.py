@@ -110,10 +110,7 @@ class SOSOTransformer(ElexonTransformer):
         else:
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        dedup_cols = ["settlement_date", "contract_identification"]
-        if "trade_direction" in df.columns:
-            dedup_cols.append("trade_direction")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

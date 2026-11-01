@@ -27,6 +27,7 @@ class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "imbalance_volume"
     schema_cls = EntsoeImbalanceVolume
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "direction")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
     populated data, PT15M (R3-RESEARCH.md:68); window-bound comparison not
@@ -76,7 +77,7 @@ class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
                     "published_at",
                 ]
             )
-            .unique(subset=["timestamp_utc", "area_code", "direction"], keep="last")
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "area_code", "direction"])
             .with_columns(
                 [

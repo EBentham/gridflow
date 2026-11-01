@@ -28,6 +28,7 @@ class InstalledCapacityUnitsTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "installed_capacity_units"
     schema_cls = EntsoeInstalledCapacityUnits
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "unit_mrid")
     DATASET_VERSION: ClassVar[str] = "1.0.0"
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -54,10 +55,7 @@ class InstalledCapacityUnitsTransformer(EntsoeXmlTransformer):
             ]
         )
         df = df.filter(pl.col("unit_mrid") != "")
-        df = df.unique(
-            subset=["timestamp_utc", "area_code", "unit_mrid"],
-            keep="last",
-        )
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

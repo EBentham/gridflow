@@ -127,29 +127,7 @@ class FOU2T14DTransformer(ElexonTransformer):
             # carry it).
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        # WHY (F-06, v0.18 R1-C): published_at is the vendor publication vintage
-        # and this dataset is APPEND_ONLY, so a dedup key without it collapsed
-        # 95.7% (176,035/184,015) of the vintages inside transform() (v0.17
-        # review). Origin `66bfcdd` (published_at not yet in output_cols, so the
-        # key WAS the full silver grain); made a defect by `7fccb1f` (G6), which
-        # added published_at to output_cols without updating this key. What
-        # remains deduped is the intra-vintage class: one vendor response cannot
-        # carry two truths for one key at one publication instant. Rows with a
-        # null published_at still collapse (nulls compare equal in `unique`) --
-        # correct, because no vintage axis exists for them.
-        #
-        # The append is deliberately UNCONDITIONAL, diverging from
-        # demand_forecast.py:148-151 / wind_forecast.py:128-133, which guard
-        # with `if "published_at" in df.columns`. published_at is guaranteed
-        # present here by construction (both branches above emit it, cast or
-        # typed-null), so an unconditional key raises loudly (ColumnNotFoundError)
-        # if that guarantee is ever refactored away, instead of silently
-        # reinstating the collapse (OQ-1).
-        dedup_cols = ["settlement_date", "fuel_type"]
-        if "settlement_period" in df.columns:
-            dedup_cols.insert(1, "settlement_period")
-        dedup_cols.append("published_at")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

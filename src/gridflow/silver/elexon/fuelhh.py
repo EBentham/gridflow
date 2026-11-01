@@ -29,7 +29,7 @@ class FuelHHTransformer(ElexonTransformer):
         "settlement_date",
         "settlement_period",
         "fuel_type",
-    )  # D-8: verbatim from unique() below
+    )  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         self.last_start_time_fallback_count = 0
@@ -156,10 +156,7 @@ class FuelHHTransformer(ElexonTransformer):
             # carry it).
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        df = df.unique(
-            subset=["settlement_date", "settlement_period", "fuel_type"],
-            keep="last",
-        )
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

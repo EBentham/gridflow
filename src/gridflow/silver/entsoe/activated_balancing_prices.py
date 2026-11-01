@@ -29,6 +29,7 @@ class ActivatedBalancingPricesTransformer(EntsoeXmlTransformer):
     dataset = "activated_balancing_prices"
     value_tag = "price.amount"
     schema_cls = EntsoeActivatedBalancingPrices
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "reserve_type", "direction")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live NL 2025-04-01: real
     populated Balancing_MarketDocument, processType=A16 Realised
@@ -104,7 +105,7 @@ class ActivatedBalancingPricesTransformer(EntsoeXmlTransformer):
                     "published_at",
                 ]
             )
-            .unique(subset=["timestamp_utc", "area_code", "reserve_type", "direction"], keep="last")
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "area_code", "reserve_type", "direction"])
             .with_columns(
                 [

@@ -23,6 +23,7 @@ class DayAheadPricesTransformer(EntsoeXmlTransformer):
     dataset = "day_ahead_prices"
     value_tag = "price.amount"
     schema_cls = EntsoeDayAheadPrice
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10: the probe-proven over-span case (plan S1.4) --
     opted in first, see ``silver/entsoe/_event_window.py``."""
@@ -61,7 +62,7 @@ class DayAheadPricesTransformer(EntsoeXmlTransformer):
         else:
             df = df.with_columns(pl.lit("EUR").alias("currency"))
 
-        df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

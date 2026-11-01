@@ -22,6 +22,7 @@ class ActualGenerationUnitsTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "actual_generation_units"
     schema_cls = EntsoeActualGenerationUnits
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "unit_mrid")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
 
@@ -49,10 +50,7 @@ class ActualGenerationUnitsTransformer(EntsoeXmlTransformer):
             ]
         )
         df = df.filter(pl.col("unit_mrid") != "")
-        df = df.unique(
-            subset=["timestamp_utc", "area_code", "unit_mrid"],
-            keep="last",
-        )
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

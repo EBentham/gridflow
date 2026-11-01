@@ -20,14 +20,11 @@ The outage's own start and end survive unclipped as ``outage_start_utc`` and
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
 
 _UTC_US = pl.Datetime("us", "UTC")
 
@@ -186,24 +183,21 @@ def prepare_outage_frame(raw_df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def latest_revision_steps(df: pl.DataFrame, identity: Sequence[str]) -> pl.DataFrame:
-    """Keep each document's latest revision and one row per step.
+def latest_revision_steps(df: pl.DataFrame) -> pl.DataFrame:
+    """Keep each document's latest revision, its newest copy read last.
 
     A later revision supersedes the whole document, so older revisions are
     dropped by document, not point by point. Repeated fetches of the same
-    revision collapse on ``identity`` plus the step start.
+    revision then collapse in the caller's ``dedup_to_grain``, on the
+    document step its ``ENTITY_KEY_COLUMNS`` name; ordering by
+    ``document_created_at`` makes the newest copy the one kept.
 
     Args:
         df: Output of :func:`prepare_outage_frame`.
-        identity: Columns that, with ``timestamp_utc``, name one step of one
-            document (always including ``document_mrid``).
 
     Returns:
-        The de-duplicated frame, sorted by document and time.
+        The latest revision's rows, oldest copy first.
     """
     df = keep_latest_revision(df)
-    key = [*identity, "timestamp_utc"]
     order = [c for c in ("document_created_at",) if c in df.columns]
-    if order:
-        df = df.sort(order, nulls_last=False)
-    return df.unique(subset=key, keep="last").sort(key)
+    return df.sort(order, nulls_last=False) if order else df

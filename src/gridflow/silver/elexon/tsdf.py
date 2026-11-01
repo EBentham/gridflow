@@ -24,7 +24,7 @@ class TSDFTransformer(ElexonTransformer):
     ENTITY_KEY_COLUMNS = (
         "settlement_date",
         "settlement_period",
-    )  # D-8: verbatim from unique() below
+    )  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("boundary",)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -81,10 +81,7 @@ class TSDFTransformer(ElexonTransformer):
         else:
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        dedup_cols = ["settlement_date", "settlement_period"]
-        if "boundary" in df.columns:
-            dedup_cols.append("boundary")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

@@ -83,10 +83,7 @@ class AGPTTransformer(ElexonTransformer):
             # carry it).
             df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
 
-        df = df.unique(
-            subset=["settlement_date", "settlement_period", "psr_type"],
-            keep="last",
-        )
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

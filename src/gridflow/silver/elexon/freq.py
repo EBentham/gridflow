@@ -20,7 +20,7 @@ class FreqTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "freq"
     schema_cls = ElexonFrequency
-    ENTITY_KEY_COLUMNS = ("timestamp_utc",)  # D-8: verbatim from unique() below
+    ENTITY_KEY_COLUMNS = ("timestamp_utc",)  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -52,7 +52,7 @@ class FreqTransformer(ElexonTransformer):
             ]
         )
 
-        df = df.unique(subset=["timestamp_utc"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

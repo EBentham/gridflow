@@ -22,6 +22,7 @@ class LoadForecastTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "load_forecast"
     schema_cls = EntsoeLoadForecast
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code")
     forecast_horizon = "day_ahead"
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — day-ahead only (A01), NOT the week/month/
@@ -45,7 +46,7 @@ class LoadForecastTransformer(EntsoeXmlTransformer):
 
         df = df.with_columns(pl.col("load_forecast_mw").cast(pl.Float64))
 
-        df = df.unique(subset=["timestamp_utc", "area_code"], keep="last")
+        df = self.dedup_to_grain(df)
 
         # Issue 04: carry the document publication vintage (createdDateTime)
         # as published_at; typed-null when the source lacks it.

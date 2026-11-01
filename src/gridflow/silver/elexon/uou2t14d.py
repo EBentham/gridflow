@@ -21,7 +21,7 @@ class UOU2T14DTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "uou2t14d"
     schema_cls = ElexonUOU2T14D
-    ENTITY_KEY_COLUMNS = ("settlement_date", "bm_unit_id")  # D-8: verbatim from unique() below
+    ENTITY_KEY_COLUMNS = ("settlement_date", "bm_unit_id")  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("settlement_period",)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -102,10 +102,7 @@ class UOU2T14DTransformer(ElexonTransformer):
                 .alias("timestamp_utc")
             )
 
-        dedup_cols = ["settlement_date", "bm_unit_id"]
-        if "settlement_period" in df.columns:
-            dedup_cols.insert(1, "settlement_period")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

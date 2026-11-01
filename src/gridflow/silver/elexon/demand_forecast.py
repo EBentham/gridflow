@@ -120,10 +120,7 @@ class DemandForecastTransformer(ElexonTransformer):
         forecast_type = "day_ahead" if self.dataset == "ndf" else "2_14_day"
         df = df.with_columns(pl.lit(forecast_type).alias("forecast_type"))
 
-        dedup_cols = ["settlement_date", "settlement_period", "forecast_type"]
-        if "published_at" in df.columns:
-            dedup_cols.append("published_at")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

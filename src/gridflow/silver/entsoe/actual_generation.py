@@ -23,6 +23,7 @@ class ActualGenerationTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "actual_generation"
     schema_cls = EntsoeActualGeneration
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "production_type")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
 
@@ -57,7 +58,7 @@ class ActualGenerationTransformer(EntsoeXmlTransformer):
                 pl.col("production_type").fill_null("unknown").alias("production_type")
             )
 
-        df = df.unique(subset=["timestamp_utc", "area_code", "production_type"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(
