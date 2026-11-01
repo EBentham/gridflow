@@ -695,10 +695,6 @@ class TestEf5ArchiveBodiesNeverReachTheBespoke:
                 EmbeddedWindSolarForecastTransformer.ENTITY_KEY_COLUMNS,
             )
 
-    def test_b_the_bespoke_reads_no_sibling(self) -> None:
-        """Detects a sibling bronze directory added to the bespoke's read surface."""
-        assert EmbeddedWindSolarForecastTransformer.BRONZE_SIBLING_DATASETS == ()
-
     def test_c_registry_routes_only_the_live_resource_to_the_bespoke(self) -> None:
         """Detects an archive resource disposed into the bespoke family, a record
         reading the bespoke's directory, or the legacy selector widened."""

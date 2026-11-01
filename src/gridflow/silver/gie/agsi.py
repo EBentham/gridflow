@@ -132,7 +132,7 @@ class GasStorageTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for path in self._bronze_files(target_date):
+        for path in self._bronze_candidates(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -280,21 +280,6 @@ class GasStorageTransformer(BaseSilverTransformer):
         available = [col for col in ordered if col in df.columns]
         return df.select(available).sort(["gas_day", "entity_level", "entity_code"])
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            return []
-        return [
-            path
-            for path in sorted(bronze_path.glob("raw_*.json"))
-            if not path.name.endswith(".meta.json")
-        ]
-
 
 class StorageReportsTransformer(GasStorageTransformer):
     """Catalog-aligned AGSI storage reports transformer."""
@@ -341,7 +326,7 @@ class AgsiJsonTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for path in self._bronze_files(target_date):
+        for path in self._bronze_candidates(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -411,7 +396,7 @@ class AgsiJsonTransformer(BaseSilverTransformer):
     def _records_from_payload(self, payload: Any) -> list[dict[str, Any]]:
         return _extract_data_records(payload, self.response_key)
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
         files = self._bronze_files_for_date(target_date)
         if files or not self.fallback_to_latest_partition:
             return files
@@ -584,7 +569,7 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
         rows: list[dict[str, Any]] = []
         undated_count = 0
         unparseable: list[Path] = []
-        for path in self._bronze_files(target_date):
+        for path in self._bronze_candidates(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -669,7 +654,7 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
             )
         return df.sort(list(self.ENTITY_KEY_COLUMNS), nulls_last=True, maintain_order=True)
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
         files = self._bronze_files_for_date(target_date)
         if files:
             return files

@@ -470,13 +470,6 @@ def test_partition_owner_missing_column_message_is_identical_at_both_call_sites(
     assert helper_calls == 2
 
 
-def test_timestamp_from_sidecar_doc_names_declaring_path_exception() -> None:
-    doc = BaseSilverTransformer._timestamp_from_sidecar.__doc__ or ""
-    assert "Declaring availability discovery is the deliberate" in doc
-    assert "when ``source_dates`` is supplied" in doc
-    assert "call this for EVERY source" not in doc
-
-
 class _PartitionOwnedLockstepTransformer(BaseSilverTransformer):
     source = "test"
     dataset = "invalid_partition_lockstep"

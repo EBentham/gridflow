@@ -9,11 +9,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from enum import StrEnum
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, assert_never
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
+    from pathlib import Path
 
 import polars as pl
 from pydantic import BaseModel, ValidationError
@@ -288,7 +288,7 @@ chunking exists to fix. This mirrors the project's own precedent for exactly
 this failure class — ``VINTAGE_PER_BRONZE_FILE`` / ADR-025 (class docstring
 above, "Only the EXACT date partition is read — never the multi-day
 covering-partition fallback") and the ENTSO-G generic family's exact-only
-``_bronze_files`` (``silver/entsog/generic.py``).
+``_bronze_candidates`` (``silver/entsog/generic.py``).
 
 **ENTSO-G (R2-g, closing F-05's open half).** ``EntsogConnector.fetch`` chunks
 every multi-day window into one request per covered UTC calendar day
@@ -298,24 +298,8 @@ resolve a covering partition up to **35 days** before ``target_date`` and
 relabel those rows under it -- precisely the fabrication the per-day chunking
 exists to prevent.
 
-The two gated call sites, and what entsog's membership changes at each:
-
-- ``_bronze_path_for_date`` (the READ path, below): the covering fallback is
-  removed. This IS F-05's open half, and the only production effect the flip
-  now has.
-- ``_bronze_date_dirs`` (the VINTAGE path, below): **dead with respect to
-  entsog.** R2-g's ``LOCKSTEP_BRONZE_READ`` branch resolves the vintage from
-  the same vouched set as the read, so neither ENTSO-G family calls this
-  method at all any more (pinned by a spy in
-  ``tests/silver/test_entsog_exact_partition.py``). The gate is left in place
-  because it remains correct for ``entsoe``.
-
-That ordering is deliberate and load-bearing. Flipping the frozenset while the
-vintage path still ran through ``_bronze_date_dirs`` would make that walk
-return ``[]`` for any date without an exact partition and fall through to
-``datetime.now(UTC)`` -- a FABRICATED vintage, measured 26 days off on an
-earlier attempt. Removing entsog from that method's caller set first leaves
-the flip with no path to fire down.
+The gated call site is ``_bronze_path_for_date`` (the READ path, below):
+the covering fallback is removed. This IS F-05's open half.
 
 Source-scoped (not a per-transformer ``ClassVar`` flag) because the exact-only
 guarantee is a property of the *connector's* write layout established by this
@@ -328,13 +312,10 @@ stub pins that the fallback stays intact for non-ENTSO-E sources.
 
 **P0-a-1 (v0.19).** ``neso`` is deliberately absent from this frozenset: it
 enforces its own exact-partition read at
-``GenericNesoJsonTransformer._bronze_files`` (``silver/neso/carbon_intensity.py``)
-instead of opting into this constant, because membership here would also
-gate ``_bronze_date_dirs`` and fabricate a vintage for the one
-``reference_dataset`` NESO transformer, and would assert this docstring's
-per-day-chunking invariant, which is true for entsoe/entsog but false for
-NESO's deliberate 14-day batching. See ADR-026's 2026-08-22 amendment for
-the full ruling (D-2).
+``GenericNesoJsonTransformer._bronze_candidates`` (``silver/neso/carbon_intensity.py``),
+because this docstring's per-day-chunking invariant is true for
+entsoe/entsog but false for NESO's deliberate 14-day batching. See ADR-026's
+2026-08-22 amendment for the full ruling (D-2).
 """
 
 _PUBLICATION_WINDOW_FILTER_SOURCES: frozenset[str] = frozenset({"elexon"})
@@ -696,7 +677,7 @@ class BaseSilverTransformer(ABC):
     entsog-specific. It is rolled out narrowly because every other source has
     bronze on disk and changing their read sets is a data-semantics change on
     live data. Generalising the rollout is N-15, which must audit every
-    ``_bronze_files`` override rather than point-fix known cases.
+    ``_bronze_candidates`` override rather than point-fix known cases.
 
     Mutually exclusive with :attr:`VINTAGE_PER_BRONZE_FILE`: they are different
     vintage strategies over the same partition, and ``run()`` dispatches over
@@ -733,7 +714,6 @@ class BaseSilverTransformer(ABC):
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     VINTAGE_POLICY: ClassVar[VintagePolicy | None] = None
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = ()
     APPEND_ONLY: ClassVar[bool] = False
     """Per-dataset opt-in for revision-preserving silver writes.
 
@@ -895,11 +875,17 @@ class BaseSilverTransformer(ABC):
         """Resolve the ordered bronze BODY paths read for ``target_date``.
 
         THE one listing of the files read: :meth:`read_bronze` reads exactly
-        these, and a ``LOCKSTEP_BRONZE_READ`` run vouches exactly these from one
-        filesystem scan. The default is the bodies of the exact date partition.
-        A transformer that picks files another way overrides this, not
-        ``read_bronze``, so anything derived from the files read agrees with
-        the read.
+        these, a ``LOCKSTEP_BRONZE_READ`` run vouches exactly these from one
+        filesystem scan, and a plain reingest stamps the frame from exactly
+        these (:meth:`_vintage_of`). The default is the bodies of the exact date
+        partition. A transformer that picks files another way overrides this,
+        not ``read_bronze``, so anything derived from the files read agrees
+        with the read.
+
+        Select by path names and sidecar contents only, never by mtimes or the
+        clock. The plain path lists twice, once to read and once to stamp, and
+        bronze is append-only, so such a selector can only add or prefer bodies
+        written in between, whose newer stamps make the frame late, never early.
 
         Under ``LOCKSTEP_BRONZE_READ`` it must return the FULL ordered list --
         any "newest only" truncation belongs to :class:`BronzeReadSelection`,
@@ -1072,9 +1058,9 @@ class BaseSilverTransformer(ABC):
         ) or self._resolve_event_window_plan(target_date)
 
         if self.VINTAGE_PER_BRONZE_FILE:
-            # EXACT date partition only — the covering-partition fallback in
-            # _bronze_date_dirs would stamp a prior day's rows into a file named
-            # for target_date (wrong-dated vintage; see class docstring).
+            # EXACT date partition only — a covering-partition fallback would
+            # stamp a prior day's rows into a file named for target_date
+            # (wrong-dated vintage; see class docstring).
             exact_dir = (
                 self.bronze_dir
                 / str(target_date.year)
@@ -1266,12 +1252,16 @@ class BaseSilverTransformer(ABC):
             # tail below, so master's "nothing to read" vs "read but transformed
             # to zero rows" distinction is preserved rather than bypassed.
         else:
-            available_at = (
-                self._available_at_from_bronze(target_date) if reingest else datetime.now(UTC)
-            )
+            # Read first, then list again for the stamp: see _bronze_candidates
+            # for why the second listing can only make the stamp later.
             raw_df = self.read_bronze(target_date)
             if not raw_df.is_empty():
                 saw_bronze = True
+                available_at = (
+                    self._vintage_of(self._bronze_candidates(target_date), target_date)
+                    if reingest
+                    else datetime.now(UTC)
+                )
                 clean_df = self._process_frame(
                     raw_df, target_date, resolved_run_id, available_at, window_plan
                 )
@@ -2325,59 +2315,74 @@ class BaseSilverTransformer(ABC):
         """Name of the transform output column that represents event time."""
         return "timestamp_utc"
 
+    def _vintage_of(self, bodies: Sequence[Path], target_date: date) -> datetime:
+        """The reingest stamp of a frame read from ``bodies``: their newest sidecar stamp.
+
+        One stamp per frame, so rows from an older body are stamped late, never
+        early. A body without a usable sidecar makes the stamp ``now()``:
+        borrowing its siblings' stamp could date its rows before they existed.
+        """
+        missing: list[Path] = []
+        stamps: list[datetime] = []
+        for body in bodies:
+            meta_path = body.with_suffix(".meta.json")
+            read = self._read_sidecar_timestamp(meta_path)
+            self._log_sidecar_parse_warnings(meta_path, read)
+            if read.timestamp is None:
+                missing.append(body)
+            else:
+                stamps.append(read.timestamp)
+        if stamps and not missing:
+            return max(stamps)
+        now = datetime.now(UTC)
+        logger.warning(
+            "%s/%s %s: %s; stamping %s",
+            self.source,
+            self.dataset,
+            target_date,
+            f"{len(missing)} bronze body(ies) read have no usable sidecar: {missing}"
+            if missing
+            else "no bronze body listed for the rows read",
+            now.isoformat(),
+        )
+        return now
+
     def _available_at_from_bronze(
         self,
         target_date: date,
         *,
-        source_dates: tuple[date, ...] | None = None,
+        source_dates: tuple[date, ...],
         own_input_nonempty: bool = False,
     ) -> datetime:
-        """Reconstruct historical availability from bronze sidecar metadata.
+        """One covering-set stamp from the exact directories of ``source_dates``.
 
-        Supplying ``source_dates`` selects exact directories only. Declaring
-        transformers use this to derive one covering-set stamp while honoring a
-        sidecar-less nonempty own partition with the existing clock fallback.
-        Calls without it retain the legacy covering-partition behavior.
+        Used by declaring (``PARTITION_DATE_COLUMN``) transformers, which read
+        exactly these directories. A sidecar-less nonempty own partition takes
+        the clock fallback.
         """
         timestamps: list[datetime] = []
         own_has_timestamp = False
-        if source_dates is None:
-            date_dirs = [(target_date, path) for path in self._bronze_date_dirs(target_date)]
-        else:
-            paths = PathBuilder(self.data_dir)
-            date_dirs = [
-                (
-                    source_date,
-                    paths.bronze_date_dir(
-                        self.source,
-                        self.dataset,
-                        source_date,
-                        dataset_dir=self.bronze_dir,
-                    ),
-                )
-                for source_date in source_dates
-            ]
-        for source_date, date_dir in date_dirs:
+        paths = PathBuilder(self.data_dir)
+        for source_date in source_dates:
+            date_dir = paths.bronze_date_dir(
+                self.source, self.dataset, source_date, dataset_dir=self.bronze_dir
+            )
             if not date_dir.exists():
                 continue
             for meta_path in sorted(date_dir.glob("raw_*.meta.json")):
-                if source_dates is not None:
-                    read = self._read_sidecar_timestamp(meta_path)
-                    if source_date != target_date:
-                        self._log_sidecar_parse_warnings(meta_path, read)
-                        if read.non_object_json:
-                            logger.warning(
-                                "Failed to parse bronze sidecar %s: JSON payload is not an object",
-                                meta_path,
-                            )
-                    timestamp = read.timestamp
-                else:
-                    timestamp = self._timestamp_from_sidecar(meta_path)
-                if timestamp is not None:
-                    timestamps.append(timestamp)
+                read = self._read_sidecar_timestamp(meta_path)
+                if source_date != target_date:
+                    self._log_sidecar_parse_warnings(meta_path, read)
+                    if read.non_object_json:
+                        logger.warning(
+                            "Failed to parse bronze sidecar %s: JSON payload is not an object",
+                            meta_path,
+                        )
+                if read.timestamp is not None:
+                    timestamps.append(read.timestamp)
                     own_has_timestamp = own_has_timestamp or source_date == target_date
 
-        if source_dates is not None and own_input_nonempty and not own_has_timestamp:
+        if own_input_nonempty and not own_has_timestamp:
             fallback = datetime.now(UTC)
             logger.warning(
                 "No usable own-partition bronze sidecar timestamp for %s/%s on %s; "
@@ -2400,29 +2405,6 @@ class BaseSilverTransformer(ABC):
             fallback.isoformat(),
         )
         return fallback
-
-    def _bronze_date_dirs(self, target_date: date) -> list[Path]:
-        """Candidate bronze date directories for this dataset/date."""
-        suffix = Path(str(target_date.year)) / f"{target_date.month:02d}" / f"{target_date.day:02d}"
-        candidates = [self.bronze_dir / suffix]
-
-        # Some aggregate transformers read from explicit sibling partitions, e.g.
-        # open_meteo/historical reads bronze/open_meteo/historical_london.
-        parent = self.bronze_dir.parent
-        if parent.exists():
-            for sibling_dataset in self.BRONZE_SIBLING_DATASETS:
-                candidates.append(parent / sibling_dataset / suffix)
-
-        existing = [p for p in candidates if p.exists()]
-        if not existing and self.source not in _EXACT_PARTITION_ONLY_SOURCES:
-            # No exact-date partition found; fall back to the nearest covering
-            # partition so that transformers that iterate _bronze_date_dirs()
-            # also benefit from the Variant A/B fix. Skipped for exact-only
-            # sources (P0.8) — see _EXACT_PARTITION_ONLY_SOURCES docstring.
-            fallback = self._find_covering_bronze_partition(target_date)
-            if fallback is not None:
-                return [fallback]
-        return [path for path in candidates if path.exists()]
 
     def _find_covering_bronze_partition(
         self,
@@ -2458,6 +2440,8 @@ class BaseSilverTransformer(ABC):
         self,
         target_date: date,
         max_lookback_days: int = 35,
+        *,
+        bronze_dir: Path | None = None,
     ) -> Path | None:
         """Return the bronze partition path to read for target_date.
 
@@ -2466,18 +2450,18 @@ class BaseSilverTransformer(ABC):
         in ``_EXACT_PARTITION_ONLY_SOURCES`` (P0.8), never falls back — the
         exact partition or nothing, since a covering-fallback hit for those
         sources would fabricate wrong-day rows (see that constant's docstring).
+        Pass ``bronze_dir`` to resolve within another directory, such as one
+        Open-Meteo location's.
         """
-        exact = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
+        base = bronze_dir if bronze_dir is not None else self.bronze_dir
+        exact = base / str(target_date.year) / f"{target_date.month:02d}" / f"{target_date.day:02d}"
         if exact.exists() and any(exact.glob("raw_*")):
             return exact
         if self.source in _EXACT_PARTITION_ONLY_SOURCES:
             return None
-        return self._find_covering_bronze_partition(target_date, max_lookback_days)
+        return self._find_covering_bronze_partition(
+            target_date, max_lookback_days, bronze_dir=bronze_dir
+        )
 
     def _resolve_vouched_bronze_set(
         self,
@@ -2560,10 +2544,8 @@ class BaseSilverTransformer(ABC):
         Hardened beyond :meth:`_timestamp_from_sidecar` in exactly one named
         place: syntactically valid NON-OBJECT JSON is classified
         ``UNREADABLE_SIDECAR`` here, where master raises ``AttributeError``
-        (N-18). That divergence is deliberate and confined to this
-        lockstep-only classifier -- the wrapper keeps master's crash, because
-        softening it would let the non-lockstep callers stamp a frame from a
-        SIBLING file's timestamp or fall through to ``now()``.
+        (N-18). The lockstep and plain-reingest paths use this classifier;
+        the wrapper keeps master's crash for its own per-file caller.
 
         Args:
             meta_path: The sidecar path (``<body stem>.meta.json``).
@@ -2574,7 +2556,7 @@ class BaseSilverTransformer(ABC):
         """
         try:
             meta = json.loads(meta_path.read_text())
-        except (OSError, json.JSONDecodeError) as exc:
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
             # An ABSENT sidecar is the literal orphan (a crash between the
             # writer's body write and its sidecar write) and is reported as
             # such; a sidecar that exists but cannot be read is a different
@@ -2629,12 +2611,8 @@ class BaseSilverTransformer(ABC):
         :meth:`_read_sidecar_timestamp`. Same return value, same WARNING text
         at the same two conditions, in the same order -- and, deliberately,
         master's uncaught ``AttributeError`` on non-object JSON (N-18).
-        ``VINTAGE_PER_BRONZE_FILE`` and legacy availability discovery call this
-        for every source. Declaring availability discovery is the deliberate
-        exception: when ``source_dates`` is supplied,
-        :meth:`_available_at_from_bronze` uses the hardened classifier directly
-        so an unusable neighbour can be ignored while its parse diagnostics are
-        still logged and the own-partition fallback remains conservative.
+        Per-file callers (``VINTAGE_PER_BRONZE_FILE``, the NESO portal engine)
+        use it; the frame-level stamps use the classifier directly.
         """
         read = BaseSilverTransformer._read_sidecar_timestamp(meta_path)
         BaseSilverTransformer._log_sidecar_parse_warnings(meta_path, read)
