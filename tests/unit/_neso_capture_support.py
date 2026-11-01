@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any
 
 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
 from gridflow.connectors.neso_data_portal.endpoints import DATASETS, FAMILIES
+from gridflow.utils.time import window_dates
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -43,7 +44,7 @@ async def capture_legacy(
     payload = await connector._package_show(family.package)
     resource, _redirector = connector._select_resource(payload, spec, dataset)
     response, _extension = await connector._capture_member(
-        payload, resource, family, spec, dataset, end
+        payload, resource, family, spec, dataset, day=window_dates(start, end)[-1]
     )
     return [response]
 

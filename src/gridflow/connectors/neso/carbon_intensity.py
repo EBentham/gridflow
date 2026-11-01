@@ -14,6 +14,7 @@ from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.neso.endpoints import ENDPOINTS, NesoEndpoint, build_path
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
 
@@ -133,17 +134,17 @@ def _request_specs(
         return [(start, end, base_overrides)]
 
     if endpoint.daily_iteration:
+        # One request per UTC calendar day the window touches, so a window ending
+        # mid-day still fetches that day; a zero-width window keeps its one day.
         windows: list[tuple[datetime, datetime, dict[str, Any]]] = []
-        current = start
-        effective_end = end if end > start else start + timedelta(days=1)
-        while current < effective_end:
-            window_end = min(current + timedelta(days=1), effective_end)
+        for day_start, day_end in day_subwindows(start, end) or [
+            (start, start + timedelta(days=1))
+        ]:
             if endpoint.settlement_period_iteration:
-                for period in range(1, _settlement_period_count(current.date()) + 1):
-                    windows.append((current, window_end, {**base_overrides, "period": period}))
+                for period in range(1, _settlement_period_count(day_start.date()) + 1):
+                    windows.append((day_start, day_end, {**base_overrides, "period": period}))
             else:
-                windows.append((current, window_end, base_overrides))
-            current = window_end
+                windows.append((day_start, day_end, base_overrides))
         return windows
 
     effective_end = (

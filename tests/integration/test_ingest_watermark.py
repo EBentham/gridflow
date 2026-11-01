@@ -523,7 +523,8 @@ def test_explicit_ingest_advances_via_unified_cas_and_raises_nothing(
     )
     assert result.exit_code == 0, result.output
 
-    assert _read_watermark(db_path, "elexon", "fuelhh") == datetime(2024, 1, 2, tzinfo=UTC)
+    # A bare --end is inclusive: the window covers 1-2 Jan and ends 3 Jan 00:00Z.
+    assert _read_watermark(db_path, "elexon", "fuelhh") == datetime(2024, 1, 3, tzinfo=UTC)
 
 
 @pytest.mark.integration
@@ -855,7 +856,7 @@ def test_run_backfill_over_400_days_issues_every_chunk_no_advance(
             "--start",
             "2023-01-01",
             "--end",
-            "2024-02-05",
+            "2024-02-04",
             "--chunk-days",
             "1",
         ],

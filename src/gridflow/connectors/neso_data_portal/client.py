@@ -74,9 +74,11 @@ from gridflow.connectors.registry import register_connector
 from gridflow.silver.csv_bronze import CsvBronzeError, read_csv_bronze_body
 from gridflow.storage.paths import PathBuilder
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import window_dates
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Sequence
+    from datetime import date
     from pathlib import Path
 
     from gridflow.config.settings import SourceConfig
@@ -115,9 +117,9 @@ _TRACED_RESPONSE_HEADERS = ("date", "content-type", "etag", "last-modified")
 # D-34 window admission. Covers host clock skew and nothing else.
 _FUTURE_WINDOW_TOLERANCE = timedelta(minutes=5)
 
-# ``--end 2026-08-16`` parses to midnight UTC, so a legitimate "yesterday to
-# today" explicit window can end up to ~24 h behind the wall clock; 48 h clears
-# that with margin. Deliberately NOT tightened: a *recent* historical window is
+# A bare ``--end`` date is inclusive, so ``--end <yesterday>`` ends at today
+# 00:00 UTC and a legitimate explicit window can end up to ~24 h behind the wall
+# clock; 48 h clears that with margin. Deliberately NOT tightened: a *recent* historical window is
 # indistinguishable from a live one by recency, definitionally, so no value of
 # this constant makes it a backfill guard. D-35's capability check is that.
 _HISTORICAL_WINDOW_TOLERANCE = timedelta(hours=48)
@@ -1494,9 +1496,10 @@ class NesoDataPortalConnector(BaseConnector):
                 ``end < start``. The CLI already rejects naive input, so this is
                 defence for direct programmatic callers — tests, notebooks,
                 future schedulers — and protection for D-13, which derives a
-                bronze partition from ``end.date()``: a non-UTC ``end`` would
-                silently partition to the wrong day.
-            NesoFutureWindowError: ``end`` is beyond the clock-skew tolerance.
+                bronze partition from the window's last UTC day: a non-UTC
+                ``end`` would silently partition to the wrong day.
+            NesoFutureWindowError: The partition day is after today, beyond the
+                clock-skew tolerance.
             NesoHistoricalWindowError: ``end`` is more than 48 h stale.
             NesoWindowTooLongError: The span exceeds what any automated path can
                 resolve.
@@ -1511,7 +1514,8 @@ class NesoDataPortalConnector(BaseConnector):
             if offset != timedelta(0):
                 raise ValueError(
                     f"neso_data_portal.fetch: {label} must carry a zero UTC offset, got "
-                    f"{value!r} (offset {offset}); D-13 partitions bronze at end.date(), so "
+                    f"{value!r} (offset {offset}); D-13 partitions bronze at the window's "
+                    "last UTC day, so "
                     "a non-UTC endpoint would land the capture on the wrong day"
                 )
         if end < start:
@@ -1521,14 +1525,15 @@ class NesoDataPortalConnector(BaseConnector):
             )
 
         now = datetime.now(UTC)
-        if end > now + _FUTURE_WINDOW_TOLERANCE:
+        day = window_dates(start, end)[-1]
+        if day > (now + _FUTURE_WINDOW_TOLERANCE).date():
             raise NesoFutureWindowError(
-                f"neso_data_portal.fetch: window end {end.isoformat()} is in the future "
-                f"(now {now.isoformat()}). The portal has no future snapshot, and a future "
-                "partition is the one shape D-13 cannot recover from: ingest would report "
-                "success while transform stayed permanently silent. Use --last 24h, or "
-                f"--end {now.date().isoformat()} — note that a bare --end <date> means "
-                "midnight at the START of that date."
+                f"neso_data_portal.fetch: window end {end.isoformat()} would partition the "
+                f"capture at {day.isoformat()}, a future day (now {now.isoformat()}). The "
+                "portal has no future snapshot, and a future partition is the one shape D-13 "
+                "cannot recover from: ingest would report success while transform stayed "
+                "permanently silent. Use --last 24h, or "
+                f"--end {now.date().isoformat()} (a bare --end date means through that day)."
             )
         if end < now - _HISTORICAL_WINDOW_TOLERANCE:
             raise NesoHistoricalWindowError(
@@ -1558,7 +1563,7 @@ class NesoDataPortalConnector(BaseConnector):
                 dataset,
                 span,
                 max_query_days,
-                end.date().isoformat(),
+                day.isoformat(),
             )
 
     async def fetch(
@@ -1599,7 +1604,8 @@ class NesoDataPortalConnector(BaseConnector):
         Args:
             dataset: A registry family key.
             start: Window start, tz-aware UTC (D-34).
-            end: Window end, tz-aware UTC; ``end.date()`` is the partition.
+            end: Window end (exclusive), tz-aware UTC. The window's last UTC
+                day is the partition, the day a transform of the same window reads.
 
         Yields:
             One :class:`MemberEvent` per member, plus one ``absent`` event per
@@ -1621,6 +1627,7 @@ class NesoDataPortalConnector(BaseConnector):
             )
         self.last_skipped_units = 0
         self._assert_window_admissible(dataset, start, end)
+        day = window_dates(start, end)[-1]
         if not family.names and family.name_regex is None:
             # ADR-037 P-10: a sibling-fed family reads its siblings' bronze and
             # owns no resource, so there is nothing to select or fetch.
@@ -1669,6 +1676,7 @@ class NesoDataPortalConnector(BaseConnector):
                     registry,
                     None if basis_blocked else newest.get(resource_id),
                     end,
+                    day=day,
                 )
                 yield dump_event
                 del dump_event
@@ -1696,7 +1704,7 @@ class NesoDataPortalConnector(BaseConnector):
                 continue
             try:
                 response, extension = await self._capture_member(
-                    package_payload, resource, family, legacy_spec, dataset, end
+                    package_payload, resource, family, legacy_spec, dataset, day=day
                 )
             except (NesoDataPortalError, CsvBronzeError, httpx.HTTPError, OSError) as exc:
                 yield MemberEvent(resource_id, "failed", detail=_safe_detail(exc))
@@ -1713,9 +1721,10 @@ class NesoDataPortalConnector(BaseConnector):
         family: FamilySpec,
         legacy_spec: CkanDataset | None,
         dataset: str,
-        end: datetime,
+        *,
+        day: date,
     ) -> tuple[RawResponse, str]:
-        """Download and admit one upload member; return its response and extension."""
+        """Download and admit one upload member, partitioned at ``day``."""
         redirector = self._assert_redirector_url(package_payload, resource, dataset)
         max_bytes = (
             legacy_spec.max_download_bytes if legacy_spec is not None else family.max_download_bytes
@@ -1752,7 +1761,7 @@ class NesoDataPortalConnector(BaseConnector):
             request_params=request_params,
             api_version="3",
             http_status=http_status,
-            data_date=end.date(),
+            data_date=day,
         )
         return response, extension
 
@@ -1808,6 +1817,8 @@ class NesoDataPortalConnector(BaseConnector):
         registry: Any,
         candidate: Capture | None,
         end: datetime,
+        *,
+        day: date,
     ) -> MemberEvent:
         """Capture, suppress or skip one datastore member (ADR-035 P-9).
 
@@ -1825,8 +1836,8 @@ class NesoDataPortalConnector(BaseConnector):
             candidate: The newest usable capture of this resource, or ``None``
                 when there is none or an unusable sidecar blocks the basis
                 (P-8 (i)-(iii)).
-            end: The window end; ``end.date()`` is the partition and the
-                cadence clock.
+            end: The window end, the cadence clock (a check stamp records it).
+            day: The partition, the window's last UTC day.
 
         Returns:
             One ``captured``, ``unchanged`` or ``failed`` event.
@@ -1884,7 +1895,7 @@ class NesoDataPortalConnector(BaseConnector):
             request_params=request_params,
             api_version="3",
             http_status=dump.http_status,
-            data_date=end.date(),
+            data_date=day,
         )
         return MemberEvent(rid, "captured", response, "csv")
 

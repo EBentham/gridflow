@@ -207,6 +207,26 @@ def test_ingest_naive_datetime_bad_parameter(
     assert result.exit_code == 2, result.output
 
 
+def test_ingest_end_wins_over_incremental(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An explicit --end wins over --incremental, as --start and --last do: a
+    watermark newer than that end would otherwise give an inverted window."""
+    from gridflow.pipeline import runner as pipeline_runner
+
+    _isolated_env(tmp_path, monkeypatch)
+    seen: list[tuple[datetime, bool]] = []
+
+    def _fake_ingest(ctx, source, datasets, start_dt, end_dt, *, incremental, write_watermark):
+        seen.append((end_dt, incremental))
+        return [pipeline_runner.DatasetResult(source, datasets[0], "ingest", "success")]
+
+    monkeypatch.setattr(pipeline_runner, "run_ingest", _fake_ingest)
+    result = runner.invoke(
+        app, ["ingest", "elexon", "fuelhh", "--incremental", "--end", "2026-10-01"]
+    )
+    assert result.exit_code == 0, result.output
+    assert seen == [(datetime(2026, 10, 2, tzinfo=UTC), False)]
+
+
 # --------------------------------------------------------------------------- #
 # transform
 # --------------------------------------------------------------------------- #
@@ -476,11 +496,10 @@ def test_pipeline_bronze_failure_aborts(
 def test_backfill_multi_chunk(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
 ) -> None:
-    """backfill over 3 days at chunk-days=1 runs 3 chunks per dataset, prints the
-    per-chunk lines + the per-dataset chunk count + the final marker
-    (cli.backfill:409,415,448,450). transform is stubbed (no real bronze)."""
+    """backfill 15..18 Jan at chunk-days=1 runs 4 chunks per dataset (a bare
+    ``--end`` is inclusive), echoing the days each chunk covers, then the final
+    marker. Transform runs on empty bronze."""
     _isolated_env(tmp_path, monkeypatch)
-    monkeypatch.setattr("gridflow.cli.transform", lambda **kwargs: None)
     result = runner.invoke(
         app,
         [
@@ -497,10 +516,101 @@ def test_backfill_multi_chunk(
     )
     assert result.exit_code == 0, result.output
     assert "--- Backfilling elexon/fuelhh ---" in result.output
-    assert "Chunk 1: 2024-01-15 to 2024-01-16" in result.output
-    assert "Chunk 3: 2024-01-17 to 2024-01-18" in result.output
-    assert "elexon/fuelhh: 3 chunks processed" in result.output
+    assert "Chunk 1: 2024-01-15 to 2024-01-15" in result.output
+    assert "Chunk 4: 2024-01-18 to 2024-01-18" in result.output
+    assert "Chunk 5" not in result.output
+    assert "chunks processed" not in result.output
+    assert len(_FakeConnector.calls) == 4
     assert "Backfill complete" in result.output
+
+
+def test_backfill_one_day_runs_one_chunk(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+) -> None:
+    """``--start D --end D`` used to run zero chunks."""
+    _isolated_env(tmp_path, monkeypatch)
+    result = runner.invoke(
+        app,
+        ["backfill", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"],
+    )
+    assert result.exit_code == 0, result.output
+    assert _FakeConnector.calls == [datetime(2024, 1, 15, tzinfo=UTC)]
+    assert "Chunk 1: 2024-01-15 to 2024-01-15" in result.output
+
+
+def test_backfill_converts_offsets_through_the_shared_parser(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An offset bound is converted to its UTC instant, not relabelled: the
+    first chunk starts 31 Jan 23:00Z. A bare ``--end`` is inclusive."""
+    from gridflow.pipeline import runner as pipeline_runner
+
+    _isolated_env(tmp_path, monkeypatch)
+    seen: list[tuple[datetime, datetime, int]] = []
+
+    def _fake_backfill(settings, source, datasets, start_dt, end_dt, *, chunk_days, on_chunk):
+        seen.append((start_dt, end_dt, chunk_days))
+        return pipeline_runner.RunReport()
+
+    monkeypatch.setattr(pipeline_runner, "run_backfill", _fake_backfill)
+    result = runner.invoke(
+        app,
+        [
+            "backfill",
+            "elexon",
+            "fuelhh",
+            "--start",
+            "2026-02-01T00:00+01:00",
+            "--end",
+            "2026-02-02",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    assert seen == [(datetime(2026, 1, 31, 23, tzinfo=UTC), datetime(2026, 2, 3, tzinfo=UTC), 1)]
+
+
+@pytest.mark.parametrize(
+    ("extra", "case"),
+    [
+        (["--chunk-days", "0"], "chunk-days 0 never advanced the loop"),
+        (["--start", "2024-01-15T00:00:00"], "naive start"),
+    ],
+)
+def test_backfill_usage_errors_exit_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, extra: list[str], case: str
+) -> None:
+    _isolated_env(tmp_path, monkeypatch)
+    args = ["backfill", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-16"]
+    result = runner.invoke(app, args + extra)
+    assert result.exit_code == 2, f"{case}: {result.output}"
+
+
+def test_pipeline_fetches_and_transforms_the_same_window(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``pipeline --end D`` used to transform day D for sources that never
+    fetched it; both stages now receive one ``[start, D+1)`` window."""
+    from gridflow.pipeline import runner as pipeline_runner
+
+    _isolated_env(tmp_path, monkeypatch)
+    windows: dict[str, tuple[datetime, datetime]] = {}
+
+    def _stage(name: str) -> Any:
+        def run(ctx, source, datasets, start_dt, end_dt, **kwargs):
+            windows[name] = (start_dt, end_dt)
+            op = "ingest" if name == "ingest" else "transform"
+            return [pipeline_runner.DatasetResult(source, datasets[0], op, "success")]
+
+        return run
+
+    monkeypatch.setattr(pipeline_runner, "run_ingest", _stage("ingest"))
+    monkeypatch.setattr(pipeline_runner, "run_transform", _stage("transform"))
+    result = runner.invoke(
+        app, ["pipeline", "entsoe", "actual_load", "--start", "2024-06-06", "--end", "2024-06-07"]
+    )
+    assert result.exit_code == 0, result.output
+    window = (datetime(2024, 6, 6, tzinfo=UTC), datetime(2024, 6, 8, tzinfo=UTC))
+    assert windows == {"ingest": window, "transform": window}
 
 
 def test_backfill_ingest_failure_exits_1(

@@ -16,7 +16,7 @@ from gridflow.connectors.elexon.parsers import (
 )
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
-from gridflow.utils.time import settlement_periods_in_day
+from gridflow.utils.time import settlement_periods_in_day, window_dates
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
@@ -79,15 +79,15 @@ class ElexonConnector(BaseConnector):
         tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
 
         if endpoint.param_style == ParamStyle.SETTLEMENT_DATE:
-            for current_date in _date_range(start, end):
+            for current_date in window_dates(start, end):
                 tasks.append(self._fetch_date(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
-            for current_date in _date_range(start, end):
+            for current_date in window_dates(start, end):
                 tasks.append(self._fetch_date_period(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.DATE_PATH:
-            for current_date in _date_range(start, end):
+            for current_date in window_dates(start, end):
                 tasks.append(self._fetch_date_path(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
@@ -355,22 +355,6 @@ class ElexonConnector(BaseConnector):
             resp = await self._client.get(path, params=params)
             resp.raise_for_status()
             return resp
-
-
-def _date_range(start: datetime | date, end: datetime | date) -> list[date]:
-    """Return the inclusive list of calendar dates from ``start`` to ``end``.
-
-    Both bounds are coerced to ``date`` (accepting either a ``datetime`` or a
-    plain ``date``), matching the per-style date iteration the fetch loop used
-    before it was parallelised.
-    """
-    current = start.date() if isinstance(start, datetime) else start
-    end_date = end.date() if isinstance(end, datetime) else end
-    dates: list[date] = []
-    while current <= end_date:
-        dates.append(current)
-        current += timedelta(days=1)
-    return dates
 
 
 # Register this connector

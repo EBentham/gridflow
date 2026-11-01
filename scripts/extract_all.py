@@ -100,10 +100,7 @@ DB_PATH = Path(r"C:\gridflow-data\gridflow.duckdb")
 STATE = OUT_ROOT / "_run_state.jsonl"
 
 WINDOW_START = date(2026, 8, 1)
-WINDOW_END = date(2026, 8, 5)
-# Half-open vendors (ENTSO-E `[periodStart, periodEnd)`) drop the final day
-# unless the request end is exclusive. Verified empirically for entsoe/entsog.
-TOPUP_END = date(2026, 8, 6)
+WINDOW_END = date(2026, 8, 5)  # a bare --end date is inclusive on every command
 
 INGEST_TIMEOUT = 420
 TRANSFORM_TIMEOUT = 420
@@ -265,7 +262,7 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
                     "--start",
                     WINDOW_START.isoformat(),
                     "--end",
-                    TOPUP_END.isoformat(),
+                    WINDOW_END.isoformat(),
                 ],
                 INGEST_TIMEOUT,
             )

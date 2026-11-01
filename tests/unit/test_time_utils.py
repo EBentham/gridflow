@@ -11,6 +11,7 @@ from gridflow.utils.time import (
     settlement_period_to_utc,
     settlement_periods_in_day,
     utc_to_settlement_period,
+    window_dates,
 )
 
 
@@ -252,6 +253,31 @@ class TestDateRange:
     def test_empty_range(self):
         result = date_range(date(2024, 1, 17), date(2024, 1, 15))
         assert result == []
+
+
+class TestWindowDates:
+    """Every window inside gridflow is half-open ``[start, end)`` in UTC."""
+
+    D = datetime(2026, 3, 1, tzinfo=UTC)
+
+    def test_one_whole_day(self):
+        assert window_dates(self.D, self.D + timedelta(days=1)) == [self.D.date()]
+
+    def test_zero_width_window_still_covers_its_day(self):
+        assert window_dates(self.D, self.D) == [self.D.date()]
+
+    def test_window_ending_mid_day_covers_that_day(self):
+        assert window_dates(self.D, self.D + timedelta(hours=12)) == [self.D.date()]
+
+    def test_mid_day_to_mid_day_covers_both_ends(self):
+        start = self.D + timedelta(hours=10)
+        assert window_dates(start, start + timedelta(days=4)) == [
+            date(2026, 3, day) for day in range(1, 6)
+        ]
+
+    def test_end_before_start_raises(self):
+        with pytest.raises(ValueError, match="before start"):
+            window_dates(self.D, self.D - timedelta(seconds=1))
 
 
 class TestDaySubwindows:
