@@ -427,7 +427,7 @@ class TestEventWindowFamilyMechanics:
         with caplog.at_level("WARNING"):
             transformer.run(TARGET_DATE, run_id=f"{family_id}-warning")
         assert any(
-            "out-of-scope" in message and str(last_count) in message for message in caplog.messages
+            f"excluded {last_count} out-of-scope" in message for message in caplog.messages
         ), (
             f"{family_id}: no out-of-scope WARNING logged carrying the measured "
             f"dropped-row count ({last_count}) for a non-zero drop (M-2)"

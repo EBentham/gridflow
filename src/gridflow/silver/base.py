@@ -1579,9 +1579,9 @@ class BaseSilverTransformer(ABC):
 
         ENTSO-E may return whole CET/CEST delivery days beyond the
         ``[periodStart, periodEnd)`` request. Those rows were never requested
-        by this partition, and bronze keeps them under the partition that did,
-        so dropping them needs no neighbour proof. Every drop is counted and
-        logged. An absent filter column raises.
+        by this partition, so silver drops them without any neighbour proof,
+        even when no neighbouring partition exists; bronze still holds the
+        records. Every drop is counted and logged. An absent filter column raises.
         """
         if plan.column not in df.columns:
             raise ValueError(
