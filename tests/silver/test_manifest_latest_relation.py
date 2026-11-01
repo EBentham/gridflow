@@ -186,9 +186,11 @@ def test_non_append_only_relations_unchanged() -> None:
     """
     entries = _silver_entries()
     append_only = _append_only_datasets()
+    assert set(_SPOT_APPEND_ONLY) <= append_only
     non_append_only = [
         entry for entry in entries if (entry.source, entry.dataset) not in append_only
     ]
+    assert ("elexon", "windfor") in {(entry.source, entry.dataset) for entry in non_append_only}
     assert len(non_append_only) == len(entries) - len(append_only)
     for entry in non_append_only:
         base = f"silver_{entry.source}_{entry.dataset}"
