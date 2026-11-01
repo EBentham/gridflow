@@ -167,8 +167,6 @@ class FamilySpec:
         empty_allowed: A header-only CSV member is captured, marked empty (P-7).
         max_download_bytes: The streaming size cap per member (A9).
         names: The exact ``(name, FORMAT)`` pairs seeded under the key.
-        name_regex: An optional anchored selector for future members; matched
-            with ``re.fullmatch`` only, and only for a format already seeded.
         refresh: The registry's refresh class. Read only by the dump leg's
             frozen-class cadence gate (ADR-035 P-7).
     """
@@ -180,13 +178,7 @@ class FamilySpec:
     empty_allowed: bool
     max_download_bytes: int
     names: frozenset[tuple[str, str]]
-    name_regex: str | None
     refresh: str
-
-    @property
-    def formats(self) -> frozenset[str]:
-        """The upper-case CKAN formats of the family's seeded resources."""
-        return frozenset(fmt for _name, fmt in self.names)
 
     def selects(self, name: str, fmt: str) -> bool:
         """Whether a live resource ``(name, fmt)`` is a member (P-6).
@@ -194,12 +186,7 @@ class FamilySpec:
         Names are compared as stored: no strip, no case-fold, no
         normalisation, no fuzzy match.
         """
-        upper = fmt.upper()
-        if (name, upper) in self.names:
-            return True
-        if self.name_regex is None or upper not in self.formats:
-            return False
-        return re.fullmatch(self.name_regex, name) is not None
+        return (name, fmt.upper()) in self.names
 
 
 def build_families(registry: Registry) -> dict[str, FamilySpec]:
@@ -213,7 +200,6 @@ def build_families(registry: Registry) -> dict[str, FamilySpec]:
             empty_allowed=family.empty_allowed,
             max_download_bytes=family.max_download_bytes,
             names=registry.family_names(key),
-            name_regex=family.name_regex,
             refresh=family.refresh,
         )
         for key, (package, family) in registry.families.items()

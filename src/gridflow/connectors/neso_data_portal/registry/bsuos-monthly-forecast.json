@@ -16,7 +16,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -27,7 +26,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -38,7 +36,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -49,7 +46,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null,
       "record": {
         "version": "1",
@@ -1175,7 +1171,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -1186,7 +1181,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -1197,7 +1191,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -1208,7 +1201,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     },
     {
@@ -1219,7 +1211,6 @@
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null
     }
   ],

@@ -445,7 +445,7 @@ QUESTION_OF = {
 }
 
 # sha256 of disaggregated-bsad.json with line endings normalised to LF (the file is byte-unchanged).
-DISAGGREGATED_FILE_SHA256 = "e3365706681512c42d54be0087061669ab317d8fdd62f9be3e89f2e0d2e36e82"
+DISAGGREGATED_FILE_SHA256 = "466d39445f089031371886ec9f1cf47c565c35416636c40a2ff63b54424fc055"
 
 
 @dataclass(frozen=True)

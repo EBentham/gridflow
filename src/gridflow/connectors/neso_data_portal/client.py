@@ -1621,7 +1621,7 @@ class NesoDataPortalConnector(BaseConnector):
             )
         self.last_skipped_units = 0
         self._assert_window_admissible(dataset, start, end)
-        if not family.names and family.name_regex is None:
+        if not family.names:
             # ADR-037 P-10: a sibling-fed family reads its siblings' bronze and
             # owns no resource, so there is nothing to select or fetch.
             logger.info("%s: sibling-fed family, no own resources; nothing to fetch", dataset)

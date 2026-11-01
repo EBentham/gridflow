@@ -41,7 +41,6 @@ def family(
     empty_allowed: bool = False,
     max_download_bytes: int = 64 * 1024 * 1024,
     legacy: bool = False,
-    name_regex: str | None = None,
     record: dict[str, Any] | None = None,
     refresh: str = "daily",
 ) -> dict[str, Any]:
@@ -54,7 +53,6 @@ def family(
         "refresh": refresh,
         "empty_allowed": empty_allowed,
         "max_download_bytes": max_download_bytes,
-        "name_regex": name_regex,
         "transformer": "bespoke" if legacy else None,
     }
     if record is not None:

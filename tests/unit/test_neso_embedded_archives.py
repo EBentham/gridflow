@@ -232,7 +232,7 @@ live = families[LIVE].model_dump(mode="json", exclude={"record"})
 assert live == {
     "key": LIVE, "kind": "tabular", "legacy": True, "archetype": "FC",
     "refresh": "intraday", "empty_allowed": False, "max_download_bytes": 8388608,
-    "name_regex": None, "transformer": "bespoke",
+    "transformer": "bespoke",
 }, live
 assert families[LIVE].record is not None and families[LIVE].record.siblings == ()
 live_res = csv[LIVE_ID].model_dump(mode="json")

@@ -16,7 +16,6 @@
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null,
       "record": {
         "version": "1",
@@ -171,7 +170,6 @@
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null,
       "record": {
         "version": "1",
@@ -283,7 +281,6 @@
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "name_regex": null,
       "transformer": null,
       "record": {
         "version": "1",
@@ -369,7 +366,6 @@
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 805306368,
-      "name_regex": null,
       "transformer": null,
       "record": {
         "version": "1",

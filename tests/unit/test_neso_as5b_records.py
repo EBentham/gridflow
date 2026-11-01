@@ -772,7 +772,6 @@ def test_odfm_results_have_no_record_and_the_family_and_resources_are_unchanged(
         "refresh": "frozen",
         "empty_allowed": False,
         "max_download_bytes": 536870912,
-        "name_regex": None,
         "transformer": None,
     }
     results = [r for r in document["resources"] if r["family"] == ODR]

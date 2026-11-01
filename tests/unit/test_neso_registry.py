@@ -123,7 +123,6 @@ def _synthetic_package(**overrides: object) -> dict[str, object]:
                 "refresh": "daily",
                 "empty_allowed": False,
                 "max_download_bytes": 1024,
-                "name_regex": None,
                 "transformer": None,
             }
         ],
@@ -542,11 +541,6 @@ class TestValidation:
         )
         package["resources"] = [package["resources"][0], pdf]  # type: ignore[index]
         assert self._load(tmp_path, package).startswith("OK")
-
-    def test_bad_regex(self, tmp_path: Path) -> None:
-        package = _synthetic_package()
-        package["families"][0]["name_regex"] = "([unclosed"  # type: ignore[index]
-        assert "REFUSED" in self._load(tmp_path, package)
 
     def test_invalid_key(self, tmp_path: Path) -> None:
         package = _synthetic_package()

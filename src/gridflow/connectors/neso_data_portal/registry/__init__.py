@@ -191,7 +191,6 @@ class FamilyEntry(_Frozen):
     refresh: Refresh
     empty_allowed: bool
     max_download_bytes: int = Field(gt=0)
-    name_regex: str | None = None
     transformer: Literal["bespoke"] | None = None
     record: SchemaRecord | None = None
 
@@ -337,26 +336,13 @@ class Registry:
         """Return the exact ``(name, FORMAT)`` pairs seeded under ``key``."""
         return self._names[key]
 
-    def family_formats(self, key: str) -> frozenset[str]:
-        """Return the upper-case CKAN formats of ``key``'s seeded resources."""
-        return frozenset(fmt for _name, fmt in self._names[key])
-
     def family_selects(self, key: str, name: str, fmt: str) -> bool:
-        """Whether a resource ``(name, fmt)`` satisfies family ``key``'s selector.
+        """Whether a resource ``(name, fmt)`` is one of family ``key``'s seeded members.
 
-        Exact name set first; then the anchored ``name_regex`` with a format
-        among the family's seeded formats. Names are compared as stored: no
-        strip, no case-fold, no normalisation (P-6).
+        Names are compared as stored: no strip, no case-fold, no normalisation
+        (P-6).
         """
-        upper = fmt.upper()
-        if (name, upper) in self._names[key]:
-            return True
-        _package, family = self.families[key]
-        if family.name_regex is None:
-            return False
-        return upper in self.family_formats(key) and (
-            re.fullmatch(family.name_regex, name) is not None
-        )
+        return (name, fmt.upper()) in self._names[key]
 
 
 def dump_json(obj: Any) -> str:
@@ -405,14 +391,6 @@ def _validate_package(name: str, entry: PackageEntry) -> dict[str, frozenset[tup
                 f"registry file {name}: family {family.key!r} legacy={family.legacy} "
                 f"disagrees with transformer={family.transformer!r}"
             )
-        if family.name_regex is not None:
-            try:
-                re.compile(family.name_regex)
-            except re.error as exc:
-                raise RegistryError(
-                    f"registry file {name}: family {family.key!r} name_regex does not "
-                    f"compile ({exc})"
-                ) from exc
         family_keys[family.key] = family
 
     names: dict[str, set[tuple[str, str]]] = {key: set() for key in family_keys}
@@ -696,10 +674,9 @@ def load_registry(path: Path | None = None) -> Registry:
             disagree with each other (a key or resource id declared twice, a
             resource naming an undeclared family, a SILVER resource outside its
             own tabular family or a recorded sibling owner (V-11), an invalid
-            key, a non-compiling ``name_regex``, a frozen schema record breaking
-            V-1..V-10 or V-13, an ungrounded COVERED grant (V-12), a
-            SILVER target whose reader does not fit the body's shape (V-15,
-            V-15b)).
+            key, a frozen schema record breaking V-1..V-10 or V-13, an
+            ungrounded COVERED grant (V-12), a SILVER target whose reader does
+            not fit the body's shape (V-15, V-15b)).
     """
     return _load(None if path is None else Path(path))
 
