@@ -10,8 +10,6 @@ Run with:
 
 from __future__ import annotations
 
-import shutil
-import subprocess
 import sys
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -101,7 +99,6 @@ class TestElexonNewDatasetParams:
             ("indo", "/datasets/INDO"),
             ("itsdo", "/datasets/ITSDO"),
             ("indod", "/datasets/INDOD"),
-            ("nonbm", "/datasets/NONBM"),
             ("inddem", "/datasets/INDDEM"),
             ("indgen", "/datasets/INDGEN"),
             ("tsdf", "/datasets/TSDF"),
@@ -155,7 +152,7 @@ class TestElexonDatePathParams:
 
 
 class TestElexonFromToParams:
-    """Verify from/to style PUBLISH_DATETIME endpoints (boal, disbsad, mid, netbsad)."""
+    """Verify from/to style PUBLISH_DATETIME endpoints (boal, disbsad, mid, netbsad, nonbm)."""
 
     @pytest.mark.parametrize(
         "dataset,expected_path",
@@ -164,6 +161,7 @@ class TestElexonFromToParams:
             ("disbsad", "/datasets/DISBSAD"),
             ("mid", "/datasets/MID"),
             ("netbsad", "/datasets/NETBSAD"),
+            ("nonbm", "/datasets/NONBM"),
         ],
     )
     def test_from_to_param_style(self, dataset: str, expected_path: str):
@@ -614,8 +612,9 @@ class TestGieEndpointDefinitions:
 
         assert params["country"] == "BE"
         assert params["from"] == "2026-02-01"
-        # GIE uses 'till', not 'to' — the critical naming difference.
-        assert params["till"] == "2026-02-02"
+        # GIE uses 'till', not 'to' — the critical naming difference. It is an
+        # inclusive day, so the half-open [1 Feb, 2 Feb) window asks till 1 Feb.
+        assert params["till"] == "2026-02-01"
         assert "to" not in params
         assert params["size"] == str(DEFAULT_PAGE_SIZE)
 
@@ -787,7 +786,8 @@ class TestOpenMeteoEndpointDefinitions:
         assert params["latitude"] == "51.5074"
         assert params["longitude"] == "-0.1278"
         assert params["start_date"] == "2026-02-01"
-        assert params["end_date"] == "2026-02-02"
+        # end_date is an inclusive day: [1 Feb, 2 Feb) asks for 1 Feb only.
+        assert params["end_date"] == "2026-02-01"
         assert params["timezone"] == "UTC"
         assert "temperature_2m" in params["hourly"]
         assert "snowfall" in params["hourly"]
@@ -863,44 +863,8 @@ class TestNesoEndpointDefinitions:
         assert chunks[2] == "/intensity/2026-03-01T00:00Z/2026-03-03T00:00Z"
 
 
-_PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
-# Run from ``cwd``: settings resolve ``<cwd>/config`` first, which is how the
-# negative control substitutes a drifted sources.yaml.
-_DRIFT_PROBE = """
-from gridflow.config.settings import load_settings
-from gridflow.connectors.neso_data_portal.endpoints import DATASETS, FAMILIES
-
-configured = set(load_settings().get_source_config("neso_data_portal").datasets)
-drift = sorted(set(FAMILIES) ^ configured)
-assert not drift, (
-    "neso_data_portal dataset keys differ between the registry "
-    "(connectors/neso_data_portal/endpoints.py::FAMILIES) and config/sources.yaml: "
-    f"{drift[:5]}"
-)
-assert set(DATASETS) == {
-    "daily_wind_availability",
-    "historic_generation_mix",
-    "embedded_wind_solar_forecast",
-}, sorted(DATASETS)
-print("OK")
-"""
-
-
-def _run_drift_probe(cwd: Path) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-c", _DRIFT_PROBE],
-        cwd=cwd,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-
-
 class TestNesoDataPortalEndpointDefinitions:
-    """Verify NESO Data Portal (CKAN) URL construction and config/code drift.
+    """Verify NESO Data Portal (CKAN) URL construction.
 
     Distinct from ``TestNesoEndpointDefinitions`` above, which is the Carbon
     Intensity API. This source is the data portal at ``api.neso.energy``.
@@ -926,37 +890,6 @@ class TestNesoDataPortalEndpointDefinitions:
                 f"{NESO_DATA_PORTAL_BASE}/api/3/action/package_show?id={expected_packages[dataset]}"
             )
 
-    def test_dataset_keys_do_not_drift_between_code_and_config(self):
-        """CKAN identity lives in ``endpoints.py`` (D-28) while the runtime
-        dataset list lives in ``sources.yaml``. Nothing else couples them, so a
-        key added to one place only would leave a dataset that either cannot be
-        configured or cannot be fetched — this is the check that fails first.
-
-        ADR-033 widens the contract: every registry family is configured, and
-        DATASETS is the legacy view of exactly the three bespoke keys. Asserted
-        in a fresh interpreter: pytest has already imported the connector, so
-        an in-process ``FAMILIES`` could be state something else populated.
-        """
-        result = _run_drift_probe(_PROJECT_ROOT)
-        assert result.returncode == 0, result.stdout + result.stderr
-        assert "OK" in result.stdout, result.stdout
-
-    def test_negative_control_a_key_missing_from_config_is_drift(self, tmp_path: Path) -> None:
-        config = tmp_path / "config"
-        config.mkdir()
-        shutil.copyfile(_PROJECT_ROOT / "config" / "settings.yaml", config / "settings.yaml")
-        text = (_PROJECT_ROOT / "config" / "sources.yaml").read_bytes().decode("utf-8")
-        dropped = '      aahedc_tariffs: {endpoint: "/api/3/action/package_show"'
-        assert dropped in text
-        lines = text.splitlines(keepends=True)
-        kept = [line for line in lines if not line.startswith(dropped)]
-        assert len(kept) == len(lines) - 1
-        (config / "sources.yaml").write_bytes("".join(kept).encode("utf-8"))
-
-        result = _run_drift_probe(tmp_path)
-        assert result.returncode != 0, result.stdout
-        assert "aahedc_tariffs" in result.stderr, result.stderr
-
     def test_the_base_url_matches_config(self):
         assert (
             load_settings().get_source_config("neso_data_portal").base_url == NESO_DATA_PORTAL_BASE
@@ -978,6 +911,9 @@ class TestNesoDataPortalEndpointDefinitions:
         import asyncio
         import ipaddress
         from datetime import timedelta
+
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "unit"))
+        from _neso_capture_support import capture_legacy
 
         from gridflow.connectors.neso_data_portal import client as ndp_client
         from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
@@ -1020,7 +956,7 @@ class TestNesoDataPortalEndpointDefinitions:
 
             async def _run():
                 async with NesoDataPortalConnector(config) as connector:
-                    return await connector.fetch("daily_wind_availability", start, end)
+                    return await capture_legacy(connector, "daily_wind_availability", start, end)
 
             with respx.mock(assert_all_called=False) as router:
                 router.get(

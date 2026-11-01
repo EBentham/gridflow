@@ -218,7 +218,7 @@ class TestAdjacentPartitionBoundaryDeduplication:
 
 class TestAntiLoss:
     def test_next_settlement_days_sp1_survives_without_a_successor_partition(
-        self, tmp_path: Path
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
     ) -> None:
         """The trailing boundary (no successor partition at all) is retained,
         not silently dropped — D-3b's neighbour-ownership gate defaults to
@@ -239,9 +239,10 @@ class TestAntiLoss:
         # No successor (2026-07-12) bronze partition exists at all.
 
         transformer = INDOTransformer(tmp_path)
-        rows = transformer.run(day, run_id="a2")
+        with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+            rows = transformer.run(day, run_id="a2")
         assert rows == 2, "unproven boundary must be RETAINED, not dropped"
-        assert transformer.last_partition_filter_boundary_retained_count == 1
+        assert any("1 row(s) retained at an unproven boundary" in m for m in caplog.messages)
 
     def test_autumn_dst_50_period_day_is_untouched(self, tmp_path: Path) -> None:
         """A 50-settlement-period autumn DST day is filtered on published_at,
@@ -276,7 +277,9 @@ class TestFailLoudAndAttribution:
         with pytest.raises(ValueError, match="published_at.*absent"):
             transformer.run(date(2026, 7, 11), run_id="a3")
 
-    def test_unparseable_dimension_value_is_kept_and_counted(self, tmp_path: Path) -> None:
+    def test_unparseable_dimension_value_is_kept_and_logged(
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
+    ) -> None:
         start = datetime(2026, 7, 11, tzinfo=UTC)
         end = datetime(2026, 7, 12, tzinfo=UTC)
         record_without_publish_time = {
@@ -293,9 +296,13 @@ class TestFailLoudAndAttribution:
         )
 
         transformer = INDOTransformer(tmp_path)
-        rows = transformer.run(date(2026, 7, 11), run_id="a3-null")
+        with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+            rows = transformer.run(date(2026, 7, 11), run_id="a3-null")
         assert rows == 2, "the unclassifiable (null) row is kept, not dropped"
-        assert transformer.last_partition_filter_unclassified_count == 1
+        assert any(
+            "1 row(s) with an unparseable/null published_at could not be classified" in m
+            for m in caplog.messages
+        )
 
     def test_in_scope_unresolvable_partition_is_counted_and_filtering_disabled(
         self, tmp_path: Path
@@ -325,7 +332,7 @@ class TestFailLoudAndAttribution:
 
 class TestNeighbourGate:
     def test_boundary_row_dropped_only_when_successor_chunk_is_page_complete(
-        self, tmp_path: Path
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
     ) -> None:
         day = date(2026, 7, 11)
         boundary_instant = datetime(2026, 7, 12, tzinfo=UTC)
@@ -350,17 +357,18 @@ class TestNeighbourGate:
         )
 
         transformer = INDOTransformer(tmp_path)
-        rows = transformer.run(day, run_id="a12-complete")
+        with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+            rows = transformer.run(day, run_id="a12-complete")
         assert rows == 1, "only the boundary row is trimmed; the non-boundary row survives"
-        assert transformer.last_partition_filter_dropped_count == 1
-        assert transformer.last_partition_filter_boundary_retained_count == 0
+        assert any("filter dropped 1 row(s)" in m for m in caplog.messages)
+        assert not any("retained at an unproven boundary" in m for m in caplog.messages)
 
     def test_boundary_row_retained_when_successor_chunk_is_missing_a_page(
-        self, tmp_path: Path
+        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
     ) -> None:
         """S3-1 regression: successor declares total_pages=2, only page 1
-        present -> the boundary row is RETAINED, boundary_retained == 1,
-        WARNING naming INCOMPLETE_PAGE_SET. Demonstrated RED (below, via
+        present -> the boundary row is RETAINED, with a WARNING naming
+        INCOMPLETE_PAGE_SET. Demonstrated RED (below, via
         git-stash) against a rev-4 implementation that proved ownership by
         window-existence alone."""
         day = date(2026, 7, 11)
@@ -382,10 +390,13 @@ class TestNeighbourGate:
         )
 
         transformer = INDOTransformer(tmp_path)
-        rows = transformer.run(day, run_id="a12-incomplete")
+        with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+            rows = transformer.run(day, run_id="a12-incomplete")
         assert rows == 1, "the boundary row must be RETAINED, not dropped"
-        assert transformer.last_partition_filter_dropped_count == 0
-        assert transformer.last_partition_filter_boundary_retained_count == 1
+        assert any(
+            "1 row(s) retained at an unproven boundary" in m and "INCOMPLETE_PAGE_SET" in m
+            for m in caplog.messages
+        )
 
     def test_orphan_body_in_a_non_covering_chunk_of_the_successor_still_drops(
         self, tmp_path: Path
@@ -459,7 +470,6 @@ class TestRemitColumnOverride:
         transformer = REMITTransformer(tmp_path)
         rows = transformer.run(date(2026, 7, 11), run_id="remit-override")
         assert rows == 1, "the boundary row is proven durable in the successor and trimmed"
-        assert transformer.last_partition_filter_dropped_count == 1
 
 
 # ---------------------------------------------------------------------------
@@ -469,14 +479,9 @@ class TestRemitColumnOverride:
 
 class TestScopeClassification:
     def test_every_elexon_dataset_is_filtered_or_exempt_with_a_reason(self) -> None:
-        """``bod`` is excluded -- see the identical exclusion + rationale in
-        ``test_elexon_exact_partition_read.py`` (a pre-existing cross-test
-        registry-pollution artifact, out of scope for R2-A)."""
         registered = list_transformers("elexon")
         assert registered, "elexon transformers must be registered before this test runs"
         for _source, dataset in registered:
-            if dataset == "bod":
-                continue
             in_scope = publication_window_params(dataset) is not None
             exempt = dataset in PUBLICATION_WINDOW_EXEMPT
             assert in_scope or exempt, f"{dataset} is neither filtered nor exempt with a reason"

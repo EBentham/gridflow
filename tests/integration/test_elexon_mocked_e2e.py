@@ -6,7 +6,7 @@ import asyncio
 import hashlib
 import json
 import re
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -465,12 +465,10 @@ async def test_pn_page_one_empty_is_local_to_bounded_period() -> None:
     _mock_all_elexon_gets(handler)
 
     async with ElexonConnector(_active_elexon_config()) as connector:
-        responses = await connector._fetch_date_period(
-            "pn", ENDPOINTS["pn"], TARGET_DATE, max_periods=5
-        )
+        responses = await connector._fetch_date_period("pn", ENDPOINTS["pn"], TARGET_DATE)
         assert connector.last_skipped_units == 0
 
-    assert requests == [1, 2, 3, 4, 5]
+    assert requests == list(range(1, 49))
     assert [int(response.request_params["settlementPeriod"]) for response in responses] == [
         1,
         3,
@@ -513,12 +511,16 @@ async def test_fetch_date_period_bounds_loop_by_dst_calendar(
 
 @respx.mock
 @pytest.mark.asyncio
-@pytest.mark.parametrize("status_code", [400, 401, 403, 404, 408, 429])
+@pytest.mark.parametrize(
+    ("status_code", "expected_attempts"),
+    [(400, 1), (401, 1), (403, 1), (404, 1), (408, 5), (429, 5)],
+)
 async def test_pn_period_4xx_surfaces_after_exact_retry_count(
     monkeypatch: pytest.MonkeyPatch,
     status_code: int,
+    expected_attempts: int,
 ) -> None:
-    """Every exhausted HTTP failure is fatal under the current retry policy."""
+    """Every HTTP failure is fatal; only a 408 or 429 is retried before it surfaces."""
     monkeypatch.setattr("asyncio.sleep", _no_sleep)
     attempts = 0
 
@@ -535,7 +537,7 @@ async def test_pn_period_4xx_surfaces_after_exact_retry_count(
         assert connector.last_skipped_units == 0
 
     assert exc_info.value.response.status_code == status_code
-    assert attempts == 5
+    assert attempts == expected_attempts
 
 
 @respx.mock
@@ -594,7 +596,8 @@ async def test_pn_concurrent_dates_settle_and_raise_first_input_failure(
 
     async with ElexonConnector(_active_elexon_config()) as connector:
         with pytest.raises(httpx.HTTPStatusError) as exc_info:
-            await connector.fetch("pn", START, END)
+            # Two dates: the half-open window ends at 17 Jan 00:00.
+            await connector.fetch("pn", START, END + timedelta(days=1))
         assert connector.last_skipped_units == 0
 
     assert exc_info.value.response.status_code == 429

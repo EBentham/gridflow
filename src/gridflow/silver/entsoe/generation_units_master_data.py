@@ -3,41 +3,32 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import Any
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_generation_units_master_data_xml
 from gridflow.schemas.entsoe import EntsoeGenerationUnitsMasterData
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
-class GenerationUnitsMasterDataTransformer(BaseSilverTransformer):
+class GenerationUnitsMasterDataTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E generation-unit reference XML to silver."""
 
     source = "entsoe"
     dataset = "generation_units_master_data"
     schema_cls = EntsoeGenerationUnitsMasterData
+    ENTITY_KEY_COLUMNS = ("area_code", "unit_mrid")
 
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.xml")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                rows.extend(parse_generation_units_master_data_xml(f.read_bytes()))
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", f, exc)
-
-        return pl.DataFrame(rows) if rows else pl.DataFrame()
+    def _parse_bronze_body(self, path: Path) -> list[dict[str, Any]]:
+        return parse_generation_units_master_data_xml(path.read_bytes())
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -66,7 +57,7 @@ class GenerationUnitsMasterDataTransformer(BaseSilverTransformer):
             )
 
         df = df.filter(pl.col("unit_mrid") != "")
-        df = df.unique(subset=["area_code", "unit_mrid"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

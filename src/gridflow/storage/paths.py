@@ -84,10 +84,6 @@ class PathBuilder:
             / filename
         )
 
-    def silver_glob_pattern(self, source: str, dataset: str) -> str:
-        """Return a glob pattern for all silver parquet files."""
-        return str(self.silver_dir(source, dataset) / "**" / "[!.]*.parquet")
-
     # --- Gold ---
 
     def gold_root(self) -> Path:
@@ -96,17 +92,6 @@ class PathBuilder:
 
     def gold_dir(self, gold_dataset: str) -> Path:
         return self.gold_root() / gold_dataset
-
-    def gold_partition_dir(self, gold_dataset: str, target_date: date) -> Path:
-        return self.gold_dir(gold_dataset) / f"year={target_date.year}"
-
-    def gold_file(self, gold_dataset: str, target_date: date) -> Path:
-        filename = f"{gold_dataset}_{target_date.strftime('%Y%m%d')}.parquet"
-        return self.gold_partition_dir(gold_dataset, target_date) / filename
-
-    def gold_glob_pattern(self, gold_dataset: str) -> str:
-        """Return a glob pattern for all gold parquet files."""
-        return str(self.gold_dir(gold_dataset) / "**" / "[!.]*.parquet")
 
     # --- Operational state (outside every medallion layer) ---
 
@@ -135,8 +120,3 @@ class PathBuilder:
         only makes its member due sooner.
         """
         return self.state_dir(source) / "dump_checks" / dataset
-
-    # --- DuckDB ---
-
-    def duckdb_path(self) -> Path:
-        return self.data_dir / "gridflow.duckdb"

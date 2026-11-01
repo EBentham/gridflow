@@ -8,7 +8,6 @@ from pydantic import ValidationError
 from gridflow.schemas.elexon import (
     ElexonBMUnit,
     ElexonBOAL,
-    ElexonBOD,
     ElexonDemandForecast,
     ElexonDISBSAD,
     ElexonFrequency,
@@ -229,29 +228,6 @@ class TestElexonBOAL:
                 timestamp_utc=datetime(2024, 1, 15, 4, 30),
                 bm_unit_id="T_DRAXX-1",
             )
-
-
-class TestElexonBOD:
-    def test_valid_record(self):
-        r = ElexonBOD(
-            settlement_date=_DT,
-            settlement_period=10,
-            timestamp_utc=_TS,
-            bm_unit_id="T_DRAXX-1",
-            bid_price=-50.0,
-            offer_price=75.0,
-        )
-        assert r.bid_price == -50.0
-
-    def test_optional_prices(self):
-        r = ElexonBOD(
-            settlement_date=_DT,
-            settlement_period=1,
-            timestamp_utc=_TS,
-            bm_unit_id="T_DRAXX-1",
-        )
-        assert r.bid_price is None
-        assert r.offer_price is None
 
 
 class TestElexonMID:

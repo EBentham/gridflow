@@ -21,7 +21,8 @@ and 2.16 GB for 5.
 The ZIP test (v0.22-H, ADR-043) runs the same gate through the ``zip_member``
 reader: each capture is a deflated one-member ZIP of the same rows.
 
-Marked ``slow``: excluded from the local fast gate, run by CI (``-m "not live"``).
+Marked ``slow``: excluded from the local and PR gates, run by the weekly CI job
+(``-m "slow and not live"``).
 """
 
 from __future__ import annotations

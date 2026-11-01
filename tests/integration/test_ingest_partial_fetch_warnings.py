@@ -31,7 +31,7 @@ from gridflow.connectors.gie.client import AlsiConnector
 from gridflow.connectors.gie.endpoints import ALSI_COUNTRIES
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from conftest import IsolatedPaths
 
 ALSI_BASE_URL = "https://alsi.gie.eu"
 START = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
@@ -182,25 +182,10 @@ async def test_all_countries_fail_raises() -> None:
 # ---------------------------------------------------------------------------
 
 
-def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    # gie_alsi resolves its key from GIE_API_KEY (api_key_env); respx intercepts
-    # the HTTP, so any non-empty value lets the connector construct.
-    monkeypatch.setenv("GIE_API_KEY", "test-key")
-    # Gold SQL views reference silver tables absent from test tmpdirs; init_catalogue
-    # registers them, so stub it out (mirrors test_cli_transform_refresh.py:39).
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return db_path
-
-
 @respx.mock
 @pytest.mark.integration
 def test_ingest_partial_fetch_records_completed_with_warnings(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """``gridflow ingest gie_alsi lng`` with one failing country records the
     pipeline_runs row as ``completed_with_warnings`` with ``rows_skipped >= 1``.
@@ -208,7 +193,10 @@ def test_ingest_partial_fetch_records_completed_with_warnings(
     RED before CH2-01: ingest called ``tracker.complete(...)`` unconditionally,
     so the row was ``success`` with ``rows_skipped == 0``.
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    # gie_alsi resolves its key from GIE_API_KEY (api_key_env); respx intercepts
+    # the HTTP, so any non-empty value lets the connector construct.
+    monkeypatch.setenv("GIE_API_KEY", "test-key")
+    db_path = isolated_env.duckdb_path
     respx.get(re.compile(rf"^{re.escape(ALSI_BASE_URL)}/.*")).mock(
         side_effect=_one_country_fails_handler(ALSI_COUNTRIES[0])
     )

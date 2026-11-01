@@ -31,16 +31,20 @@ import httpx
 import polars as pl
 import pytest
 import respx
+from _neso_capture_support import capture_legacy, record_sends, unsent
 from pydantic import Field
-from pydantic import ValidationError as PydanticValidationError
 from tenacity import wait_none
 
-from gridflow.config.settings import DatasetConfig, PipelineSettings, SourceConfig
+from gridflow.config.settings import (
+    DatasetConfig,
+    PipelineSettings,
+    SourceConfig,
+    load_settings,
+)
 from gridflow.connectors.neso_data_portal import client as client_module
 from gridflow.connectors.neso_data_portal.client import (
     _MAX_INGEST_WINDOW,
     _MAX_REDIRECT_HOPS,
-    _VALIDATED_MARKER,
     CkanActionError,
     CkanPaginationMismatch,
     NesoDataPortalConnector,
@@ -59,37 +63,11 @@ from gridflow.connectors.neso_data_portal.client import (
 )
 from gridflow.connectors.neso_data_portal.endpoints import DATASETS
 from gridflow.schemas.common import BaseSchema, SettlementPeriodMixin
-from gridflow.schemas.neso_data_portal import (
-    NesoEmbeddedWindSolarForecast,
-    is_valid_settlement_period,
-)
+from gridflow.schemas.neso_data_portal import is_valid_settlement_period
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.csv_bronze import CsvHeaderDriftError, NotCsvBodyError
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS
-from gridflow.silver.neso_data_portal import (
-    historic_generation_mix as historic_generation_mix_module,
-)
-from gridflow.silver.neso_data_portal._bronze import provenance_for
-from gridflow.silver.neso_data_portal.daily_wind_availability import (
-    EXPECTED_COLUMNS,
-    DailyWindAvailabilityTransformer,
-)
-from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
-    EXPECTED_COLUMNS as EMBEDDED_EXPECTED_COLUMNS,
-)
-from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
-    EmbeddedWindSolarForecastTransformer,
-)
-from gridflow.silver.neso_data_portal.historic_generation_mix import (
-    COLUMN_MAPPING as HGM_COLUMN_MAPPING,
-)
-from gridflow.silver.neso_data_portal.historic_generation_mix import (
-    EXPECTED_COLUMNS as HISTORIC_GENERATION_MIX_COLUMNS,
-)
-from gridflow.silver.neso_data_portal.historic_generation_mix import (
-    HistoricGenerationMixTransformer,
-)
 from gridflow.silver.registry import get_transformer_class, list_transformers
 from gridflow.silver.schema_manifest import (
     _DATE_COL_SQL_TYPES,
@@ -97,7 +75,7 @@ from gridflow.silver.schema_manifest import (
     _silver_entry,
     get_silver_schema_manifest,
 )
-from gridflow.utils.time import settlement_period_to_utc, settlement_periods_in_day
+from gridflow.utils.time import settlement_periods_in_day
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Iterator
@@ -176,6 +154,20 @@ def router() -> Iterator[respx.MockRouter]:
         yield mock_router
 
 
+@pytest.fixture
+def noon(monkeypatch: pytest.MonkeyPatch) -> datetime:
+    """Freeze the connector's clock at 2026-08-16 12:00Z, so day boundaries are exact."""
+    frozen = datetime(2026, 8, 16, 12, tzinfo=UTC)
+
+    class _Frozen(datetime):
+        @classmethod
+        def now(cls, tz: Any = None) -> datetime:  # type: ignore[override]
+            return frozen.astimezone(tz) if tz is not None else frozen.replace(tzinfo=None)
+
+    monkeypatch.setattr(client_module, "datetime", _Frozen)
+    return frozen
+
+
 def _wire_happy_path(router: respx.MockRouter) -> None:
     """Route the two sends of a clean ``daily_wind_availability`` fetch."""
     router.get(url__startswith=PACKAGE_SHOW_URL).mock(
@@ -186,17 +178,17 @@ def _wire_happy_path(router: respx.MockRouter) -> None:
     )
 
 
-def _fetch(
+def _capture(
     config: SourceConfig,
     start: datetime,
     end: datetime,
     dataset: str = DATASET,
 ) -> list[Any]:
-    """Drive one ``fetch()`` through the connector's real async entry point."""
+    """Capture one legacy key through the connector's real async entry point."""
 
     async def _run() -> list[Any]:
         async with NesoDataPortalConnector(config) as connector:
-            return await connector.fetch(dataset, start, end)
+            return await capture_legacy(connector, dataset, start, end)
 
     return asyncio.run(_run())
 
@@ -451,7 +443,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC)
 
-        responses = _fetch(_source_config(), end - timedelta(hours=24), end)
+        responses = _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert len(responses) == 1
         assert len(router.calls) == 2, "one package_show + one resource download"
@@ -485,7 +477,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
 
         with pytest.raises(ValueError):
-            _fetch(_source_config(), start, end)
+            _capture(_source_config(), start, end)
 
         assert len(router.calls) == 0, f"{case}: refused after a request was sent"
 
@@ -494,32 +486,54 @@ class TestWindowAdmission:
         now = datetime.now(UTC)
 
         with pytest.raises(ValueError):
-            _fetch(_source_config(), now, now - timedelta(hours=1))
+            _capture(_source_config(), now, now - timedelta(hours=1))
 
         assert len(router.calls) == 0
 
-    @pytest.mark.parametrize("ahead", [timedelta(hours=1), timedelta(hours=24)])
-    def test_future_end_is_refused_and_names_the_remedy(
-        self, router: respx.MockRouter, ahead: timedelta
+    def test_future_partition_is_refused_and_names_the_remedy(
+        self, router: respx.MockRouter, noon: datetime
     ) -> None:
-        """A future ``end`` is unserveable by definition and is the one window
-        shape that defeats D-13 outright: the capture would land under a future
-        partition no ``--last``-style transform window ever reaches.
+        """A future partition is unserveable by definition and is the one window
+        shape that defeats D-13 outright: no ``--last``-style transform window
+        ever reaches it.
 
-        24 h ahead is the likely trigger — a bare ``--end <tomorrow>`` meant as
-        "through today", which ``_parse_window_bound`` reads as midnight
-        tomorrow — so the message names the remedy.
+        The likely trigger is a bare ``--end <tomorrow>``, which now reads as
+        "through tomorrow", so the message names the remedy.
         """
         _wire_happy_path(router)
-        end = datetime.now(UTC) + ahead
+        end = datetime(2026, 8, 18, tzinfo=UTC)  # --end 2026-08-17, the day after `noon`
 
         with pytest.raises(NesoFutureWindowError) as excinfo:
-            _fetch(_source_config(), end - timedelta(hours=24), end)
+            _capture(_source_config(), end - timedelta(hours=24), end)
 
         message = str(excinfo.value)
         assert "--last 24h" in message
-        assert "--end" in message
+        assert "--end 2026-08-16" in message
         assert len(router.calls) == 0
+
+    def test_end_today_is_admitted_and_partitioned_today(
+        self, router: respx.MockRouter, noon: datetime
+    ) -> None:
+        """``--end <today>`` is ``[today, tomorrow 00:00)``: its one partition
+        is today, which is not in the future, so the window is admitted."""
+        _wire_happy_path(router)
+        today = datetime(2026, 8, 16, tzinfo=UTC)
+
+        responses = _capture(_source_config(), today, today + timedelta(days=1))
+
+        assert [response.data_date for response in responses] == [date(2026, 8, 16)]
+
+    def test_end_yesterday_is_partitioned_yesterday(
+        self, router: respx.MockRouter, noon: datetime
+    ) -> None:
+        """``--end <yesterday>`` ends at today 00:00. The partition is the
+        window's last day, yesterday, which is the day the transform reads."""
+        _wire_happy_path(router)
+        today = datetime(2026, 8, 16, tzinfo=UTC)
+
+        responses = _capture(_source_config(), today - timedelta(days=1), today)
+
+        assert [response.data_date for response in responses] == [date(2026, 8, 15)]
 
     def test_end_two_minutes_ahead_is_within_the_skew_tolerance(
         self, router: respx.MockRouter
@@ -529,7 +543,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC) + timedelta(minutes=2)
 
-        responses = _fetch(_source_config(), end - timedelta(hours=24), end)
+        responses = _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert len(responses) == 1
 
@@ -540,19 +554,19 @@ class TestWindowAdmission:
         end = datetime.now(UTC) - timedelta(hours=49)
 
         with pytest.raises(NesoHistoricalWindowError) as excinfo:
-            _fetch(_source_config(), end - timedelta(hours=24), end)
+            _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert "neso_data_portal" in str(excinfo.value)
         assert len(router.calls) == 0
 
     def test_end_47_hours_stale_still_proceeds(self, router: respx.MockRouter) -> None:
-        """``--end 2026-08-16`` parses to midnight UTC, so a legitimate
-        "yesterday to today" window can end ~24 h behind the wall clock; 48 h
-        clears that with margin. The tolerance is deliberately not tightened."""
+        """``--end <yesterday>`` ends at today 00:00, so a legitimate window can
+        end ~24 h behind the wall clock; 48 h clears that with margin. The
+        tolerance is deliberately not tightened."""
         _wire_happy_path(router)
         end = datetime.now(UTC) - timedelta(hours=47)
 
-        responses = _fetch(_source_config(), end - timedelta(hours=1), end)
+        responses = _capture(_source_config(), end - timedelta(hours=1), end)
 
         assert len(responses) == 1
 
@@ -563,7 +577,7 @@ class TestWindowAdmission:
         end = datetime.now(UTC)
 
         with pytest.raises(NesoWindowTooLongError) as excinfo:
-            _fetch(_source_config(), end - timedelta(days=8), end)
+            _capture(_source_config(), end - timedelta(days=8), end)
 
         message = str(excinfo.value)
         assert "8 days" in message
@@ -576,7 +590,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
         end = datetime.now(UTC)
 
-        responses = _fetch(_source_config(), end - timedelta(days=6), end)
+        responses = _capture(_source_config(), end - timedelta(days=6), end)
 
         assert len(responses) == 1
 
@@ -585,7 +599,7 @@ class TestWindowAdmission:
         _wire_happy_path(router)
 
         with pytest.raises(NesoWindowTooLongError):
-            _fetch(
+            _capture(
                 _source_config(),
                 datetime(2020, 1, 1, tzinfo=UTC),
                 datetime.now(UTC),
@@ -606,7 +620,7 @@ class TestWindowAdmission:
         end = datetime.now(UTC)
 
         with caplog.at_level(logging.WARNING, logger="gridflow.connectors.neso_data_portal.client"):
-            responses = _fetch(_source_config(max_query_days=1), end - timedelta(days=4), end)
+            responses = _capture(_source_config(max_query_days=1), end - timedelta(days=4), end)
 
         assert len(responses) == 1, "the window is not a selector; the fetch is not refused"
         warnings = [
@@ -619,6 +633,23 @@ class TestWindowAdmission:
         assert "4 days" in message
         assert "1" in message
         assert "one" in message.lower() or "single" in message.lower()
+
+    def test_the_loaded_config_takes_the_incremental_span_without_a_notice(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Every portal dataset of the loaded config has ``max_query_days`` 0, so the
+        ~4-day ``--incremental`` span, normal for this source, logs no notice; at 1
+        it logged one WARNING per dataset on every incremental run."""
+        config = load_settings().get_source_config("neso_data_portal")
+        connector = NesoDataPortalConnector(config)
+        end = datetime.now(UTC)
+
+        with caplog.at_level(logging.WARNING, logger="gridflow.connectors.neso_data_portal.client"):
+            for dataset in config.datasets:
+                connector._assert_window_admissible(dataset, end - timedelta(days=4), end)
+
+        assert len(config.datasets) == 326
+        assert not [r for r in caplog.records if "max_query_days" in r.getMessage()]
 
     def test_max_ingest_window_is_coupled_to_the_declared_pipeline_ceiling(self) -> None:
         """The bound is not this plan's taste: it is the widest window
@@ -646,7 +677,7 @@ class TestResolverStub:
         _wire_happy_path(router)
         end = datetime.now(UTC)
 
-        _fetch(_source_config(), end - timedelta(hours=24), end)
+        _capture(_source_config(), end - timedelta(hours=24), end)
 
         assert stub_neso_resolver, "no send validated its target through the resolver helper"
         assert [host for host, _ in stub_neso_resolver] == ["api.neso.energy"] * len(
@@ -695,26 +726,10 @@ def _now_window() -> tuple[datetime, datetime]:
     return end - timedelta(hours=24), end
 
 
-def _run_fetch(
-    config: SourceConfig,
-    dataset: str = DATASET,
-    *,
-    sink: list[NesoDataPortalConnector] | None = None,
-) -> list[Any]:
-    """Drive ``fetch()`` over a ≈now window, capturing the live connector.
-
-    The connector is appended to ``sink`` BEFORE ``fetch()`` runs, so a test can
-    still interrogate ``_issued_send_tokens`` on a fetch that raises.
-    """
+def _run_capture(config: SourceConfig, dataset: str = DATASET) -> list[Any]:
+    """Capture one legacy key over a ≈now window."""
     start, end = _now_window()
-
-    async def _run() -> list[Any]:
-        async with NesoDataPortalConnector(config) as connector:
-            if sink is not None:
-                sink.append(connector)
-            return await connector.fetch(dataset, start, end)
-
-    return asyncio.run(_run())
+    return _capture(config, start, end, dataset)
 
 
 def _wire_package_show(
@@ -984,10 +999,16 @@ class TestResourceSelection:
         )
 
         with pytest.raises(CkanActionError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert router.calls[0].response.status_code == 200, "the vendor DID answer 200"
         assert "success=false" in str(excinfo.value)
+
+
+@pytest.fixture
+def sends(monkeypatch: pytest.MonkeyPatch) -> list[int]:
+    """The tags ``_send`` stamped, in order (see :func:`record_sends`)."""
+    return record_sends(monkeypatch)
 
 
 class TestTransportMarkerProof:
@@ -996,61 +1017,65 @@ class TestTransportMarkerProof:
     Not by matching source text. The set of syntactic forms that can send is
     open-ended — a module-level ``httpx.get``, a second ``AsyncClient``, an
     alias — and the set of requests that reach the transport is not. respx
-    patches httpx's transport globally, so a bypass is caught by its EFFECT.
+    patches httpx's transport globally, so a bypass is caught by its EFFECT:
+    a request at the transport that ``_send`` was never handed, or was handed
+    fewer times than it arrived.
     """
 
-    def _drive_all_five_kinds(
-        self, router: respx.MockRouter
-    ) -> tuple[NesoDataPortalConnector, list[httpx.Request]]:
+    def _drive_all_five_kinds(self, router: respx.MockRouter) -> list[httpx.Request]:
         _wire_package_show(router)
         _wire_redirect_download(router)
         _wire_catalog(router, [["alpha", "beta"]])
         _add_catch_all(router)
-
-        sink: list[NesoDataPortalConnector] = []
         start, end = _now_window()
 
         async def _run() -> None:
             async with NesoDataPortalConnector(_source_config()) as connector:
-                sink.append(connector)
-                await connector.fetch(DATASET, start, end)
+                await capture_legacy(connector, DATASET, start, end)
                 await connector.discover_catalog()
 
         asyncio.run(_run())
-        return sink[0], [call.request for call in router.calls]
+        return [call.request for call in router.calls]
 
-    def test_every_request_reaching_the_transport_carries_a_live_token(
-        self, router: respx.MockRouter
+    def test_every_request_reaching_the_transport_went_through_send(
+        self, router: respx.MockRouter, sends: list[int]
     ) -> None:
-        """Assertion (1): EVERY recorded request, iterated — not the ones we
-        expected. The observer CONSUMES each token, so a replayed request fails
-        on its second appearance exactly as an absent one fails on its first.
-        """
-        connector, recorded = self._drive_all_five_kinds(router)
-        issued = connector._issued_send_tokens
+        """EVERY recorded request, iterated — not the ones we expected — was
+        handed to ``_send``, once, and every send reached the transport."""
+        recorded = self._drive_all_five_kinds(router)
 
         assert recorded, "no traffic was recorded at all"
-        for request in recorded:
-            token = request.extensions.get(_VALIDATED_MARKER)
-            assert token is not None, f"unmarked request reached the transport: {request.url}"
-            assert token in issued, (
-                f"request to {request.url} carried a token the connector never issued "
-                "(or one already consumed — tokens are single-use)"
-            )
-            issued.remove(token)
+        assert unsent(recorded, sends) == [], "a request reached the transport outside _send"
+        assert len(sends) == len(recorded), "a send never reached the transport"
 
-        assert issued == set(), (
-            "the connector issued tokens for sends that never reached the transport"
+    @pytest.mark.usefixtures("no_retry_backoff")
+    def test_a_retried_send_is_one_attempt_per_tag(
+        self, router: respx.MockRouter, sends: list[int]
+    ) -> None:
+        """A 503 then 200 on ``package_show`` is two attempts inside ``_send``, each
+        tagged, so a legitimate retry is never reported as a bypass."""
+        router.get(url__startswith=PACKAGE_SHOW_URL).mock(
+            side_effect=[httpx.Response(503), httpx.Response(200, json=_package_show_payload())]
         )
+        router.get(url__startswith=DAILY_WIND_RESOURCE_URL).mock(
+            return_value=httpx.Response(200, content=DAILY_WIND_CSV)
+        )
+
+        _run_capture(_source_config())
+
+        recorded = [call.request for call in router.calls]
+        assert len(recorded) == 3, "package_show twice, then the file"
+        assert unsent(recorded, sends) == []
+        assert len(sends) == len(recorded)
 
     def test_the_recorded_traffic_covers_all_five_inventory_kinds(
         self, router: respx.MockRouter
     ) -> None:
-        """Assertion (2): the coverage claim the proof rests on is itself
-        asserted. A stated-completeness claim that is off by one is how this
-        family decays — revision 6 said "four" and omitted ``package_list``.
+        """The coverage claim the proof rests on is itself asserted. A
+        stated-completeness claim that is off by one is how this family decays —
+        revision 6 said "four" and omitted ``package_list``.
         """
-        _connector, recorded = self._drive_all_five_kinds(router)
+        recorded = self._drive_all_five_kinds(router)
 
         kinds = {_request_kind(request) for request in recorded}
 
@@ -1062,82 +1087,25 @@ class TestTransportMarkerProof:
             "package_list",
         }, f"observed kinds {sorted(kinds)}"
 
-    def test_positive_control_an_unmarked_client_is_detected(
-        self, router: respx.MockRouter
+    def test_positive_control_a_bypass_and_a_replay_are_detected(
+        self, router: respx.MockRouter, sends: list[int]
     ) -> None:
-        """Assertion (3): a SEPARATE phase over a SEPARATE list.
+        """A rogue client's request, and an already-sent ``Request`` resent outside
+        ``_send``, are each exactly what the check reports — so the proof above
+        can fail."""
+        recorded = self._drive_all_five_kinds(router)
+        assert unsent(recorded, sends) == []
 
-        The control must not contaminate assertion (1)'s list, or it would force
-        an ad-hoc URL exemption inside the very property being proven — which is
-        the hole, not the proof. So: complete (1) over a snapshot, then issue an
-        unmarked request and inspect only what came after.
-        """
-        connector, recorded = self._drive_all_five_kinds(router)
-        already_seen = len(recorded)
-        assert all(request.extensions.get(_VALIDATED_MARKER) is not None for request in recorded)
-
-        async def _rogue() -> None:
+        async def _bypass() -> None:
             async with httpx.AsyncClient() as rogue_client:
                 await rogue_client.get("https://api.neso.energy/api/3/action/package_list")
+                await rogue_client.send(recorded[0])
 
-        asyncio.run(_rogue())
+        asyncio.run(_bypass())
 
-        new_calls = [call.request for call in router.calls][already_seen:]
-        assert len(new_calls) == 1, "the rogue request was not intercepted at all"
-        assert new_calls[0].extensions.get(_VALIDATED_MARKER) is None, (
-            "the rogue request carried a marker — the mechanism cannot detect a bypass"
-        )
-        assert new_calls[0].extensions.get(_VALIDATED_MARKER) not in connector._issued_send_tokens
-
-    def test_two_sends_yield_different_tokens(self, router: respx.MockRouter) -> None:
-        """Assertion (4a): a per-session nonce would be replayable."""
-        _connector, recorded = self._drive_all_five_kinds(router)
-
-        tokens = [request.extensions[_VALIDATED_MARKER] for request in recorded]
-
-        assert len(tokens) == len(set(tokens)), f"tokens repeated across sends: {tokens}"
-        assert len(tokens) >= 2
-
-    def test_a_replayed_request_is_rejected_because_its_token_was_consumed(
-        self, router: respx.MockRouter
-    ) -> None:
-        """Assertion (4c): resending an already-sent ``Request`` object must not
-        satisfy the observer.
-
-        This is the failure the per-attempt design exists to close: a
-        session-long nonce would still sit in ``extensions``, so a replay would
-        pass validation-by-attestation while bypassing the real check.
-        """
-        connector, recorded = self._drive_all_five_kinds(router)
-        already_seen = len(recorded)
-
-        # The observer runs over the real traffic and CONSUMES each token, on
-        # the connector's own set — not a local copy. Asserting against a copy
-        # after removing from it is a tautology, not a test.
-        for request in recorded:
-            connector._issued_send_tokens.remove(request.extensions[_VALIDATED_MARKER])
-        assert connector._issued_send_tokens == set()
-
-        replayed = recorded[0]
-        original_token = replayed.extensions[_VALIDATED_MARKER]
-
-        async def _resend() -> None:
-            async with httpx.AsyncClient() as replay_client:
-                await replay_client.send(replayed)
-
-        asyncio.run(_resend())
-
-        new_calls = [call.request for call in router.calls][already_seen:]
-        assert len(new_calls) == 1, "the replayed request was not intercepted"
-        observed = new_calls[0].extensions.get(_VALIDATED_MARKER)
-        assert observed == original_token, (
-            "precondition: the replay must carry the ORIGINAL token — _send never "
-            "touched it, so a session-long nonce would still be riding along here"
-        )
-        assert observed not in connector._issued_send_tokens, (
-            "a replayed request satisfied the observer — the token was not single-use, "
-            "so resending an already-sent Request would bypass validation and the throttle"
-        )
+        everything = [call.request for call in router.calls]
+        assert len(everything) == len(recorded) + 2, "the bypass was not intercepted"
+        assert unsent(everything, sends) == everything[len(recorded) :]
 
     def test_the_package_contains_no_retired_streaming_constructs(self) -> None:
         """Two textual assertions whose job is D-09's RETIREMENT, not bypass
@@ -1201,7 +1169,7 @@ class TestSendClassification:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        responses = _run_fetch(_source_config())
+        responses = _run_capture(_source_config())
 
         assert len(responses) == 1
         hops = [c for c in router.calls if _request_kind(c.request) == "resource_url"]
@@ -1232,7 +1200,7 @@ class TestSendClassification:
         )
 
         with pytest.raises(httpx.HTTPStatusError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed anyway"
 
@@ -1249,11 +1217,22 @@ class TestSendClassification:
             ]
         )
 
-        responses = _run_fetch(_source_config())
+        responses = _run_capture(_source_config())
 
         assert len(responses) == 1
         file_leg = [c for c in router.calls if _request_kind(c.request) == "resource_url"]
         assert len(file_leg) == 2, "expected exactly one retry of the file leg"
+
+    def test_a_404_package_show_is_sent_once(
+        self, router: respx.MockRouter, no_retry_backoff: None
+    ) -> None:
+        """A missing package is definitive (ADR-023): one send, not five pacer slots."""
+        router.get(url__startswith=PACKAGE_SHOW_URL).mock(return_value=httpx.Response(404))
+
+        with pytest.raises(CkanActionError, match="does not exist"):
+            _run_capture(_source_config())
+
+        assert len(router.calls) == 1
 
     def test_a_403_on_the_final_response_raises_and_admits_nothing(
         self,
@@ -1268,7 +1247,7 @@ class TestSendClassification:
         )
 
         with pytest.raises(httpx.HTTPStatusError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1289,7 +1268,7 @@ class TestResponseLifecycle:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         redirect = next(r for r in sent_responses if r.has_redirect_location)
         assert redirect.is_closed, "the unread 302 leaked its connection"
@@ -1307,7 +1286,7 @@ class TestResponseLifecycle:
         _wire_redirect_download(router, file_response=httpx.Response(200, stream=stream))
 
         with pytest.raises(NesoResponseTooLargeError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         # The cap really was what fired, not the stream simply ending.
         assert stream.pulled < len(stream.chunks)
@@ -1324,7 +1303,7 @@ class TestResponseLifecycle:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         body_response = sent_responses[-1]
         assert not body_response.has_redirect_location
@@ -1350,7 +1329,7 @@ class TestResourceUrlShape:
         payload["result"]["resources"][0]["url"] = url
         _wire_package_show(router, payload)
         _add_catch_all(router)
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
     def test_an_already_resolved_presigned_url_is_refused(
         self, router: respx.MockRouter, raw_response_spy: list[dict[str, Any]]
@@ -1455,7 +1434,7 @@ class TestResourceUrlShape:
         _add_catch_all(router)
 
         with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "user:pass" not in str(excinfo.value), "the refusal echoed the credentials"
         downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
@@ -1472,7 +1451,7 @@ class TestResourceUrlShape:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         assert raw.request_url == DAILY_WIND_RESOURCE_URL
 
@@ -1534,11 +1513,53 @@ class TestInitialUrlValidation:
         self._resolver_good_then(monkeypatch, *addresses)
 
         with pytest.raises(NesoUnsafeRedirectError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         downloads = [c for c in router.calls if _request_kind(c.request) != "package_show"]
         assert downloads == [], f"{case}: a request reached the rejected target"
         assert raw_response_spy == [], f"{case}: a RawResponse was constructed"
+
+
+class TestTemporaryDnsFailure:
+    """A temporary resolver failure is a network blip and is retried like one;
+    a permanent failure is still refused on the first attempt."""
+
+    def _resolver_failing_first(self, monkeypatch: pytest.MonkeyPatch, errno: int) -> list[str]:
+        lookups: list[str] = []
+
+        async def _stub(host: str, port: int) -> list[Any]:
+            lookups.append(host)
+            if len(lookups) == 1:
+                raise socket.gaierror(errno, "name resolution failed")
+            return [ipaddress.ip_address("93.184.216.34")]
+
+        monkeypatch.setattr(client_module, "_resolve_host_addresses", _stub)
+        return lookups
+
+    def test_a_temporary_dns_failure_is_retried(
+        self, router: respx.MockRouter, monkeypatch: pytest.MonkeyPatch, no_retry_backoff: None
+    ) -> None:
+        _wire_package_show(router)
+        _wire_redirect_download(router)
+        lookups = self._resolver_failing_first(monkeypatch, socket.EAI_AGAIN)
+
+        responses = _run_capture(_source_config())
+
+        assert len(responses) == 1
+        assert [_request_kind(c.request) for c in router.calls][0] == "package_show"
+        assert len(lookups) == len(router.calls) + 1, "the failed lookup was not retried"
+
+    def test_a_permanent_dns_failure_is_refused_on_the_first_attempt(
+        self, router: respx.MockRouter, monkeypatch: pytest.MonkeyPatch, no_retry_backoff: None
+    ) -> None:
+        _wire_package_show(router)
+        lookups = self._resolver_failing_first(monkeypatch, socket.EAI_NONAME)
+
+        with pytest.raises(NesoUnsafeRedirectError, match="did not resolve"):
+            _run_capture(_source_config())
+
+        assert len(lookups) == 1
+        assert router.calls.call_count == 0
 
 
 class TestRedirectPolicy:
@@ -1552,7 +1573,7 @@ class TestRedirectPolicy:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         hops = [c for c in router.calls if _request_kind(c.request) == "redirect_hop"]
         assert len(hops) == 1
@@ -1573,7 +1594,7 @@ class TestRedirectPolicy:
             return_value=httpx.Response(200, content=DAILY_WIND_CSV)
         )
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         followed = [
             str(c.request.url) for c in router.calls if "/files/relative.csv" in str(c.request.url)
@@ -1621,7 +1642,7 @@ class TestRedirectPolicy:
         assert real_resolver is not _selective
 
         with pytest.raises(NesoUnsafeRedirectError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         sent_elsewhere = [
             str(c.request.url) for c in router.calls if "elsewhere.example" in str(c.request.url)
@@ -1638,7 +1659,7 @@ class TestRedirectPolicy:
         )
 
         with pytest.raises(client_module.NesoRedirectLoopError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         hops = [c for c in router.calls if _request_kind(c.request) == "redirect_hop"]
         assert len(hops) == _MAX_REDIRECT_HOPS, (
@@ -1658,7 +1679,7 @@ class TestCrossHostHygiene:
         _wire_package_show(router)
         _wire_redirect_download(router, with_cookies=True)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         hop = next(c for c in router.calls if _request_kind(c.request) == "redirect_hop")
         assert "cookie" not in {k.lower() for k in hop.request.headers}, (
@@ -1671,7 +1692,7 @@ class TestCrossHostHygiene:
         _wire_package_show(router)
         _wire_redirect_download(router, with_cookies=True)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         hop = next(c for c in router.calls if _request_kind(c.request) == "redirect_hop")
         assert hop.request.headers["host"] == httpx.URL(PRESIGNED_URL).netloc.decode()
@@ -1693,7 +1714,7 @@ class TestContentEncoding:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         for kind in ("resource_url", "redirect_hop"):
             call = next(c for c in router.calls if _request_kind(c.request) == kind)
@@ -1719,7 +1740,7 @@ class TestContentEncoding:
         )
 
         with pytest.raises(NesoUnexpectedEncodingError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "gzip" in str(excinfo.value)
         assert stream.pulled == 0, "the guard must fire before a byte is read"
@@ -1734,7 +1755,7 @@ class TestContentEncoding:
             ),
         )
 
-        assert len(_run_fetch(_source_config())) == 1
+        assert len(_run_capture(_source_config())) == 1
 
 
 class TestSizeCap:
@@ -1756,7 +1777,7 @@ class TestSizeCap:
         )
 
         with pytest.raises(NesoResponseTooLargeError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert stream.pulled == 0, "the body was read despite a declared oversize"
         assert str(cap) in str(excinfo.value)
@@ -1771,7 +1792,7 @@ class TestSizeCap:
         _wire_redirect_download(router, file_response=httpx.Response(200, stream=stream))
 
         with pytest.raises(NesoResponseTooLargeError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert stream.pulled < len(stream.chunks), (
             "the connector buffered the whole body instead of aborting mid-stream"
@@ -1793,7 +1814,7 @@ class TestSizeCap:
         )
 
         with pytest.raises(NesoResponseTooLargeError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert stream.pulled < len(stream.chunks), "the whole body was buffered"
 
@@ -1813,7 +1834,7 @@ class TestTransportCompleteness:
         )
 
         with pytest.raises(NesoTruncatedBodyError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         message = str(excinfo.value)
         assert "999999" in message
@@ -1829,7 +1850,7 @@ class TestTransportCompleteness:
         _wire_redirect_download(router, file_response=httpx.Response(200, stream=stream))
 
         with pytest.raises(NesoTruncatedBodyError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1850,7 +1871,7 @@ class TestTransportCompleteness:
         )
 
         with pytest.raises(NesoTruncatedBodyError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         attempts = [c for c in router.calls if _request_kind(c.request) == "resource_url"]
         assert len(attempts) == 1, f"the interrupted read was retried {len(attempts)} times"
@@ -1875,7 +1896,7 @@ class TestAdmissionLadder:
         )
 
         with pytest.raises((NotCsvBodyError, CsvHeaderDriftError)):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1889,7 +1910,7 @@ class TestAdmissionLadder:
         )
 
         with pytest.raises(NotCsvBodyError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == []
 
@@ -1906,7 +1927,7 @@ class TestAdmissionLadder:
         )
 
         with pytest.raises(CsvHeaderDriftError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "MEGAWATTS" in str(excinfo.value)
         assert raw_response_spy == []
@@ -1930,7 +1951,7 @@ class TestAdmissionLadder:
         _wire_redirect_download(router, file_response=httpx.Response(200, content=body))
 
         with pytest.raises(NesoEmptyResourceError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert raw_response_spy == [], case
 
@@ -1945,11 +1966,7 @@ class TestRawResponseShape:
         _wire_redirect_download(router)
         start, end = _now_window()
 
-        async def _run() -> list[Any]:
-            async with NesoDataPortalConnector(_source_config()) as connector:
-                return await connector.fetch(DATASET, start, end)
-
-        (raw,) = asyncio.run(_run())
+        (raw,) = _capture(_source_config(), start, end)
 
         assert raw.content_type == "text/csv", "D-10: from CKAN metadata, not the header"
         assert raw.request_url == DAILY_WIND_RESOURCE_URL, "D-11: the redirector, never R2"
@@ -1966,7 +1983,7 @@ class TestRawResponseShape:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         assert set(raw.request_params) == {
             "package",
@@ -1977,6 +1994,11 @@ class TestRawResponseShape:
             "ckan_last_modified",
             "ckan_format",
             "body_sha256",
+            # The member path's own keys (ADR-033).
+            "capture_family",
+            "url_type",
+            "empty_capture",
+            "declared_content_length",
         }
         assert raw.request_params["package"] == "daily-wind-availability"
         assert raw.request_params["resource_filename"] == "windavailability.csv"
@@ -2024,7 +2046,7 @@ class TestThrottle:
 
         router.route(url__regex=r".*").mock(side_effect=_stamp)
 
-        _run_fetch(_source_config(rate_limit_per_second=1))
+        _run_capture(_source_config(rate_limit_per_second=1))
 
         assert len(sent_at) == 3, "a three-send happy path must record three timestamps"
         gaps = [b - a for a, b in zip(sent_at, sent_at[1:], strict=False)]
@@ -2059,7 +2081,7 @@ class TestThrottle:
             ]
         )
 
-        _run_fetch(_source_config())
+        _run_capture(_source_config())
 
         assert len(calls) == len(router.calls), (
             f"{len(calls)} throttle calls for {len(router.calls)} sends — a retry attempt "
@@ -2085,7 +2107,7 @@ class TestThrottle:
 
         router.route(url__regex=r".*").mock(side_effect=_stamp)
 
-        _run_fetch(_source_config(rate_limit_per_second=1))
+        _run_capture(_source_config(rate_limit_per_second=1))
 
         assert len(sent_at) == 3, "expected package_show + a failed attempt + its retry"
         gaps = [b - a for a, b in zip(sent_at, sent_at[1:], strict=False)]
@@ -2257,7 +2279,7 @@ class TestObservedHttpStatus:
         _wire_package_show(router)
         _wire_redirect_download(router)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         assert raw.http_status == 200
 
@@ -2279,7 +2301,7 @@ class TestObservedHttpStatus:
         )
 
         with pytest.raises(NesoUnexpectedStatusError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         assert "206" in str(excinfo.value)
         assert raw_response_spy == [], "a partial body reached RawResponse construction"
@@ -2291,7 +2313,7 @@ class TestObservedHttpStatus:
         _wire_redirect_download(router, file_response=httpx.Response(203, content=DAILY_WIND_CSV))
 
         with pytest.raises(NesoUnexpectedStatusError):
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
 
 # The credential components of the presigned test URL. If either of these
@@ -2398,7 +2420,7 @@ class TestCredentialsCannotLeave:
         _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL, file_response=file_response)
 
         with caplog.at_level(logging.DEBUG), pytest.raises(expected) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         emitted = str(excinfo.value) + "\n" + _connector_log_text(caplog)
         assert _TEST_SIGNATURE not in emitted, f"{case}: X-Amz-Signature escaped"
@@ -2430,7 +2452,7 @@ class TestCredentialsCannotLeave:
         )
 
         with caplog.at_level(logging.DEBUG), pytest.raises(httpx.HTTPStatusError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         chain = "".join(
             traceback.format_exception(
@@ -2474,7 +2496,7 @@ class TestCredentialsCannotLeave:
         monkeypatch.setattr(client_module, "_resolve_host_addresses", _stub)
 
         with caplog.at_level(logging.DEBUG), pytest.raises(NesoUnsafeRedirectError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         emitted = str(excinfo.value) + "\n" + _connector_log_text(caplog)
         assert _TEST_SIGNATURE not in emitted
@@ -2487,7 +2509,7 @@ class TestCredentialsCannotLeave:
         _wire_package_show(router)
         _wire_redirect_download(router, location=_LEAKY_PRESIGNED_URL)
 
-        (raw,) = _run_fetch(_source_config())
+        (raw,) = _run_capture(_source_config())
 
         recorded = raw.request_url + "\n" + repr(raw.request_params)
         assert _TEST_SIGNATURE not in recorded
@@ -2680,7 +2702,7 @@ class TestCredentialsCannotLeave:
         _add_catch_all(router)
 
         with pytest.raises(NesoUnexpectedResourceUrlError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         message = str(excinfo.value)
         assert "leaky-path-segment" not in message, "the unproven path was echoed"
@@ -2703,7 +2725,7 @@ class TestCredentialsCannotLeave:
         _add_catch_all(router)
 
         with pytest.raises(NesoUnsafeRedirectError) as excinfo:
-            _run_fetch(_source_config())
+            _run_capture(_source_config())
 
         message = str(excinfo.value)
         assert "not a resolvable URL" in message
@@ -3103,384 +3125,6 @@ def test_excluded_rows_accumulate_across_two_vintages_in_one_run(
 
 
 # --------------------------------------------------------------------------- #
-# T-09 -- the `daily_wind_availability` transformer
-#
-# FIXTURE PROVENANCE, DISCLOSED. Stage A captured no CSV sample for this
-# resource: `_probe/` holds sample bodies for the other four candidates only.
-# `tests/fixtures/neso_data_portal/daily_wind_availability.csv` is therefore
-# HAND-AUTHORED from the research-asserted header `BMU_ID, Date, MW`
-# (RESEARCH-vendor S3.2), with realistic BMU ids drawn verbatim from
-# `_probe/sample_national-demand-bmu.csv`. That is a guess about the vendor,
-# and it is a LOUD one: D-19's exact-header contract turns a wrong header into
-# a `CsvHeaderDriftError` at transform time AND -- via D-36's admission parse --
-# at fetch time, before a byte reaches immutable bronze, and T-24's live test
-# pins the real header against reality.
-# --------------------------------------------------------------------------- #
-
-DAILY_WIND_FIXTURE_PATH = FIXTURE_DIR / "daily_wind_availability.csv"
-DAILY_WIND_FIXTURE_BYTES = DAILY_WIND_FIXTURE_PATH.read_bytes()
-DAILY_WIND_FIXTURE_ROWS = 6
-
-# NESO's own naive CKAN stamp, read as UTC per D-15.
-CKAN_LAST_MODIFIED = "2026-08-16T18:20:11.953941"
-PUBLISHED_AT = datetime(2026, 8, 16, 18, 20, 11, 953941, tzinfo=UTC)
-
-# 2026-08-16 is BST, so its GB availability day starts at 23:00Z the day
-# BEFORE; 2026-01-15 is GMT, so its day starts at 00:00Z the same day (D-25).
-BST_DATE = date(2026, 8, 16)
-BST_DAY_START = datetime(2026, 8, 15, 23, 0, tzinfo=UTC)
-GMT_DATE = date(2026, 1, 15)
-GMT_DAY_START = datetime(2026, 1, 15, 0, 0, tzinfo=UTC)
-
-
-def _sidecar_payload(
-    *,
-    written_at: datetime,
-    ckan_last_modified: str | None = CKAN_LAST_MODIFIED,
-    resource_filename: str = "windavailability.csv",
-    drop: str | None = None,
-) -> dict[str, Any]:
-    """Build a bronze sidecar carrying the D-12 provenance the connector writes."""
-    request_params: dict[str, Any] = {
-        "package": "daily-wind-availability",
-        "package_id": DAILY_WIND_PACKAGE_ID,
-        "resource_id": DAILY_WIND_RESOURCE_ID,
-        "resource_name": "Daily Wind Availability",
-        "resource_filename": resource_filename,
-        "ckan_last_modified": "" if ckan_last_modified is None else ckan_last_modified,
-        "ckan_format": "CSV",
-        "body_sha256": "0" * 64,
-    }
-    if drop is not None:
-        del request_params[drop]
-    return {
-        "source": "neso_data_portal",
-        "dataset": DATASET,
-        "written_at": written_at.isoformat(),
-        "data_date": written_at.date().isoformat(),
-        "request_url": DAILY_WIND_RESOURCE_URL,
-        "request_params": request_params,
-        "content_type": "text/csv",
-        "http_status": 200,
-    }
-
-
-def _seed_daily_wind_bronze(
-    data_dir: Path,
-    target_date: date,
-    *,
-    name: str = "20260816T182500Z_abcd1234",
-    body: bytes = DAILY_WIND_FIXTURE_BYTES,
-    written_at: datetime | None = None,
-    sidecar: dict[str, Any] | None = None,
-    write_sidecar: bool = True,
-) -> Path:
-    """Write one `raw_*.csv` body plus its sidecar into the exact date partition."""
-    partition = (
-        data_dir
-        / "bronze"
-        / "neso_data_portal"
-        / DATASET
-        / str(target_date.year)
-        / f"{target_date.month:02d}"
-        / f"{target_date.day:02d}"
-    )
-    partition.mkdir(parents=True, exist_ok=True)
-    body_path = partition / f"raw_{name}.csv"
-    body_path.write_bytes(body)
-    if write_sidecar:
-        stamp = written_at or datetime(2026, 8, 16, 18, 25, tzinfo=UTC)
-        payload = sidecar if sidecar is not None else _sidecar_payload(written_at=stamp)
-        (partition / f"raw_{name}.meta.json").write_text(json.dumps(payload, indent=2))
-    return body_path
-
-
-def _csv(rows: str) -> bytes:
-    return ("BMU_ID,Date,MW\n" + rows).encode()
-
-
-def _transform_body(tmp_path: Path, body: bytes, *, target_date: date = BST_DATE) -> pl.DataFrame:
-    """Read one bronze body through the real reader and transform it."""
-    raw_path = _seed_daily_wind_bronze(tmp_path, target_date, body=body)
-    transformer = DailyWindAvailabilityTransformer(tmp_path)
-    return transformer.transform(transformer.read_bronze_file(raw_path))
-
-
-class TestDailyWindProvenanceReader:
-    """D-23: the one site that turns a sidecar into a vintage."""
-
-    def test_it_reads_every_d12_key_and_parses_ckan_time_as_utc(self, tmp_path: Path) -> None:
-        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE)
-
-        provenance = provenance_for(raw_path)
-
-        assert provenance is not None
-        assert provenance.package == "daily-wind-availability"
-        assert provenance.resource_id == DAILY_WIND_RESOURCE_ID
-        assert provenance.resource_name == "Daily Wind Availability"
-        assert provenance.resource_filename == "windavailability.csv"
-        assert provenance.published_at == PUBLISHED_AT
-        assert provenance.published_at.tzinfo is not None
-        assert provenance.issue_time is None, (
-            "only the embedded forecast's filename carries a 12-digit issue token"
-        )
-
-    def test_a_missing_sidecar_is_none_and_a_warning_naming_the_file(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
-    ) -> None:
-        """FM-01: the body is durable before its sidecar, so this window is real."""
-        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE, write_sidecar=False)
-
-        with caplog.at_level(logging.WARNING):
-            assert provenance_for(raw_path) is None
-
-        assert "raw_20260816T182500Z_abcd1234.meta.json" in caplog.text
-
-    @pytest.mark.parametrize(
-        ("sidecar_kwargs", "needle"),
-        [
-            ({"ckan_last_modified": None}, "ckan_last_modified"),
-            ({"ckan_last_modified": "not-a-timestamp"}, "unparseable ckan_last_modified"),
-            ({"drop": "ckan_last_modified"}, "ckan_last_modified"),
-            ({"drop": "resource_filename"}, "resource_filename"),
-        ],
-    )
-    def test_unusable_provenance_is_none_and_never_a_fetch_clock_substitute(
-        self,
-        tmp_path: Path,
-        caplog: pytest.LogCaptureFixture,
-        sidecar_kwargs: dict[str, Any],
-        needle: str,
-    ) -> None:
-        """FM-05: no fabricated ``published_at``, ever -- a loud skip instead."""
-        sidecar = _sidecar_payload(
-            written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC), **sidecar_kwargs
-        )
-        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE, sidecar=sidecar)
-
-        with caplog.at_level(logging.WARNING):
-            assert provenance_for(raw_path) is None
-
-        assert needle in caplog.text
-
-
-class TestDailyWindReadBronze:
-    """``read_bronze_file`` is the branch ``VINTAGE_PER_BRONZE_FILE`` uses."""
-
-    def test_it_yields_a_frame_carrying_published_at_from_the_sidecar(self, tmp_path: Path) -> None:
-        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE)
-
-        frame = DailyWindAvailabilityTransformer(tmp_path).read_bronze_file(raw_path)
-
-        assert frame.height == DAILY_WIND_FIXTURE_ROWS
-        assert list(frame.columns) == [*EXPECTED_COLUMNS, "published_at"]
-        assert frame["published_at"].to_list() == [PUBLISHED_AT] * DAILY_WIND_FIXTURE_ROWS
-
-    def test_unusable_provenance_yields_an_empty_frame_rather_than_a_guess(
-        self, tmp_path: Path
-    ) -> None:
-        """D-23 -> `base.py`'s `UNUSABLE_PROVENANCE` skip, which D-41 accounts."""
-        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE, write_sidecar=False)
-
-        assert DailyWindAvailabilityTransformer(tmp_path).read_bronze_file(raw_path).is_empty()
-
-    def test_a_drifted_vendor_header_raises_rather_than_being_absorbed(
-        self, tmp_path: Path
-    ) -> None:
-        """D-19: the header contract is exact and ordered, and it fails loud."""
-        raw_path = _seed_daily_wind_bronze(
-            tmp_path, BST_DATE, body=b"BMU_ID,Date,MWh\nABRTW-1,2026-08-16,120.5\n"
-        )
-
-        with pytest.raises(CsvHeaderDriftError):
-            DailyWindAvailabilityTransformer(tmp_path).read_bronze_file(raw_path)
-
-    def test_read_bronze_returns_exactly_what_the_per_file_loop_would_read(
-        self, tmp_path: Path
-    ) -> None:
-        """The ABC method is unused on this branch, so it is implemented HONESTLY.
-
-        A ``raise NotImplementedError`` would be a lie about a method the base
-        class declares; a loop over the same glob in the same partition is the
-        truthful implementation, and this pins that the two agree.
-        """
-        first = _seed_daily_wind_bronze(tmp_path, BST_DATE, name="first")
-        _seed_daily_wind_bronze(tmp_path, BST_DATE, name="second")
-        transformer = DailyWindAvailabilityTransformer(tmp_path)
-
-        combined = transformer.read_bronze(BST_DATE)
-
-        assert combined.height == 2 * DAILY_WIND_FIXTURE_ROWS
-        assert list(combined.columns) == list(transformer.read_bronze_file(first).columns)
-
-    def test_read_bronze_is_empty_for_a_date_with_no_partition(self, tmp_path: Path) -> None:
-        assert DailyWindAvailabilityTransformer(tmp_path).read_bronze(GMT_DATE).is_empty()
-
-
-class TestDailyWindTransform:
-    """D-24's column contract and D-25's derived instant."""
-
-    def test_it_maps_the_vendor_header_onto_the_d24_silver_columns(self, tmp_path: Path) -> None:
-        frame = _transform_body(tmp_path, DAILY_WIND_FIXTURE_BYTES)
-
-        assert {
-            "bmu_id",
-            "availability_date",
-            "availability_mw",
-            "timestamp_utc",
-            "published_at",
-        } <= set(frame.columns)
-        assert frame.schema["bmu_id"] == pl.Utf8
-        assert frame.schema["availability_date"] == pl.Date
-        assert frame.schema["availability_mw"] == pl.Float64
-        assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
-        assert frame.schema["published_at"] == pl.Datetime("us", "UTC")
-
-    def test_bm_unit_ids_are_stored_verbatim_with_no_normalisation(self, tmp_path: Path) -> None:
-        """CLAUDE.md hard rule: BM unit ids are stored as-is."""
-        frame = _transform_body(
-            tmp_path, _csv("t_abru-1,2026-08-16,10.0\nABRTW-1 ,2026-08-16,11.0\n")
-        )
-
-        assert sorted(frame["bmu_id"].to_list()) == ["ABRTW-1 ", "t_abru-1"]
-
-    def test_a_bst_availability_date_yields_2300z_the_previous_day(self, tmp_path: Path) -> None:
-        """D-25: ``settlement_period_to_utc(availability_date, 1)``, not midnight UTC."""
-        frame = _transform_body(tmp_path, _csv("ABRTW-1,2026-08-16,120.5\n"))
-
-        assert frame["timestamp_utc"].to_list() == [BST_DAY_START]
-
-    def test_a_gmt_availability_date_yields_0000z_the_same_day(self, tmp_path: Path) -> None:
-        frame = _transform_body(tmp_path, _csv("ABRTW-1,2026-01-15,110.75\n"))
-
-        assert frame["timestamp_utc"].to_list() == [GMT_DAY_START]
-
-    def test_the_derived_instant_is_never_the_ingest_windows_end(self, tmp_path: Path) -> None:
-        """Why D-25 exists: with no ``timestamp_utc``, ``_event_time_expr`` falls
-        back to midnight of the TARGET DATE -- which, since D-13 partitions on the
-        ingest window's end, would stamp every row with the fetch window rather
-        than its own availability day.
-        """
-        target_date = date(2026, 8, 19)
-        frame = _transform_body(
-            tmp_path, _csv("ABRTW-1,2026-08-16,120.5\n"), target_date=target_date
-        )
-
-        assert frame["timestamp_utc"].to_list() == [BST_DAY_START]
-        assert frame["timestamp_utc"].to_list() != [
-            datetime(target_date.year, target_date.month, target_date.day, tzinfo=UTC)
-        ]
-
-    def test_output_is_uniquely_grained_by_the_entity_key(self, tmp_path: Path) -> None:
-        """D-24: ``(bmu_id, availability_date, published_at)``. One vendor response
-        cannot carry two truths for one key at one publication instant.
-        """
-        frame = _transform_body(
-            tmp_path,
-            _csv("ABRTW-1,2026-08-16,120.5\nABRTW-1,2026-08-16,131.0\nACHLW-1,2026-08-16,98\n"),
-        )
-
-        assert frame.height == 2
-        assert (
-            frame.select(list(DailyWindAvailabilityTransformer.ENTITY_KEY_COLUMNS))
-            .is_unique()
-            .all()
-        )
-        assert frame.filter(pl.col("bmu_id") == "ABRTW-1")["availability_mw"].to_list() == [131.0]
-
-    def test_a_non_numeric_mw_value_raises_at_cast_rather_than_being_nulled(
-        self, tmp_path: Path
-    ) -> None:
-        """D-19: ``strict=True``. A silently-nulled MW is a fabricated availability."""
-        with pytest.raises(pl.exceptions.InvalidOperationError):
-            _transform_body(tmp_path, _csv("ABRTW-1,2026-08-16,not-a-number\n"))
-
-    def test_a_non_iso_date_raises_at_cast(self, tmp_path: Path) -> None:
-        """The date format is part of the same hand-authored guess as the header,
-        so it must fail loud rather than null the authoritative date column.
-        """
-        with pytest.raises(pl.exceptions.InvalidOperationError):
-            _transform_body(tmp_path, _csv("ABRTW-1,16/08/2026,120.5\n"))
-
-    def test_no_output_column_is_a_naive_datetime(self, tmp_path: Path) -> None:
-        frame = _transform_body(tmp_path, DAILY_WIND_FIXTURE_BYTES)
-
-        naive = [
-            name
-            for name, dtype in frame.schema.items()
-            if isinstance(dtype, pl.Datetime) and dtype.time_zone is None
-        ]
-        assert naive == []
-
-    def test_an_empty_frame_transforms_to_an_empty_frame(self, tmp_path: Path) -> None:
-        assert DailyWindAvailabilityTransformer(tmp_path).transform(pl.DataFrame()).is_empty()
-
-    def test_it_never_touches_the_exclusion_counter(self, tmp_path: Path) -> None:
-        """D-40: this dataset excludes no row, so the counter must stay 0.
-
-        The exclusion behaviour belongs to B3a's embedded forecast (D-27). A
-        transformer that incremented it here would report
-        ``completed_with_warnings`` for a clean run.
-        """
-        raw_path = _seed_daily_wind_bronze(tmp_path, BST_DATE)
-        transformer = DailyWindAvailabilityTransformer(tmp_path)
-
-        transformer.transform(transformer.read_bronze_file(raw_path))
-
-        assert transformer.last_excluded_row_count == 0
-
-
-class TestDailyWindRunAndRegistration:
-    """The class attributes and the base-class contracts they have to satisfy."""
-
-    def test_the_class_attributes_match_d02_d21_and_d24(self) -> None:
-        cls = DailyWindAvailabilityTransformer
-        assert (cls.source, cls.dataset) == ("neso_data_portal", DATASET)
-        assert cls.APPEND_ONLY is True
-        assert cls.VINTAGE_PER_BRONZE_FILE is True
-        assert cls.BRONZE_BODY_GLOB == "raw_*.csv"
-        assert cls.DATASET_VERSION == "1.0.0"
-        assert cls.ENTITY_KEY_COLUMNS == ("bmu_id", "availability_date", "published_at")
-        assert DATASETS[DATASET].expected_columns == EXPECTED_COLUMNS, (
-            "the transformer's header contract drifted from the connector's, so a body "
-            "admitted at fetch time would be rejected at transform time (or worse)"
-        )
-
-    def test_the_transformer_is_registered_for_this_source(self) -> None:
-        """D-38: the ``__init__.py`` import line is what fires registration."""
-        assert ("neso_data_portal", DATASET) in list_transformers("neso_data_portal")
-        assert (
-            get_transformer_class("neso_data_portal", DATASET) is DailyWindAvailabilityTransformer
-        )
-
-    def test_run_writes_a_vintage_suffixed_silver_file_with_utc_bitemporal_columns(
-        self, tmp_path: Path
-    ) -> None:
-        """The ``published_at`` dtype contract at ``base.py:1681`` is exercised
-        here: a String or naive ``published_at`` raises ``TypeError`` inside
-        ``_add_bitemporal_columns`` rather than mistyping ``available_at``.
-        """
-        _seed_daily_wind_bronze(tmp_path, BST_DATE)
-        transformer = DailyWindAvailabilityTransformer(tmp_path)
-
-        rows = transformer.run(BST_DATE, run_id="t09")
-
-        assert rows == DAILY_WIND_FIXTURE_ROWS
-        silver_dir = tmp_path / "silver" / "neso_data_portal" / DATASET / "year=2026" / "month=08"
-        written = sorted(silver_dir.glob("*.parquet"))
-        assert len(written) == 1
-        frame = pl.read_parquet(written[0])
-        assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
-        assert frame.schema["available_at"] == pl.Datetime("us", "UTC")
-        assert frame["available_at"].to_list() == frame["published_at"].to_list(), (
-            "ADR-025 S3: NESO's publication instant, not our capture instant, is the "
-            "vintage axis (D-22)"
-        )
-        assert transformer.last_validation_failure_count == 0
-        assert transformer.last_excluded_row_count == 0
-
-
-# --------------------------------------------------------------------------- #
 # T-10 -- manifest, latest-view and entity-key registration
 #
 # The coverage assertion below closes the gap RESEARCH-integration S9.1 names:
@@ -3657,403 +3301,6 @@ class TestRegistrationCoverage:
         )
 
 
-# --------------------------------------------------------------------------- #
-# T-16 -- the `historic_generation_mix` transformer
-#
-# FIXTURE PROVENANCE, DISCLOSED. `tests/fixtures/neso_data_portal/
-# historic_generation_mix.csv` is the Stage-A capture
-# `_probe/sample_historic-generation-mix.csv` plus four hand-appended rows.
-#
-# The plan asked for "the first ~200 data rows" of that capture. It cannot
-# supply them: the probe was a RANGE request -- `Content-Range: bytes 0-1500/
-# <total>` in `_probe/sample_historic-generation-mix.headers` -- so the file
-# holds 1501 bytes, six data lines, and the SIXTH is cut mid-field (its
-# `FOSSIL_perc` is empty, which the strict Float64 cast would reject). The
-# fixture therefore carries the FIVE complete captured rows verbatim.
-#
-# The four appended rows are hand-authored at the 2026 DST transitions
-# (2026-03-29 and 2026-10-25, 46- and 50-period GB days), which the capture's
-# 2009-01-01 window cannot reach. They exist to pin that this series has NO
-# fold to be safe about: `DATETIME` is UTC, so successive half-hours stay
-# distinct across a transition that would collapse or duplicate a local-time
-# series. Their magnitudes are plausible but invented; nothing asserts on the
-# values themselves, only on dtypes, names, ordering and instants.
-# --------------------------------------------------------------------------- #
-
-HISTORIC_GENERATION_MIX_DATASET = "historic_generation_mix"
-HGM_FIXTURE_PATH = FIXTURE_DIR / "historic_generation_mix.csv"
-HGM_FIXTURE_BYTES = HGM_FIXTURE_PATH.read_bytes()
-HGM_FIXTURE_ROWS = 9
-
-HGM_PACKAGE = "historic-generation-mix"
-HGM_RESOURCE_ID = "f93d1835-75bc-43e5-84ad-12472b180a98"
-HGM_RESOURCE_FILENAME = "df_fuel_ckan.csv"
-# The real CKAN stamp for this resource, from `_probe/show_historic-generation-mix.json`
-# (D-15 reads it as UTC).
-HGM_CKAN_LAST_MODIFIED = "2026-08-16T18:21:07.098698"
-HGM_PUBLISHED_AT = datetime(2026, 8, 16, 18, 21, 7, 98698, tzinfo=UTC)
-
-HGM_HEADER = ",".join(HISTORIC_GENERATION_MIX_COLUMNS)
-
-
-def _hgm_row(datetime_value: str, *, gas: str = "8367.0") -> str:
-    """One 34-field data row: the given ``DATETIME`` plus 33 numeric fields."""
-    return ",".join([datetime_value, gas, *["1.0"] * 32])
-
-
-def _hgm_csv(*rows: str) -> bytes:
-    """The exact 34-column header plus the given data rows."""
-    return (HGM_HEADER + "\n" + "".join(f"{row}\n" for row in rows)).encode()
-
-
-def _hgm_sidecar_payload(
-    *,
-    written_at: datetime,
-    ckan_last_modified: str = HGM_CKAN_LAST_MODIFIED,
-) -> dict[str, Any]:
-    """A bronze sidecar carrying the D-12 provenance the connector writes."""
-    return {
-        "source": "neso_data_portal",
-        "dataset": HISTORIC_GENERATION_MIX_DATASET,
-        "written_at": written_at.isoformat(),
-        "data_date": written_at.date().isoformat(),
-        "request_url": (
-            f"{BASE_URL}/dataset/88313ae5-94e4-4ddc-a790-593554d8c6b9"
-            f"/resource/{HGM_RESOURCE_ID}/download/{HGM_RESOURCE_FILENAME}"
-        ),
-        "request_params": {
-            "package": HGM_PACKAGE,
-            "package_id": "88313ae5-94e4-4ddc-a790-593554d8c6b9",
-            "resource_id": HGM_RESOURCE_ID,
-            "resource_name": "Historic GB Generation Mix",
-            "resource_filename": HGM_RESOURCE_FILENAME,
-            "ckan_last_modified": ckan_last_modified,
-            "ckan_format": "CSV",
-            "body_sha256": "0" * 64,
-        },
-        "content_type": "text/csv",
-        "http_status": 200,
-    }
-
-
-def _seed_hgm_bronze(
-    data_dir: Path,
-    target_date: date,
-    *,
-    name: str = "20260816T182500Z_abcd1234",
-    body: bytes = HGM_FIXTURE_BYTES,
-    write_sidecar: bool = True,
-) -> Path:
-    """Write one `raw_*.csv` body plus its sidecar into the exact date partition."""
-    partition = (
-        data_dir
-        / "bronze"
-        / "neso_data_portal"
-        / HISTORIC_GENERATION_MIX_DATASET
-        / str(target_date.year)
-        / f"{target_date.month:02d}"
-        / f"{target_date.day:02d}"
-    )
-    partition.mkdir(parents=True, exist_ok=True)
-    body_path = partition / f"raw_{name}.csv"
-    body_path.write_bytes(body)
-    if write_sidecar:
-        payload = _hgm_sidecar_payload(written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC))
-        (partition / f"raw_{name}.meta.json").write_text(json.dumps(payload, indent=2))
-    return body_path
-
-
-def _transform_hgm(tmp_path: Path, body: bytes = HGM_FIXTURE_BYTES) -> pl.DataFrame:
-    """Read one bronze body through the real reader and transform it."""
-    raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, body=body)
-    transformer = HistoricGenerationMixTransformer(tmp_path)
-    return transformer.transform(transformer.read_bronze_file(raw_path))
-
-
-class TestHistoricGenerationMixReadBronze:
-    """D-19's exact-header contract, on the widest header this source has."""
-
-    def test_the_34_column_header_parses_and_carries_published_at(self, tmp_path: Path) -> None:
-        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE)
-
-        frame = HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path)
-
-        assert len(HISTORIC_GENERATION_MIX_COLUMNS) == 34, (
-            "the header contract is 34 columns, counted from "
-            "_probe/sample_historic-generation-mix.csv (the plan's prose said 37 "
-            "through revision 13; revision 14's ERRATUM corrected it)"
-        )
-        assert frame.height == HGM_FIXTURE_ROWS
-        assert list(frame.columns) == [*HISTORIC_GENERATION_MIX_COLUMNS, "published_at"]
-        assert frame["published_at"].to_list() == [HGM_PUBLISHED_AT] * HGM_FIXTURE_ROWS
-
-    def test_a_dropped_column_raises_rather_than_being_absorbed(self, tmp_path: Path) -> None:
-        """34 columns is a lot of surface for a vendor to quietly narrow."""
-        header = ",".join(HISTORIC_GENERATION_MIX_COLUMNS[:-1])
-        body = (header + "\n" + ",".join(["2009-01-01T00:00:00", *["1.0"] * 32]) + "\n").encode()
-        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, body=body)
-
-        with pytest.raises(CsvHeaderDriftError):
-            HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path)
-
-    def test_a_renamed_column_raises_rather_than_being_absorbed(self, tmp_path: Path) -> None:
-        header = HGM_HEADER.replace("CARBON_INTENSITY", "CARBON_INTENSITY_GCO2")
-        body = (header + "\n" + _hgm_row("2009-01-01T00:00:00") + "\n").encode()
-        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, body=body)
-
-        with pytest.raises(CsvHeaderDriftError):
-            HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path)
-
-    def test_unusable_provenance_yields_an_empty_frame_rather_than_a_guess(
-        self, tmp_path: Path
-    ) -> None:
-        """D-23 -> `base.py`'s `UNUSABLE_PROVENANCE` skip, which D-41 accounts."""
-        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE, write_sidecar=False)
-
-        assert HistoricGenerationMixTransformer(tmp_path).read_bronze_file(raw_path).is_empty()
-
-
-class TestHistoricGenerationMixTransform:
-    """D-24's column contract and the documented naive-is-UTC reading."""
-
-    def test_a_naive_datetime_becomes_tz_aware_utc(self, tmp_path: Path) -> None:
-        """The UTC claim is DOCUMENTED, not inferred: it exists only in the
-        `datastore_search` field metadata (`DATETIME.info.description` in
-        `_probe/datastore_historic-generation-mix.json`), which a plain CSV
-        download never exposes.
-        """
-        frame = _transform_hgm(tmp_path, _hgm_csv(_hgm_row("2009-06-01T05:00:00")))
-
-        assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
-        assert frame["timestamp_utc"].to_list() == [datetime(2009, 6, 1, 5, 0, tzinfo=UTC)]
-
-    @pytest.mark.parametrize(
-        "value",
-        ["2009-06-01T05:00:00+01:00", "2009-06-01T05:00:00Z", "2009-06-01T05:00:00-0500"],
-    )
-    def test_an_offset_bearing_datetime_raises_rather_than_being_reinterpreted(
-        self, tmp_path: Path, value: str
-    ) -> None:
-        """Vendor drift guard. The naive-is-UTC reading is a documented CLAIM
-        about a naive stamp; a stamp that suddenly carries an offset is a
-        different vendor contract, and silently keeping the same reading would
-        shift every row by the offset with nothing to show for it.
-        """
-        with pytest.raises(ValueError, match="offset"):
-            _transform_hgm(tmp_path, _hgm_csv(_hgm_row(value)))
-
-    def test_fuel_and_metric_columns_are_float64(self, tmp_path: Path) -> None:
-        frame = _transform_hgm(tmp_path)
-
-        for column in ("gas", "coal", "nuclear", "wind_emb", "carbon_intensity", "storage"):
-            assert frame.schema[column] == pl.Float64, column
-
-    def test_perc_columns_are_retained_with_a_pct_suffix(self, tmp_path: Path) -> None:
-        """D-24 keeps the vendor's own percentages rather than recomputing them:
-        they are the vendor's published figures, and a recomputation would
-        silently disagree at the rounding NESO applied.
-        """
-        frame = _transform_hgm(tmp_path)
-
-        for column in ("gas_pct", "wind_emb_pct", "low_carbon_pct", "fossil_pct"):
-            assert column in frame.columns, column
-            assert frame.schema[column] == pl.Float64, column
-        assert not [name for name in frame.columns if name.endswith("_perc")], (
-            "the vendor's `_perc` spelling leaked into silver"
-        )
-
-    def test_every_vendor_column_reaches_silver_under_a_mapped_name(self, tmp_path: Path) -> None:
-        """The mapping is recorded once, so nothing can be dropped by spelling."""
-        frame = _transform_hgm(tmp_path)
-
-        assert len(HGM_COLUMN_MAPPING) == len(HISTORIC_GENERATION_MIX_COLUMNS)
-        assert set(HGM_COLUMN_MAPPING) == set(HISTORIC_GENERATION_MIX_COLUMNS)
-        assert set(HGM_COLUMN_MAPPING.values()) <= set(frame.columns)
-
-    def test_the_dst_transition_rows_stay_distinct_utc_instants(self, tmp_path: Path) -> None:
-        """Why the fixture reaches 2026 at all: a UTC series has no fold. The
-        spring-forward and autumn-back pairs must remain 30 real minutes apart,
-        which a local-time reading would collapse (spring) or duplicate (autumn).
-        """
-        frame = _transform_hgm(tmp_path)
-
-        instants = frame["timestamp_utc"].to_list()
-        assert datetime(2026, 3, 29, 0, 30, tzinfo=UTC) in instants
-        assert datetime(2026, 3, 29, 1, 0, tzinfo=UTC) in instants
-        assert datetime(2026, 10, 25, 0, 30, tzinfo=UTC) in instants
-        assert datetime(2026, 10, 25, 1, 0, tzinfo=UTC) in instants
-        assert len(set(instants)) == HGM_FIXTURE_ROWS
-
-    def test_output_is_uniquely_grained_by_timestamp_and_published_at(self, tmp_path: Path) -> None:
-        """D-24: `(timestamp_utc, published_at)`. One capture cannot carry two
-        truths for one instant at one publication instant -- and `published_at`
-        is in the key UNCONDITIONALLY, because APPEND_ONLY exists so successive
-        whole-file republications coexist.
-        """
-        frame = _transform_hgm(
-            tmp_path,
-            _hgm_csv(
-                _hgm_row("2009-01-01T00:00:00", gas="1.0"),
-                _hgm_row("2009-01-01T00:00:00", gas="2.0"),
-                _hgm_row("2009-01-01T00:30:00", gas="3.0"),
-            ),
-        )
-
-        assert frame.height == 2
-        assert (
-            frame.select(list(HistoricGenerationMixTransformer.ENTITY_KEY_COLUMNS))
-            .is_unique()
-            .all()
-        )
-        assert frame["gas"].to_list()[0] == 2.0
-
-    def test_a_non_numeric_value_raises_at_cast_rather_than_being_nulled(
-        self, tmp_path: Path
-    ) -> None:
-        """D-19's `strict=True`: a silently-nulled MW reads exactly like a
-        genuine vendor absence."""
-        with pytest.raises(pl.exceptions.InvalidOperationError):
-            _transform_hgm(tmp_path, _hgm_csv(_hgm_row("2009-01-01T00:00:00", gas="not-a-number")))
-
-    def test_no_output_column_is_a_naive_datetime(self, tmp_path: Path) -> None:
-        frame = _transform_hgm(tmp_path)
-
-        naive = [
-            name
-            for name, dtype in frame.schema.items()
-            if isinstance(dtype, pl.Datetime) and dtype.time_zone is None
-        ]
-        assert naive == []
-
-    def test_an_empty_frame_transforms_to_an_empty_frame(self, tmp_path: Path) -> None:
-        assert HistoricGenerationMixTransformer(tmp_path).transform(pl.DataFrame()).is_empty()
-
-    def test_it_never_touches_the_exclusion_counter(self, tmp_path: Path) -> None:
-        """D-40: this dataset declares no row invalid, so a clean run must not
-        report `completed_with_warnings`. The exclusion behaviour belongs to the
-        embedded forecast (D-27).
-        """
-        raw_path = _seed_hgm_bronze(tmp_path, BST_DATE)
-        transformer = HistoricGenerationMixTransformer(tmp_path)
-
-        transformer.transform(transformer.read_bronze_file(raw_path))
-
-        assert transformer.last_excluded_row_count == 0
-
-
-class TestHistoricGenerationMixRunAndRegistration:
-    """The class attributes, the registration, and one real `run()`."""
-
-    def test_the_class_attributes_match_d02_d21_and_d24(self) -> None:
-        cls = HistoricGenerationMixTransformer
-        assert (cls.source, cls.dataset) == ("neso_data_portal", HISTORIC_GENERATION_MIX_DATASET)
-        assert cls.APPEND_ONLY is True
-        assert cls.VINTAGE_PER_BRONZE_FILE is True
-        assert cls.BRONZE_BODY_GLOB == "raw_*.csv"
-        assert cls.DATASET_VERSION == "1.0.0"
-        assert cls.ENTITY_KEY_COLUMNS == ("timestamp_utc", "published_at")
-        assert (
-            DATASETS[HISTORIC_GENERATION_MIX_DATASET].expected_columns
-            == HISTORIC_GENERATION_MIX_COLUMNS
-        ), (
-            "the transformer's header contract drifted from the connector's, so a body "
-            "admitted at fetch time would be rejected at transform time (or worse)"
-        )
-
-    def test_the_transformer_is_registered_for_this_source(self) -> None:
-        """D-38: the `__init__.py` import line is what fires registration."""
-        key = ("neso_data_portal", HISTORIC_GENERATION_MIX_DATASET)
-        assert key in list_transformers("neso_data_portal")
-        assert get_transformer_class(*key) is HistoricGenerationMixTransformer
-
-    def test_the_module_docstring_cites_the_metadata_source_for_the_utc_claim(self) -> None:
-        """T-16's acceptance. The UTC statement is NOT in the CSV a download
-        yields; it lives only in the `datastore_search` field metadata. A reader
-        who cannot find that citation has no way to check the claim.
-        """
-        docstring = historic_generation_mix_module.__doc__
-        assert docstring is not None
-        assert "datastore_historic-generation-mix.json" in docstring
-        assert "DATETIME" in docstring
-
-    def test_run_writes_a_vintage_suffixed_silver_file_with_utc_bitemporal_columns(
-        self, tmp_path: Path
-    ) -> None:
-        _seed_hgm_bronze(tmp_path, BST_DATE)
-        transformer = HistoricGenerationMixTransformer(tmp_path)
-
-        rows = transformer.run(BST_DATE, run_id="t16")
-
-        assert rows == HGM_FIXTURE_ROWS
-        silver_dir = (
-            tmp_path
-            / "silver"
-            / "neso_data_portal"
-            / HISTORIC_GENERATION_MIX_DATASET
-            / "year=2026"
-            / "month=08"
-        )
-        written = sorted(silver_dir.glob("*.parquet"))
-        assert len(written) == 1
-        frame = pl.read_parquet(written[0])
-        assert frame.height == HGM_FIXTURE_ROWS
-        assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
-        assert frame["event_time"].to_list() == frame["timestamp_utc"].to_list(), (
-            "D-24: `timestamp_utc` IS this dataset's event time"
-        )
-        assert frame["available_at"].to_list() == frame["published_at"].to_list(), (
-            "ADR-025 S3: NESO's publication instant is the vintage axis (D-22)"
-        )
-        assert transformer.last_validation_failure_count == 0
-        assert transformer.last_excluded_row_count == 0
-
-
-# --------------------------------------------------------------------------- #
-# T-17 -- the `embedded_wind_solar_forecast` transformer
-#
-# FIXTURE PROVENANCE, DISCLOSED (three fixtures, two different provenances).
-#
-# `embedded_forecast.csv` is the Stage-A capture
-# `_probe/sample_embedded-forecast-current.csv`, which is a RANGE capture
-# (`Content-Range: bytes 0-1500/43527` in its `.headers` sidecar): 22 lines, of
-# which the last is cut after three fields. The fixture carries the TWENTY
-# complete captured rows verbatim.
-#
-# `embedded_forecast_dst_spring.csv` (2026-03-29, 46 periods) and
-# `embedded_forecast_dst_autumn.csv` (2026-10-25, 50 periods) are
-# HAND-CONSTRUCTED from that same shape. They have to be: NESO's embedded
-# forecast is a rolling ~2-day window, so no capture can ever supply a
-# historical DST day. Only the MW values are invented -- the settlement pairs
-# are complete and correct for the day length, and `DATE_GMT`/`TIME_GMT` follow
-# the convention the real capture exhibits (the UTC date and HH:MM of the
-# period's END: SP39 of 2026-08-16 starts 18:00Z and the capture stamps 18:30).
-# That convention is observed, NOT documented -- which is exactly why D-26
-# carries `TIME_GMT` unparsed as `time_gmt_raw` and lets no computation read it.
-#
-# The plan asked for this disclosure "in the fixture header comment". A CSV
-# comment line is impossible here: D-19's contract is that the first line IS the
-# header, exactly and in order, so a `#` line would raise `CsvHeaderDriftError`
-# in the reader and, via D-36, at fetch time too. The disclosure therefore lives
-# here, alongside T-09's and T-16's.
-# --------------------------------------------------------------------------- #
-
-EMBEDDED_DATASET = "embedded_wind_solar_forecast"
-
-EMB_FIXTURE_PATH = FIXTURE_DIR / "embedded_forecast.csv"
-EMB_FIXTURE_BYTES = EMB_FIXTURE_PATH.read_bytes()
-EMB_FIXTURE_ROWS = 20
-EMB_SPRING_BYTES = (FIXTURE_DIR / "embedded_forecast_dst_spring.csv").read_bytes()
-EMB_AUTUMN_BYTES = (FIXTURE_DIR / "embedded_forecast_dst_autumn.csv").read_bytes()
-
-EMB_PACKAGE = "embedded-wind-and-solar-forecasts"
-EMB_PACKAGE_ID = "91c0c70e-0ef5-4116-b6fa-7ad084b5e0e8"
-EMB_RESOURCE_ID = "db6c038f-98af-4570-ab60-24d71ebd0ae5"
-EMB_RESOURCE_FILENAME = "202608161825_embedded_forecast.csv"
-# The real values for that capture, from `_probe/show_embedded-wind-and-solar-forecasts.json`.
-EMB_CKAN_LAST_MODIFIED = "2026-08-16T18:25:03.877001"
-EMB_PUBLISHED_AT = datetime(2026, 8, 16, 18, 25, 3, 877001, tzinfo=UTC)
-EMB_ISSUE_TIME = datetime(2026, 8, 16, 18, 25, tzinfo=UTC)
-
 # The three day lengths the D-27 bound has to be right on. Verified against
 # `settlement_periods_in_day`, not recalled.
 ORDINARY_DAY = date(2026, 8, 16)
@@ -4061,208 +3308,10 @@ SPRING_DAY = date(2026, 3, 29)
 AUTUMN_DAY = date(2026, 10, 25)
 _DAY_LENGTHS = {ORDINARY_DAY: 48, SPRING_DAY: 46, AUTUMN_DAY: 50}
 
-EMB_HEADER = ",".join(EMBEDDED_EXPECTED_COLUMNS)
-
-
-def _emb_row(settlement_date: date, settlement_period: int, *, wind: str = "468") -> str:
-    """One 8-field data row for the given settlement pair."""
-    return (
-        f"{settlement_date.isoformat()}T00:00:00,18:30,"
-        f"{settlement_date.isoformat()}T00:00:00,{settlement_period},"
-        f"{wind},6417,1323,23301"
-    )
-
-
-def _emb_csv(*rows: str) -> bytes:
-    """The exact 8-column header plus the given data rows."""
-    return (EMB_HEADER + "\n" + "".join(f"{row}\n" for row in rows)).encode()
-
-
-def _emb_sidecar_payload(
-    *,
-    written_at: datetime,
-    resource_filename: str = EMB_RESOURCE_FILENAME,
-    ckan_last_modified: str = EMB_CKAN_LAST_MODIFIED,
-) -> dict[str, Any]:
-    """A bronze sidecar carrying the D-12 provenance the connector writes."""
-    return {
-        "source": "neso_data_portal",
-        "dataset": EMBEDDED_DATASET,
-        "written_at": written_at.isoformat(),
-        "data_date": written_at.date().isoformat(),
-        "request_url": (
-            f"{BASE_URL}/dataset/{EMB_PACKAGE_ID}/resource/{EMB_RESOURCE_ID}"
-            f"/download/{resource_filename}"
-        ),
-        "request_params": {
-            "package": EMB_PACKAGE,
-            "package_id": EMB_PACKAGE_ID,
-            "resource_id": EMB_RESOURCE_ID,
-            "resource_name": "Embedded Solar and Wind Forecast",
-            "resource_filename": resource_filename,
-            "ckan_last_modified": ckan_last_modified,
-            "ckan_format": "CSV",
-            "body_sha256": "0" * 64,
-        },
-        "content_type": "text/csv",
-        "http_status": 200,
-    }
-
-
-def _seed_emb_bronze(
-    data_dir: Path,
-    target_date: date,
-    *,
-    name: str = "20260816T182500Z_abcd1234",
-    body: bytes = EMB_FIXTURE_BYTES,
-    resource_filename: str = EMB_RESOURCE_FILENAME,
-    written_at: datetime | None = None,
-    write_sidecar: bool = True,
-) -> Path:
-    """Write one `raw_*.csv` body plus its sidecar into the exact date partition."""
-    partition = (
-        data_dir
-        / "bronze"
-        / "neso_data_portal"
-        / EMBEDDED_DATASET
-        / str(target_date.year)
-        / f"{target_date.month:02d}"
-        / f"{target_date.day:02d}"
-    )
-    partition.mkdir(parents=True, exist_ok=True)
-    body_path = partition / f"raw_{name}.csv"
-    body_path.write_bytes(body)
-    if write_sidecar:
-        payload = _emb_sidecar_payload(
-            written_at=written_at or datetime(2026, 8, 16, 18, 25, tzinfo=UTC),
-            resource_filename=resource_filename,
-        )
-        (partition / f"raw_{name}.meta.json").write_text(json.dumps(payload, indent=2))
-    return body_path
-
-
-def _transform_emb(
-    tmp_path: Path,
-    body: bytes = EMB_FIXTURE_BYTES,
-    *,
-    target_date: date = ORDINARY_DAY,
-) -> pl.DataFrame:
-    """Read one bronze body through the real reader and transform it."""
-    raw_path = _seed_emb_bronze(tmp_path, target_date, body=body)
-    transformer = EmbeddedWindSolarForecastTransformer(tmp_path)
-    return transformer.transform(transformer.read_bronze_file(raw_path))
-
-
-@pytest.fixture
-def short_tmp_path(tmp_path_factory: pytest.TempPathFactory) -> Path:
-    """A deliberately SHORT temp root, for the tests that write silver.
-
-    Windows MAX_PATH, not a product limit. This dataset's silver filename is
-    74 characters (`embedded_wind_solar_forecast_20260816_run<ISO instant>
-    .parquet`) and `storage.parquet.write_parquet`'s atomic write adds a
-    21-character `.tmp_<16 hex>` suffix before `os.replace`. Under the standard
-    `tmp_path` fixture -- whose directory embeds the test's own name -- the
-    temporary path reaches 266 characters and `os.replace` fails with
-    `WinError 3`, while the final 245-character path would have been fine. The
-    real data root is `C:\\gridflow-data`, so production is ~90 characters
-    clear; only the harness overflows. `tmp_path_factory.mktemp` gives a
-    name-independent root about 30 characters shorter.
-    """
-    return tmp_path_factory.mktemp("e")
-
-
-def _emb_model_kwargs(settlement_date: date, settlement_period: int) -> dict[str, Any]:
-    """Every field the contract requires, so only the BOUND is under test."""
-    return {
-        "settlement_date": settlement_date,
-        "settlement_period": settlement_period,
-        "issue_time": EMB_ISSUE_TIME,
-        "time_gmt_raw": "18:30",
-        "embedded_wind_forecast": 468.0,
-        "embedded_wind_capacity": 6417.0,
-        "embedded_solar_forecast": 1323.0,
-        "embedded_solar_capacity": 23301.0,
-        "published_at": EMB_PUBLISHED_AT,
-    }
-
-
-def _schema_accepts(settlement_date: date, settlement_period: int) -> bool:
-    """Does the D-27 model validator accept this settlement pair?"""
-    try:
-        NesoEmbeddedWindSolarForecast(**_emb_model_kwargs(settlement_date, settlement_period))
-    except PydanticValidationError:
-        return False
-    return True
-
-
-class TestEmbeddedForecastProvenance:
-    """D-23/D-15: the issue instant comes from the vendor's own filename."""
-
-    def test_issue_time_is_parsed_from_the_filename_token_as_utc(self, tmp_path: Path) -> None:
-        """D-15's third observation: the token `202608161825` equals that
-        resource's `last_modified` to the minute, and 18:25 UTC falls inside
-        settlement period 39 of 2026-08-16 -- which is exactly the first row the
-        captured file carries. A BST reading would predict SP37.
-        """
-        raw_path = _seed_emb_bronze(tmp_path, ORDINARY_DAY)
-
-        provenance = provenance_for(raw_path)
-
-        assert provenance is not None
-        assert provenance.issue_time == EMB_ISSUE_TIME
-        assert provenance.issue_time.tzinfo is not None
-
-        frame = EmbeddedWindSolarForecastTransformer(tmp_path).read_bronze_file(raw_path)
-        assert frame["issue_time"].to_list() == [EMB_ISSUE_TIME] * EMB_FIXTURE_ROWS
-        assert frame.schema["issue_time"] == pl.Datetime("us", "UTC")
-
-    @pytest.mark.parametrize(
-        "resource_filename",
-        [
-            "embedded_forecast.csv",
-            "2026081618_embedded_forecast.csv",
-            "embedded_202608161825_forecast.csv",
-        ],
-    )
-    def test_a_filename_with_no_12_digit_token_is_an_empty_frame_and_a_warning(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture, resource_filename: str
-    ) -> None:
-        """D-23 / FM-05: never a fetch-clock substitute.
-
-        `issue_time` is part of this dataset's entity key, so a fabricated one
-        would mint a vintage that never existed and silently outrank the real
-        forecasts in the `_latest` projection. Requiredness is the CALLER's job
-        (`_bronze.provenance_for` parses the token wherever one exists and takes
-        no view on which datasets must have one), which is why the refusal lives
-        here rather than in the shared reader.
-        """
-        raw_path = _seed_emb_bronze(tmp_path, ORDINARY_DAY, resource_filename=resource_filename)
-
-        with caplog.at_level(logging.WARNING):
-            frame = EmbeddedWindSolarForecastTransformer(tmp_path).read_bronze_file(raw_path)
-
-        assert frame.is_empty()
-        assert "issue_time" in caplog.text
-        assert resource_filename in caplog.text
-
-    def test_unusable_provenance_yields_an_empty_frame_rather_than_a_guess(
-        self, tmp_path: Path
-    ) -> None:
-        raw_path = _seed_emb_bronze(tmp_path, ORDINARY_DAY, write_sidecar=False)
-
-        assert EmbeddedWindSolarForecastTransformer(tmp_path).read_bronze_file(raw_path).is_empty()
-
-    def test_issue_time_and_published_at_agree_within_120s_on_the_real_capture(self) -> None:
-        """D-15's cross-check. The filename token and CKAN's `last_modified` are
-        two independent clocks; if they diverge by more than a couple of minutes
-        they are not the SAME clock and D-15's reading needs revisiting. On the
-        real capture they are 3.877 s apart.
-        """
-        assert abs((EMB_PUBLISHED_AT - EMB_ISSUE_TIME).total_seconds()) <= 120
-
 
 class TestSettlementPeriodPredicate:
-    """D-27, one predicate: `is_valid_settlement_period` and its two callers."""
+    """D-27, one predicate: `is_valid_settlement_period` (the engine's sp_pair caller is
+    pinned in ``test_neso_legacy_records.py``)."""
 
     def test_the_day_lengths_this_suite_relies_on_are_real(self) -> None:
         """Non-vacuity guard: every bound assertion below is stated in terms of
@@ -4283,35 +3332,8 @@ class TestSettlementPeriodPredicate:
 
         assert accepted == set(range(1, length + 1))
 
-    @pytest.mark.parametrize("day", [ORDINARY_DAY, SPRING_DAY, AUTUMN_DAY])
-    def test_the_schema_validator_rejects_exactly_what_the_predicate_rejects(
-        self, day: date
-    ) -> None:
-        """Caller 1 routes through the predicate. An edit that inlined the
-        comparison into the validator -- and got it upper-only, which is how
-        revision 4 had it -- shows up here as a divergence rather than as a
-        wrong-day `event_time` in production.
-        """
-        for period in range(-2, 53):
-            assert _schema_accepts(day, period) is is_valid_settlement_period(day, period), (
-                f"validator and predicate disagree on {day} SP{period}"
-            )
-
-    @pytest.mark.parametrize("day", [ORDINARY_DAY, SPRING_DAY, AUTUMN_DAY])
-    def test_the_transformer_filter_excludes_exactly_what_the_predicate_rejects(
-        self, tmp_path: Path, day: date
-    ) -> None:
-        """Caller 2 routes through the same predicate."""
-        periods = list(range(-2, 53))
-        body = _emb_csv(*[_emb_row(day, period) for period in periods])
-
-        frame = _transform_emb(tmp_path, body)
-
-        survived = set(frame["settlement_period"].to_list())
-        assert survived == {p for p in periods if is_valid_settlement_period(day, p)}
-
     def test_the_shared_mixin_still_declares_no_bound(self) -> None:
-        """Why the NESO-local validator exists at all (D-27, revision 7).
+        """Why the NESO-local predicate exists at all (D-27, revision 7).
 
         Revision 4 rested on a FALSE citation: that `SettlementPeriodMixin`
         bounds the period to 1..50. It does not -- it declares two plain fields
@@ -4321,426 +3343,3 @@ class TestSettlementPeriodPredicate:
         """
         assert SettlementPeriodMixin(settlement_date=ORDINARY_DAY, settlement_period=0)
         assert SettlementPeriodMixin(settlement_date=ORDINARY_DAY, settlement_period=999)
-
-
-class TestEmbeddedForecastSchemaBound:
-    """D-27, schema half -- both bounds, both sides of each, all three days."""
-
-    @pytest.mark.parametrize(
-        ("day", "period", "accepted"),
-        [
-            # Upper bound, both sides, on each of the three day lengths.
-            (SPRING_DAY, 46, True),
-            (SPRING_DAY, 47, False),
-            (ORDINARY_DAY, 48, True),
-            (ORDINARY_DAY, 49, False),
-            (AUTUMN_DAY, 50, True),
-            (AUTUMN_DAY, 51, False),
-            # Lower bound, both sides. NOT symmetry for its own sake: SP0
-            # reaching `settlement_period_to_utc` yields the PREVIOUS settlement
-            # day (measured: 2026-08-16 SP0 -> 2026-08-15 22:30Z), and an
-            # upper-bound-only check passes it without comment.
-            (ORDINARY_DAY, 1, True),
-            (ORDINARY_DAY, 0, False),
-            (ORDINARY_DAY, -1, False),
-            (SPRING_DAY, 1, True),
-            (SPRING_DAY, 0, False),
-            (AUTUMN_DAY, 1, True),
-            (AUTUMN_DAY, 0, False),
-        ],
-    )
-    def test_the_validator_declares_the_bound(self, day: date, period: int, accepted: bool) -> None:
-        assert _schema_accepts(day, period) is accepted
-
-    def test_the_rejection_names_the_period_and_the_days_real_length(self) -> None:
-        """A validation error a reader cannot act on is barely better than none."""
-        with pytest.raises(PydanticValidationError) as excinfo:
-            NesoEmbeddedWindSolarForecast(**_emb_model_kwargs(SPRING_DAY, 47))
-
-        message = str(excinfo.value)
-        assert "47" in message
-        assert "46" in message
-
-
-class TestEmbeddedForecastTransform:
-    """D-24's column contract and D-26's deliberate omission."""
-
-    def test_the_output_has_no_timestamp_utc_column(self, tmp_path: Path) -> None:
-        """D-26, and it is load-bearing rather than tidy: `_event_time_expr`
-        PREFERS `timestamp_utc` over the settlement pair, and only the pair
-        branch calls the DST-fold-safe `settlement_period_to_utc`. Emitting a
-        `timestamp_utc` here would silently take `event_time` off the safe path
-        on exactly the 46- and 50-period days it matters on.
-        """
-        frame = _transform_emb(tmp_path)
-
-        assert "timestamp_utc" not in frame.columns
-
-    def test_time_gmt_survives_verbatim_as_an_unparsed_string(self, tmp_path: Path) -> None:
-        """D-26: carried, never parsed. Values NESO would never emit survive."""
-        frame = _transform_emb(
-            tmp_path,
-            _emb_csv(EMB_FIXTURE_PATH.read_text().splitlines()[1].replace(",18:30,", ",25:99,")),
-        )
-
-        assert frame.schema["time_gmt_raw"] == pl.Utf8
-        assert frame["time_gmt_raw"].to_list() == ["25:99"], (
-            "a parse would have raised on an impossible clock time"
-        )
-
-    def test_no_other_output_column_depends_on_time_gmt(self, tmp_path: Path) -> None:
-        """D-26's real claim, asserted BEHAVIOURALLY rather than by grepping the
-        module: its start-vs-end convention is undocumented by NESO, so no code
-        path may depend on it. Two bodies differing ONLY in `TIME_GMT` must
-        produce output identical everywhere else -- including `event_time` when
-        this frame reaches `run()`, which comes from the settlement pair.
-        """
-        row = EMB_FIXTURE_PATH.read_text().splitlines()[1]
-        baseline = _transform_emb(tmp_path / "a", _emb_csv(row))
-        altered = _transform_emb(tmp_path / "b", _emb_csv(row.replace(",18:30,", ",03:15,")))
-
-        assert baseline["time_gmt_raw"].to_list() != altered["time_gmt_raw"].to_list()
-        other = [name for name in baseline.columns if name != "time_gmt_raw"]
-        assert baseline.select(other).equals(altered.select(other))
-
-    def test_date_gmt_is_not_emitted(self, tmp_path: Path) -> None:
-        """D-24's column list omits it. `DATE_GMT` is the calendar half of the
-        same undocumented GMT stamp as `TIME_GMT`, and the authoritative pair is
-        `SETTLEMENT_DATE`/`SETTLEMENT_PERIOD`. Bronze retains the bytes, so the
-        decision is reversible by re-transform.
-        """
-        frame = _transform_emb(tmp_path)
-
-        assert not [name for name in frame.columns if "date_gmt" in name]
-
-    def test_the_four_mw_columns_are_float64_and_the_period_is_an_integer(
-        self, tmp_path: Path
-    ) -> None:
-        frame = _transform_emb(tmp_path)
-
-        for column in (
-            "embedded_wind_forecast",
-            "embedded_wind_capacity",
-            "embedded_solar_forecast",
-            "embedded_solar_capacity",
-        ):
-            assert frame.schema[column] == pl.Float64, column
-        assert frame.schema["settlement_date"] == pl.Date
-        assert frame.schema["settlement_period"] == pl.Int64
-        assert frame.schema["published_at"] == pl.Datetime("us", "UTC")
-
-    def test_output_is_uniquely_grained_by_the_entity_key(self, tmp_path: Path) -> None:
-        """D-24: `(settlement_date, settlement_period, issue_time)`. The issue
-        instant is in the key because APPEND_ONLY exists so successive forecast
-        vintages for the same period coexist.
-        """
-        frame = _transform_emb(
-            tmp_path,
-            _emb_csv(
-                _emb_row(ORDINARY_DAY, 39, wind="100"),
-                _emb_row(ORDINARY_DAY, 39, wind="200"),
-                _emb_row(ORDINARY_DAY, 40, wind="300"),
-            ),
-        )
-
-        assert frame.height == 2
-        assert (
-            frame.select(list(EmbeddedWindSolarForecastTransformer.ENTITY_KEY_COLUMNS))
-            .is_unique()
-            .all()
-        )
-        assert frame["embedded_wind_forecast"].to_list()[0] == 200.0
-
-    def test_a_non_numeric_forecast_raises_at_cast_rather_than_being_nulled(
-        self, tmp_path: Path
-    ) -> None:
-        with pytest.raises(pl.exceptions.InvalidOperationError):
-            _transform_emb(tmp_path, _emb_csv(_emb_row(ORDINARY_DAY, 39, wind="not-a-number")))
-
-    def test_an_empty_frame_transforms_to_an_empty_frame(self, tmp_path: Path) -> None:
-        assert EmbeddedWindSolarForecastTransformer(tmp_path).transform(pl.DataFrame()).is_empty()
-
-    def test_an_upper_bound_row_is_excluded_and_its_siblings_survive(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
-    ) -> None:
-        """D-27, transformer half. The validator alone would COUNT this row and
-        still write it (`_validate_against_schema` is documented fail-soft), with
-        the next-day `event_time` `_add_bitemporal_columns` computes immediately
-        afterwards. Counting a silent data error is not preventing it.
-        """
-        body = _emb_csv(
-            _emb_row(ORDINARY_DAY, 47),
-            _emb_row(ORDINARY_DAY, 48),
-            _emb_row(ORDINARY_DAY, 49),
-        )
-
-        with caplog.at_level(logging.WARNING):
-            frame = _transform_emb(tmp_path, body)
-
-        assert frame["settlement_period"].to_list() == [47, 48]
-        assert "period 49" in caplog.text
-        assert "2026-08-16" in caplog.text
-        assert "48 settlement periods" in caplog.text, (
-            "the WARNING must name the day's REAL period count -- 49 is wrong on a "
-            "48-period day and right on a 50-period one, so the count is what makes "
-            "the message actionable"
-        )
-
-    def test_a_lower_bound_row_is_excluded_alongside_its_siblings(
-        self, tmp_path: Path, caplog: pytest.LogCaptureFixture
-    ) -> None:
-        body = _emb_csv(
-            _emb_row(ORDINARY_DAY, 0),
-            _emb_row(ORDINARY_DAY, 1),
-            _emb_row(ORDINARY_DAY, 2),
-        )
-
-        with caplog.at_level(logging.WARNING):
-            frame = _transform_emb(tmp_path, body)
-
-        assert frame["settlement_period"].to_list() == [1, 2]
-        assert "period 0" in caplog.text
-        assert "2026-08-16" in caplog.text
-        assert "48 settlement periods" in caplog.text
-
-
-class TestEmbeddedForecastEventTime:
-    """D-26 in effect: `event_time` comes from the settlement pair, DST and all."""
-
-    def _run_and_read(self, short_tmp_path: Path, body: bytes, run_id: str) -> pl.DataFrame:
-        _seed_emb_bronze(short_tmp_path, ORDINARY_DAY, body=body)
-        transformer = EmbeddedWindSolarForecastTransformer(short_tmp_path)
-        transformer.run(ORDINARY_DAY, run_id=run_id)
-        silver_dir = (
-            short_tmp_path
-            / "silver"
-            / "neso_data_portal"
-            / EMBEDDED_DATASET
-            / "year=2026"
-            / "month=08"
-        )
-        written = sorted(silver_dir.glob("*.parquet"))
-        assert len(written) == 1
-        return pl.read_parquet(written[0])
-
-    def test_event_time_equals_settlement_period_to_utc_row_for_row(
-        self, short_tmp_path: Path
-    ) -> None:
-        frame = self._run_and_read(short_tmp_path, EMB_FIXTURE_BYTES, "t17-base")
-
-        assert frame.height == EMB_FIXTURE_ROWS
-        assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
-        expected = [
-            settlement_period_to_utc(row["settlement_date"], row["settlement_period"])
-            for row in frame.iter_rows(named=True)
-        ]
-        assert frame["event_time"].to_list() == expected
-
-    def test_the_autumn_fixture_carries_50_periods_that_stay_distinct(
-        self, short_tmp_path: Path
-    ) -> None:
-        """SP49 and SP50 exist only on the 50-period day, and they must land on
-        DIFFERENT UTC instants -- a naive local-time conversion repeats 01:00.
-        """
-        frame = self._run_and_read(short_tmp_path, EMB_AUTUMN_BYTES, "t17-autumn")
-
-        assert frame.height == 50
-        assert sorted(frame["settlement_period"].to_list()) == list(range(1, 51))
-        by_period = dict(zip(frame["settlement_period"], frame["event_time"], strict=True))
-        assert by_period[49] != by_period[50]
-        assert by_period[50] - by_period[49] == timedelta(minutes=30)
-        assert len(set(frame["event_time"].to_list())) == 50
-
-    def test_the_spring_fixture_carries_46_periods_with_no_collision(
-        self, short_tmp_path: Path
-    ) -> None:
-        """The spring day is 23 hours long: a wall-clock step would collapse two
-        periods onto one UTC instant.
-        """
-        frame = self._run_and_read(short_tmp_path, EMB_SPRING_BYTES, "t17-spring")
-
-        assert frame.height == 46
-        assert sorted(frame["settlement_period"].to_list()) == list(range(1, 47))
-        instants = frame["event_time"].to_list()
-        assert len(set(instants)) == 46
-        assert max(instants) - min(instants) == timedelta(minutes=30 * 45)
-
-    def test_an_excluded_upper_bound_row_never_reaches_the_next_settlement_day(
-        self, short_tmp_path: Path
-    ) -> None:
-        """The exclusion's whole purpose: SP49 on a 48-period day has no honest
-        `event_time`, and retaining it would place it silently in the NEXT day.
-        """
-        body = _emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49))
-
-        frame = self._run_and_read(short_tmp_path, body, "t17-upper")
-
-        assert frame.height == 1
-        next_day_start = settlement_period_to_utc(ORDINARY_DAY + timedelta(days=1), 1)
-        assert max(frame["event_time"].to_list()) < next_day_start
-
-    def test_an_excluded_lower_bound_row_never_reaches_the_previous_settlement_day(
-        self, short_tmp_path: Path
-    ) -> None:
-        """SP0 converts into the PREVIOUS settlement day (measured: 2026-08-16
-        SP0 -> 2026-08-15 22:30Z, half an hour before that day's SP1 at 23:00Z).
-        """
-        body = _emb_csv(_emb_row(ORDINARY_DAY, 0), _emb_row(ORDINARY_DAY, 1))
-
-        frame = self._run_and_read(short_tmp_path, body, "t17-lower")
-
-        assert frame.height == 1
-        day_start = settlement_period_to_utc(ORDINARY_DAY, 1)
-        assert min(frame["event_time"].to_list()) >= day_start
-
-
-class TestEmbeddedForecastExclusionAccounting:
-    """D-27/D-40: an excluded row is a COUNTED, SURFACED row."""
-
-    def test_run_counts_the_exclusion_and_still_writes_the_siblings(
-        self, short_tmp_path: Path
-    ) -> None:
-        """Asserted through `run()`, not only `transform()`: the exclusion
-        happens at `base.py:961` and the validator runs at `:992`, so an excluded
-        row is never seen by the thing that counts. The counter is the only
-        carrier that reaches the run status.
-        """
-        _seed_emb_bronze(
-            short_tmp_path,
-            ORDINARY_DAY,
-            body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
-        )
-        transformer = EmbeddedWindSolarForecastTransformer(short_tmp_path)
-
-        rows = transformer.run(ORDINARY_DAY, run_id="t17-count")
-
-        assert rows == 1, "the valid sibling is still written"
-        assert transformer.last_excluded_row_count == 1
-        assert transformer.last_validation_failure_count == 0, (
-            "the exclusion must NOT be charged to the base validator's counter, which "
-            "documents its rows as still written"
-        )
-
-    def test_two_vintages_accumulate_on_the_counter_itself(self, short_tmp_path: Path) -> None:
-        """The `+=` contract at its own level, before any fold.
-
-        The runner-level test below observes the same defect through
-        `rows_invalid`, but only after the fold has had a chance to hide or
-        double it. This asserts the number the transformer itself carries: two
-        bronze bodies, one declined row each, ONE reset in `run()`. An
-        assignment inside `transform()` leaves 1 here.
-        """
-        for name, filename, minute in (
-            ("first", "202608161825_embedded_forecast.csv", 25),
-            ("second", "202608161855_embedded_forecast.csv", 55),
-        ):
-            _seed_emb_bronze(
-                short_tmp_path,
-                ORDINARY_DAY,
-                name=name,
-                body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
-                resource_filename=filename,
-                written_at=datetime(2026, 8, 16, 18, minute, tzinfo=UTC),
-            )
-        transformer = EmbeddedWindSolarForecastTransformer(short_tmp_path)
-
-        rows = transformer.run(ORDINARY_DAY, run_id="t17-two-vintages")
-
-        assert rows == 2, "the kept row of each vintage is still written"
-        assert transformer.last_excluded_row_count == 2
-        assert transformer.last_validation_failure_count == 0
-
-    def test_run_transform_reports_completed_with_warnings(
-        self, short_tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """D-40 through the runner. A run that silently reports `success` while
-        dropping a row is the defect this pins -- loud in the log, invisible in
-        the status a scheduler and `gridflow status` actually read.
-        """
-
-        def seed(data_dir: Path) -> None:
-            _seed_emb_bronze(
-                data_dir,
-                ORDINARY_DAY,
-                body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
-            )
-
-        result = _isolated_transform(
-            short_tmp_path,
-            monkeypatch,
-            seed,
-            "neso_data_portal",
-            EMBEDDED_DATASET,
-            ORDINARY_DAY,
-        )
-
-        assert result.status == "completed_with_warnings"
-        assert result.rows_out == 1
-        # EXACTLY 1, not `>= 1`. The seed's surviving row is valid, so the
-        # validator contributes provably 0 and the fold's whole value is the
-        # exclusion -- `>=` would equally pass a fold that double-counted it.
-        assert result.rows_invalid == 1
-
-    def test_two_vintages_in_one_run_accumulate_to_two(
-        self, short_tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """The `+=`-not-`=` contract on the `VINTAGE_PER_BRONZE_FILE` branch.
-        An assignment inside `transform()` reports 1 here, and reports it
-        silently.
-        """
-
-        def seed(data_dir: Path) -> None:
-            for name, filename in (
-                ("first", "202608161825_embedded_forecast.csv"),
-                ("second", "202608161855_embedded_forecast.csv"),
-            ):
-                _seed_emb_bronze(
-                    data_dir,
-                    ORDINARY_DAY,
-                    name=name,
-                    body=_emb_csv(_emb_row(ORDINARY_DAY, 48), _emb_row(ORDINARY_DAY, 49)),
-                    resource_filename=filename,
-                )
-
-        result = _isolated_transform(
-            short_tmp_path,
-            monkeypatch,
-            seed,
-            "neso_data_portal",
-            EMBEDDED_DATASET,
-            ORDINARY_DAY,
-        )
-
-        assert result.status == "completed_with_warnings"
-        assert result.rows_out == 2, "the kept row of each vintage is still written"
-        assert result.rows_invalid == 2, (
-            "one vintage's exclusion was lost -- the counter was assigned, not accumulated"
-        )
-
-
-class TestEmbeddedForecastRunAndRegistration:
-    """The class attributes and the registration D-38's import line fires."""
-
-    def test_the_class_attributes_match_d02_d21_and_d24(self) -> None:
-        cls = EmbeddedWindSolarForecastTransformer
-        assert (cls.source, cls.dataset) == ("neso_data_portal", EMBEDDED_DATASET)
-        assert cls.APPEND_ONLY is True
-        assert cls.VINTAGE_PER_BRONZE_FILE is True
-        assert cls.BRONZE_BODY_GLOB == "raw_*.csv"
-        assert cls.DATASET_VERSION == "1.0.0"
-        assert cls.ENTITY_KEY_COLUMNS == ("settlement_date", "settlement_period", "issue_time")
-        assert DATASETS[EMBEDDED_DATASET].expected_columns == EMBEDDED_EXPECTED_COLUMNS, (
-            "the transformer's header contract drifted from the connector's, so a body "
-            "admitted at fetch time would be rejected at transform time (or worse)"
-        )
-
-    def test_the_transformer_is_registered_for_this_source(self) -> None:
-        key = ("neso_data_portal", EMBEDDED_DATASET)
-        assert key in list_transformers("neso_data_portal")
-        assert get_transformer_class(*key) is EmbeddedWindSolarForecastTransformer
-
-    def test_the_latest_view_key_drops_only_the_vintage_axis(self) -> None:
-        spec = LATEST_VIEW_SPECS[("neso_data_portal", EMBEDDED_DATASET)]
-
-        assert spec.key_columns == ("settlement_date", "settlement_period")
-        assert set(spec.key_columns) < set(EmbeddedWindSolarForecastTransformer.ENTITY_KEY_COLUMNS)

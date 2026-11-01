@@ -1,7 +1,7 @@
 """CH2-04 / CH-COR-06: watermark round-trip, monotonic upsert, and the
 ``resolve_incremental_start`` precedence helper.
 
-These exercise the previously-dead ``update_watermark``/``get_watermark`` helpers
+These exercise the previously-dead ``update_watermark`` helper and ``read_watermark``
 (``observability.py``) plus the incremental-start resolver (``runner.py``):
 
 - round-trip: writing then reading a watermark returns the same tz-aware UTC
@@ -34,7 +34,7 @@ from datetime import UTC, datetime, timedelta
 import duckdb
 import pytest
 
-from gridflow.observability import get_watermark, update_watermark
+from gridflow.observability import read_watermark, update_watermark
 from gridflow.pipeline.runner import resolve_incremental_start
 from gridflow.storage.duckdb import init_catalogue
 
@@ -59,11 +59,11 @@ def con(tmp_path, monkeypatch: pytest.MonkeyPatch) -> duckdb.DuckDBPyConnection:
 
 
 def test_round_trip_returns_same_utc_instant(con: duckdb.DuckDBPyConnection) -> None:
-    """``update_watermark`` then ``get_watermark`` returns the same UTC instant."""
+    """``update_watermark`` then ``read_watermark`` returns the same UTC instant."""
     when = datetime(2026, 3, 1, 12, 30, tzinfo=UTC)
     update_watermark(con, "elexon", "fuelhh", when)
 
-    got = get_watermark(con, "elexon", "fuelhh")
+    got = read_watermark(con, "elexon", "fuelhh").value
 
     assert got is not None
     assert got.tzinfo is not None, "watermark must come back tz-aware"
@@ -72,7 +72,7 @@ def test_round_trip_returns_same_utc_instant(con: duckdb.DuckDBPyConnection) -> 
 
 def test_absent_pair_returns_none(con: duckdb.DuckDBPyConnection) -> None:
     """A ``(source, dataset)`` pair that was never written returns ``None``."""
-    assert get_watermark(con, "elexon", "never_written") is None
+    assert read_watermark(con, "elexon", "never_written").value is None
 
 
 def test_upsert_is_monotonic_never_rewinds(con: duckdb.DuckDBPyConnection) -> None:
@@ -87,7 +87,7 @@ def test_upsert_is_monotonic_never_rewinds(con: duckdb.DuckDBPyConnection) -> No
     update_watermark(con, "elexon", "fuelhh", later)
     update_watermark(con, "elexon", "fuelhh", earlier)
 
-    got = get_watermark(con, "elexon", "fuelhh")
+    got = read_watermark(con, "elexon", "fuelhh").value
     assert got == later, "an out-of-order earlier write must not rewind the frontier"
 
 
@@ -99,7 +99,7 @@ def test_upsert_advances_on_later_write(con: duckdb.DuckDBPyConnection) -> None:
     update_watermark(con, "elexon", "fuelhh", first)
     update_watermark(con, "elexon", "fuelhh", second)
 
-    assert get_watermark(con, "elexon", "fuelhh") == second
+    assert read_watermark(con, "elexon", "fuelhh").value == second
 
 
 def test_resolve_incremental_start_none_falls_back_to_default() -> None:

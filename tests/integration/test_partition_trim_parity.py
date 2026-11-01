@@ -88,11 +88,11 @@ def test_p_t01_p_t07_fixture_rebuild_is_byte_stable_and_conserved(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
-    monkeypatch.setattr("gridflow.silver.elexon.mid.datetime", _Clock)
+    monkeypatch.setattr("gridflow.silver.elexon._base.datetime", _Clock)
     clock_modules = (
         _MODULE.silver_base,
         _MODULE.fuelhh_module,
-        _MODULE.mid_module,
+        _MODULE.elexon_base_module,
         _MODULE.system_prices_module,
     )
     incoming_clocks = tuple(module.datetime for module in clock_modules)
@@ -153,7 +153,7 @@ def test_l_t06_rebuild_restores_exact_clock_bindings_on_early_exception(
     modules = (
         _MODULE.silver_base,
         _MODULE.fuelhh_module,
-        _MODULE.mid_module,
+        _MODULE.elexon_base_module,
         _MODULE.system_prices_module,
     )
     incoming = tuple(type(f"CallerClock{index}", (datetime,), {}) for index in range(4))
@@ -190,7 +190,7 @@ def test_l_t06_rebuild_restores_clocks_after_later_evidence_exception(
     modules = (
         _MODULE.silver_base,
         _MODULE.fuelhh_module,
-        _MODULE.mid_module,
+        _MODULE.elexon_base_module,
         _MODULE.system_prices_module,
     )
     incoming = tuple(module.datetime for module in modules)

@@ -5,8 +5,6 @@ from gridflow.silver.elexon.agws import AGWSTransformer
 from gridflow.silver.elexon.atl import ATLTransformer
 from gridflow.silver.elexon.bmunits import BMUnitsTransformer
 from gridflow.silver.elexon.boal import BOALTransformer
-
-# BOD endpoint decommissioned by Elexon — transformer retained but not registered
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer, NDFDTransformer
 from gridflow.silver.elexon.disbsad import DISBSADTransformer
 from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer

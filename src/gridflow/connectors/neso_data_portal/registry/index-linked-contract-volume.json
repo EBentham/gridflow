@@ -11,34 +11,12 @@
     {
       "key": "index_linked_contract_volume",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "ID",
-              "StartTime",
-              "EndTime",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO_Flag",
-              "Reason",
-              "AssetID",
-              "CP_Name",
-              "Area",
-              "Note",
-              "Last_Updated"
-            ],
             "columns": [
               {
                 "source": "ID",
@@ -124,10 +102,7 @@
                 "nullable": true,
                 "zone": "UTC"
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -150,14 +125,7 @@
     },
     {
       "key": "index_linked_contract_volume_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

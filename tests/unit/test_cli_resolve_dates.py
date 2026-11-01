@@ -41,3 +41,31 @@ def test_resolve_dates_bare_date_is_midnight_utc() -> None:
     hazard) — preserves common ``--start 2026-02-01`` usage."""
     start_dt, _ = _resolve_dates("2026-02-01", None, None, 24)
     assert start_dt == datetime(2026, 2, 1, 0, 0, 0, tzinfo=UTC)
+
+
+def test_bare_end_date_is_inclusive() -> None:
+    """``--end 2026-02-07`` means "through 7 Feb", so the exclusive bound is
+    8 Feb 00:00Z; every connector, the transform and the build read that one
+    half-open window."""
+    _, end_dt = _resolve_dates("2026-02-01", "2026-02-07", None, 24)
+    assert end_dt == datetime(2026, 2, 8, tzinfo=UTC)
+
+
+def test_end_with_a_time_is_an_exclusive_instant() -> None:
+    _, end_dt = _resolve_dates("2026-02-01", "2026-02-07T06:00Z", None, 24)
+    assert end_dt == datetime(2026, 2, 7, 6, tzinfo=UTC)
+
+
+def test_end_without_start_ends_the_default_lookback() -> None:
+    """An ``--end`` given alone is honoured, not silently replaced by now."""
+    assert _resolve_dates(None, "2020-01-02", None, 24) == (
+        datetime(2020, 1, 2, tzinfo=UTC),
+        datetime(2020, 1, 3, tzinfo=UTC),
+    )
+
+
+def test_end_with_last_ends_the_lookback() -> None:
+    assert _resolve_dates(None, "2020-01-02", "48h", 24) == (
+        datetime(2020, 1, 1, tzinfo=UTC),
+        datetime(2020, 1, 3, tzinfo=UTC),
+    )

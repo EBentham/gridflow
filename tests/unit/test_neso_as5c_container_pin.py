@@ -28,7 +28,7 @@ from gridflow.connectors.neso_data_portal.captures import newest_by_resource, sc
 from gridflow.connectors.neso_data_portal.registry import load_registry
 from gridflow.silver.neso_data_portal.casting import ExclusionTally, finish_capture, type_child
 from gridflow.silver.neso_data_portal.completion import capture_context
-from gridflow.silver.neso_data_portal.generic import families_of
+from gridflow.silver.neso_data_portal.generic import families_of, resource_of
 from gridflow.silver.neso_data_portal.readers import read_children
 from gridflow.storage.paths import PathBuilder
 
@@ -105,7 +105,7 @@ FAMILIES: dict[str, _Body] = {
 }
 
 
-def digest(family: str) -> dict[str, Any]:
+def digest(family: str, short_base: Path) -> dict[str, Any]:
     """The output digest of ``family`` over its committed container fixture.
 
     Args:
@@ -120,7 +120,7 @@ def digest(family: str) -> dict[str, Any]:
     _package, entry = registry.families[family]
     record = entry.record
     assert record is not None
-    with tempfile.TemporaryDirectory(prefix="p", ignore_cleanup_errors=True) as tmp:
+    with tempfile.TemporaryDirectory(prefix="", dir=short_base) as tmp:
         root = Path(tmp)
         write_capture(
             root,
@@ -146,7 +146,9 @@ def digest(family: str) -> dict[str, Any]:
         (capture,) = newest_by_resource(scan.captures).values()
         children = families_of(capture, body.dir_key, registry)[family]
         ctx = capture_context(capture, record, root)
-        typed = [type_child(t, record, ctx) for t in read_children(ctx.body, record, children)]
+        resource = resource_of(capture, body.dir_key, registry)
+        tables = read_children(ctx.body, record, children, resource=resource)
+        typed = [type_child(t, record, ctx) for t in tables]
         tally = ExclusionTally()
         for child in typed:
             tally.merge(child.tally)
@@ -162,8 +164,8 @@ def digest(family: str) -> dict[str, Any]:
 
 
 @pytest.mark.parametrize("family", sorted(FAMILIES))
-def test_i6_existing_container_output_is_byte_unchanged(family: str) -> None:
+def test_i6_existing_container_output_is_byte_unchanged(family: str, short_base: Path) -> None:
     """Detects any change to an existing container record's silver output (I-6): rows, schema
     and the content hash equal the golden computed on master before AS-5c."""
     golden = json.loads(GOLDEN.read_text(encoding="utf-8"))
-    assert digest(family) == golden[family]
+    assert digest(family, short_base) == golden[family]

@@ -26,10 +26,6 @@ import csv
 import hashlib
 import io
 import json
-import os
-import subprocess
-import sys
-import tempfile
 import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -38,9 +34,16 @@ from typing import TYPE_CHECKING, Any
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    package_doc,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    write_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -60,9 +63,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
+    from collections.abc import Callable
 
 SOURCE = "neso_data_portal"
 METERED = "metered_wind_output_monthly"
@@ -158,21 +159,11 @@ SIDECARS: dict[str, dict[str, str]] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="gh", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(name: str) -> bytes:
@@ -204,17 +195,6 @@ def capture(data: Path, name: str) -> str:
         url_type="upload",
     )
     return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
 
 
 def _bytes_under(root: Path) -> dict[str, str]:
@@ -272,7 +252,7 @@ def test_t_g2h_1_metered_record_shape() -> None:
     header, typed columns (date, int64 1-50, three float64 MW columns), sp_pair on
     (sett_date, sett_period), key (resource_id, sett_date, sett_period), whole-capture
     selection per resource, ``ckan_last_modified`` vintage, no invented null token."""
-    record = _record(METERED)
+    record = record_of(METERED)
     assert (record.reader, record.encoding, len(record.epochs)) == ("csv", "utf-8", 1)
     epoch = record.epochs[0]
     assert list(epoch.header) == METERED_HEADER
@@ -298,7 +278,7 @@ def test_t_g2h_1_boa_record_shape() -> None:
     """Detects the BOA record drifting from P-8: the vendor header, typed columns, sp_pair
     on (date, settlement_period), the value-bearing key C-5 chose, per-resource
     whole-capture selection, no null token (``-1`` stays numeric)."""
-    record = _record(BOA)
+    record = record_of(BOA)
     epoch = record.epochs[0]
     assert list(epoch.header) == BOA_HEADER
     assert [(c.source, c.name, c.dtype, c.nullable) for c in epoch.columns] == [
@@ -335,7 +315,7 @@ def test_t_g2h_2_metered_fixtures_type_with_no_exclusion(data: Path) -> None:
     for capture_id in ids:
         completion = read_completion(data, METERED, capture_id)
         assert completion is not None and completion["rows_excluded"] == 0
-    silver = _silver(data, METERED)
+    silver = silver_frame(data, METERED)
     long_day = silver.filter(pl.col("sett_date") == date(2018, 10, 28))
     short_day = silver.filter(pl.col("sett_date") == date(2026, 3, 29))
     assert sorted(long_day["sett_period"].to_list()) == list(range(1, 51))
@@ -346,7 +326,7 @@ def test_t_g2h_2_metered_fixtures_type_with_no_exclusion(data: Path) -> None:
 def test_t_g2h_3_boa_is_held_on_the_row_grain_question() -> None:
     """Detects the BOA family published without its hold (repeated rows unexplained,
     positive volumes against the definition): unit E-SEM, the P-8 question verbatim."""
-    record = _record(BOA)
+    record = record_of(BOA)
     assert isinstance(record.eligibility, Held)
     assert record.eligibility.unit == "E-SEM"
     assert record.eligibility.question == BOA_QUESTION
@@ -368,7 +348,7 @@ def test_t_g2h_5_metered_total_is_the_sum_of_the_regions(data: Path) -> None:
     for name in ("metered_m01", "metered_m08"):
         capture(data, name)
     get_transformer(SOURCE, METERED, data).run(DAY, run_id="r")
-    silver = _silver(data, METERED)
+    silver = silver_frame(data, METERED)
     gap = (
         silver["scottish_wind_output"] + silver["england_wales_wind_output"] - silver["total"]
     ).abs()
@@ -381,7 +361,7 @@ def test_t_g2h_6_bmu_names_survive_byte_identical(data: Path) -> None:
     """Detects a normalised BM unit id or name (GEN2-3): both columns equal the CSV text."""
     capture(data, "boa_b09")
     get_transformer(SOURCE, BOA, data).run(DAY, run_id="r")
-    silver = _silver(data, BOA)
+    silver = silver_frame(data, BOA)
     source = rows("boa_b09")
     assert sorted(silver["generator_name"].to_list()) == sorted(r["Generator_Name"] for r in source)
     assert sorted(silver["generator_full_name"].to_list()) == sorted(
@@ -395,11 +375,6 @@ def test_t_g2h_6_bmu_names_survive_byte_identical(data: Path) -> None:
 # --------------------------------------------------------------------------- #
 
 
-def _package_doc(filename: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
-    return document
-
-
 def test_a5_metered_latest_keeps_both_resources_on_shared_keys(
     data: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -410,7 +385,7 @@ def test_a5_metered_latest_keeps_both_resources_on_shared_keys(
     install_generated(
         monkeypatch,
         data / "_registry",
-        [_package_doc("monthly-operational-metered-wind-output.json")],
+        [package_doc("monthly-operational-metered-wind-output.json")],
     )
     m01, m08, m09 = (capture(data, n) for n in ("metered_m01", "metered_m08", "metered_m09"))
     get_transformer(SOURCE, METERED, data).run(DAY, run_id="r")
@@ -477,7 +452,7 @@ def test_a6_boa_duplicate_fails_clean_loads_latest_serves_two(data: Path) -> Non
     for capture_id in (b08, b09):
         completion = read_completion(data, BOA, capture_id)
         assert completion is not None and completion["rows_excluded"] == 0
-    silver = _silver(data, BOA)
+    silver = silver_frame(data, BOA)
     assert dup not in set(silver["bronze_capture_id"].to_list())
 
     db = data / "cat.duckdb"
@@ -559,7 +534,7 @@ LEDGER_RESOURCES = {
 }
 
 
-def test_t_g2h_7_the_package_ledger_is_p9() -> None:
+def test_t_g2h_7_the_package_ledger_is_p9(run_fresh: Callable[..., str]) -> None:
     """T-G2H-7: detects the committed ledger drifting from the ruled entries (another
     capture, a wider scope, an edited reason or question) or naming a resource that is not
     the family's M08/M09 or B01/B02/B07 archive; in a fresh interpreter, so nothing
@@ -585,17 +560,8 @@ def test_t_g2h_7_the_package_ledger_is_p9() -> None:
                           "names": names}))
         """
     )
-    result = subprocess.run(
-        [sys.executable, "-c", code],
-        cwd=Path(__file__).resolve().parents[2],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    loaded = json.loads(result.stdout.strip().splitlines()[-1])
+    stdout = run_fresh(code)
+    loaded = json.loads(stdout.strip().splitlines()[-1])
     # later units append their own families' entries (K-IC-1: nsl); this pin owns these two
     mine = [e for e in loaded["entries"] if e["family"] in LEDGER_RESOURCES]
     assert mine == LEDGER

@@ -9,10 +9,7 @@ importing ``gridflow_models``.
 
 from __future__ import annotations
 
-import subprocess
-import sys
-from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from _neso_generic_support import install_generated
@@ -20,6 +17,10 @@ from _neso_registry_support import column, epoch, family, package, record, resou
 
 from gridflow.silver.neso_data_portal.casting import record_columns
 from gridflow.silver.schema_manifest import DESIGNATED_DATE_COLS, get_silver_schema_manifest
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from pathlib import Path
 
 SOURCE = "neso_data_portal"
 PKG = "dddddddd-0000-4000-8000-000000000000"
@@ -114,7 +115,9 @@ def test_t_b9_3_every_designated_date_name_keeps_one_sql_type(generated: Any) ->
         )
 
 
-def test_t_b9_3_the_registry_import_stays_off_the_silver_layer() -> None:
+def test_t_b9_3_the_registry_import_stays_off_the_silver_layer(
+    run_fresh: Callable[..., str],
+) -> None:
     """V-13 reads ``silver.date_columns``; importing the registry must not pull
     ``silver.base`` or the manifest (P-12's relocation)."""
     script = (
@@ -124,12 +127,5 @@ def test_t_b9_3_the_registry_import_stays_off_the_silver_layer() -> None:
         "print(sorted(m for m in ('gridflow.silver.base', 'gridflow.silver.schema_manifest') "
         "if m in sys.modules))\n"
     )
-    result = subprocess.run(
-        [sys.executable, "-c", script],
-        cwd=Path(__file__).resolve().parents[2],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.strip() == "[]"
+    stdout = run_fresh(script)
+    assert stdout.strip() == "[]"

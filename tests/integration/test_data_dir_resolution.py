@@ -82,6 +82,17 @@ def test_absolute_data_dir_passes_through_unchanged(tmp_path: Path) -> None:
     assert pipeline.duckdb_path == abs_duck
 
 
+@pytest.mark.parametrize("field", ["data_dir", "duckdb_path", "log_dir"])
+def test_drive_relative_path_is_refused(field: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """`C:x` has a drive but no root, so it is relative and used to be joined
+    to the project root with no error. An unquoted `C:\\gridflow-data\\x` set
+    in a POSIX shell arrives in exactly this form."""
+    monkeypatch.setenv(f"GRIDFLOW_{field.upper()}", "C:gridflow-x.duckdb")
+
+    with pytest.raises(ValueError, match="drive-relative"):
+        PipelineSettings()
+
+
 def test_load_settings_resolves_yaml_paths_to_project_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

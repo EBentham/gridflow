@@ -17,7 +17,6 @@ from gridflow.silver.registry import list_transformers
 
 class TestParamStyleEnum:
     def test_all_styles_defined(self):
-        assert ParamStyle.SETTLEMENT_DATE.value == "settlement_date"
         assert ParamStyle.SETTLEMENT_DATE_PERIOD.value == "settlement_date_period"
         assert ParamStyle.PUBLISH_DATETIME.value == "publish_datetime"
         assert ParamStyle.DATE_PATH.value == "date_path"

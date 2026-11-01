@@ -3,52 +3,41 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from datetime import UTC, datetime
+from typing import ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeImbalancePrices
-from gridflow.silver.base import BaseSilverTransformer
-from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL, currency_expr
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
+from gridflow.silver.entsoe._enum_maps import count_unmapped, currency_expr, map_enums
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
 
+_ENUMS = {"direction": ("business_type", {"A19": "long", "A20": "short"})}
 
-class ImbalancePricesTransformer(BaseSilverTransformer):
+
+class ImbalancePricesTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E imbalance prices (A85) bronze XML → silver Parquet.
 
     Maps businessType A19→"long", A20→"short" via replace_strict.
-    Deduplicates on (timestamp_utc, area_code, direction).
+    Deduplicates on (timestamp_utc, area_code, business_type).
     """
 
     source = "entsoe"
     dataset = "imbalance_prices"
+    value_tag = "price.amount"
     schema_cls = EntsoeImbalancePrices
+    DATASET_VERSION = "2.0.0"
+    # The raw codes, not their labels: two unknown codes stay two rows (ADR-022).
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
     populated data, PT15M (R3-RESEARCH.md:67); window-bound comparison not
     shown in the abridged vault text, see
-    ``silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION``."""
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        records: list[dict[str, Any]] = []
-        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            records.extend(parse_timeseries_xml(xml_file.read_bytes(), value_tag="price.amount"))
-
-        if not records:
-            return pl.DataFrame()
-
-        return pl.DataFrame(records).with_columns(
-            pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-        )
+    ADR-026 Appendix A."""
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -69,13 +58,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
             }
         ).with_columns(
             [
-                pl.col("business_type")
-                .replace_strict(
-                    {"A19": "long", "A20": "short"},
-                    default=UNMAPPED_SENTINEL,
-                    return_dtype=pl.Utf8,
-                )
-                .alias("direction"),
+                *map_enums(_ENUMS),
                 # ENPRICE-04 (VT4): carry the explicit source currency
                 # (parsed from <currency_Unit.name>) so a GBP price is never
                 # silently trusted as EUR on the strength of the
@@ -97,6 +80,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                 [
                     "timestamp_utc",
                     "area_code",
+                    "business_type",
                     "direction",
                     "price_eur_mwh",
                     "currency",
@@ -104,7 +88,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
                     "published_at",
                 ]
             )
-            .unique(subset=["timestamp_utc", "area_code", "direction"], keep="last")
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "area_code", "direction"])
             .with_columns(
                 [
@@ -118,6 +102,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
         output_cols = [
             "timestamp_utc",
             "area_code",
+            "business_type",
             "direction",
             "price_eur_mwh",
             "currency",
@@ -129,19 +114,7 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)
 
-        self.last_unmapped_count = int(df.filter(pl.col("direction") == UNMAPPED_SENTINEL).height)
-        if self.last_unmapped_count > 0:
-            raw_codes = raw_df.get_column("business_type").unique().to_list()
-            unmapped_codes = sorted(c for c in raw_codes if c not in {"A19", "A20"})
-            logger.warning(
-                "%s/%s: %d unmapped business_type row(s) labelled %r; unmapped raw codes: %s",
-                self.source,
-                self.dataset,
-                self.last_unmapped_count,
-                UNMAPPED_SENTINEL,
-                unmapped_codes,
-            )
-
+        self.last_unmapped_count = count_unmapped(df, raw_df, _ENUMS, dataset=self.dataset)
         return df
 
 

@@ -265,18 +265,27 @@ def test_unavailability_fixture_reaches_silver(tmp_data_dir: Path) -> None:
         "agsi_unavailability_response.json",
     )
 
-    assert {
-        "id",
-        "status",
-        "country",
-        "company",
-        "facility",
-        "event_start",
-        "event_end",
-        "unavailable_capacity",
-        "reason",
-        "info",
-    } <= set(df.columns)
+    # Four vendor records: one repeated verbatim (dropped), and an injection and
+    # a withdrawal notice that differ only in description (both kept).
+    assert len(df) == 3
+    assert df.schema["outage_date"] == pl.Date
+    for column in ("published", "start", "end"):
+        assert df.schema[column] == pl.Datetime("us")
+    for column in ("volume", "injection", "withdrawal"):
+        assert df.schema[column] == pl.Float64
+    assert sorted(df["facility_eic"].to_list()) == [
+        "16ZAS01--------8",
+        "16ZAS01--------8",
+        "21W0000000000702",
+    ]
+    french = df.filter(pl.col("country_code") == "FR").row(0, named=True)
+    assert french["outage_date"] == TARGET_DATE
+    assert french["start"] == datetime(2026, 5, 1, 6, 0)
+    assert french["end"] == datetime(2026, 5, 2, 6, 0)
+    assert french["published"] == datetime(2026, 4, 30, 5, 50, 9)
+    assert french["withdrawal"] == 22.3
+    assert french["facility_name"] == "VGS SEDIANE B (Gournay-sur-Aronde)"
+    assert "facility" not in df.columns
 
 
 def test_unavailability_range_bronze_reaches_each_target_day(tmp_data_dir: Path) -> None:
@@ -294,8 +303,11 @@ def test_unavailability_range_bronze_reaches_each_target_day(tmp_data_dir: Path)
     rows = get_transformer("gie_agsi", "unavailability", tmp_data_dir).run(target_date)
     df = pl.read_parquet(_silver_path(tmp_data_dir, "unavailability", target_date))
 
-    assert rows == 1
-    assert df["id"].to_list() == ["unav-demo-1"]
+    # The French outage ends at 06:00 on 2 May, so it touches that day; the two
+    # Portuguese notices run to 3 May.
+    assert rows == 3
+    assert df["outage_date"].unique().to_list() == [target_date]
+    assert sorted(df["country_code"].to_list()) == ["FR", "PT", "PT"]
 
 
 def test_storage_scope_responses_for_same_day_are_count_preserving(tmp_data_dir: Path) -> None:

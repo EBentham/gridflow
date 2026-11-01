@@ -1,8 +1,26 @@
 name: CI
-on: [push, pull_request]
+on:
+  # Branch pushes run through their pull_request run, so only master runs here.
+  push:
+    branches: [master]
+    # Prose only. docs/ also holds test inputs (the endpoint catalogues,
+    # docs/neso_data_portal/), so it is not ignored whole.
+    # Not on pull_request: its run is the required check and must always start.
+    paths-ignore:
+      - "*.md"
+      - "docs/*.md"
+      - "docs/DECISION_LOG/**"
+      - "docs/audit/**"
+      - "docs/endpoints/**"
+  pull_request:
+  # Weekly run of the slow memory gates, which the PR run and the local gate skip.
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
 
 jobs:
   lint-and-test:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -39,4 +57,22 @@ jobs:
         run: uv run --frozen mypy src/gridflow/
 
       - name: Test
-        run: uv run --frozen pytest tests/ -v --tb=short -x -m "not live"
+        run: uv run --frozen pytest tests/ -v --tb=short -x -m "not live and not slow"
+
+  slow-tests:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install dependencies
+        run: uv sync --frozen --extra dev
+
+      - name: Slow tests
+        run: uv run --frozen pytest tests/ -v --tb=short -m "slow and not live"
