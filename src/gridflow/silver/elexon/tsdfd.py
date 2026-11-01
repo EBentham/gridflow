@@ -10,6 +10,7 @@ import polars as pl
 from gridflow.schemas.elexon import ElexonTSDFD
 from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
+from gridflow.utils.time import settlement_period_to_utc
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,7 @@ class TSDFDTransformer(ElexonTransformer):
     dataset = "tsdfd"
     schema_cls = ElexonTSDFD
     APPEND_ONLY = True
-    DATASET_VERSION = "2.0.0"
+    DATASET_VERSION = "3.0.0"
     ENTITY_KEY_COLUMNS = ("forecast_date", "published_at")  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -50,9 +51,14 @@ class TSDFDTransformer(ElexonTransformer):
             ]
         )
 
-        # Use forecast_date midnight UTC as the timestamp
+        # The forecast date is a UK settlement day: stamp the start of period 1.
         df = df.with_columns(
-            pl.col("forecast_date").cast(pl.Datetime("us", "UTC")).alias("timestamp_utc")
+            pl.col("forecast_date")
+            .map_elements(
+                lambda d: settlement_period_to_utc(d, 1),
+                return_dtype=pl.Datetime("us", "UTC"),
+            )
+            .alias("timestamp_utc")
         )
 
         if "published_at" in df.columns:

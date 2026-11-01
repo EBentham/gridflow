@@ -50,7 +50,7 @@ class FOU2T14DTransformer(ElexonTransformer):
     dataset = "fou2t14d"
     schema_cls = ElexonFOU2T14D
     APPEND_ONLY: ClassVar[bool] = True
-    DATASET_VERSION: ClassVar[str] = "1.0.0"
+    DATASET_VERSION: ClassVar[str] = "2.0.0"
     # D-8: published_at is UNCONDITIONAL here (see the F-06 dedup_cols note
     # below) -- this is the revision-preserving grain, distinct from
     # LATEST_VIEW_SPECS's coarser business key (latest_views.py, no
@@ -103,11 +103,14 @@ class FOU2T14DTransformer(ElexonTransformer):
                 .alias("timestamp_utc")
             )
         else:
-            # Use settlement_date at midnight UTC as timestamp
+            # forecastDate is a UK local day (the payload says Europe/London):
+            # stamp the start of settlement period 1.
             df = df.with_columns(
                 pl.col("settlement_date")
-                .cast(pl.Datetime("us"))
-                .dt.replace_time_zone("UTC")
+                .map_elements(
+                    lambda d: settlement_period_to_utc(d, 1),
+                    return_dtype=pl.Datetime("us", "UTC"),
+                )
                 .alias("timestamp_utc")
             )
 

@@ -189,7 +189,11 @@ class ElexonFrequency(BaseSchema):
 
 
 class ElexonDemandForecast(BaseSchema):
-    """Silver schema: National Demand Forecast (NDF / NDFD)."""
+    """Silver schema: National Demand Forecast (NDF / NDFD).
+
+    NDFD carries only a forecast date, so its rows get settlement_period 1 and
+    timestamp_utc is the start of that UK settlement day.
+    """
 
     settlement_date: date
     settlement_period: int = Field(ge=1, le=50)
@@ -417,7 +421,8 @@ class ElexonINDOD(BaseSchema):
     """Silver schema: Initial National Demand Outturn Daily (INDOD).
 
     Daily aggregate variant of INDO; one row per settlement_date.
-    timestamp_utc is midnight UTC of settlement_date.
+    timestamp_utc is the start of settlement period 1 on settlement_date
+    (00:00 UK local, so 23:00 UTC the day before during BST).
     """
 
     settlement_date: date
@@ -477,8 +482,9 @@ class ElexonIndGen(BaseSchema):
 class ElexonTSDFD(BaseSchema):
     """Silver schema: 2-14 Day Ahead Transmission System Demand Forecast (TSDFD).
 
-    Daily forecast; one row per forecast_date and publication. timestamp_utc is midnight
-    UTC of forecast_date. Unlike most Elexon datasets this one emits
+    Daily forecast; one row per forecast_date and publication. timestamp_utc is the
+    start of settlement period 1 on forecast_date (00:00 UK local, so 23:00 UTC the
+    day before during BST). Unlike most Elexon datasets this one emits
     published_at via the rename map (publishTime → published_at).
     """
 
@@ -628,8 +634,9 @@ class ElexonFOU2T14D(BaseSchema):
     """Silver schema: 2-14 Day Generation Availability by Fuel Type (FOU2T14D).
 
     Forward-looking generation availability. settlement_period may be absent
-    when bronze used `forecastDate` only — timestamp_utc is midnight UTC of
-    settlement_date in that case.
+    when bronze used `forecastDate` only — timestamp_utc is then the start of
+    settlement period 1 on settlement_date (00:00 UK local, so 23:00 UTC the
+    day before during BST).
     """
 
     settlement_date: date
@@ -655,7 +662,8 @@ class ElexonUOU2T14D(BaseSchema):
     Per-unit forward availability. G5-W2.3 made this self-describing —
     fuel_type and national_grid_bm_unit travel with the row instead of
     requiring a bmunits_reference join. settlement_period may be absent
-    when bronze used `forecastDate` only.
+    when bronze used `forecastDate` only; timestamp_utc is then the start of
+    settlement period 1 on settlement_date (00:00 UK local).
     """
 
     settlement_date: date
@@ -747,8 +755,8 @@ class ElexonSOSO(BaseSchema):
     """Silver schema: SO-SO Prices (cross-border interconnector trading).
 
     System Operator-to-System Operator trades. timestamp_utc is derived from
-    settlement_period when present, else from start_time, else midnight of
-    settlement_date.
+    settlement_period when present, else from start_time, else the start of
+    settlement period 1 on settlement_date (00:00 UK local).
     """
 
     settlement_date: date

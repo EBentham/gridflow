@@ -22,7 +22,7 @@ class UOU2T14DTransformer(ElexonTransformer):
     dataset = "uou2t14d"
     schema_cls = ElexonUOU2T14D
     APPEND_ONLY = True
-    DATASET_VERSION = "2.0.0"
+    DATASET_VERSION = "3.0.0"
     ENTITY_KEY_COLUMNS = ("settlement_date", "bm_unit_id", "published_at")  # D-8
     # bm_unit_id is null on about 26,000 rows a day; the National Grid unit,
     # one-to-one with it where both exist, keeps those rows apart.
@@ -99,10 +99,13 @@ class UOU2T14DTransformer(ElexonTransformer):
                 .alias("timestamp_utc")
             )
         else:
+            # A UK settlement day: stamp the start of settlement period 1.
             df = df.with_columns(
                 pl.col("settlement_date")
-                .cast(pl.Datetime("us"))
-                .dt.replace_time_zone("UTC")
+                .map_elements(
+                    lambda d: settlement_period_to_utc(d, 1),
+                    return_dtype=pl.Datetime("us", "UTC"),
+                )
                 .alias("timestamp_utc")
             )
 

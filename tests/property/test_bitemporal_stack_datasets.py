@@ -177,8 +177,10 @@ def test_fou2t14d_silver_has_bitemporal_columns(tmp_data_dir: Path) -> None:
     assert rows > 0
 
     df = _read_silver(tmp_data_dir, "elexon", "fou2t14d")
-    assert FOU2T14DTransformer.DATASET_VERSION == "1.0.0"
-    _assert_bitemporal_columns(df, expected_version="1.0.0")
+    # 2.0.0: a forecastDate-only row is stamped at 00:00 UK local, the start of
+    # settlement period 1, instead of 00:00 UTC; the two differ during BST.
+    assert FOU2T14DTransformer.DATASET_VERSION == "2.0.0"
+    _assert_bitemporal_columns(df, expected_version="2.0.0")
 
 
 def test_bmunits_silver_has_bitemporal_columns(tmp_data_dir: Path) -> None:

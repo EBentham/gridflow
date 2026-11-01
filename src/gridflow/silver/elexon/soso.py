@@ -81,7 +81,12 @@ class SOSOTransformer(ElexonTransformer):
             )
         else:
             df = df.with_columns(
-                pl.col("settlement_date").cast(pl.Datetime("us", "UTC")).alias("timestamp_utc")
+                pl.col("settlement_date")
+                .map_elements(
+                    lambda d: settlement_period_to_utc(d, 1),
+                    return_dtype=pl.Datetime("us", "UTC"),
+                )
+                .alias("timestamp_utc")
             )
 
         for col in ["trade_quantity_mw", "trade_price"]:
