@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import pytest
+    from conftest import IsolatedPaths
 
     from gridflow.pipeline.runner import DatasetResult
 
@@ -88,17 +89,8 @@ def _write_unparseable_sidecar(directory: Path, name: str, payload: dict[str, An
     return body
 
 
-def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Path]:
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "catalogue" / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return data_dir, db_path
-
-
 def _run(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     seed: Any,
@@ -111,7 +103,7 @@ def _run(
     from gridflow.pipeline import runner as pipeline_runner
     from gridflow.storage.duckdb import get_connection, init_catalogue
 
-    data_dir, db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
     seed(data_dir)
 
     settings = load_settings()
@@ -341,7 +333,7 @@ def test_total_exclusion_leaves_a_stale_parquet_untouched_and_writes_nothing(
 
 
 def test_total_exclusion_is_recorded_as_failed_in_pipeline_runs(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths,
 ) -> None:
     """T3-i, exit-code half: `gridflow status` reads pipeline_runs, so the
     signal is structured, not merely logged."""
@@ -349,7 +341,7 @@ def test_total_exclusion_is_recorded_as_failed_in_pipeline_runs(
     from gridflow.pipeline import runner as pipeline_runner
     from gridflow.storage.duckdb import get_connection, init_catalogue
 
-    data_dir, db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
     partition = _partition(data_dir, FLOWS, DAY_1)
     _write_orphan(partition, "raw_a.json", {"operationalData": [_flow("X", DAY_1)]})
 

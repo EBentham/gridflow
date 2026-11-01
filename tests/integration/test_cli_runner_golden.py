@@ -31,6 +31,8 @@ from gridflow.cli import app
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from conftest import IsolatedPaths
+
     from gridflow.connectors.base import RawResponse
 
 runner = CliRunner()
@@ -48,23 +50,6 @@ def _plain(text: str) -> str:
     asserting on message text.
     """
     return _ANSI_RE.sub("", text)
-
-
-def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """Point every GRIDFLOW_* path at the tmpdir and stub gold-view registration.
-
-    Returns the DuckDB catalogue path so a test can read pipeline_runs directly.
-    """
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    monkeypatch.setenv("ELEXON_API_KEY", "test-key")
-    # Gold SQL views reference silver tables absent from a tmpdir; stub out
-    # (mirrors test_cli_transform_refresh.py / test_ingest_watermark.py).
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return db_path
 
 
 def _write_fuelhh_bronze(
@@ -102,6 +87,13 @@ def _write_fuelhh_bronze(
             }
         )
     )
+
+
+@pytest.fixture(autouse=True)
+def _elexon_key(isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every test here runs isolated; elexon resolves its key from ELEXON_API_KEY and
+    the fake connector ignores it."""
+    monkeypatch.setenv("ELEXON_API_KEY", "test-key")
 
 
 class _FakeConnector:
@@ -159,11 +151,11 @@ def _patch_connector(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_ingest_success_empty_fetch(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """An empty-but-successful fetch exits 0 and prints the per-dataset count
     line + the final ``Ingestion complete`` (cli.ingest:201,224)."""
-    _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(
         app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-16"]
     )
@@ -173,11 +165,11 @@ def test_ingest_success_empty_fetch(
 
 
 def test_ingest_failure_exits_1(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """A fetch failure exits 1, prints the per-dataset FAILED line and the
     summary block (cli.ingest:214,220-223)."""
-    _isolated_env(tmp_path, monkeypatch)
     _FakeConnector.raise_on_fetch = True
     result = runner.invoke(
         app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-16"]
@@ -187,22 +179,16 @@ def test_ingest_failure_exits_1(
     assert "Ingestion failed for 1 dataset(s):" in result.output
 
 
-def test_ingest_missing_dataset_bad_parameter(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_ingest_missing_dataset_bad_parameter(isolated_env: IsolatedPaths) -> None:
     """No dataset + no --all -> typer.BadParameter -> exit 2 (cli._resolve_datasets)."""
-    _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(app, ["ingest", "elexon", "--start", "2024-01-15"])
     assert result.exit_code == 2, result.output
     assert "Specify a dataset name or use --all" in _plain(result.output)
 
 
-def test_ingest_naive_datetime_bad_parameter(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_ingest_naive_datetime_bad_parameter(isolated_env: IsolatedPaths) -> None:
     """A naive --start datetime is rejected as a BadParameter -> exit 2
     (cli._parse_window_bound, issue-19)."""
-    _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--start", "2024-01-15T00:00:00"])
     assert result.exit_code == 2, result.output
 
@@ -212,11 +198,10 @@ def test_ingest_naive_datetime_bad_parameter(
 # --------------------------------------------------------------------------- #
 
 
-def test_transform_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_transform_success(isolated_env: IsolatedPaths, tmp_path: Path) -> None:
     """transform of real bronze exits 0, prints the rows line + ``Transform
     complete`` (cli.transform:303,319)."""
     data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
     _write_fuelhh_bronze(data_dir)
     result = runner.invoke(
         app, ["transform", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"]
@@ -228,11 +213,11 @@ def test_transform_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> N
 
 
 def test_transform_fuelhh_fallback_variant_is_counted_and_rendered(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, tmp_path: Path
 ) -> None:
     """The explicit no-start fixture remains retained, warned, and visible."""
     data_dir = tmp_path / "data"
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _write_fuelhh_bronze(data_dir, include_start_time=False)
 
     result = runner.invoke(
@@ -251,10 +236,11 @@ def test_transform_fuelhh_fallback_variant_is_counted_and_rendered(
     assert (status, rows_out, rows_skipped) == ("completed_with_warnings", 5, 5)
 
 
-def test_transform_failure_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_transform_failure_exits_1(
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """A transformer error exits 1 and prints the FAILED line + summary block
     (cli.transform:308,314-318)."""
-    _isolated_env(tmp_path, monkeypatch)
 
     def _boom(source: str, dataset: str, data_dir: Path) -> Any:
         raise RuntimeError("simulated transform failure")
@@ -273,11 +259,12 @@ def test_transform_failure_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 # --------------------------------------------------------------------------- #
 
 
-def test_build_success(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_success(
+    isolated_env: IsolatedPaths, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """build with a fake builder exits 0, prints the rows line + ``Build
     complete`` (cli.build:372,380)."""
     data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
 
     class _FakeBuilder:
         def __init__(self, data_dir: Path) -> None:
@@ -310,10 +297,11 @@ class _BoomBuilder:
         raise RuntimeError("simulated build failure")
 
 
-def test_build_failure_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_failure_exits_1(
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """A builder failure exits 1 without ``Build complete``, so a scheduler or
     shell chain sees the broken gold build (it used to exit 0)."""
-    _isolated_env(tmp_path, monkeypatch)
     monkeypatch.setattr(
         "gridflow.gold.system_marginal_price.SystemMarginalPriceBuilder", _BoomBuilder
     )
@@ -326,18 +314,16 @@ def test_build_failure_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     assert "Build complete" not in result.output
 
 
-def test_build_no_target_bad_parameter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_no_target_bad_parameter(isolated_env: IsolatedPaths) -> None:
     """No gold dataset + no --all -> BadParameter -> exit 2 (cli.build:354)."""
-    _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(app, ["build", "--start", "2026-05-01"])
     assert result.exit_code == 2, result.output
     assert "Specify a gold dataset name or use --all" in _plain(result.output)
 
 
-def test_build_unknown_dataset_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_unknown_dataset_exits_1(isolated_env: IsolatedPaths) -> None:
     """An unknown gold dataset prints the unknown line and exits 1: the runner
     records it as a failed result."""
-    _isolated_env(tmp_path, monkeypatch)
     result = runner.invoke(
         app, ["build", "no_such_gold", "--start", "2026-05-01", "--end", "2026-05-01"]
     )
@@ -352,12 +338,13 @@ def test_build_unknown_dataset_exits_1(tmp_path: Path, monkeypatch: pytest.Monke
 
 
 def test_pipeline_bronze_silver(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    _patch_connector: None,
 ) -> None:
     """pipeline (no --gold) runs bronze then silver and prints both section
     headers, the nested per-stage completion lines, and the final marker."""
     data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
     _write_fuelhh_bronze(data_dir)
     result = runner.invoke(
         app, ["pipeline", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"]
@@ -372,12 +359,14 @@ def test_pipeline_bronze_silver(
 
 
 def test_pipeline_with_gold(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """pipeline --gold runs bronze, silver, and the gold build, printing the gold
     section + ``Build complete`` before the final marker."""
     data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
     _write_fuelhh_bronze(data_dir)
 
     class _FakeBuilder:
@@ -415,7 +404,10 @@ def test_pipeline_with_gold(
 
 
 def test_pipeline_gold_failure_exits_1(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """A failed --gold build after a good bronze and silver exits 1 without
     ``Build complete`` or the completion marker, and still refreshes the views
@@ -423,7 +415,6 @@ def test_pipeline_gold_failure_exits_1(
     from gridflow.pipeline import runner as pipeline_runner
 
     data_dir = tmp_path / "data"
-    _isolated_env(tmp_path, monkeypatch)
     _write_fuelhh_bronze(data_dir)
     monkeypatch.setattr(
         "gridflow.gold.system_marginal_price.SystemMarginalPriceBuilder", _BoomBuilder
@@ -454,12 +445,12 @@ def test_pipeline_gold_failure_exits_1(
 
 
 def test_pipeline_bronze_failure_aborts(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """A bronze failure raises Exit(1) inside the bronze sub-call, so the
     pipeline aborts before silver and never prints the completion marker
     (cli.pipeline delegates to ingest which raises Exit(1))."""
-    _isolated_env(tmp_path, monkeypatch)
     _FakeConnector.raise_on_fetch = True
     result = runner.invoke(
         app, ["pipeline", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"]
@@ -474,12 +465,13 @@ def test_pipeline_bronze_failure_aborts(
 
 
 def test_backfill_multi_chunk(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """backfill over 3 days at chunk-days=1 runs 3 chunks per dataset, prints the
     per-chunk lines + the per-dataset chunk count + the final marker
     (cli.backfill:409,415,448,450). transform is stubbed (no real bronze)."""
-    _isolated_env(tmp_path, monkeypatch)
     monkeypatch.setattr("gridflow.cli.transform", lambda **kwargs: None)
     result = runner.invoke(
         app,
@@ -504,11 +496,11 @@ def test_backfill_multi_chunk(
 
 
 def test_backfill_ingest_failure_exits_1(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """R3-F03: a failed chunk INGEST makes backfill exit 1 with a failure echo,
     not "Backfill complete" / exit 0 (cli.backfill collects run_ingest results)."""
-    _isolated_env(tmp_path, monkeypatch)
     _FakeConnector.raise_on_fetch = True
     result = runner.invoke(
         app,
@@ -521,13 +513,13 @@ def test_backfill_ingest_failure_exits_1(
 
 
 def test_backfill_transform_failure_exits_1(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """R3-F03 (Sol #4): a failed chunk TRANSFORM (ingest OK) also makes backfill
     exit 1 — an impl that only collected the ingest result would wrongly exit 0."""
     from gridflow.pipeline.runner import DatasetResult
-
-    _isolated_env(tmp_path, monkeypatch)
 
     def _failing_transform(*_args: Any, **_kwargs: Any) -> list[DatasetResult]:
         return [
@@ -552,12 +544,15 @@ def test_backfill_transform_failure_exits_1(
 
 
 def test_backfill_chunk_ingest_does_not_write_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """Backfill chunk-ingests run with write_watermark=False, so a backfill over a
     range whose chunks end after an existing forward watermark never advances it
     (C3-11). transform stubbed."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     from gridflow.observability import update_watermark
     from gridflow.storage.duckdb import init_catalogue
 
@@ -603,7 +598,8 @@ def test_backfill_chunk_ingest_does_not_write_watermark(
 
 
 def test_run_backfill_multi_chunk_real_duckdb(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """run_backfill walks multiple chunks on ONE shared connection writing to a
     real temp DuckDB (Windows connection-reuse-across-chunks risk).
@@ -614,7 +610,7 @@ def test_run_backfill_multi_chunk_real_duckdb(
     from gridflow.config.settings import load_settings
     from gridflow.pipeline import runner
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     settings = load_settings()
 
     start_dt = datetime(2024, 1, 15, tzinfo=UTC)
@@ -635,7 +631,9 @@ def test_run_backfill_multi_chunk_real_duckdb(
 
 
 def test_run_backfill_chunk_ingest_does_not_advance_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    _patch_connector: None,
 ) -> None:
     """run_backfill's chunk ingests use write_watermark=False, so a forward
     watermark inside the range is never advanced (C3-11)."""
@@ -644,7 +642,7 @@ def test_run_backfill_chunk_ingest_does_not_advance_watermark(
     from gridflow.pipeline import runner
     from gridflow.storage.duckdb import init_catalogue
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     init_catalogue(db_path, tmp_path / "data")
     existing = datetime(2024, 1, 16, tzinfo=UTC)
     seed = duckdb.connect(str(db_path))

@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import textwrap
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -114,6 +115,34 @@ def tmp_data_dir(tmp_path: Path) -> Path:
     for layer in ["bronze", "silver", "gold"]:
         (tmp_path / layer).mkdir()
     return tmp_path
+
+
+@dataclass(frozen=True)
+class IsolatedPaths:
+    """The data, catalogue and log locations :func:`isolated_env` points gridflow at."""
+
+    data_dir: Path
+    duckdb_path: Path
+    log_dir: Path
+
+
+@pytest.fixture
+def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IsolatedPaths:
+    """Point every ``GRIDFLOW_*`` path under ``tmp_path``, with the gold views off.
+
+    The gold SQL views read silver relations an empty data dir lacks, so in
+    strict mode they would fail ``init_catalogue``.
+    """
+    paths = IsolatedPaths(
+        data_dir=tmp_path / "data",
+        duckdb_path=tmp_path / "catalogue" / "gridflow.duckdb",
+        log_dir=tmp_path / "logs",
+    )
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(paths.data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(paths.duckdb_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(paths.log_dir))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    return paths
 
 
 def _run_fresh(code: str) -> str:
