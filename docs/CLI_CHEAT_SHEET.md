@@ -156,7 +156,12 @@ gridflow pipeline elexon --all --last 7d
 ```bash
 gridflow backfill elexon system_prices --start 2024-01-01 --end 2024-12-31
 gridflow backfill elexon --all --start 2024-01-01 --end 2024-12-31 --chunk-days 3
+gridflow backfill --preset tour                # what the notebooks read, last 7 days
+gridflow backfill --preset my-preset.yaml      # your own datasets and window
 ```
+
+A preset skips each source whose API key is unset. Its format is in
+[QUICKSTART.md](QUICKSTART.md#4-first-ingest-presets).
 
 ### `gridflow export-csv` — Export Silver to CSV
 
