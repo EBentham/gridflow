@@ -1960,6 +1960,35 @@ class TestDateOnlyTimestampConvention:
         assert ts == expected == settlement_period_to_utc(date.fromisoformat(day), 1)
 
 
+def test_soso_end_time_without_zone_is_kept_as_text():
+    """SOSO sends ``endTime`` with no zone marker, while ``startTime`` ends in Z.
+
+    The vendor documents no zone for it, so the text is kept as sent and the
+    parsed column is filled only when a value carries its zone. Before, the
+    text was dropped and every unzoned value became null.
+    """
+    base = {"settlementDate": "2026-09-15", "tradeDirection": "Bid"}
+    raw = pl.DataFrame(
+        [
+            {
+                **base,
+                "contractIdentification": "NG_1",
+                "startTime": "2026-09-15T22:00:00Z",
+                "endTime": "2026-09-15T23:00:00",
+            },
+            {
+                **base,
+                "contractIdentification": "NG_2",
+                "startTime": "2026-09-15T23:00:00Z",
+                "endTime": "2026-09-16T00:00:00Z",
+            },
+        ]
+    )
+    result = _make_transformer(SOSOTransformer).transform(raw).sort("contract_identification")
+
+    assert result["end_time_raw"].to_list() == ["2026-09-15T23:00:00", "2026-09-16T00:00:00Z"]
+    assert result["end_time"].to_list() == [None, datetime(2026, 9, 16, 0, 0, tzinfo=UTC)]
+
 
 # ---------------------------------------------------------------------------
 # Gold day_of_week convention

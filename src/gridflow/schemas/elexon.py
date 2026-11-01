@@ -756,7 +756,9 @@ class ElexonSOSO(BaseSchema):
 
     System Operator-to-System Operator trades. timestamp_utc is derived from
     settlement_period when present, else from start_time, else the start of
-    settlement period 1 on settlement_date (00:00 UK local).
+    settlement period 1 on settlement_date (00:00 UK local). The vendor sends
+    endTime without a zone marker and documents none: end_time_raw keeps the
+    text as sent, and end_time is null unless the value carries its zone.
     """
 
     settlement_date: date
@@ -772,6 +774,7 @@ class ElexonSOSO(BaseSchema):
     trader_unit: str | None = None
     start_time: datetime | None = None
     end_time: datetime | None = None
+    end_time_raw: str | None = None
     published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None

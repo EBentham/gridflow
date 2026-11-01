@@ -22,7 +22,7 @@ class SOSOTransformer(ElexonTransformer):
     dataset = "soso"
     schema_cls = ElexonSOSO
     ENTITY_KEY_COLUMNS = ("settlement_date", "contract_identification")  # D-8
-    DATASET_VERSION = "2.0.0"
+    DATASET_VERSION = "2.1.0"
     OPTIONAL_ENTITY_KEY_COLUMNS = ("trade_direction", "trader_unit")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -93,6 +93,12 @@ class SOSOTransformer(ElexonTransformer):
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
 
+        # endTime arrives without a zone marker and the vendor documents none, so
+        # the text is kept as sent. end_time below is filled only when a value
+        # carries its zone; an unzoned value stays null rather than guessed.
+        if "end_time" in df.columns:
+            df = df.with_columns(pl.col("end_time").cast(pl.Utf8).alias("end_time_raw"))
+
         for col in ["end_time", "start_time"]:
             if col in df.columns:
                 df = df.with_columns(
@@ -140,6 +146,7 @@ class SOSOTransformer(ElexonTransformer):
             "trader_unit",
             "start_time",
             "end_time",
+            "end_time_raw",
             "published_at",
             "data_provider",
             "ingested_at",
