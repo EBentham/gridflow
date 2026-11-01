@@ -168,6 +168,24 @@ def test_all_null_segment_times_still_transform(cls: type[BaseSilverTransformer]
     assert out.schema["time_from"] == pl.Datetime("us", "UTC")
 
 
+def test_pn_keeps_units_known_only_by_national_grid_id() -> None:
+    """Real PN bodies carry rows with a null bmUnit and a distinct
+    nationalGridBmUnit (46 per body on 2026-09-22); keyed on bmUnit alone they
+    collapsed into one row per period and segment."""
+    raw = pl.DataFrame(
+        [
+            {**_pn_row("2026-09-14T23:00:00Z", 1.0), "bmUnit": None, "nationalGridBmUnit": ng}
+            for ng in ("NG-A", "NG-B")
+        ]
+    )
+    transformer = _bare(PNTransformer)
+
+    out = transformer.transform(raw)
+
+    assert sorted(out["national_grid_bm_unit"].to_list()) == ["NG-A", "NG-B"]
+    assert transformer.last_excluded_row_count == 0
+
+
 def _ngc_rows(value_field: str) -> list[dict[str, object]]:
     base = {
         "publishTime": "2026-09-15T23:47:00Z",

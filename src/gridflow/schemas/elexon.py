@@ -239,7 +239,8 @@ class ElexonPN(BaseSchema):
     settlement_date: date
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
-    bm_unit_id: str
+    bm_unit_id: str | None = None
+    national_grid_bm_unit: str | None = None
     time_from: datetime | None = None
     time_to: datetime | None = None
     level_from: float | None = None

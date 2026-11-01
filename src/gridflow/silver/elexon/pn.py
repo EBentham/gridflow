@@ -23,7 +23,8 @@ class PNTransformer(ElexonTransformer):
     schema_cls = ElexonPN
     DATASET_VERSION = "2.0.0"
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
-    OPTIONAL_ENTITY_KEY_COLUMNS = ("time_from",)
+    # Some units carry only a National Grid id (bmUnit null), as in UOU2T14D.
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("time_from", "national_grid_bm_unit")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -33,6 +34,7 @@ class PNTransformer(ElexonTransformer):
             "settlementDate": "settlement_date",
             "settlementPeriod": "settlement_period",
             "bmUnit": "bm_unit_id",
+            "nationalGridBmUnit": "national_grid_bm_unit",
             "levelFrom": "level_from",
             "levelTo": "level_to",
             "timeFrom": "time_from",
@@ -59,6 +61,8 @@ class PNTransformer(ElexonTransformer):
         for col in ["level_from", "level_to"]:
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
+        if "national_grid_bm_unit" in df.columns:
+            df = df.with_columns(pl.col("national_grid_bm_unit").cast(pl.Utf8))
 
         # A unit-period carries one row per segment (a ramp in PN, an
         # acceptance's steps in BOAL); time_from tells them apart. An all-null
@@ -93,6 +97,7 @@ class PNTransformer(ElexonTransformer):
             "settlement_period",
             "timestamp_utc",
             "bm_unit_id",
+            "national_grid_bm_unit",
             "time_from",
             "time_to",
             "level_from",

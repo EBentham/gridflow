@@ -98,7 +98,7 @@
   },
   "elexon/pn": {
     "required": ["settlement_date", "settlement_period", "bm_unit_id"],
-    "optional": ["time_from"]
+    "optional": ["time_from", "national_grid_bm_unit"]
   },
   "elexon/remit": {
     "required": ["mrid"],
