@@ -1,11 +1,8 @@
 {
-  "dwa": {
+  "csv_per_file": {
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -18,23 +15,28 @@
       "last_unmapped_count": 0,
       "last_unvouched_bronze": [
         [
-          "bronze/neso_data_portal/daily_wind_availability/2026/08/16/raw_20260816T200000Z_cccc.csv",
+          "bronze/test_per_file/csv_bodies/2026/08/16/raw_declined.csv",
           "UNUSABLE_PROVENANCE"
+        ],
+        [
+          "bronze/test_per_file/csv_bodies/2026/08/16/raw_nostamp.csv",
+          "NO_TIMESTAMP_KEY"
+        ],
+        [
+          "bronze/test_per_file/csv_bodies/2026/08/16/raw_orphan.csv",
+          "NO_SIDECAR"
         ]
       ],
       "last_unvouched_total_exclusion": false,
       "last_validation_failure_count": 0
     },
-    "returned": 12,
+    "returned": 18,
     "silver": {
-      "silver/neso_data_portal/daily_wind_availability/year=2026/month=08/daily_wind_availability_20260816_run2026-08-16T09-00-00-00-00.parquet": {
+      "silver/test_per_file/csv_bodies/csv_bodies_20260816.csv": {
         "columns": [
-          "bmu_id",
-          "availability_date",
-          "availability_mw",
-          "timestamp_utc",
-          "published_at",
-          "data_provider",
+          "BMU_ID",
+          "Date",
+          "MW",
           "event_time",
           "available_at",
           "source_run_id",
@@ -42,81 +44,156 @@
         ],
         "rows": [
           {
-            "availability_date": "2026-01-15",
-            "availability_mw": 110.75,
-            "available_at": "2026-08-16T08:55:00.000001+00:00",
-            "bmu_id": "ABRTW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-08-16",
+            "MW": "120.5",
+            "available_at": "2026-08-16T09:00:00.000000+0000",
             "dataset_version": "1.0.0",
-            "event_time": "2026-01-15T00:00:00+00:00",
-            "published_at": "2026-08-16T08:55:00.000001+00:00",
-            "timestamp_utc": "2026-01-15T00:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00.000000+0000"
           },
           {
-            "availability_date": "2026-01-15",
-            "availability_mw": 87.5,
-            "available_at": "2026-08-16T08:55:00.000001+00:00",
-            "bmu_id": "AFTOW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ACHLW-1",
+            "Date": "2026-08-16",
+            "MW": "98.0",
+            "available_at": "2026-08-16T09:00:00.000000+0000",
             "dataset_version": "1.0.0",
-            "event_time": "2026-01-15T00:00:00+00:00",
-            "published_at": "2026-08-16T08:55:00.000001+00:00",
-            "timestamp_utc": "2026-01-15T00:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00.000000+0000"
           },
           {
-            "availability_date": "2026-08-16",
-            "availability_mw": 120.5,
-            "available_at": "2026-08-16T08:55:00.000001+00:00",
-            "bmu_id": "ABRTW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ACHRW-1",
+            "Date": "2026-08-16",
+            "MW": "45.25",
+            "available_at": "2026-08-16T09:00:00.000000+0000",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-15T23:00:00+00:00",
-            "published_at": "2026-08-16T08:55:00.000001+00:00",
-            "timestamp_utc": "2026-08-15T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00.000000+0000"
           },
           {
-            "availability_date": "2026-08-16",
-            "availability_mw": 98.0,
-            "available_at": "2026-08-16T08:55:00.000001+00:00",
-            "bmu_id": "ACHLW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ACHYW-1",
+            "Date": "2026-08-17",
+            "MW": "61.0",
+            "available_at": "2026-08-16T09:00:00.000000+0000",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-15T23:00:00+00:00",
-            "published_at": "2026-08-16T08:55:00.000001+00:00",
-            "timestamp_utc": "2026-08-15T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00.000000+0000"
           },
           {
-            "availability_date": "2026-08-16",
-            "availability_mw": 45.25,
-            "available_at": "2026-08-16T08:55:00.000001+00:00",
-            "bmu_id": "ACHRW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-01-15",
+            "MW": "110.75",
+            "available_at": "2026-08-16T09:00:00.000000+0000",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-15T23:00:00+00:00",
-            "published_at": "2026-08-16T08:55:00.000001+00:00",
-            "timestamp_utc": "2026-08-15T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00.000000+0000"
           },
           {
-            "availability_date": "2026-08-17",
-            "availability_mw": 61.0,
-            "available_at": "2026-08-16T08:55:00.000001+00:00",
-            "bmu_id": "ACHYW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "AFTOW-1",
+            "Date": "2026-01-15",
+            "MW": "87.5",
+            "available_at": "2026-08-16T09:00:00.000000+0000",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-16T23:00:00+00:00",
-            "published_at": "2026-08-16T08:55:00.000001+00:00",
-            "timestamp_utc": "2026-08-16T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-08-16",
+            "MW": "121.5",
+            "available_at": "2026-08-16T18:30:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ACHLW-1",
+            "Date": "2026-08-16",
+            "MW": "98.0",
+            "available_at": "2026-08-16T18:30:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ACHRW-1",
+            "Date": "2026-08-16",
+            "MW": "45.25",
+            "available_at": "2026-08-16T18:30:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ACHYW-1",
+            "Date": "2026-08-17",
+            "MW": "61.0",
+            "available_at": "2026-08-16T18:30:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-01-15",
+            "MW": "110.75",
+            "available_at": "2026-08-16T18:30:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "AFTOW-1",
+            "Date": "2026-01-15",
+            "MW": "87.5",
+            "available_at": "2026-08-16T18:30:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-08-16",
+            "MW": "120.5",
+            "available_at": "2026-08-16T20:00:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ACHLW-1",
+            "Date": "2026-08-16",
+            "MW": "98.0",
+            "available_at": "2026-08-16T20:00:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ACHRW-1",
+            "Date": "2026-08-16",
+            "MW": "45.25",
+            "available_at": "2026-08-16T20:00:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ACHYW-1",
+            "Date": "2026-08-17",
+            "MW": "61.0",
+            "available_at": "2026-08-16T20:00:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-01-15",
+            "MW": "110.75",
+            "available_at": "2026-08-16T20:00:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
+          },
+          {
+            "BMU_ID": "AFTOW-1",
+            "Date": "2026-01-15",
+            "MW": "87.5",
+            "available_at": "2026-08-16T20:00:00.000000+0000",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00.000000+0000"
           }
         ]
       },
-      "silver/neso_data_portal/daily_wind_availability/year=2026/month=08/daily_wind_availability_20260816_run2026-08-16T18-30-00-00-00.parquet": {
+      "silver/test_per_file/csv_bodies/year=2026/month=08/csv_bodies_20260816_run2026-08-16T09-00-00-00-00.parquet": {
         "columns": [
-          "bmu_id",
-          "availability_date",
-          "availability_mw",
-          "timestamp_utc",
-          "published_at",
-          "data_provider",
+          "BMU_ID",
+          "Date",
+          "MW",
           "event_time",
           "available_at",
           "source_run_id",
@@ -124,70 +201,174 @@
         ],
         "rows": [
           {
-            "availability_date": "2026-01-15",
-            "availability_mw": 110.75,
-            "available_at": "2026-08-16T18:20:00.000001+00:00",
-            "bmu_id": "ABRTW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-08-16",
+            "MW": 120.5,
+            "available_at": "2026-08-16T09:00:00+00:00",
             "dataset_version": "1.0.0",
-            "event_time": "2026-01-15T00:00:00+00:00",
-            "published_at": "2026-08-16T18:20:00.000001+00:00",
-            "timestamp_utc": "2026-01-15T00:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00+00:00"
           },
           {
-            "availability_date": "2026-01-15",
-            "availability_mw": 87.5,
-            "available_at": "2026-08-16T18:20:00.000001+00:00",
-            "bmu_id": "AFTOW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ACHLW-1",
+            "Date": "2026-08-16",
+            "MW": 98.0,
+            "available_at": "2026-08-16T09:00:00+00:00",
             "dataset_version": "1.0.0",
-            "event_time": "2026-01-15T00:00:00+00:00",
-            "published_at": "2026-08-16T18:20:00.000001+00:00",
-            "timestamp_utc": "2026-01-15T00:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00+00:00"
           },
           {
-            "availability_date": "2026-08-16",
-            "availability_mw": 121.5,
-            "available_at": "2026-08-16T18:20:00.000001+00:00",
-            "bmu_id": "ABRTW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ACHRW-1",
+            "Date": "2026-08-16",
+            "MW": 45.25,
+            "available_at": "2026-08-16T09:00:00+00:00",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-15T23:00:00+00:00",
-            "published_at": "2026-08-16T18:20:00.000001+00:00",
-            "timestamp_utc": "2026-08-15T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00+00:00"
           },
           {
-            "availability_date": "2026-08-16",
-            "availability_mw": 98.0,
-            "available_at": "2026-08-16T18:20:00.000001+00:00",
-            "bmu_id": "ACHLW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ACHYW-1",
+            "Date": "2026-08-17",
+            "MW": 61.0,
+            "available_at": "2026-08-16T09:00:00+00:00",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-15T23:00:00+00:00",
-            "published_at": "2026-08-16T18:20:00.000001+00:00",
-            "timestamp_utc": "2026-08-15T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00+00:00"
           },
           {
-            "availability_date": "2026-08-16",
-            "availability_mw": 45.25,
-            "available_at": "2026-08-16T18:20:00.000001+00:00",
-            "bmu_id": "ACHRW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-01-15",
+            "MW": 110.75,
+            "available_at": "2026-08-16T09:00:00+00:00",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-15T23:00:00+00:00",
-            "published_at": "2026-08-16T18:20:00.000001+00:00",
-            "timestamp_utc": "2026-08-15T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00+00:00"
           },
           {
-            "availability_date": "2026-08-17",
-            "availability_mw": 61.0,
-            "available_at": "2026-08-16T18:20:00.000001+00:00",
-            "bmu_id": "ACHYW-1",
-            "data_provider": "neso_data_portal",
+            "BMU_ID": "AFTOW-1",
+            "Date": "2026-01-15",
+            "MW": 87.5,
+            "available_at": "2026-08-16T09:00:00+00:00",
             "dataset_version": "1.0.0",
-            "event_time": "2026-08-16T23:00:00+00:00",
-            "published_at": "2026-08-16T18:20:00.000001+00:00",
-            "timestamp_utc": "2026-08-16T23:00:00+00:00"
+            "event_time": "2026-08-16T00:00:00+00:00"
+          }
+        ]
+      },
+      "silver/test_per_file/csv_bodies/year=2026/month=08/csv_bodies_20260816_run2026-08-16T18-30-00-00-00.parquet": {
+        "columns": [
+          "BMU_ID",
+          "Date",
+          "MW",
+          "event_time",
+          "available_at",
+          "source_run_id",
+          "dataset_version"
+        ],
+        "rows": [
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-08-16",
+            "MW": 121.5,
+            "available_at": "2026-08-16T18:30:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ACHLW-1",
+            "Date": "2026-08-16",
+            "MW": 98.0,
+            "available_at": "2026-08-16T18:30:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ACHRW-1",
+            "Date": "2026-08-16",
+            "MW": 45.25,
+            "available_at": "2026-08-16T18:30:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ACHYW-1",
+            "Date": "2026-08-17",
+            "MW": 61.0,
+            "available_at": "2026-08-16T18:30:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-01-15",
+            "MW": 110.75,
+            "available_at": "2026-08-16T18:30:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "AFTOW-1",
+            "Date": "2026-01-15",
+            "MW": 87.5,
+            "available_at": "2026-08-16T18:30:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          }
+        ]
+      },
+      "silver/test_per_file/csv_bodies/year=2026/month=08/csv_bodies_20260816_run2026-08-16T20-00-00-00-00.parquet": {
+        "columns": [
+          "BMU_ID",
+          "Date",
+          "MW",
+          "event_time",
+          "available_at",
+          "source_run_id",
+          "dataset_version"
+        ],
+        "rows": [
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-08-16",
+            "MW": 120.5,
+            "available_at": "2026-08-16T20:00:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ACHLW-1",
+            "Date": "2026-08-16",
+            "MW": 98.0,
+            "available_at": "2026-08-16T20:00:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ACHRW-1",
+            "Date": "2026-08-16",
+            "MW": 45.25,
+            "available_at": "2026-08-16T20:00:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ACHYW-1",
+            "Date": "2026-08-17",
+            "MW": 61.0,
+            "available_at": "2026-08-16T20:00:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "ABRTW-1",
+            "Date": "2026-01-15",
+            "MW": 110.75,
+            "available_at": "2026-08-16T20:00:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
+          },
+          {
+            "BMU_ID": "AFTOW-1",
+            "Date": "2026-01-15",
+            "MW": 87.5,
+            "available_at": "2026-08-16T20:00:00+00:00",
+            "dataset_version": "1.0.0",
+            "event_time": "2026-08-16T00:00:00+00:00"
           }
         ]
       }
@@ -197,9 +378,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -233,9 +411,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -538,9 +713,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -562,9 +734,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,

@@ -1,5 +1,5 @@
 """T3-f (D-18.1/P3-5/P3-8): AST coverage registry for every ``RawResponse(``
-construction site under ``src/gridflow/connectors``.
+and ``RawResponse.from_httpx(`` construction site under ``src/gridflow/connectors``.
 
 Each site is classified STAMPED / POST_STAMPED / EXEMPT (D-18.1). The
 pinned counts are the anti-drift invariant this module exists for: a new
@@ -35,10 +35,7 @@ class _RegistryEntry:
 # Seed per §3.4 of the R2-C plan (audited reasons -- each says WHY the count
 # is unavailable at that site).
 REGISTRY: dict[str, _RegistryEntry] = {
-    "elexon/client.py:_fetch_date": _RegistryEntry("STAMPED", 1),
-    "elexon/client.py:_fetch_date_period": _RegistryEntry("STAMPED", 1),
-    "elexon/client.py:_fetch_date_path": _RegistryEntry("STAMPED", 1),
-    "elexon/client.py:_fetch_datetime_range": _RegistryEntry("STAMPED", 1),
+    "elexon/client.py:_fetch_pages": _RegistryEntry("STAMPED", 1),
     "elexon/client.py:_fetch_single": _RegistryEntry(
         "EXEMPT",
         1,
@@ -67,14 +64,6 @@ REGISTRY: dict[str, _RegistryEntry] = {
         1,
         reason="module parsers run on other paths; no parse at this construction site",
     ),
-    "neso_data_portal/client.py:fetch": _RegistryEntry(
-        "EXEMPT",
-        1,
-        reason=(
-            "CSV body is handed to bronze unparsed; the D-36 admission parse is "
-            "discarded and is not a row count of record"
-        ),
-    ),
     "neso_data_portal/client.py:_capture_member": _RegistryEntry(
         "EXEMPT",
         1,
@@ -102,6 +91,10 @@ REGISTRY: dict[str, _RegistryEntry] = {
         ),
     ),
 }
+
+
+# A construction is a direct ``RawResponse(...)`` or ``RawResponse.from_httpx(...)``.
+_CONSTRUCTORS = frozenset({"RawResponse", "from_httpx"})
 
 
 def _relpath(path: Path) -> str:
@@ -145,7 +138,7 @@ class _ModuleWalker(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
         enclosing = self._stack[-1] if self._stack else "<module>"
         name = _callee_name(node.func)
-        if name == "RawResponse":
+        if name in _CONSTRUCTORS:
             self.constructions.append((enclosing, node))
         if name is not None and name in self._watched_callees:
             self.calls.append(enclosing)
@@ -333,22 +326,22 @@ class TestElexonParseOnceHelpers:
             return _FakeRaw()
 
         connector = ElexonConnector(config)
-        real_request = client_module.ElexonConnector._request
+        real_get = client_module.ElexonConnector._get
         try:
             client_module.parse_json_response = _counting_parse
-            client_module.ElexonConnector._request = _fake_request  # type: ignore[method-assign]
+            client_module.ElexonConnector._get = _fake_request  # type: ignore[method-assign,assignment]
             responses = asyncio.run(
                 connector._fetch_date_period(
-                    "pn", endpoint, __import__("datetime").date(2024, 1, 15), max_periods=1
+                    "pn", endpoint, __import__("datetime").date(2024, 1, 15)
                 )
             )
         finally:
             client_module.parse_json_response = real_parse
-            client_module.ElexonConnector._request = real_request  # type: ignore[method-assign]
+            client_module.ElexonConnector._get = real_get  # type: ignore[method-assign]
 
-        assert len(responses) == 1
-        assert responses[0].record_count == 1
-        assert call_count[0] == 1, (
+        assert len(responses) == 48
+        assert all(response.record_count == 1 for response in responses)
+        assert call_count[0] == len(responses), (
             f"expected exactly one parse_json_response call per HTTP response, got {call_count[0]}"
         )
 
@@ -361,6 +354,18 @@ class TestEntsoeParseOnceHelpers:
 
         xml = b'<root xmlns="urn:x"><TimeSeries/><TimeSeries/></root>'
         assert count_timeseries_or_none(xml) == 2
+
+    def test_counts_reservebid_series_elements(self) -> None:
+        """A37 replies name their series Bid_TimeSeries; counting only
+        TimeSeries stamped every bids page 0 and stopped the pager at page one."""
+        from gridflow.connectors.entsoe.client import count_timeseries_or_none
+
+        xml = (
+            b'<ReserveBid_MarketDocument xmlns="urn:x">'
+            b"<Bid_TimeSeries/><Bid_TimeSeries/><Bid_TimeSeries/>"
+            b"</ReserveBid_MarketDocument>"
+        )
+        assert count_timeseries_or_none(xml) == 3
 
     def test_is_zero_for_a_valid_empty_document(self) -> None:
         from gridflow.connectors.entsoe.client import count_timeseries_or_none

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 import httpx
 import pytest
 import respx
+from _neso_capture_support import record_sends, unsent
 from _neso_registry_support import (
     edit_sidecar,
     family,
@@ -35,7 +36,6 @@ from gridflow.connectors.base import MemberCaptureConnector, MemberEvent
 from gridflow.connectors.neso_data_portal import client as client_module
 from gridflow.connectors.neso_data_portal import pacer as pacer_module
 from gridflow.connectors.neso_data_portal.client import (
-    _VALIDATED_MARKER,
     NesoDataPortalConnector,
     NesoEmptyResourceError,
     NesoResourceSelectionError,
@@ -755,24 +755,6 @@ class TestEmptyCapture:
         assert "NesoEmptyResourceError" in events[-1].detail
         assert paths == []
 
-    def test_legacy_header_only_still_raises_through_fetch(self, router: respx.MockRouter) -> None:
-        payload = json.loads((FIXTURES / "package_show_daily_wind_availability.json").read_text())
-        url = payload["result"]["resources"][0]["url"]
-        router.get(url__startswith=f"{BASE_URL}/api/3/action/package_show").mock(
-            return_value=httpx.Response(200, json=payload)
-        )
-        router.get(url__startswith=url).mock(
-            return_value=httpx.Response(200, content=b"BMU_ID,Date,MW\n")
-        )
-        start, end = _window()
-
-        async def _run() -> None:
-            async with NesoDataPortalConnector(_config("daily_wind_availability")) as connector:
-                await connector.fetch("daily_wind_availability", start, end)
-
-        with pytest.raises(NesoEmptyResourceError):
-            asyncio.run(_run())
-
     def test_legacy_header_only_through_the_member_path_fails_with_the_same_error(
         self, router: respx.MockRouter, data_dir: Path
     ) -> None:
@@ -875,15 +857,15 @@ _LEGACY = [
 ]
 
 
-class TestLegacyByteEquivalence:
-    """M-8 (A10): the member path reproduces master's fetch() for the legacy keys."""
+class TestLegacyMemberCapture:
+    """M-8 (A10): each legacy key's capture keeps the shape fetch() wrote before the member
+    path replaced it: three sends, the redirector as ``request_url``, the D-12 provenance."""
 
     @pytest.mark.parametrize(("dataset", "payload_file", "body_file"), _LEGACY)
-    def test_member_path_equals_fetch(
+    def test_a_legacy_key_is_captured_with_its_d12_provenance(
         self,
         router: respx.MockRouter,
         data_dir: Path,
-        tmp_path_factory: pytest.TempPathFactory,
         dataset: str,
         payload_file: str,
         body_file: str,
@@ -906,42 +888,20 @@ class TestLegacyByteEquivalence:
             return httpx.Response(404)
 
         router.route(url__regex=r".*").mock(side_effect=_handler)
-        start, end = _window()
 
-        async def _fetch() -> Any:
-            async with NesoDataPortalConnector(_config(dataset)) as connector:
-                return await connector.fetch(dataset, start, end)
-
-        (legacy_response,) = asyncio.run(_fetch())
-        legacy_dir = tmp_path_factory.mktemp("legacy")
-        legacy_path = BronzeWriter(legacy_dir).write(legacy_response)
-        legacy_requests = [(c.request.method, str(c.request.url)) for c in router.calls]
-        seen = len(router.calls)
-
-        events, (member_path,) = _consume(data_dir, dataset)
-        member_requests = [(c.request.method, str(c.request.url)) for c in router.calls][seen:]
+        events, (path,) = _consume(data_dir, dataset)
+        urls = [str(call.request.url) for call in router.calls]
 
         assert [e.outcome for e in events] == ["captured"]
-        assert member_requests == legacy_requests
-        assert member_path.read_bytes() == legacy_path.read_bytes() == body
-        legacy_meta, member_meta = _meta(legacy_path), _meta(member_path)
-        assert list(member_meta) == list(legacy_meta)
-        for key in (
-            "source",
-            "dataset",
-            "data_date",
-            "request_url",
-            "api_version",
-            "http_status",
-            "content_type",
-            "body_sha256",
-            "body_size_bytes",
-            "page",
-            "total_pages",
-        ):
-            assert member_meta[key] == legacy_meta[key], key
-        d12 = set(legacy_meta["request_params"])
-        assert d12 == {
+        assert len(urls) == 3
+        assert "/api/3/action/package_show" in urls[0]
+        assert urls[1:] == [selected["url"], presigned]
+        assert path.read_bytes() == body
+        meta = _meta(path)
+        assert meta["request_url"] == selected["url"], "D-11: the redirector, never the file host"
+        assert meta["content_type"] == "text/csv"
+        assert meta["http_status"] == 200
+        assert set(meta["request_params"]) == {
             "package",
             "package_id",
             "resource_id",
@@ -950,10 +910,6 @@ class TestLegacyByteEquivalence:
             "ckan_last_modified",
             "ckan_format",
             "body_sha256",
-        }
-        for key in d12:
-            assert member_meta["request_params"][key] == legacy_meta["request_params"][key], key
-        assert set(member_meta["request_params"]) - d12 == {
             "capture_family",
             "url_type",
             "empty_capture",
@@ -961,15 +917,7 @@ class TestLegacyByteEquivalence:
         }
         rid = selected["id"]
         sha8 = hashlib.sha256(body).hexdigest()[:8]
-        assert re.fullmatch(rf"raw_\d{{8}}T\d{{6}}Z_{sha8}\.csv", legacy_path.name)
-        assert re.fullmatch(rf"raw_\d{{8}}T\d{{6}}Z_{rid}_{sha8}\.csv", member_path.name)
-        stamp = re.compile(r"^raw_\d{8}T\d{6}Z_")
-        assert stamp.sub("", member_path.name).replace(f"{rid}_", "", 1) == stamp.sub(
-            "", legacy_path.name
-        )
-        assert member_path.parent.relative_to(data_dir) == legacy_path.parent.relative_to(
-            legacy_dir
-        )
+        assert re.fullmatch(rf"raw_\d{{8}}T\d{{6}}Z_{rid}_{sha8}\.csv", path.name)
 
 
 def _legacy_name(dataset: str) -> str:
@@ -979,40 +927,21 @@ def _legacy_name(dataset: str) -> str:
 
 
 class TestFetchGuard:
-    """M-9: fetch() serves the legacy keys only."""
+    """M-9: every key, the three legacy ones included, is captured by iter_members."""
 
-    def test_fetch_refuses_a_non_legacy_key(self) -> None:
+    def test_fetch_is_not_supported(self) -> None:
         start, end = _window()
 
         async def _run() -> None:
-            async with NesoDataPortalConnector(_config("nordpool_da_prices")) as connector:
-                await connector.fetch("nordpool_da_prices", start, end)
-
-        with pytest.raises(ValueError, match="iter_members"):
-            asyncio.run(_run())
-
-    def test_fetch_still_serves_a_legacy_key(self, router: respx.MockRouter) -> None:
-        payload = json.loads((FIXTURES / "package_show_daily_wind_availability.json").read_text())
-        url = payload["result"]["resources"][0]["url"]
-        router.get(url__startswith=f"{BASE_URL}/api/3/action/package_show").mock(
-            return_value=httpx.Response(200, json=payload)
-        )
-        router.get(url__startswith=url).mock(
-            return_value=httpx.Response(
-                200, content=(FIXTURES / "daily_wind_availability.csv").read_bytes()
-            )
-        )
-        start, end = _window()
-
-        async def _run() -> list[Any]:
             async with NesoDataPortalConnector(_config("daily_wind_availability")) as connector:
-                return await connector.fetch("daily_wind_availability", start, end)
+                await connector.fetch("daily_wind_availability", start, end)
 
-        assert len(asyncio.run(_run())) == 1
+        with pytest.raises(NotImplementedError, match="iter_members"):
+            asyncio.run(_run())
 
 
 class TestTransportMarker:
-    """N-1 (A10, D-39): every member-path request carries a fresh, consumed token."""
+    """N-1 (A10, D-39): every member-path request went through ``_send``, once."""
 
     def test_member_path_requests_are_all_attested(
         self,
@@ -1032,24 +961,21 @@ class TestTransportMarker:
         }
         _wire(router, _payload(live), bodies, hop=True)
         start, end = _window()
-        sink: list[NesoDataPortalConnector] = []
+        sent = record_sends(monkeypatch)
 
         async def _run() -> None:
             connector = NesoDataPortalConnector(_config("alpha_files"))
             connector.bind_data_dir(data_dir)
-            sink.append(connector)
             async with connector:
                 async for _event in connector.iter_members("alpha_files", start, end):
                     pass
 
         asyncio.run(_run())
-        issued = set(sink[0]._issued_send_tokens)
+        recorded = [call.request for call in router.calls]
+        assert unsent(recorded, sent) == [], "a request reached the transport outside _send"
+        assert len(sent) == len(recorded)
         kinds: dict[str, int] = {}
-        for call in router.calls:
-            request = call.request
-            token = request.extensions.get(_VALIDATED_MARKER)
-            assert token in issued, f"unattested request reached the transport: {request.url}"
-            issued.remove(token)
+        for request in recorded:
             url = str(request.url)
             kind = (
                 "package_show"
@@ -1059,5 +985,4 @@ class TestTransportMarker:
                 else "resource_url"
             )
             kinds[kind] = kinds.get(kind, 0) + 1
-        assert issued == set()
         assert kinds == {"package_show": 1, "resource_url": 2, "redirect_hop": 2}, kinds

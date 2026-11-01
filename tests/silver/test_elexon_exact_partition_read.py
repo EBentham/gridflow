@@ -194,26 +194,14 @@ def test_undeclared_elexon_transformers_read_only_their_exact_partition(tmp_path
 
 
 def test_every_elexon_dataset_is_filtered_or_exempt_with_a_reason() -> None:
-    """A-11: 33/33 registered datasets classify as either filtered or exempt.
-
-    ``bod`` is excluded from this loop: it is UNREGISTERED by design
-    (decommissioned by Elexon, ``EXCLUDED_ENDPOINTS``) in isolation, but
-    other test modules import ``gridflow.silver.elexon.bod`` directly for
-    its schema (not through ``elexon.__init__``), which triggers its
-    module-level ``register_transformer`` side effect and leaks "bod" into
-    the shared registry for the rest of a full-suite run. That leak is a
-    pre-existing test-isolation gap unrelated to R2-A (out of scope here) --
-    tolerated, not silently masked, by naming it explicitly.
-    """
+    """A-11: every registered dataset classifies as either filtered or exempt."""
     registered = list_transformers("elexon")
     assert registered
 
     for _source, dataset in registered:
-        if dataset == "bod":
-            continue
         in_scope = publication_window_params(dataset) is not None
         exempt = dataset in PUBLICATION_WINDOW_EXEMPT
         assert in_scope or exempt, f"{dataset} is neither filtered nor exempt with a reason"
         assert not (in_scope and exempt), f"{dataset} is both in scope and exempt"
 
-    assert len(PUBLICATION_WINDOW_EXEMPT) == 11
+    assert len(PUBLICATION_WINDOW_EXEMPT) == 12

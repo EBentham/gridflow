@@ -8,6 +8,8 @@ lives one layer below, in ``transform()``'s dedup key, so no amount of
 hand-written parquet can catch it. This module starts at bronze and asserts at
 three layers (run() return, written parquet, and both view renderers) so a
 regression of the collapse fails loudly here instead of passing vacuously.
+The run()-and-parquet layer, widened to every dataset that keeps vintages,
+lives in ``test_publication_vintage_retention.py``.
 
 fou2t14d does NOT set ``VINTAGE_PER_BRONZE_FILE`` (unlike ``system_prices``,
 see ``test_uk_imbalance_context_view.py``), so its real on-disk multiplicity
@@ -98,36 +100,6 @@ def _connection_with_views(data_dir: Path) -> duckdb.DuckDBPyConnection:
     return con
 
 
-def test_bronze_publications_both_reach_silver(tmp_path: Path) -> None:
-    """AC-1/AC-2/AC-4: run() writes both bronze publications into one silver file.
-
-    Pre-fix: run() returns 1 (the collapse) -- RED.
-    """
-    data_dir = tmp_path / "data"
-    _seed_bronze_two_vintages(data_dir)
-
-    transformer = FOU2T14DTransformer(data_dir)
-    written = transformer.run(date(2024, 1, 15), run_id="R1-C-fixture")
-    assert written == 2
-
-    silver_dir = data_dir / "silver" / "elexon" / "fou2t14d" / "year=2024" / "month=01"
-    [silver_path] = silver_dir.glob("fou2t14d_20240115_run*.parquet")
-    result = pl.read_parquet(silver_path)
-
-    assert result.height == 2
-    # available_at is the row-wise coalesce(published_at, ingest_scalar)
-    # (base.py:404-420) -- proving it, not now(), is this dataset's vintage
-    # axis: each row's available_at equals its OWN published_at exactly, two
-    # ROWS in one FILE (fou2t14d has no VINTAGE_PER_BRONZE_FILE, unlike
-    # system_prices.py:31-32, which would instead write two files).
-    result = result.sort("available_at")
-    assert result["available_at"].to_list() == [
-        datetime(2024, 1, 15, 6, tzinfo=UTC),
-        datetime(2024, 1, 15, 18, tzinfo=UTC),
-    ]
-    assert result["available_at"].to_list() == result["published_at"].to_list()
-
-
 def test_latest_view_collapses_genuine_multi_vintage_silver(tmp_path: Path) -> None:
     """AC-4/AC-5: silver_elexon_fou2t14d_latest returns exactly 1 row, the LATER
     publication, against genuinely multi-vintage silver written by the real
@@ -192,7 +164,7 @@ def test_sql_and_polars_latest_agree_on_the_same_multi_vintage_frame(tmp_path: P
     on the SELECTION path itself.
 
     Pre-fix: passes trivially (one row in, one row out) -- this is NOT RED
-    evidence, unlike the other two tests in this module. Reported honestly.
+    evidence, unlike the other test in this module. Reported honestly.
     """
     data_dir = tmp_path / "data"
     _seed_bronze_two_vintages(data_dir)

@@ -54,8 +54,8 @@ those days' partitions carry none of the 8 columns.
 
 ### Why this is not the indo / `published_at` case
 
-The fix in `src/gridflow/silver/elexon/indo.py` + the back-fill in
-`scripts/normalize_published_at.py` pin `published_at` as an
+The fix in `src/gridflow/silver/elexon/indo.py` + the one-time back-fill
+script (added in commit `7aac409`, deleted once it had run) pin `published_at` as an
 always-present nullable contract column and emit/fill it as typed-null.
 That is honest because `published_at` is conceptually present on
 **every** INDO row — it is merely absent from some bronze payloads.
@@ -114,7 +114,7 @@ Treat the cmp_* envelope columns as **genuinely dynamic**. Specifically:
 
 **Option B — indo-style pin + back-fill.** Declare the union schema as a
 contract, emit the columns as typed-null when absent, migrate the 12
-files (mirroring `scripts/normalize_published_at.py`).
+files (mirroring the `published_at` back-fill, commit `7aac409`).
 Rejected because:
 1. *Semantic fabrication* — the columns attach to a 1/1101 record
    subset, not to every row (see Context). A typed-null fill asserts a
@@ -145,7 +145,8 @@ partition.
 - The two datasets remain `TODO_HUMAN_FILL_COLUMNS` in
   `docs/CANONICAL_SCHEMA.yaml`; the alignment test continues to skip
   them. This ADR records *why* they are deferred, for the future
-  curator.
+  curator. (2026-11-01: the YAML and that test were retired; a future
+  pin belongs on the silver schema manifest, ADR-024.)
 - A new regression test pins the intended behaviour (drift expected;
   tolerant readers unify it), so a future drift scan does not get
   "fixed" by fabricating a contract, and the `union_by_name=true` /
@@ -166,9 +167,31 @@ datasets materialises, the honest pin (not Option B as written) is:
 2. Add a cmp-specific `GenericEntsogJsonTransformer` subclass that emits
    the declared typed columns as typed-null when a day's slice lacks
    them, and drops the typeless columns.
-3. Run a one-time, idempotent, silver-only back-fill modelled on
-   `scripts/normalize_published_at.py` (preserve bitemporal lineage;
+3. Run a one-time, idempotent, silver-only back-fill modelled on the
+   `published_at` back-fill script in commit `7aac409` (preserve bitemporal lineage;
    atomic writes via `storage/parquet.write_parquet`).
 4. Remove `TODO_HUMAN_FILL_COLUMNS` so
    `test_canonical_schema_alignment.py` begins enforcing the contract,
    and supersede this ADR.
+
+## Amendment (2026-10-24): the date filter was the defect
+
+The "date-filter coincidence" above was not harmless. The CMP endpoints
+(and the ten capacity indicators) serve every record whose capacity or
+period window overlaps the requested day, and the start-date filter kept
+a record only when that window began on the fetched day. Silver kept 0 of
+54 real `cmp_auction_premiums` records a day, 25 of 291
+`cmp_unavailable_firm_capacity` records on 1 Aug 2026 only, and 2 of 43
+`cmp_unsuccessful_requests` records (BACKLOG 18a, 18b).
+
+`GenericEntsogJsonTransformer` now keeps, for these 13 datasets, every
+record whose window overlaps the partition's gas day (06:00 to 06:00
+Europe/Brussels), plus everything the start-date rule kept. Each kept
+row is that record ON that gas day: `timestamp_utc` is the later of the
+record's start and the gas-day start, and `period_from`/`capacity_from`
+keep the record's own window. A record is never expanded to days that
+were not fetched. Rule 2 above ("do not modify the transformer") is
+superseded for the date filter only; the rest of the decision stands.
+Real records now arrive every day, so the envelope columns appear far
+more uniformly, and the tolerant readers are still relied on for the
+rest.

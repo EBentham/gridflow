@@ -18,6 +18,7 @@ fails loudly here even though ``run()`` itself stays fail-soft. (Open-Meteo is a
 from __future__ import annotations
 
 import json
+from datetime import date
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -25,9 +26,8 @@ import polars as pl
 import pytest
 
 # Registry side-effects: importing each silver sub-package triggers
-# register_transformer() for its datasets (Pitfall 1 — same as the canonical
-# alignment test). Without this, get_transformer("entsoe", ...) fails when this
-# module runs in isolation.
+# register_transformer() for its datasets (Pitfall 1). Without this,
+# get_transformer("entsoe", ...) fails when this module runs in isolation.
 import gridflow.silver.entsoe  # noqa: F401
 import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401
@@ -38,7 +38,12 @@ from gridflow.connectors.entsoe.parsers import (
 )
 from gridflow.connectors.neso.endpoints import ParserFamily
 from gridflow.silver.entsog.physical_flows import PhysicalFlowsTransformer
-from gridflow.silver.gie.agsi import GasStorageTransformer
+from gridflow.silver.gie.agsi import (
+    _UNAVAILABILITY_RAW_SCHEMA,
+    GasStorageTransformer,
+    UnavailabilityTransformer,
+    _flatten_unavailability_record,
+)
 from gridflow.silver.gie.alsi import LNGTerminalTransformer
 from gridflow.silver.neso.carbon_intensity import (
     GenericNesoJsonTransformer,
@@ -148,6 +153,15 @@ def test_gie_storage_output_matches_schema() -> None:
     payload = json.loads((_FIXTURES / "gie" / "agsi_gb_response.json").read_text(encoding="utf-8"))
     raw = pl.DataFrame(payload.get("data", []))
     _assert_clean_validation(_make(GasStorageTransformer, "gie_agsi", "storage"), raw)
+
+
+def test_gie_unavailability_output_matches_schema() -> None:
+    payload = json.loads(
+        (_FIXTURES / "gie" / "agsi_unavailability_response.json").read_text(encoding="utf-8")
+    )
+    rows = [_flatten_unavailability_record(r, date(2026, 5, 1)) for r in payload["data"]]
+    raw = pl.DataFrame(rows, schema=_UNAVAILABILITY_RAW_SCHEMA)
+    _assert_clean_validation(_make(UnavailabilityTransformer, "gie_agsi", "unavailability"), raw)
 
 
 def test_gie_lng_output_matches_schema() -> None:

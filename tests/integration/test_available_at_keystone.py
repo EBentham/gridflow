@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -65,7 +65,7 @@ def test_historical_as_of_fetch_returns_rows(tmp_data_dir: Path) -> None:
     )
 
     WindForecastTransformer(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID)
-    df = read_parquet(tmp_data_dir / "silver" / "elexon" / "windfor" / "**" / "*.parquet")
+    df = scan_parquet_dir(tmp_data_dir / "silver" / "elexon" / "windfor").collect()
 
     # Both vintages survive (dedup key includes published_at), and available_at now
     # carries the publication vintage — a genuine spread, not the ingest collapse.

@@ -8,10 +8,9 @@ because indo's ``published_at`` is a declared, always-present nullable contract 
 The cmp_* envelope columns (``data_set``, ``point_type``, ``is_archived``,
 ``booking_platform_key``, ...) are different in kind: the
 ``GenericEntsogJsonTransformer`` passes through whatever fields the API returns, and
-those fields ride in only on archived CMP records whose ``capacityFrom`` happens to
-fall on the target date (see ADR-021). So a given day's partition carries them iff its
-date-filtered slice coincidentally includes ≥1 such record — the schema is genuinely
-data-dependent.
+those fields ride in only on some CMP records (see ADR-021). So a given day's partition
+carries them iff a record in force on that gas day carries them — the schema is
+genuinely data-dependent.
 
 This test therefore asserts the opposite of uniformity:
 1. two days transformed from the same window produce *different* schemas (drift is
@@ -42,8 +41,8 @@ from gridflow.silver.registry import get_transformer
 if TYPE_CHECKING:
     from pathlib import Path
 
-# The archived record's capacityFrom lands on this day, so its envelope columns
-# survive the date-window filter only in this partition.
+# The archived record's capacity window covers only this gas day, so its envelope
+# columns are in force (and survive the validity-window filter) only in this partition.
 _ENRICHED_DAY = date(2026, 5, 1)
 _PLAIN_DAY = date(2026, 5, 2)
 
@@ -68,14 +67,15 @@ def _plain_record(day: date) -> dict[str, Any]:
 
 
 def _archived_record() -> dict[str, Any]:
-    """An archived/historical CMP record. No periodFrom; its effective filter-date
-    comes from capacityFrom (_ENRICHED_DAY). Carries the dynamic envelope fields the
-    API attaches to such records — including an all-null one (booking_platform_key).
+    """An archived/historical CMP record. No periodFrom; its capacity window is the
+    single gas day _ENRICHED_DAY. Carries the dynamic envelope fields the API attaches
+    to such records — including an all-null one (booking_platform_key).
     """
     return {
         "id": "archived-cmp-record",
         "pointKey": "UK-TSO-0001ITP-00005",
         "capacityFrom": f"{_ENRICHED_DAY.isoformat()}T06:00:00+02:00",
+        "capacityTo": f"{_PLAIN_DAY.isoformat()}T06:00:00+02:00",
         "dataSet": 2,
         "idPointType": 0,
         "isArchived": True,
@@ -112,7 +112,7 @@ def test_cmp_schema_is_dynamic_but_tolerant_readers_unify(
     bronze_root = tmp_data_dir / "bronze" / "entsog" / dataset
     archived = _archived_record()
     # Same window stored under each day; the archived record appears in both, but its
-    # capacityFrom only matches _ENRICHED_DAY.
+    # capacity window is in force only on _ENRICHED_DAY.
     _write_cmp_bronze(
         bronze_root, _ENRICHED_DAY, response_key, [_plain_record(_ENRICHED_DAY), archived]
     )

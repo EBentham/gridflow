@@ -25,7 +25,7 @@ from gridflow.connectors.neso_data_portal.captures import newest_by_resource, sc
 from gridflow.connectors.neso_data_portal.registry import SchemaRecord, load_registry
 from gridflow.silver.neso_data_portal.casting import ExclusionTally, finish_capture, type_child
 from gridflow.silver.neso_data_portal.completion import capture_context
-from gridflow.silver.neso_data_portal.generic import families_of
+from gridflow.silver.neso_data_portal.generic import families_of, resource_of
 from gridflow.silver.neso_data_portal.readers import read_children
 from gridflow.storage.paths import PathBuilder
 
@@ -79,7 +79,9 @@ def _run_all(root: Path, record: SchemaRecord) -> tuple[Counter[str], dict[str, 
             ctx = capture_context(capture, record, root)
             typed = [
                 type_child(table, record, ctx)
-                for table in read_children(ctx.body, record, children)
+                for table in read_children(
+                    ctx.body, record, children, resource=resource_of(capture, FAMILY, registry)
+                )
             ]
             tally = ExclusionTally()
             for child in typed:

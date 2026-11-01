@@ -5,13 +5,20 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
 from gridflow.schemas.gie import LNGTerminal
-from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
+from gridflow.silver.base import (
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+    gas_day_event_time_expr,
+)
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -27,21 +34,28 @@ class LNGTerminalTransformer(BaseSilverTransformer):
     def _event_time_expr(self, df: pl.DataFrame, target_date: date) -> pl.Expr:
         return gas_day_event_time_expr("gas_day")
 
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        """The exact partition's bodies, else the nearest covering partition's."""
         bronze_path = self._bronze_path_for_date(target_date)
         if bronze_path is None:
-            return pl.DataFrame()
+            return []
+        return sorted(
+            f for f in bronze_path.glob(self.BRONZE_BODY_GLOB) if not f.name.endswith(".meta.json")
+        )
 
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
+        unparseable: list[Path] = []
+        for f in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(f.read_text())
                 records = payload.get("data", []) if isinstance(payload, dict) else []
                 rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse GIE ALSI bronze file %s: %s", f, exc)
+                unparseable.append(f)
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         rows = _filter_records_to_gas_day(rows, target_date)
 

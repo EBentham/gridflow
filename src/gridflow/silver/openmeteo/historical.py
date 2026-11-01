@@ -37,7 +37,7 @@ from gridflow.connectors.openmeteo.endpoints import (
     WeatherLocation,
 )
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
-from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
+from gridflow.silver.base import BaseSilverTransformer, UnparseableBronzeError, VintagePolicy
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -175,35 +175,35 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         "cdd": "cdd_k",
     }
 
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
+    def _location_dir(self, loc: WeatherLocation) -> Path:
         # Bronze lives under: bronze/open_meteo/{prefix}__{loc}/YYYY/MM/DD/
-        parent_dir = self.bronze_dir.parent  # bronze/open_meteo/
+        return self.bronze_dir.parent / f"{self.BRONZE_DATASET_PREFIX}__{loc.name}"
+
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        """Each location's exact partition, else its nearest covering one."""
+        return [
+            f
+            for loc in self.LOCATIONS
+            if (day := self._bronze_path_for_date(target_date, bronze_dir=self._location_dir(loc)))
+            for f in sorted(day.glob(self.BRONZE_BODY_GLOB))
+            if not f.name.endswith(".meta.json")
+        ]
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        location_of = {self._location_dir(loc): loc.name for loc in self.LOCATIONS}
         rows: list[dict[str, Any]] = []
-
-        for loc in self.LOCATIONS:
-            loc_dir = parent_dir / f"{self.BRONZE_DATASET_PREFIX}__{loc.name}"
-            exact_path = (
-                loc_dir
-                / str(target_date.year)
-                / f"{target_date.month:02d}"
-                / f"{target_date.day:02d}"
-            )
-            date_path: Path | None
-            if exact_path.exists() and any(exact_path.glob("raw_*")):
-                date_path = exact_path
-            else:
-                date_path = self._find_covering_bronze_partition(target_date, bronze_dir=loc_dir)
-            if date_path is None:
-                continue
-
-            for f in sorted(date_path.glob("raw_*.json")):
-                if f.name.endswith(".meta.json"):
-                    continue
-                try:
-                    data = json.loads(f.read_text())
-                    rows.extend(_pivot_openmeteo_json(data, loc.name, self.HOURLY_VARS))
-                except (json.JSONDecodeError, AttributeError, KeyError) as exc:
-                    logger.warning("Failed to parse weather bronze file %s: %s", f, exc)
+        unparseable: list[Path] = []
+        for f in self._bronze_read_set(target_date):
+            try:
+                data = json.loads(f.read_text())
+                rows.extend(
+                    _pivot_openmeteo_json(data, location_of[f.parents[3]], self.HOURLY_VARS)
+                )
+            except (json.JSONDecodeError, UnicodeDecodeError, AttributeError, KeyError) as exc:
+                logger.warning("Failed to parse weather bronze file %s: %s", f, exc)
+                unparseable.append(f)
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         rows = _filter_rows_to_target_date(rows, target_date)
 
@@ -340,9 +340,6 @@ class HistoricalDemandWeather(BaseOpenMeteoTransformer):
     schema_cls = DemandWeather
     DERIVE_HDD_CDD = True
     DERIVE_AIR_DENSITY = True
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
-        f"historical_demand__{loc.name}" for loc in DEMAND_LOCATIONS
-    )
 
 
 class HistoricalWindWeather(BaseOpenMeteoTransformer):
@@ -362,9 +359,6 @@ class HistoricalWindWeather(BaseOpenMeteoTransformer):
     HOURLY_VARS = WIND_ARCHIVE_VARS
     schema_cls = WindWeather
     DERIVE_AIR_DENSITY = True
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
-        f"historical_wind__{loc.name}" for loc in WIND_LOCATIONS
-    )
 
 
 class HistoricalSolarWeather(BaseOpenMeteoTransformer):
@@ -382,9 +376,6 @@ class HistoricalSolarWeather(BaseOpenMeteoTransformer):
     LOCATIONS = SOLAR_LOCATIONS
     HOURLY_VARS = SOLAR_HOURLY_VARS
     schema_cls = SolarWeather
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
-        f"historical_solar__{loc.name}" for loc in SOLAR_LOCATIONS
-    )
 
 
 # Sanity-check the variable list / dataset spec wiring at import time so the

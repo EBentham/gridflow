@@ -7,19 +7,18 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 from gridflow.config.settings import load_settings
 from gridflow.connectors.gie.endpoints import (
+    AGSI_COUNTRIES,
     DEFAULT_PAGE_SIZE,
     ENDPOINTS,
-    GIE_API_PATH,
     QueryScope,
     build_storage_query_plan,
-    expected_records_for_plan,
     gas_day_range,
     parse_listing_inventory,
-    storage_params_for_range,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -122,17 +121,10 @@ def test_listing_fixture_parses_companies_and_facilities() -> None:
 
 
 def test_expected_plan_for_aggregate_type_exact_date() -> None:
-    plan = build_storage_query_plan(
-        scope=QueryScope.AGGREGATE_TYPE,
-        start=date(2026, 5, 1),
-        aggregate_types=("EU",),
-    )
+    plan = build_storage_query_plan(scope=QueryScope.AGGREGATE_TYPE, start=date(2026, 5, 1))
 
     assert len(plan) == 1
-    assert expected_records_for_plan(plan) == 1
-    assert plan[0].path == GIE_API_PATH
-    assert plan[0].entity_key == "EU"
-    assert plan[0].expected_gas_days == (date(2026, 5, 1),)
+    assert plan[0].gas_day == date(2026, 5, 1)
     assert plan[0].params == {
         "type": "EU",
         "date": "2026-05-01",
@@ -142,100 +134,39 @@ def test_expected_plan_for_aggregate_type_exact_date() -> None:
 
 
 def test_expected_plan_for_countries_exact_date() -> None:
-    plan = build_storage_query_plan(
-        scope=QueryScope.COUNTRY,
-        start=date(2026, 5, 1),
-        countries=("DE", "FR"),
-    )
+    plan = build_storage_query_plan(scope=QueryScope.COUNTRY, start=date(2026, 5, 1))
 
-    assert len(plan) == 2
-    assert expected_records_for_plan(plan) == 2
-    assert [request.params["country"] for request in plan] == ["DE", "FR"]
+    assert [request.params["country"] for request in plan] == AGSI_COUNTRIES
     assert {request.params["date"] for request in plan} == {"2026-05-01"}
 
 
-def test_expected_plan_for_listing_companies_and_facilities() -> None:
-    listing = _load_listing_fixture()
-    company_plan = build_storage_query_plan(
-        scope=QueryScope.COMPANY,
-        start=date(2026, 5, 1),
-        listing_payload=listing,
-    )
-    facility_plan = build_storage_query_plan(
-        scope=QueryScope.FACILITY,
-        start=date(2026, 5, 1),
-        listing_payload=listing,
-    )
-
-    assert len(company_plan) == 3
-    assert expected_records_for_plan(company_plan) == 3
-    assert [request.params["company"] for request in company_plan] == [
-        "21X-DEMO-ALPHA",
-        "21X-DEMO-BETA",
-        "21X-DEMO-GAMMA",
-    ]
-    assert [request.params["country"] for request in company_plan] == [
-        "DE",
-        "FR",
-        "GB",
-    ]
-
-    assert len(facility_plan) == 4
-    assert expected_records_for_plan(facility_plan) == 4
-    assert facility_plan[0].params["facility"] == "21W-DEMO-ALPHA-1"
-    assert facility_plan[0].params["company"] == "21X-DEMO-ALPHA"
-    assert facility_plan[0].params["country"] == "DE"
-    assert facility_plan[-1].params["facility"] == "21W-DEMO-GAMMA-1"
-    assert facility_plan[-1].params["company"] == "21X-DEMO-GAMMA"
-    assert facility_plan[-1].params["country"] == "GB"
+@pytest.mark.parametrize("scope", [QueryScope.COMPANY, QueryScope.FACILITY])
+def test_company_and_facility_scopes_are_not_planned(scope: QueryScope) -> None:
+    with pytest.raises(ValueError, match="not a planned storage scope"):
+        build_storage_query_plan(scope=scope, start=date(2026, 5, 1))
 
 
-def test_date_range_planning_exposes_every_gas_day_target() -> None:
+def test_multi_day_window_plans_one_request_per_gas_day() -> None:
     plan = build_storage_query_plan(
-        scope=QueryScope.COUNTRY,
+        scope=QueryScope.AGGREGATE_TYPE,
         start=date(2026, 5, 1),
         end=date(2026, 5, 2),
-        countries=("DE",),
-    )
-    range_plan = build_storage_query_plan(
-        scope=QueryScope.COUNTRY,
-        start=date(2026, 5, 1),
-        end=date(2026, 5, 2),
-        countries=("DE",),
-        date_mode="range",
     )
 
     assert gas_day_range(date(2026, 5, 1), date(2026, 5, 2)) == (
         date(2026, 5, 1),
         date(2026, 5, 2),
     )
-    assert len(plan) == 2
-    assert expected_records_for_plan(plan) == 2
-    assert [request.expected_gas_days[0] for request in plan] == [
-        date(2026, 5, 1),
-        date(2026, 5, 2),
-    ]
+    assert [request.gas_day for request in plan] == [date(2026, 5, 1), date(2026, 5, 2)]
     assert [request.params["date"] for request in plan] == ["2026-05-01", "2026-05-02"]
-
-    assert len(range_plan) == 1
-    assert expected_records_for_plan(range_plan) == 2
-    assert range_plan[0].expected_gas_days == (date(2026, 5, 1), date(2026, 5, 2))
-    assert range_plan[0].params == storage_params_for_range(
-        start=date(2026, 5, 1),
-        end=date(2026, 5, 2),
-        scope=QueryScope.COUNTRY,
-        entity_key="DE",
-    )
 
 
 def test_same_start_and_end_date_is_one_gas_day() -> None:
     plan = build_storage_query_plan(
-        scope=QueryScope.COUNTRY,
+        scope=QueryScope.AGGREGATE_TYPE,
         start=date(2026, 5, 1),
         end=date(2026, 5, 1),
-        countries=("DE",),
     )
 
     assert len(plan) == 1
-    assert expected_records_for_plan(plan) == 1
-    assert plan[0].expected_gas_days == (date(2026, 5, 1),)
+    assert plan[0].gas_day == date(2026, 5, 1)

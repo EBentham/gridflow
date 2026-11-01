@@ -4,8 +4,15 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
+import subprocess
+import sys
+import tempfile
+import textwrap
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from dotenv import load_dotenv
@@ -20,6 +27,9 @@ from gridflow.config.settings import (
 )
 from gridflow.connectors import base as connector_base
 from gridflow.connectors.base import RawResponse
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterator
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env", override=False)
@@ -109,6 +119,90 @@ def tmp_data_dir(tmp_path: Path) -> Path:
     return tmp_path
 
 
+@pytest.fixture(scope="session")
+def short_base() -> Iterator[Path]:
+    """This session's directory for short data roots, ``<drive>:/gft<8 chars>``.
+
+    A family key appears twice in an engine output path, so the silver and
+    completion names pass Windows' 260-character MAX_PATH below pytest's long
+    ``tmp_path``; on Windows the directory sits at the drive root, elsewhere
+    under the system temp. The session removes it at the end. Only a process
+    killed mid-run leaves it behind, and its ``gft`` name says what it is.
+    """
+    drive = os.path.splitdrive(tempfile.gettempdir())[0]
+    base = Path(tempfile.mkdtemp(prefix="gft", dir=drive + os.sep if drive else None))
+    yield base
+    shutil.rmtree(base)
+
+
+@pytest.fixture
+def short_root(short_base: Path) -> Iterator[Path]:
+    """A fresh short data root for one test, removed at teardown.
+
+    The root is 23 characters on Windows (``C:\\gft<8>\\<8>``), which keeps the
+    longest engine path under MAX_PATH; a directory made under ``short_base``
+    by hand takes ``prefix=""`` for the same reason. Removal errors are not
+    ignored: a root that cannot be removed fails the test instead of being
+    left on the drive.
+    """
+    root = Path(tempfile.mkdtemp(prefix="", dir=short_base))
+    yield root
+    shutil.rmtree(root)
+
+
+@dataclass(frozen=True)
+class IsolatedPaths:
+    """The data, catalogue and log locations :func:`isolated_env` points gridflow at."""
+
+    data_dir: Path
+    duckdb_path: Path
+    log_dir: Path
+
+
+@pytest.fixture
+def isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> IsolatedPaths:
+    """Point every ``GRIDFLOW_*`` path under ``tmp_path``, with the gold views off.
+
+    The gold SQL views read silver relations an empty data dir lacks, so in
+    strict mode they would fail ``init_catalogue``.
+    """
+    paths = IsolatedPaths(
+        data_dir=tmp_path / "data",
+        duckdb_path=tmp_path / "catalogue" / "gridflow.duckdb",
+        log_dir=tmp_path / "logs",
+    )
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(paths.data_dir))
+    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(paths.duckdb_path))
+    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(paths.log_dir))
+    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
+    return paths
+
+
+def _run_fresh(code: str) -> str:
+    result = subprocess.run(
+        [sys.executable, "-c", textwrap.dedent(code)],
+        cwd=PROJECT_ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=300,
+        check=False,
+    )
+    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
+    return result.stdout
+
+
+@pytest.fixture
+def run_fresh() -> Callable[..., str]:
+    """``run_fresh(code)``: run ``code`` in a new interpreter.
+
+    The interpreter starts at the project root with nothing imported, which is
+    what a cold-import or bootstrap check needs. A non-zero exit fails the
+    test with both streams; the return value is the child's stdout.
+    """
+    return _run_fresh
+
+
 @pytest.fixture
 def sample_config(tmp_data_dir: Path) -> GridflowConfig:
     """Create a sample GridflowConfig for testing."""
@@ -189,21 +283,4 @@ def sample_raw_response(sample_elexon_response_data: dict) -> RawResponse:
         page=1,
         total_pages=1,
         http_status=200,
-    )
-
-
-@pytest.fixture
-def elexon_source_config() -> SourceConfig:
-    """Elexon source config for testing."""
-    return SourceConfig(
-        base_url="https://data.elexon.co.uk/bmrs/api/v1",
-        api_key="test-key",
-        api_key_header="x-api-key",
-        rate_limit_per_second=100,
-        timeout=5,
-        datasets={
-            "system_prices": DatasetConfig(
-                endpoint="/balancing/settlement/system-prices",
-            ),
-        },
     )

@@ -1,4 +1,4 @@
-"""GIE AGSI+ / ALSI API endpoint metadata and query planning helpers."""
+"""GIE AGSI+ / ALSI API endpoint metadata and the AGSI storage request plan."""
 
 from __future__ import annotations
 
@@ -84,41 +84,13 @@ class GieListingInventory:
     companies: tuple[GieListedEntity, ...]
     facilities: tuple[GieListedEntity, ...]
 
-    def entities_for_scope(self, scope: QueryScope | str) -> tuple[GieListedEntity, ...]:
-        """Return listing entities for a company or facility query scope."""
-        normalised = QueryScope(scope)
-        if normalised == QueryScope.COMPANY:
-            return self.companies
-        if normalised == QueryScope.FACILITY:
-            return self.facilities
-        raise ValueError(f"Listing inventory does not contain {normalised.value} entities")
-
 
 @dataclass(frozen=True)
 class GieQueryRequest:
-    """One planned AGSI storage request plus its expected gas-day coverage."""
+    """One planned AGSI storage request: one entity on one gas day."""
 
-    dataset: str
-    path: str
-    scope: QueryScope
-    entity_key: str
+    gas_day: date
     params: dict[str, Any]
-    expected_gas_days: tuple[date, ...]
-    page: int = 1
-    size: int = DEFAULT_PAGE_SIZE
-
-    @property
-    def expected_records(self) -> int:
-        """Expected time-series rows before pagination expansion."""
-        return len(self.expected_gas_days)
-
-
-@dataclass(frozen=True)
-class _StorageTarget:
-    scope: QueryScope
-    entity_key: str
-    country: str | None = None
-    company: str | None = None
 
 
 ENDPOINTS: dict[str, GieEndpoint] = {
@@ -179,10 +151,7 @@ ENDPOINTS: dict[str, GieEndpoint] = {
 }
 
 
-def gas_day_range(
-    start: date | datetime | str,
-    end: date | datetime | str | None = None,
-) -> tuple[date, ...]:
+def gas_day_range(start: date | datetime, end: date | datetime | None = None) -> tuple[date, ...]:
     """Return inclusive gas days covered by an AGSI request window."""
     start_date = _coerce_date(start)
     end_date = _coerce_date(end) if end is not None else start_date
@@ -191,67 +160,6 @@ def gas_day_range(
 
     days = (end_date - start_date).days
     return tuple(start_date + timedelta(days=offset) for offset in range(days + 1))
-
-
-def storage_params_for_date(
-    *,
-    target_date: date | datetime | str,
-    scope: QueryScope | str,
-    entity_key: str,
-    country: str | None = None,
-    company: str | None = None,
-    page: int = 1,
-    size: int = DEFAULT_PAGE_SIZE,
-) -> dict[str, Any]:
-    """Build AGSI storage params for one exact gas day and query scope."""
-    params: dict[str, Any] = _storage_scope_params(
-        scope=scope,
-        entity_key=entity_key,
-        country=country,
-        company=company,
-    )
-    params.update(
-        {
-            "date": _coerce_date(target_date).isoformat(),
-            "page": page,
-            "size": _normalise_page_size(size),
-        }
-    )
-    return params
-
-
-def storage_params_for_range(
-    *,
-    start: date | datetime | str,
-    end: date | datetime | str,
-    scope: QueryScope | str,
-    entity_key: str,
-    country: str | None = None,
-    company: str | None = None,
-    page: int = 1,
-    size: int = DEFAULT_PAGE_SIZE,
-) -> dict[str, Any]:
-    """Build AGSI storage params for an inclusive gas-day range."""
-    start_date = _coerce_date(start)
-    end_date = _coerce_date(end)
-    if end_date < start_date:
-        raise ValueError("end date must be on or after start date")
-
-    params: dict[str, Any] = _storage_scope_params(
-        scope=scope,
-        entity_key=entity_key,
-        country=country,
-        company=company,
-    )
-    params.update(
-        {
-            "from": start_date.isoformat(),
-            "to": end_date.isoformat(),
-            "page": page,
-            "size": _normalise_page_size(size),
-        }
-    )
-    return params
 
 
 def parse_listing_inventory(payload: dict[str, Any] | list[dict[str, Any]]) -> GieListingInventory:
@@ -297,162 +205,39 @@ def parse_listing_inventory(payload: dict[str, Any] | list[dict[str, Any]]) -> G
 
 def build_storage_query_plan(
     *,
-    scope: QueryScope | str,
-    start: date | datetime | str,
-    end: date | datetime | str | None = None,
-    aggregate_types: tuple[str, ...] = DEFAULT_AGSI_AGGREGATE_TYPES,
-    countries: tuple[str, ...] | None = None,
-    listing_payload: dict[str, Any] | list[dict[str, Any]] | None = None,
-    date_mode: str = "exact",
-    page: int = 1,
-    size: int = DEFAULT_PAGE_SIZE,
-) -> tuple[GieQueryRequest, ...]:
-    """Plan expected AGSI storage requests for a scope and gas-day window.
-
-    ``date_mode="exact"`` creates one request per entity per gas day. This is
-    the most explicit shape for bronze completeness tests. ``date_mode="range"``
-    creates one request per entity whose expected rows cover the whole window.
-    """
-    normalised_scope = QueryScope(scope)
-    gas_days = gas_day_range(start, end)
-    targets = _scope_targets(
-        scope=normalised_scope,
-        aggregate_types=aggregate_types,
-        countries=countries,
-        listing_payload=listing_payload,
-    )
-    normalised_size = _normalise_page_size(size)
-
-    if date_mode == "exact":
-        requests: list[GieQueryRequest] = []
-        for target in targets:
-            for gas_day in gas_days:
-                requests.append(
-                    GieQueryRequest(
-                        dataset="storage_reports",
-                        path=GIE_API_PATH,
-                        scope=normalised_scope,
-                        entity_key=target.entity_key,
-                        params=storage_params_for_date(
-                            target_date=gas_day,
-                            scope=normalised_scope,
-                            entity_key=target.entity_key,
-                            country=target.country,
-                            company=target.company,
-                            page=page,
-                            size=normalised_size,
-                        ),
-                        expected_gas_days=(gas_day,),
-                        page=page,
-                        size=normalised_size,
-                    )
-                )
-        return tuple(requests)
-
-    if date_mode == "range":
-        return tuple(
-            GieQueryRequest(
-                dataset="storage_reports",
-                path=GIE_API_PATH,
-                scope=normalised_scope,
-                entity_key=target.entity_key,
-                params=storage_params_for_range(
-                    start=gas_days[0],
-                    end=gas_days[-1],
-                    scope=normalised_scope,
-                    entity_key=target.entity_key,
-                    country=target.country,
-                    company=target.company,
-                    page=page,
-                    size=normalised_size,
-                ),
-                expected_gas_days=gas_days,
-                page=page,
-                size=normalised_size,
-            )
-            for target in targets
-        )
-
-    raise ValueError("date_mode must be 'exact' or 'range'")
-
-
-def expected_records_for_plan(plan: tuple[GieQueryRequest, ...]) -> int:
-    """Return the expected pre-pagination time-series row count for a plan."""
-    return sum(request.expected_records for request in plan)
-
-
-def _coerce_date(value: date | datetime | str) -> date:
-    if isinstance(value, datetime):
-        return value.date()
-    if isinstance(value, date):
-        return value
-    return date.fromisoformat(value)
-
-
-def _normalise_page_size(size: int) -> int:
-    if size < 1:
-        raise ValueError("size must be at least 1")
-    return min(size, MAX_PAGE_SIZE)
-
-
-def _storage_scope_params(
-    *,
-    scope: QueryScope | str,
-    entity_key: str,
-    country: str | None = None,
-    company: str | None = None,
-) -> dict[str, str]:
-    normalised_scope = QueryScope(scope)
-    if normalised_scope == QueryScope.AGGREGATE_TYPE:
-        return {"type": entity_key}
-    if normalised_scope == QueryScope.COUNTRY:
-        return {"country": entity_key}
-    if normalised_scope == QueryScope.COMPANY:
-        params = {"company": entity_key}
-        if country:
-            params = {"country": country, **params}
-        return params
-    if normalised_scope == QueryScope.FACILITY:
-        params = {"facility": entity_key}
-        if company:
-            params = {"company": company, **params}
-        if country:
-            params = {"country": country, **params}
-        return params
-    raise ValueError(f"{normalised_scope.value} is not a storage query scope")
-
-
-def _scope_targets(
-    *,
     scope: QueryScope,
-    aggregate_types: tuple[str, ...],
-    countries: tuple[str, ...] | None,
-    listing_payload: dict[str, Any] | list[dict[str, Any]] | None,
-) -> tuple[_StorageTarget, ...]:
-    if scope == QueryScope.AGGREGATE_TYPE:
-        return tuple(
-            _StorageTarget(scope=scope, entity_key=aggregate_type)
-            for aggregate_type in aggregate_types
-        )
+    start: date | datetime,
+    end: date | datetime | None = None,
+) -> tuple[GieQueryRequest, ...]:
+    """Plan one AGSI storage request per entity per gas day.
+
+    ``COUNTRY`` covers every AGSI country (the ``storage`` dataset) and
+    ``AGGREGATE_TYPE`` the EU aggregate (``storage_reports``). The vendor also
+    offers company and facility scopes; nothing fetches them.
+    """
     if scope == QueryScope.COUNTRY:
-        return tuple(
-            _StorageTarget(scope=scope, entity_key=country)
-            for country in (countries or tuple(AGSI_COUNTRIES))
+        param, entities = "country", tuple(AGSI_COUNTRIES)
+    elif scope == QueryScope.AGGREGATE_TYPE:
+        param, entities = "type", DEFAULT_AGSI_AGGREGATE_TYPES
+    else:
+        raise ValueError(f"{scope.value} is not a planned storage scope")
+    return tuple(
+        GieQueryRequest(
+            gas_day=gas_day,
+            params={
+                param: entity,
+                "date": gas_day.isoformat(),
+                "page": 1,
+                "size": DEFAULT_PAGE_SIZE,
+            },
         )
-    if scope in (QueryScope.COMPANY, QueryScope.FACILITY):
-        if listing_payload is None:
-            raise ValueError(f"{scope.value} planning requires a listing payload")
-        inventory = parse_listing_inventory(listing_payload)
-        return tuple(
-            _StorageTarget(
-                scope=scope,
-                entity_key=entity.eic,
-                country=entity.country or None,
-                company=entity.company_eic if scope == QueryScope.FACILITY else None,
-            )
-            for entity in inventory.entities_for_scope(scope)
-        )
-    raise ValueError(f"{scope.value} is not a storage query scope")
+        for entity in entities
+        for gas_day in gas_day_range(start, end)
+    )
+
+
+def _coerce_date(value: date | datetime) -> date:
+    return value.date() if isinstance(value, datetime) else value
 
 
 def _listing_rows(payload: dict[str, Any] | list[dict[str, Any]]) -> list[dict[str, Any]]:

@@ -11,33 +11,12 @@
     {
       "key": "sffr_auction_results_buy_orders",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "EFA Date",
-              "EFA",
-              "25",
-              "50",
-              "75",
-              "100",
-              "125",
-              "150",
-              "175",
-              "200",
-              "225",
-              "250"
-            ],
             "columns": [
               {
                 "source": "EFA Date",
@@ -112,10 +91,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -138,36 +114,12 @@
     {
       "key": "sffr_auction_results_main",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Provider",
-              "Unit",
-              "Delivery Start",
-              "Delivery End",
-              "EFA",
-              "Service",
-              "Status",
-              "Volume",
-              "Accepted Volume",
-              "Price",
-              "Clearing Price",
-              "Technology Type",
-              "Location",
-              "Rank"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -260,10 +212,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

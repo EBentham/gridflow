@@ -1,7 +1,7 @@
 """Reconcile NESO bronze captures against silver completion, and drain the gaps (ADR-034 P-14).
 
-**Scope.** Families with a frozen record plus the three legacy keys (all, or
-the named ones), over their own and sibling bronze directories, at bronze
+**Scope.** Families with a frozen record (all, or the named ones), over
+their own and sibling bronze directories, at bronze
 partitions on or before the cutoff. Ingest-only and ``files`` families are
 reported as skipped, never as gaps. The **expected pairs** are P-2's families
 of every committed sidecar, read with ``require_provenance=False``.
@@ -10,8 +10,8 @@ of every committed sidecar, read with ``require_provenance=False``.
 failure record without a valid completion, or an unusable sidecar);
 ``missing_or_invalid_output`` (a completion that fails the one validity
 predicate); ``orphaned`` ((a) a completion whose capture is not expected, (b) a
-generic output whose capture has no completion); ``duplicated`` (two outputs
-carry one capture, or two bespoke captures resolve to one output path);
+output whose capture has no completion); ``duplicated`` (two outputs carry
+one capture);
 ``stale_covered`` (a ``COVERED`` grant whose proof inputs, re-derived at the
 cutoff from the grant's registry position, no longer digest to its evidence's
 components, or whose scope is empty; ADR-037 P-13); ``overlap`` (a
@@ -34,9 +34,8 @@ registry does not back raises :class:`RegistryError`.
 
 **Drain.** Recovers ``missing``, attempt-``failed``,
 ``missing_or_invalid_output`` and orphaned (b), grouped by (family, partition
-date): a generic group is one ``run_captures`` call restricted to its capture
-ids; a bespoke group is one :func:`completion.run_bespoke_capture` per
-capture. A failing capture or group never stops the next. After the last
+date): each group is one ``run_captures`` call restricted to its capture
+ids. A failing group never stops the next. After the last
 group the catalogue is refreshed once and the drain reconciles again; that
 second result is what the drain returns. It never touches orphaned (a),
 ``duplicated``, unusable sidecars, ``stale_covered``, ``overlap``,
@@ -58,7 +57,6 @@ import polars as pl
 
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
 from gridflow.connectors.neso_data_portal.registry import (
-    LEGACY_KEYS,
     CoveredDisposition,
     ReconcileAdjudication,
     RegistryError,
@@ -69,13 +67,9 @@ from gridflow.connectors.neso_data_portal.registry import (
 from gridflow.silver.latest_views import select_latest_vintage
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    Versions,
-    bespoke_targets,
-    bespoke_versions,
     capture_id_for,
     is_valid,
     partition_date_of,
-    run_bespoke_capture,
     scan_completions,
 )
 from gridflow.silver.neso_data_portal.equivalence import (
@@ -104,7 +98,6 @@ if TYPE_CHECKING:
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry import Registry, ResourceEntry
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
-    from gridflow.silver.base import BaseSilverTransformer
 
 logger = logging.getLogger(__name__)
 
@@ -279,7 +272,7 @@ def _resolve_scope(
     skipped: list[tuple[str, str]] = []
     for key in names:
         _package, family = registry.families[key]
-        if key in LEGACY_KEYS or family.record is not None:
+        if family.record is not None:
             families.append(key)
         else:
             reason = FILES_REASON if family.kind == "files" else INGEST_ONLY_REASON
@@ -287,17 +280,11 @@ def _resolve_scope(
     return families, skipped
 
 
-def _transformer_class(key: str) -> type[BaseSilverTransformer]:
+def _transformer_class(key: str) -> type[GenericNesoTransformer]:
     cls = get_transformer_class(SOURCE, key)
-    if cls is None:
-        raise UnknownFamilyError(f"{SOURCE}/{key} has no registered transformer")
+    if cls is None or not issubclass(cls, GenericNesoTransformer):
+        raise UnknownFamilyError(f"{SOURCE}/{key} has no generated transformer")
     return cls
-
-
-def _versions(cls: type[BaseSilverTransformer]) -> Versions:
-    if issubclass(cls, GenericNesoTransformer):
-        return cls.versions()
-    return bespoke_versions(cls)
 
 
 def _directories(key: str, registry: Registry) -> tuple[str, ...]:
@@ -352,7 +339,7 @@ def _failures(data_dir: Path, key: str) -> dict[str, dict[str, Any]]:
 
 
 def _output_ids(data_dir: Path, key: str) -> dict[str, list[str]]:
-    """Each generic output's capture ids -> the outputs (relative paths) holding them."""
+    """Each output's capture ids -> the outputs (relative paths) holding them."""
     root = PathBuilder(data_dir).silver_dir(SOURCE, key)
     holders: dict[str, list[str]] = {}
     if not root.is_dir():
@@ -378,9 +365,7 @@ def _output_ids(data_dir: Path, key: str) -> dict[str, list[str]]:
 def _family_gaps(
     key: str, registry: Registry, data_dir: Path, cutoff: date
 ) -> tuple[list[Gap], dict[str, _Pair]]:
-    cls = _transformer_class(key)
-    generic = issubclass(cls, GenericNesoTransformer)
-    versions = _versions(cls)
+    versions = _transformer_class(key).versions()
     gaps: list[Gap] = []
     expected = _expected(key, registry, data_dir, cutoff, gaps)
     ledger = {
@@ -395,34 +380,14 @@ def _family_gaps(
     # (``missing``, orphaned (b), ...) are reported but not drainable.
     duplicated: set[str] = set()
     outputs: list[tuple[str, date | None, list[str]]] = []
-    if generic:
-        for capture_id, holders in sorted(_output_ids(data_dir, key).items()):
-            day = _partition_or_none(Path(capture_id))
-            if day is not None and day > cutoff:
-                continue
-            outputs.append((capture_id, day, holders))
-            if len(holders) > 1:
-                duplicated.add(capture_id)
-                gaps.append(
-                    Gap("duplicated", key, day, capture_id, f"outputs {', '.join(holders)}")
-                )
-    else:
-        transformer = cls(data_dir)
-        for day in sorted({pair.partition_date for pair in expected.values()}):
-            _unique, collisions = bespoke_targets(transformer, day)
-            for path, group in collisions:
-                for capture in group:
-                    capture_id = capture_id_for(capture.body, data_dir)
-                    duplicated.add(capture_id)
-                    gaps.append(
-                        Gap(
-                            "duplicated",
-                            key,
-                            day,
-                            capture_id,
-                            f"shares output path {path.name} with {len(group) - 1} other(s)",
-                        )
-                    )
+    for capture_id, holders in sorted(_output_ids(data_dir, key).items()):
+        day = _partition_or_none(Path(capture_id))
+        if day is not None and day > cutoff:
+            continue
+        outputs.append((capture_id, day, holders))
+        if len(holders) > 1:
+            duplicated.add(capture_id)
+            gaps.append(Gap("duplicated", key, day, capture_id, f"outputs {', '.join(holders)}"))
 
     for capture_id in sorted(expected):
         pair = expected[capture_id]
@@ -916,17 +881,10 @@ def drain(
         cls = _transformer_class(key)
         run_id = f"drain-{uuid4()}"
         drained.append((key, day, len(capture_ids)))
-        if issubclass(cls, GenericNesoTransformer):
-            try:
-                cls(data_dir).run_captures(day, frozenset(capture_ids), run_id)
-            except NesoCaptureFailedError as exc:
-                logger.error("%s/%s %s: drain group failed: %s", SOURCE, key, day, exc)
-            continue
-        for capture_id in sorted(capture_ids):
-            try:
-                run_bespoke_capture(cls(data_dir), data_dir / capture_id, run_id)
-            except NesoCaptureFailedError as exc:
-                logger.error("%s/%s %s: drain capture failed: %s", SOURCE, key, day, exc)
+        try:
+            cls(data_dir).run_captures(day, frozenset(capture_ids), run_id)
+        except NesoCaptureFailedError as exc:
+            logger.error("%s/%s %s: drain group failed: %s", SOURCE, key, day, exc)
 
     if drained:
         refresh()

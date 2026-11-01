@@ -314,7 +314,7 @@ class TestWrapperContractIsUnchanged:
     def test_non_string_timestamp_value_is_silent_on_both_paths(
         self, tmp_path: Path, caplog: pytest.LogCaptureFixture
     ) -> None:
-        """Master's `_parse_timestamp` returns None silently for an int."""
+        """A sidecar timestamp that is neither a string nor a datetime fails silently."""
         sidecar = tmp_path / "raw_a.meta.json"
         sidecar.write_text(json.dumps({"written_at": 12345}))
 

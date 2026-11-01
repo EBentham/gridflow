@@ -62,20 +62,3 @@ class TestPathBuilder:
 
     def test_gold_root(self):
         assert self.pb.gold_root() == Path("/data/gold")
-
-    def test_gold_file(self):
-        result = self.pb.gold_file("system_marginal_price", date(2024, 1, 15))
-        expected = Path(
-            "/data/gold/system_marginal_price/year=2024/system_marginal_price_20240115.parquet"
-        )
-        assert result == expected
-
-    def test_duckdb_path(self):
-        result = self.pb.duckdb_path()
-        assert result == Path("/data/gridflow.duckdb")
-
-    def test_parquet_globs_exclude_hidden_files(self):
-        silver_pattern = self.pb.silver_glob_pattern("elexon", "system_prices").replace("\\", "/")
-        gold_pattern = self.pb.gold_glob_pattern("features").replace("\\", "/")
-        assert silver_pattern.endswith("silver/elexon/system_prices/**/[!.]*.parquet")
-        assert gold_pattern.endswith("gold/features/**/[!.]*.parquet")

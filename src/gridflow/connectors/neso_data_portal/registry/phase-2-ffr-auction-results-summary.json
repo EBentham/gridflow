@@ -11,45 +11,12 @@
     {
       "key": "ffr_phase2_auction_phase_block_order",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "ClearingPrice",
-              "Price",
-              "MAR",
-              "Status",
-              "BlockCode",
-              "BlockCodePRM",
-              "Paradoxically",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "Volume",
-              "Invalid",
-              "Bid Validity"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -195,10 +162,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -214,45 +178,12 @@
     {
       "key": "ffr_phase2_auction_phase_blockorders",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "ClearingPrice",
-              "Price",
-              "MAR",
-              "Status",
-              "BlockCode",
-              "BlockCodePRM",
-              "Paradoxically",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "Volume",
-              "Invalid",
-              "Bid Validity"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -398,10 +329,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -447,43 +375,12 @@
     {
       "key": "ffr_phase2_auction_phase_linear_orders",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "1P",
-              "1V",
-              "2P",
-              "2V",
-              "3P",
-              "3V",
-              "4P",
-              "4V"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -617,10 +514,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -636,43 +530,12 @@
     {
       "key": "ffr_phase2_auction_phase_linearorders",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "1P",
-              "1V",
-              "2P",
-              "2V",
-              "3P",
-              "3V",
-              "4P",
-              "4V"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -806,10 +669,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -827,54 +687,21 @@
     },
     {
       "key": "ffr_phase2_auction_phase_results_unit",
-      "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "tabular"
     },
     {
       "key": "ffr_phase2_auction_phase_results_sum",
-      "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "tabular"
     },
     {
       "key": "ffr_phase2_auction_phase_resultsbyunit",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Company",
-              "Unit Name",
-              "EFA Date",
-              "Delivery Start",
-              "Delivery End",
-              "EFA",
-              "Service",
-              "Cleared Volume",
-              "Clearing Price",
-              "Cancelled"
-            ],
             "columns": [
               {
                 "source": "Company",
@@ -954,10 +781,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -980,28 +804,12 @@
     {
       "key": "ffr_phase2_auction_phase_resultsum",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Service",
-              "EFA Date",
-              "Delivery Start",
-              "Delivery End",
-              "EFA",
-              "Cleared Volume",
-              "Clearing Price"
-            ],
             "columns": [
               {
                 "source": "Service",
@@ -1063,10 +871,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -1092,38 +897,17 @@
     },
     {
       "key": "ffr_phase2_auction_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     },
     {
       "key": "ffr_phase2_result_summary_archive",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Service",
-              "Date",
-              "EFA",
-              "Cleared Volume",
-              "Clearing Price"
-            ],
             "columns": [
               {
                 "source": "Service",
@@ -1156,10 +940,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -1190,43 +971,12 @@
     {
       "key": "ffr_phase2_blockorders_archive",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "ClearingPrice",
-              "Price",
-              "MAR",
-              "Status",
-              "BlockCode",
-              "BlockCodePRM",
-              "Paradoxically",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "Volume"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -1360,10 +1110,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -1392,59 +1139,12 @@
     {
       "key": "ffr_phase2_linearorders_archive",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "1P",
-              "1V",
-              "2P",
-              "2V",
-              "3P",
-              "3V",
-              "4P",
-              "4V",
-              "5P",
-              "5V",
-              "6P",
-              "6V",
-              "7P",
-              "7V",
-              "8P",
-              "8V",
-              "9P",
-              "9V",
-              "10P",
-              "10V",
-              "11P",
-              "11V",
-              "12P",
-              "12V"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -1674,56 +1374,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "1P",
-              "1V",
-              "2P",
-              "2V",
-              "3P",
-              "3V",
-              "4P",
-              "4V",
-              "5P",
-              "5V",
-              "6P",
-              "6V",
-              "7P",
-              "7V",
-              "8P",
-              "8V",
-              "9P",
-              "9V",
-              "10P",
-              "10V",
-              "11P",
-              "11V",
-              "12P",
-              "12V",
-              "13P",
-              "13V",
-              "14P",
-              "14V"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -1977,60 +1630,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "MarketName",
-              "BiddingLevelName",
-              "MemberName",
-              "OrderID",
-              "Portfolio",
-              "OrderEntryTime",
-              "OrderEntryUser",
-              "SettlementCurrency",
-              "OrderPeriodID",
-              "TradeID",
-              "EFA",
-              "DeliveryStart",
-              "DeliveryEnd",
-              "ExecutedVolume",
-              "1P",
-              "1V",
-              "2P",
-              "2V",
-              "3P",
-              "3V",
-              "4P",
-              "4V",
-              "5P",
-              "5V",
-              "6P",
-              "6V",
-              "7P",
-              "7V",
-              "8P",
-              "8V",
-              "9P",
-              "9V",
-              "10P",
-              "10V",
-              "11P",
-              "11V",
-              "12P",
-              "12V",
-              "13P",
-              "13V",
-              "14P",
-              "14V",
-              "15P",
-              "15V",
-              "16P",
-              "16V"
-            ],
             "columns": [
               {
                 "source": "MarketName",
@@ -2308,10 +1910,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -2340,28 +1939,12 @@
     {
       "key": "ffr_phase2_results_by_unit_archive",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Company",
-              "Unit Name",
-              "Date",
-              "EFA",
-              "Service",
-              "Cleared Volume",
-              "Clearing Price"
-            ],
             "columns": [
               {
                 "source": "Company",
@@ -2406,10 +1989,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

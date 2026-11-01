@@ -146,7 +146,7 @@ Wind Generation Forecast (WINDFOR). National Grid's initial and latest forecasts
 Non-BM STOR Generation (NONBM). Generation from Short Term Operating Reserve (STOR) providers that are not Balancing Mechanism units. These are typically smaller embedded generators contracted to provide reserve capacity.
 
 **API path:** `/datasets/NONBM`
-**Param style:** `?publishDateTimeFrom=ISO&publishDateTimeTo=ISO`
+**Param style:** `?from=ISO&to=ISO` (publish time window). The endpoint ignores `publishDateTimeFrom`/`publishDateTimeTo` and returns its latest record instead; silver excludes bronze fetched that way.
 **Update frequency:** Daily
 **Silver key columns:** `settlement_date`, `settlement_period`, `timestamp_utc`, `generation_mw`
 

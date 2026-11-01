@@ -130,15 +130,13 @@ def entsoe_source_config() -> SourceConfig:
 
 
 def _silver_path(data_dir: Path, dataset: str, target_date: date) -> Path:
-    return (
-        data_dir
-        / "silver"
-        / "entsoe"
-        / dataset
-        / f"year={target_date.year}"
-        / f"month={target_date.month:02d}"
-        / f"{dataset}_{target_date:%Y%m%d}.parquet"
-    )
+    """The partition's one silver file; an APPEND_ONLY name carries a run suffix."""
+    partition = (
+        data_dir / "silver" / "entsoe" / dataset / f"year={target_date.year}"
+    ) / f"month={target_date.month:02d}"
+    name = f"{dataset}_{target_date:%Y%m%d}"
+    matches = [*partition.glob(f"{name}.parquet"), *partition.glob(f"{name}_run*.parquet")]
+    return matches[0] if len(matches) == 1 else partition / f"{name}.parquet"
 
 
 def _write_fixture_to_bronze(tmp_data_dir: Path, dataset: str, fixture_name: str) -> Path:
@@ -274,7 +272,7 @@ class TestEntsoeUrlConstructionAllDatasets:
 
     @respx.mock
     @pytest.mark.asyncio
-    async def test_h6_optional_filters_preserve_documented_casing(
+    async def test_h6_domain_params_preserve_documented_casing(
         self,
         entsoe_source_config: SourceConfig,
     ) -> None:
@@ -291,26 +289,16 @@ class TestEntsoeUrlConstructionAllDatasets:
                 dataset="offered_transfer_capacity_continuous",
                 start=START,
                 end=END,
-                **{
-                    "Auction.Type": "A01",
-                    "Contract_MarketAgreement.Type": "A01",
-                    "Update_DateAndOrTime": "2024-01-15T00:00Z",
-                    "auction.Type": "ignored-wrong-case",
-                },
             )
 
         params = dict(route.calls[0].request.url.params)
 
         assert params["In_Domain"] == "10YGB----------A"
         assert params["Out_Domain"] == "10YFR-RTE------C"
-        assert params["Auction.Type"] == "A01"
-        assert params["Contract_MarketAgreement.Type"] == "A01"
-        assert params["Update_DateAndOrTime"] == "2024-01-15T00:00Z"
-        assert "auction.Type" not in params
 
     @respx.mock
     @pytest.mark.asyncio
-    async def test_h7_outage_filters_preserve_documented_casing(
+    async def test_h7_outage_params_preserve_documented_casing(
         self,
         entsoe_source_config: SourceConfig,
     ) -> None:
@@ -327,12 +315,6 @@ class TestEntsoeUrlConstructionAllDatasets:
                 dataset="outages_transmission",
                 start=START,
                 end=END,
-                **{
-                    "DocStatus": "A05",
-                    "mRID": "fixture-transmission-outage-gb-fr-20240115",
-                    "PeriodStartUpdate": "2024-01-15T00:00Z",
-                    "docStatus": "ignored-wrong-case",
-                },
             )
 
         params = dict(route.calls[0].request.url.params)
@@ -340,10 +322,6 @@ class TestEntsoeUrlConstructionAllDatasets:
         assert params["In_Domain"] == "10YGB----------A"
         assert params["Out_Domain"] == "10YFR-RTE------C"
         assert params["BusinessType"] == "A53"
-        assert params["DocStatus"] == "A05"
-        assert params["mRID"] == "fixture-transmission-outage-gb-fr-20240115"
-        assert params["PeriodStartUpdate"] == "2024-01-15T00:00Z"
-        assert "docStatus" not in params
 
     @respx.mock
     @pytest.mark.asyncio
@@ -385,26 +363,27 @@ class TestEntsoeUrlConstructionAllDatasets:
         entsoe_source_config: SourceConfig,
     ) -> None:
         """G9 ENTSOE-01: doc types with `offset` in optional_params (A37,
-        A15, A38, etc.) must page through results — fetch offset=0,
-        offset=4800, ... until a page returns fewer than 4800 TimeSeries
-        elements. Previously the connector made a single request and
-        silently dropped any data past 4800 series.
+        A15) must page through results: offset=0, 100, ... until a page
+        returns fewer than 100 series. A reply carries at most 100 series
+        (live probe 2026-10-24), so the page size is 100, not 4800.
 
-        Handler is keyed off the `offset` query param: offset=0 returns a
-        full page (4800 TimeSeries) → connector continues; offset=4800
-        returns a partial page (100 TimeSeries) → connector stops.
-        Per-zone (the connector iterates DEFAULT_ZONES for the default
-        "zone" domain style), so we expect 2 calls × N zones total.
+        Handler is keyed off the `offset` query param: offset=0 and 100 return
+        a full page of 100 ``Bid_TimeSeries`` (the A37 series name) and
+        offset=200 a partial page of 7, so each zone takes three calls.
         """
         from gridflow.connectors.entsoe.endpoints import DEFAULT_ZONES
 
-        full_page_xml = b"<root>" + (b"<TimeSeries/>" * 4800) + b"</root>"
-        partial_page_xml = b"<root>" + (b"<TimeSeries/>" * 100) + b"</root>"
+        def page(n: int) -> bytes:
+            return (
+                b"<ReserveBid_MarketDocument>"
+                + (b"<Bid_TimeSeries/>" * n)
+                + b"</ReserveBid_MarketDocument>"
+            )
 
         def handler(request: httpx.Request) -> httpx.Response:
             params = dict(request.url.params)
             offset = int(params.get("offset", "0"))
-            body = full_page_xml if offset == 0 else partial_page_xml
+            body = page(100) if offset < 200 else page(7)
             return httpx.Response(
                 200,
                 content=body,
@@ -420,21 +399,46 @@ class TestEntsoeUrlConstructionAllDatasets:
                 end=END,
             )
 
-        # Each zone goes: offset=0 (full → loop) → offset=4800 (partial → stop).
-        expected_calls = 2 * len(DEFAULT_ZONES)
+        expected_calls = 3 * len(DEFAULT_ZONES)
         assert len(route.calls) == expected_calls, (
             f"G9 ENTSOE-01 regression: expected {expected_calls} paginated "
-            f"calls (2 per zone × {len(DEFAULT_ZONES)} zones), got "
+            f"calls (3 per zone x {len(DEFAULT_ZONES)} zones), got "
             f"{len(route.calls)}"
         )
 
         offsets_seen = {dict(call.request.url.params).get("offset", "") for call in route.calls}
-        assert offsets_seen == {"0", "4800"}, (
-            f"G9 ENTSOE-01 regression: expected offset values 0 and 4800, got {offsets_seen}"
+        assert offsets_seen == {"0", "100", "200"}, (
+            f"G9 ENTSOE-01 regression: expected offset values 0, 100 and 200, got {offsets_seen}"
         )
 
-        # Both pages collected per zone: 2 RawResponses × N zones.
         assert len(responses) == expected_calls
+        assert sorted({r.record_count for r in responses}) == [7, 100]
+
+    @respx.mock
+    @pytest.mark.asyncio
+    async def test_paging_cap_fails_the_fetch_instead_of_returning_short(
+        self,
+        entsoe_source_config: SourceConfig,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        """A request still returning full pages at the cap must raise: a short
+        result would be recorded as a successful ingest and advance the
+        watermark past series that were never fetched."""
+        from gridflow.connectors.entsoe import client as entsoe_client
+
+        monkeypatch.setattr(entsoe_client, "_ENTSOE_MAX_PAGES", 2)
+        full = (
+            b"<ReserveBid_MarketDocument>"
+            + b"<Bid_TimeSeries/>" * 100
+            + b"</ReserveBid_MarketDocument>"
+        )
+        respx.get(f"{ENTSOE_BASE}/api").mock(
+            return_value=httpx.Response(200, content=full, headers={"content-type": "text/xml"})
+        )
+
+        async with EntsoeConnector(entsoe_source_config) as connector:
+            with pytest.raises(entsoe_client.EntsoePagingLimitError):
+                await connector.fetch(dataset="balancing_energy_bids", start=START, end=END)
 
     @respx.mock
     @pytest.mark.asyncio
@@ -551,12 +555,6 @@ class TestEntsoeBronzeToSilverPipeline:
                 {"timestamp_utc", "area_code", "reserve_type", "direction", "price_eur_mwh"},
                 id="activated_balancing_prices",
             ),
-            # NOTE: activated_balancing_qty is intentionally NOT added here — it
-            # has no DOC_TYPES/connector config entry (pre-existing gap, unrelated
-            # to F-02, out of scope per this batch's ingest-changes scope fence).
-            # Its value-level published_at coverage lives at the unit level:
-            # tests/unit/test_entsoe.py::TestActivatedBalancingQtyTransformer::
-            # test_published_at_equals_document_vintage.
             pytest.param(
                 "contracted_reserves",
                 "contracted_reserves_gb.xml",

@@ -3,18 +3,17 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, ClassVar
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import (
     EntsoeTransmissionMarketAmount,
     EntsoeTransmissionMarketQuantity,
 )
-from gridflow.silver.base import BaseSilverTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -23,35 +22,13 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class _H6ZonePairTransformer(BaseSilverTransformer):
+class _H6ZonePairTransformer(EntsoeXmlTransformer):
     """Shared H6 transformer for zone-pair time-series payloads."""
 
     value_tag = "quantity"
     value_column = "quantity_mw"
     schema_cls: ClassVar[type[BaseModel]] = EntsoeTransmissionMarketQuantity
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            if xml_file.name.endswith(".meta.json"):
-                continue
-            try:
-                rows.extend(
-                    parse_timeseries_xml(
-                        xml_file.read_bytes(),
-                        value_tag=self.value_tag,
-                    )
-                )
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "in_area_code", "out_area_code", "business_type")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -88,15 +65,7 @@ class _H6ZonePairTransformer(BaseSilverTransformer):
                     pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
                 ]
             )
-            .unique(
-                subset=[
-                    "timestamp_utc",
-                    "in_area_code",
-                    "out_area_code",
-                    "business_type",
-                ],
-                keep="last",
-            )
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "in_area_code", "out_area_code"])
         )
 
@@ -137,7 +106,7 @@ class DcLinkIntradayTransferLimitsTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
     # to the directly-verified quantity family (R3-RESEARCH.md:57); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -145,7 +114,7 @@ class CommercialSchedulesTransformer(_H6QuantityTransformer):
     dataset = "commercial_schedules"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR 2026-05-06, window-
-    # bounded (R3-RESEARCH.md:51); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # bounded (R3-RESEARCH.md:51); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -156,7 +125,7 @@ class RedispatchingCrossBorderTransformer(_H6QuantityTransformer):
     dataset = "redispatching_cross_border"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:58); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:58); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -164,7 +133,7 @@ class RedispatchingInternalTransformer(_H6QuantityTransformer):
     dataset = "redispatching_internal"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:59); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:59); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -172,7 +141,7 @@ class CountertradingTransformer(_H6QuantityTransformer):
     dataset = "countertrading"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:60); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:60); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -180,7 +149,7 @@ class OfferedTransferCapacityContinuousTransformer(_H6QuantityTransformer):
     dataset = "offered_transfer_capacity_continuous"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:61); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:61); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -189,7 +158,7 @@ class OfferedTransferCapacityImplicitTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault + live probe real EMPTY across 3
     # independent probes (R3-RESEARCH.md:62); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -197,7 +166,7 @@ class OfferedTransferCapacityExplicitTransformer(_H6QuantityTransformer):
     dataset = "offered_transfer_capacity_explicit"
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY + structural analogy
-    # (R3-RESEARCH.md:63); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # (R3-RESEARCH.md:63); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -206,7 +175,7 @@ class TransferCapacityUseTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault + 2 live probes real EMPTY, quantity
     # schema (R3-RESEARCH.md:64); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -215,7 +184,7 @@ class TotalNominatedCapacityTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR 2026-05-06, window
     # matches exactly (R3-RESEARCH.md:52); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -224,7 +193,7 @@ class TotalCapacityAllocatedTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, vault-recorded real EMPTY, sister to
     # total_nominated_capacity (R3-RESEARCH.md:65); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -233,7 +202,7 @@ class NetPositionsTransformer(_H6QuantityTransformer):
     source = "entsoe"
     # B4 (N-9): FILTER_SAFE, live probe FR 2026-06-01, window matches
     # exactly (R3-RESEARCH.md:54); see
-    # _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 

@@ -86,7 +86,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `daily-demand-update` | `daily_demand_update` | silver | held: TODO: zero ND/TSD on FORECAST_ACTUAL_INDICATOR = F rows: a forecast of zero or no forecast? (unit E-SEM) | whole_capture | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `daily-demand-update` | `daily_demand_update_files` | catalogue only | — | — | — | — |
 | `daily-opmr` | `daily_opmr` | silver | held: TODO: history-bearing body (26,709 targets at or before the CKAN vintage); Publish Date is a date with no issue instant or zone (unit E-SEM) | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
-| `daily-wind-availability` | `daily_wind_availability` | bespoke silver | eligible | — | — | — |
+| `daily-wind-availability` | `daily_wind_availability` | silver | eligible | key_latest | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `data-portal-planned-changes-known-issues` | `portal_known_issues` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits` | silver | held: TODO: what period start/end and DST-fold treatment does the target timestamp denote, what are Flow_MW's unit and the meaning of blanks and 99999, and what row grain makes the archive unique? The archive has no issue column (RULINGS 529 fails: 732,332 targets precede the vintage). (unit E-SEM) | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `day-ahead-constraint-flows-and-limits` | `da_constraint_flows_limits_files` | catalogue only | — | — | — | — |
@@ -154,7 +154,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `embedded-register` | `embedded_register` | silver | eligible | whole_capture | none | CKAN last_modified of the captured file (ADR-030) |
 | `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_dump` | silver | held: TODO: Forecast_Datetime is naive; rows before 2026-06-12T11:54:02 measure as UK local time (no 01:xx issue on 2026-03-29); rows from the 2026-06-12 forecast-system migration have crossed no DST transition, so their zone is unmeasured; typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | gridflow capture time |
 | `embedded-wind-and-solar-forecasts` | `embedded_forecast_archive_upload` | silver | held: TODO: Forecast_Datetime ends in 'Z' but measures as UK local time (no 01:xx issue on spring-forward nights; one 01:12 issue on fall-back nights, the BST occurrence); typed Europe/London, fold earliest (ADR-038); NESO does not document the zone (unit E-SEM) | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
-| `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast` | bespoke silver | eligible | — | — | — |
+| `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast` | silver | eligible | key_latest | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast_archive` | ingest-only (no silver output) | — | — | — | — |
 | `embedded-wind-and-solar-forecasts` | `embedded_wind_solar_forecast_files` | catalogue only | — | — | — | — |
 | `etys-gb-transmission-system-boundaries` | `etys_boundaries_files` | catalogue only | — | — | — | — |
@@ -186,7 +186,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `gis-boundaries-for-gb-grid-supply-points` | `gis_grid_supply_points_files` | catalogue only | — | — | — | — |
 | `historic-demand-data` | `historic_demand` | silver | held: TODO: literal NA in the epoch-2 bodies of 2001-2008 in TSD, the embedded wind/solar columns, SCOTTISH_TRANSFER and every interconnector flow but IFA: missing, not applicable or zero? NESO defines no meaning; those columns stay text across every epoch until it does. (unit E-SEM) | whole_capture per resource_id | sp_pair | CKAN last_modified of the captured file (ADR-030) |
 | `historic-demand-data` | `historic_demand_files` | catalogue only | — | — | — | — |
-| `historic-generation-mix` | `historic_generation_mix` | bespoke silver | eligible | — | — | — |
+| `historic-generation-mix` | `historic_generation_mix` | silver | eligible | key_latest | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_data_pre` | silver | eligible | whole_capture | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `historic-gtma-grid-trade-master-agreement-trades-data` | `gtma_trades_fy` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
@@ -290,7 +290,7 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 | `stor-windows` | `stor_windows` | silver | eligible | whole_capture | date_sp1 | CKAN last_modified of the captured file (ADR-030) |
 | `super-stable-export-limit-contract-enactment` | `ssel_contract_enactment` | silver | held: TODO: COST-DIMENSION — the dictionary labels `Cost` £/h but describes it as total cost (price × volume × duration); which is published? (unit v0.22-K-TRD) | whole_capture per resource_id | utc_instant | gridflow capture time |
 | `system-frequency-data` | `system_frequency` | ingest-only (no silver output) | — | — | — | — |
-| `system-frequency-data` | `system_frequency_dmy_csv` | silver | held: TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 repeat, so October 2014 fails its duplicate key (adjudicated, ADR-040), and the December 2014 to January 2015 edge cannot be overlap-checked until the zone is documented. (unit H-R1) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
+| `system-frequency-data` | `system_frequency_dmy_csv` | silver | held: TODO: dtm: the zone, period start/end and clock of these datetimes are undocumented (local_instant is forbidden until evidenced). The 2014 day-first labels carry no offset and NESO's GMT statement starts January 2020; the labels 26/10/2014 01:00:00-01:59:59 repeat with different readings and are told apart only by dtm_occurrence (body order), and the December 2014 to January 2015 edge cannot be overlap-checked until the zone is documented. (unit H-R1) | whole_capture per resource_id | none | CKAN last_modified of the captured file (ADR-030) |
 | `system-frequency-data` | `system_frequency_gmt_csv` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `system-frequency-data` | `system_frequency_gmt_zip` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
 | `system-frequency-data` | `system_frequency_offset_csv` | silver | eligible | whole_capture per resource_id | utc_instant | CKAN last_modified of the captured file (ADR-030) |
@@ -475,6 +475,6 @@ Effective eligibility of an output (ADR-036 P-8): a held package holds every out
 ## Totals
 
 - Packages: 131 (held: 4)
-- Families: 326: silver 261 (bespoke 3, recorded 258), ingest-only 30, catalogue only 35
+- Families: 326: silver 261, ingest-only 30, catalogue only 35
 - Silver outputs held: 128
 - Resources: 1385
