@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from datetime import UTC, datetime
+from typing import ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeImbalancePrices
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL, currency_expr
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
@@ -18,7 +17,7 @@ from gridflow.silver.registry import register_transformer
 logger = logging.getLogger(__name__)
 
 
-class ImbalancePricesTransformer(BaseSilverTransformer):
+class ImbalancePricesTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E imbalance prices (A85) bronze XML → silver Parquet.
 
     Maps businessType A19→"long", A20→"short" via replace_strict.
@@ -27,28 +26,13 @@ class ImbalancePricesTransformer(BaseSilverTransformer):
 
     source = "entsoe"
     dataset = "imbalance_prices"
+    value_tag = "price.amount"
     schema_cls = EntsoeImbalancePrices
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
     populated data, PT15M (R3-RESEARCH.md:67); window-bound comparison not
     shown in the abridged vault text, see
     ADR-026 Appendix A."""
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        records: list[dict[str, Any]] = []
-        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            records.extend(parse_timeseries_xml(xml_file.read_bytes(), value_tag="price.amount"))
-
-        if not records:
-            return pl.DataFrame()
-
-        return pl.DataFrame(records).with_columns(
-            pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-        )
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

@@ -5,11 +5,10 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import (
     EntsoeBalancingCapacity,
     EntsoeBalancingEnergyBid,
@@ -17,7 +16,7 @@ from gridflow.schemas.entsoe import (
     EntsoeBalancingState,
     EntsoeCrossZonalBalancingCapacity,
 )
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
@@ -29,7 +28,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class _H8BalancingTransformer(BaseSilverTransformer):
+class _H8BalancingTransformer(EntsoeXmlTransformer):
     """Shared transformer for H8 balancing time-series payloads."""
 
     value_tag = "quantity"
@@ -57,32 +56,16 @@ class _H8BalancingTransformer(BaseSilverTransformer):
     #: the request (zone, offset, ...) does.
     LATEST_FETCH_PER_REQUEST: ClassVar[bool] = False
 
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        candidates = super()._bronze_candidates(target_date)
+        return _latest_fetch_files(candidates) if self.LATEST_FETCH_PER_REQUEST else candidates
+
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        xml_files = sorted(bronze_path.glob("raw_*.xml"))
-        if self.LATEST_FETCH_PER_REQUEST:
-            xml_files = _latest_fetch_files(xml_files)
-
-        rows: list[dict[str, Any]] = []
-        for xml_file in xml_files:
-            if xml_file.name.endswith(".meta.json"):
-                continue
-            try:
-                rows.extend(
-                    parse_timeseries_xml(
-                        xml_file.read_bytes(),
-                        value_tag=self.value_tag,
-                    )
-                )
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows, infer_schema_length=None)
+        # Full-length schema inference, unlike the base default: a field can
+        # first appear past the first 100 rows.
+        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        rows = [record for _, records in pairs for record in records]
+        return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

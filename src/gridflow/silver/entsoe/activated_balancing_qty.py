@@ -3,14 +3,12 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import Any
+from datetime import UTC, datetime
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeActivatedBalancingQty
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
@@ -18,7 +16,7 @@ from gridflow.silver.registry import register_transformer
 logger = logging.getLogger(__name__)
 
 
-class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
+class ActivatedBalancingQtyTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E activated balancing quantity (A83/A16) bronze XML → silver Parquet.
 
     Maps businessType A95→"fcr", A96→"afrr", A97→"mfrr", A98→"rr" via replace_strict.
@@ -29,22 +27,6 @@ class ActivatedBalancingQtyTransformer(BaseSilverTransformer):
     source = "entsoe"
     dataset = "activated_balancing_qty"
     schema_cls = EntsoeActivatedBalancingQty
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        records: list[dict[str, Any]] = []
-        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            records.extend(parse_timeseries_xml(xml_file.read_bytes(), value_tag="quantity"))
-
-        if not records:
-            return pl.DataFrame()
-
-        return pl.DataFrame(records).with_columns(
-            pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC"))
-        )
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

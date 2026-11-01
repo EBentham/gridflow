@@ -3,22 +3,21 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from datetime import UTC, datetime
+from typing import ClassVar
 
 import polars as pl
 
 from gridflow.connectors.entsoe.area_codes import area_name_for
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import EntsoeActualGeneration
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
 
 
-class ActualGenerationTransformer(BaseSilverTransformer):
+class ActualGenerationTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E actual generation XML from bronze to silver."""
 
     source = "entsoe"
@@ -26,25 +25,6 @@ class ActualGenerationTransformer(BaseSilverTransformer):
     schema_cls = EntsoeActualGeneration
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.xml")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                records = parse_timeseries_xml(f.read_bytes(), value_tag="quantity")
-                rows.extend(records)
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", f, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

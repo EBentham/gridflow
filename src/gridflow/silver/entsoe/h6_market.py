@@ -3,17 +3,16 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any, ClassVar
+from datetime import UTC, datetime
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import (
     EntsoeTransmissionMarketAmount,
     EntsoeTransmissionMarketQuantity,
 )
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
@@ -23,35 +22,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class _H6ZonePairTransformer(BaseSilverTransformer):
+class _H6ZonePairTransformer(EntsoeXmlTransformer):
     """Shared H6 transformer for zone-pair time-series payloads."""
 
     value_tag = "quantity"
     value_column = "quantity_mw"
     schema_cls: ClassVar[type[BaseModel]] = EntsoeTransmissionMarketQuantity
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-            if xml_file.name.endswith(".meta.json"):
-                continue
-            try:
-                rows.extend(
-                    parse_timeseries_xml(
-                        xml_file.read_bytes(),
-                        value_tag=self.value_tag,
-                    )
-                )
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

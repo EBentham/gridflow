@@ -294,9 +294,12 @@ class TestParseTimeseriesXml:
         records = parse_timeseries_xml(b"<root></root>", value_tag="price.amount")
         assert records == []
 
-    def test_invalid_xml_returns_empty(self):
-        records = parse_timeseries_xml(b"not xml at all <<<", value_tag="price.amount")
-        assert records == []
+    def test_invalid_xml_raises(self):
+        """A body that is not XML is refused, so the reader can refuse its date."""
+        with pytest.raises(ValueError, match="not well-formed XML"):
+            parse_timeseries_xml(b"not xml at all <<<", value_tag="price.amount")
+        with pytest.raises(ValueError, match="not well-formed XML"):
+            parse_generation_units_master_data_xml(b"not xml at all <<<")
 
     # -- C-9: empty <position/> must not fabricate position 0 -----------------
 

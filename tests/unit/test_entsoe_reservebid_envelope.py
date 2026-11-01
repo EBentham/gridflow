@@ -4797,8 +4797,8 @@ MATCHED_NO_POINTS_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
 #: series names -- one <Bid_TimeSeries> (quantity 11) and one bare
 #: <TimeSeries> (quantity 22). Measured today (F-12): 1 record,
 #: ('t-1', 22.0) -- the Bid_TimeSeries half is silently dropped, no log at
-#: all. D-10 must refuse the whole document instead: 0 records, ERROR
-#: naming both names.
+#: all. D-10 must refuse the whole document instead: a ValueError and an
+#: ERROR naming both names.
 MIXED_ENVELOPE_DOCUMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
 <ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:2">
   <mRID>inline-mixed-doc</mRID>
@@ -5141,15 +5141,17 @@ class TestGroupAReservebidEnvelope:
         self, caplog: pytest.LogCaptureFixture
     ) -> None:
         """A7 / D-10 (Sol finding 4): a ReserveBid document presenting BOTH
-        accepted series names must be refused -- zero records, ERROR naming
+        accepted series names must be refused -- a ValueError, ERROR naming
         both. Neither a swap (silently drops one) nor a naive union
         (silently inflates or, on colliding keys, silently corrupts via
         ``keep="last"``) is safe (F-12, measured both directions). RED
         today: 1 record ``('t-1', 22.0)`` and no log at all."""
-        with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
-            records = parse_timeseries_xml(MIXED_ENVELOPE_DOCUMENT, value_tag="quantity")
+        with (
+            caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"),
+            pytest.raises(ValueError, match="N-21/D-10"),
+        ):
+            parse_timeseries_xml(MIXED_ENVELOPE_DOCUMENT, value_tag="quantity")
 
-        assert records == []
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
         assert any(
             "Bid_TimeSeries" in r.getMessage() and "TimeSeries" in r.getMessage() for r in errors
@@ -5235,7 +5237,7 @@ class TestGroupAReservebidEnvelope:
         """A11 / D-11 (Sec 9.3, FM-22, Sol pass-3): a <Point> presenting MORE
         THAN ONE accepted value tag (here, both `quantity` and
         `quantity.quantity` under value_tag="quantity") must be refused --
-        zero records, ERROR naming both spellings -- in EITHER child
+        a ValueError, ERROR naming both spellings -- in EITHER child
         ordering. This shape is ADVERSARIAL and NEVER OBSERVED (same posture
         as MIXED_ENVELOPE_DOCUMENT, D-9a, FM-19); it exists to prove the
         predicate is order-invariant, not to model a real payload. RED at
@@ -5246,10 +5248,12 @@ class TestGroupAReservebidEnvelope:
         assertions are load-bearing for that reason. Cross-constrained
         against a "refuse every ReserveBid" implementation by A1 (3
         records), B3 (1 record, 9.0) and A10 assertion 1 (1 record, 7.0)."""
-        with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
-            records = parse_timeseries_xml(document, value_tag="quantity")
+        with (
+            caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"),
+            pytest.raises(ValueError, match="N-21/D-11"),
+        ):
+            parse_timeseries_xml(document, value_tag="quantity")
 
-        assert records == []
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
         # R4-b redesign, structural change 2: `sorted(accepted_value_tags)`
         # is logging arg index 3 -- a real Python list on the LogRecord, not
@@ -5443,7 +5447,7 @@ class TestGroupAReservebidEnvelope:
         N=0 refuses nothing -- the pre-existing ``value is None`` skip (no
         record for that Point, no ERROR), not a D-11 refusal. N=1 parses to
         its own value regardless of spelling. N >= 2, any mixture, any
-        values, any order: refused with 0 records and exactly one ERROR
+        values, any order: refused with a ValueError and exactly one ERROR
         whose structured accepted-tags argument names both spellings
         (asserted via ``record.args[3]``, never via message text -- see the
         sibling assertion in
@@ -5467,13 +5471,17 @@ class TestGroupAReservebidEnvelope:
           which must refuse despite identical values.
         """
         document = _point_matrix_document(children)
+        refused = False
         with caplog.at_level("ERROR", logger="gridflow.connectors.entsoe.parsers"):
-            records = parse_timeseries_xml(document, value_tag="quantity")
+            try:
+                records = parse_timeseries_xml(document, value_tag="quantity")
+            except ValueError:
+                refused = True
 
         errors = [r for r in caplog.records if r.levelname == "ERROR"]
 
         if expect_refused:
-            assert records == [], f"expected 0 records for children={children!r}; got {records!r}"
+            assert refused, f"expected a refusal for children={children!r}; got {records!r}"
             assert len(errors) == 1, (
                 f"expected exactly one D-11 ERROR for children={children!r}; got "
                 f"{[r.getMessage() for r in errors]}"
@@ -5481,6 +5489,7 @@ class TestGroupAReservebidEnvelope:
             # Structured assertion, never message text (structural change 2).
             assert errors[0].args[3] == ["quantity", "quantity.quantity"]
         else:
+            assert not refused
             assert errors == [], (
                 f"expected no D-11 ERROR for children={children!r}; got "
                 f"{[r.getMessage() for r in errors]}"

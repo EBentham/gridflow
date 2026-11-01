@@ -3,29 +3,31 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.entsoe import EntsoeOutagesGeneration
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
 from gridflow.silver.entsoe._outages import (
     OUTAGE_COMMON_COLUMNS,
     latest_revision_steps,
+    outage_steps_for_day,
+    parse_outage_xml,
     prepare_outage_frame,
-    read_outage_partition,
 )
 from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
     from datetime import date
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
-class OutagesGenerationTransformer(BaseSilverTransformer):
+class OutagesGenerationTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E generation unavailability XML (A80) from bronze to silver.
 
     Each silver row is one step of one outage document's latest revision,
@@ -49,11 +51,12 @@ class OutagesGenerationTransformer(BaseSilverTransformer):
         "generation_unit_mrid",
     )
 
+    def _parse_bronze_body(self, path: Path) -> list[dict[str, Any]]:
+        return parse_outage_xml(path.read_bytes())
+
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-        return read_outage_partition(bronze_path, target_date)
+        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        return outage_steps_for_day([r for _, records in pairs for r in records], target_date)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

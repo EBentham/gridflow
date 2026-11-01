@@ -19,7 +19,6 @@ The outage's own start and end survive unclipped as ``outage_start_utc`` and
 
 from __future__ import annotations
 
-import logging
 from datetime import UTC, date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
@@ -29,9 +28,6 @@ from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from pathlib import Path
-
-logger = logging.getLogger(__name__)
 
 _UTC_US = pl.Datetime("us", "UTC")
 
@@ -84,23 +80,17 @@ def parse_outage_xml(xml_bytes: bytes) -> list[dict[str, Any]]:
     return parse_timeseries_xml(xml_bytes, value_tag="quantity", a03_as_steps=True)
 
 
-def read_outage_partition(bronze_path: Path, target_date: date) -> pl.DataFrame:
-    """Parse every raw body in one bronze partition and clip it to that day.
+def outage_steps_for_day(rows: list[dict[str, Any]], target_date: date) -> pl.DataFrame:
+    """Keep each document's latest revision, then clip its steps to the day.
 
     Args:
-        bronze_path: The partition directory holding ``raw_*.xml`` bodies.
+        rows: :func:`parse_outage_xml` records from every body of one partition.
         target_date: The partition's UTC day.
 
     Returns:
         Step rows of each document's latest revision that overlap
         ``target_date``, clipped to it; empty when none.
     """
-    rows: list[dict[str, Any]] = []
-    for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-        try:
-            rows.extend(parse_outage_xml(xml_file.read_bytes()))
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
     if not rows:
         return pl.DataFrame()
     # Revision first, clip second: clipping first would let a superseded

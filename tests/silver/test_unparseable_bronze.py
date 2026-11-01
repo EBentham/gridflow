@@ -26,6 +26,34 @@ if TYPE_CHECKING:
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 DAY = date(2024, 1, 15)
 NEXT_DAY = date(2024, 1, 16)
+RESERVEBID_DAY = date(2026, 6, 1)
+
+ACKNOWLEDGEMENT = b"""<?xml version="1.0" encoding="UTF-8"?>
+<Acknowledgement_MarketDocument
+    xmlns="urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0">
+  <mRID>ack-1</mRID>
+  <createdDateTime>2024-01-15T01:00:00Z</createdDateTime>
+  <Reason><code>999</code><text>No matching data found</text></Reason>
+</Acknowledgement_MarketDocument>
+"""
+
+# One <Point> carrying both accepted ReserveBid value tags: the parser cannot
+# tell which is the value, so it refuses the document.
+AMBIGUOUS_RESERVEBID = b"""<?xml version="1.0" encoding="UTF-8"?>
+<ReserveBid_MarketDocument xmlns="urn:iec62325.351:tc57wg16:451-7:reservebiddocument:7:1">
+  <mRID>ambiguous-1</mRID>
+  <createdDateTime>2026-06-01T00:00:00Z</createdDateTime>
+  <Bid_TimeSeries>
+    <mRID>bid-1</mRID>
+    <businessType>B74</businessType>
+    <Period>
+      <timeInterval><start>2026-06-01T00:00Z</start><end>2026-06-01T00:15Z</end></timeInterval>
+      <resolution>PT15M</resolution>
+      <Point><position>1</position><quantity>22</quantity><quantity.quantity>11</quantity.quantity></Point>
+    </Period>
+  </Bid_TimeSeries>
+</ReserveBid_MarketDocument>
+"""
 
 
 def _partition(data_dir: Path, source: str, dataset: str, day: date) -> Path:
@@ -203,3 +231,46 @@ def test_bmunits_corrupt_newest_body_is_refused(
     assert result.status == "failed"
     assert "UNPARSEABLE_BODY=1" in (result.error or "")
     assert reference.read_bytes() == before
+
+
+def test_entsoe_malformed_xml_refuses_the_date(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A body that is not XML refuses the date; an Acknowledgement reply does not."""
+    data_dir = _env(tmp_path, monkeypatch)
+    partition = _partition(data_dir, "entsoe", "actual_load", DAY)
+    (partition / "raw_a.xml").write_bytes((FIXTURES / "entsoe" / "actual_load_gb.xml").read_bytes())
+    (partition / "raw_c.xml").write_bytes(ACKNOWLEDGEMENT)
+    assert _transform("entsoe", "actual_load", DAY).status == "success"
+    rows = pl.read_parquet(_silver(data_dir, "entsoe", "actual_load", DAY)).height
+    assert rows > 0
+
+    (partition / "raw_b.xml").write_bytes(b"not xml <<<")
+    result = _transform("entsoe", "actual_load", DAY)
+
+    assert result.status == "failed"
+    assert result.bronze_unvouched == 1
+    assert "UNPARSEABLE_BODY=1" in (result.error or "")
+    assert "raw_b.xml" in (result.error or "")
+    assert pl.read_parquet(_silver(data_dir, "entsoe", "actual_load", DAY)).height == rows
+
+
+def test_reservebid_refusals_refuse_the_date(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A refused ReserveBid document must not let its healthy sibling overwrite silver."""
+    data_dir = _env(tmp_path, monkeypatch)
+    partition = _partition(data_dir, "entsoe", "balancing_energy_bids", RESERVEBID_DAY)
+    healthy = FIXTURES / "entsoe" / "balancing_energy_bids_a37_reservebid_de_20260601.xml"
+    (partition / "raw_a.xml").write_bytes(healthy.read_bytes())
+    assert _transform("entsoe", "balancing_energy_bids", RESERVEBID_DAY).status == "success"
+    destination = _silver(data_dir, "entsoe", "balancing_energy_bids", RESERVEBID_DAY)
+    rows = pl.read_parquet(destination).height
+
+    (partition / "raw_b.xml").write_bytes(AMBIGUOUS_RESERVEBID)
+    result = _transform("entsoe", "balancing_energy_bids", RESERVEBID_DAY)
+
+    assert result.status == "failed"
+    assert "UNPARSEABLE_BODY=1" in (result.error or "")
+    assert "raw_b.xml" in (result.error or "")
+    assert pl.read_parquet(destination).height == rows
