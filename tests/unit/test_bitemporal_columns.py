@@ -8,6 +8,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+from _bronze_fixtures import write_openmeteo_historical_bronze
 
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer
@@ -174,29 +175,6 @@ def _write_bronze_json(
         )
 
 
-def _write_openmeteo_historical_bronze(
-    data_dir: Path,
-    target_date: date,
-    fetched_at: datetime | None = None,
-) -> None:
-    payload = json.loads((FIXTURES / "openmeteo" / "historical_london_response.json").read_text())
-    # F7.5: per-location bronze uses double-underscore separator.
-    bronze_dir = _date_dir(data_dir, "open_meteo", "historical_demand__london", target_date)
-    bronze_dir.mkdir(parents=True, exist_ok=True)
-    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
-    if fetched_at is not None:
-        (bronze_dir / "raw_test.meta.json").write_text(
-            json.dumps(
-                {
-                    "source": "open_meteo",
-                    "dataset": "historical_demand__london",
-                    "fetched_at": fetched_at.isoformat(),
-                    "data_date": target_date.isoformat(),
-                }
-            )
-        )
-
-
 def _read_single_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFrame:
     return scan_parquet_dir(data_dir / "silver" / source / dataset).collect()
 
@@ -287,7 +265,7 @@ def test_fuelhh_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
 
 
 def test_openmeteo_historical_run_writes_bitemporal_columns(tmp_data_dir: Path) -> None:
-    _write_openmeteo_historical_bronze(tmp_data_dir, TARGET_DATE)
+    write_openmeteo_historical_bronze(tmp_data_dir, TARGET_DATE)
 
     rows = HistoricalDemandWeather(tmp_data_dir).run(TARGET_DATE, run_id=RUN_ID)
     df = _read_single_silver(tmp_data_dir, "open_meteo", "historical_demand")
@@ -390,7 +368,7 @@ def test_sidecar_timestamp_parse_falls_through_to_next_key(tmp_data_dir: Path) -
 
 def test_openmeteo_reingest_uses_location_sidecar_timestamp(tmp_data_dir: Path) -> None:
     sidecar_time = datetime(2024, 1, 16, 10, 0, 0, tzinfo=UTC)
-    _write_openmeteo_historical_bronze(
+    write_openmeteo_historical_bronze(
         tmp_data_dir,
         TARGET_DATE,
         fetched_at=sidecar_time,

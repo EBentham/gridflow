@@ -14,39 +14,23 @@ Test 3 is always green: refresh_views idempotency does not require F15-C.
 
 from __future__ import annotations
 
-import json
-from datetime import date
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 import duckdb
 import polars as pl
 import pytest
+from _bronze_fixtures import write_fuelhh_bronze
 from typer.testing import CliRunner
 
 from gridflow.cli import app
 
 if TYPE_CHECKING:
+    from datetime import date
+    from pathlib import Path
+
     from conftest import IsolatedPaths
 
-FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
 runner = CliRunner()
-
-
-def _write_fuelhh_bronze(data_dir: Path) -> None:
-    target = date(2024, 1, 15)
-    bronze_dir = (
-        data_dir
-        / "bronze"
-        / "elexon"
-        / "fuelhh"
-        / str(target.year)
-        / f"{target.month:02d}"
-        / f"{target.day:02d}"
-    )
-    bronze_dir.mkdir(parents=True, exist_ok=True)
-    payload = json.loads((FIXTURES / "fuelhh_response.json").read_text())
-    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
 
 
 @pytest.mark.integration
@@ -61,7 +45,7 @@ def test_transform_makes_silver_view_queryable_immediately(isolated_env: Isolate
     registered and a fresh connection can query it immediately.  PASSES GREEN.
     """
     data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
-    _write_fuelhh_bronze(data_dir)
+    write_fuelhh_bronze(data_dir)
 
     result = runner.invoke(
         app,
