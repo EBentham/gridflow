@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import dataclasses
 import io
 import logging
@@ -24,7 +23,6 @@ from gridflow.connectors.entsoe.endpoints import (
 )
 from gridflow.connectors.entsoe.parsers import _hardened_parser
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
 from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
@@ -86,6 +84,7 @@ class EntsoeConnector(BaseConnector):
     """
 
     source_name = "entsoe"
+    PACED_SENDS = True
 
     def __init__(self, config: SourceConfig) -> None:
         super().__init__(config)
@@ -114,11 +113,6 @@ class EntsoeConnector(BaseConnector):
 
         Dispatches per-zone (or per-zone-pair for cross-border flows).
         """
-        # Reset the partial-fetch counter at the top of the public entry point so
-        # a reused connector never inherits a prior call's count (CC-4 / matches
-        # GIE). ENTSO-E is raise-on-any, so it stays 0 — the explicit reset
-        # documents that invariant rather than relying on it.
-        self.last_skipped_units = 0
         if dataset not in DOC_TYPES:
             raise ValueError(
                 f"Unknown ENTSO-E dataset: {dataset!r}. Available: {list(DOC_TYPES.keys())}"
@@ -141,10 +135,8 @@ class EntsoeConnector(BaseConnector):
         # would be an incoherent N-times-identical-snapshot request.
         #
         # Units are independent, so they fetch concurrently (CH3-03 / C2-7); the
-        # ``rate_limit_per_second`` semaphore plus the ENTSO-E request throttle
-        # inside ``_request`` keep in-flight HTTP bounded. ``gather`` preserves
-        # input order, so the flattened result list is identical to the
-        # sequential version. Paging *within* a unit stays sequential in
+        # ``rate_limit_per_second`` semaphore plus the paced sends keep in-flight
+        # HTTP bounded. Paging *within* a unit stays sequential in
         # ``_fetch_document``; only the across-unit loop is parallel.
         tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
 
@@ -162,16 +154,8 @@ class EntsoeConnector(BaseConnector):
                 period_end = sub_end.strftime(ENTSOE_DT_FORMAT)
                 tasks.extend(self._build_unit_tasks(dataset, doc_type, period_start, period_end))
 
-        # ENTSO-E has no per-unit tolerance: a failing zone fails the whole run
-        # (raise-on-any). ``return_exceptions=True`` collects every result, then
-        # the first exception is re-raised in input order — matching the
-        # sequential loop's first-in-iteration failure.
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        responses: list[RawResponse] = []
-        for result in results:
-            if isinstance(result, BaseException):
-                raise result
-            responses.extend(result)
+        # A failing zone fails the whole run (raise-on-any).
+        responses = await self._gather_units(tasks)
 
         logger.info(
             "Fetched %d responses for entsoe/%s from %s to %s",
@@ -302,7 +286,7 @@ class EntsoeConnector(BaseConnector):
         supports_pagination = "offset" in doc_type.optional_params
 
         if not supports_pagination:
-            raw = await self._request(_ENTSOE_API_PATH, query_params)
+            raw = await self._get(_ENTSOE_API_PATH, query_params)
             return self._raw_response_to_records(raw, dataset, query_params, data_date)
 
         # G9 ENTSOE-01: page until a response carries < page-size series.
@@ -311,7 +295,7 @@ class EntsoeConnector(BaseConnector):
         pages_fetched = 0
         while True:
             query_params["offset"] = str(offset)
-            raw = await self._request(_ENTSOE_API_PATH, query_params)
+            raw = await self._get(_ENTSOE_API_PATH, query_params)
             page_responses = self._raw_response_to_records(raw, dataset, query_params, data_date)
 
             # D-18/D-25: parse ONCE per body (net 1 -> 1), and stamp BEFORE the
@@ -362,47 +346,28 @@ class EntsoeConnector(BaseConnector):
         content_type = raw.headers.get("content-type", "text/xml")
         if _is_zip_response(content_type, raw.content):
             return [
-                RawResponse(
-                    body=entry_body,
-                    content_type="text/xml",
+                RawResponse.from_httpx(
+                    raw,
                     source="entsoe",
                     dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params={**query_params, "zip_entry": entry_name},
-                    api_version="v1",
-                    http_status=raw.status_code,
+                    params={**query_params, "zip_entry": entry_name},
+                    body=entry_body,
+                    content_type="text/xml",
                     data_date=data_date,
                 )
                 for entry_name, entry_body in _iter_zip_xml(raw.content)
             ]
 
         return [
-            RawResponse(
-                body=raw.content,
-                content_type=content_type,
+            RawResponse.from_httpx(
+                raw,
                 source="entsoe",
                 dataset=dataset,
-                request_url=str(raw.url),
-                request_params=dict(query_params),
-                api_version="v1",
-                http_status=raw.status_code,
+                params=query_params,
+                content_type=content_type,
                 data_date=data_date,
             )
         ]
-
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Make a rate-limited, retried HTTP GET request."""
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            await self._throttle_request()
-            resp = await self._client.get(path, params=params)
-            self._raise_for_status(resp)
-            return resp
 
     def _raise_for_status(self, response: httpx.Response) -> None:
         """Raise an ENTSO-E-aware HTTP error with acknowledgement details."""

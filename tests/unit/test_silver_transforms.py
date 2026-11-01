@@ -1912,46 +1912,90 @@ def test_published_at_typed_null_when_bronze_lacks_publish_field(
 
 
 # ---------------------------------------------------------------------------
-# INDOD (daily) timestamp_utc convention
+# Date-only Elexon datasets: timestamp_utc convention
 # ---------------------------------------------------------------------------
 
+# One raw row per transformer carrying a date and no settlement period or start
+# instant. The date key is filled in by the test.
+_DATE_ONLY_ROWS: dict[str, tuple[type, str, dict[str, object]]] = {
+    "indod": (INDODTransformer, "settlementDate", {"demand": 30000.0}),
+    "ndfd": (NDFDTransformer, "forecastDate", {"demand": 30000.0}),
+    "tsdfd": (TSDFDTransformer, "forecastDate", {"demand": 30000.0}),
+    "fou2t14d": (
+        FOU2T14DTransformer,
+        "forecastDate",
+        {"fuelType": "CCGT", "outputUsable": 22000.0},
+    ),
+    "uou2t14d": (
+        UOU2T14DTransformer,
+        "forecastDate",
+        {"bmUnit": "T_DRAXX-1", "outputUsable": 645.0},
+    ),
+    "soso": (SOSOTransformer, "settlementDate", {"contractIdentification": "NG_1"}),
+}
 
-class TestINDODTimestampConvention:
-    """INDOD is a *daily* dataset. Its `timestamp_utc` must mark the
-    settlement-day START (SP1 = 00:00 UK local), so it aligns with its own
-    half-hourly INDO series rather than sitting 1h off during BST.
+
+class TestDateOnlyTimestampConvention:
+    """A row that carries only a UK settlement date is stamped at the start of
+    settlement period 1, 00:00 UK local time: 23:00 UTC the day before during
+    BST. Elexon defines settlement days in local time, and FOU2T14D's payload
+    says so itself (``forecastDateTimezone: Europe/London``). The stamp then
+    agrees with the half-hourly series for the same day.
     """
 
-    def setup_method(self):
-        self.t = _make_transformer(INDODTransformer)
-
-    def _transform(self, settlement_date: str):
-        raw = pl.DataFrame([{"settlementDate": settlement_date, "demand": 30000.0}])
-        return self.t.transform(raw)
-
-    def test_daily_timestamp_is_settlement_day_start_winter(self):
-        """Winter (GMT) day start is 00:00 UTC -- unchanged from before."""
-        result = self._transform("2024-01-15")
+    @pytest.mark.parametrize("dataset", list(_DATE_ONLY_ROWS))
+    @pytest.mark.parametrize(
+        ("day", "expected"),
+        [
+            ("2024-01-15", datetime(2024, 1, 15, 0, 0, tzinfo=UTC)),  # GMT
+            ("2024-07-15", datetime(2024, 7, 14, 23, 0, tzinfo=UTC)),  # BST
+            ("2024-03-31", datetime(2024, 3, 31, 0, 0, tzinfo=UTC)),  # spring change day
+            ("2024-10-27", datetime(2024, 10, 26, 23, 0, tzinfo=UTC)),  # autumn change day
+        ],
+    )
+    def test_stamp_is_settlement_period_one(self, dataset: str, day: str, expected: datetime):
+        cls, date_key, row = _DATE_ONLY_ROWS[dataset]
+        result = _make_transformer(cls, dataset).transform(pl.DataFrame([{date_key: day, **row}]))
         ts = result["timestamp_utc"][0]
-        assert ts == datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
+        assert ts == expected == settlement_period_to_utc(date.fromisoformat(day), 1)
 
-    def test_daily_timestamp_is_settlement_day_start_bst(self):
-        """BST day start is 23:00 UTC the previous calendar day.
+    @pytest.mark.parametrize("dataset", ["indod", "tsdfd"])
+    def test_daily_dataset_ignores_a_stray_period_column(self, dataset: str):
+        """A daily dataset maps no period, so a stray ``settlement_period`` keeps period 1."""
+        cls, date_key, row = _DATE_ONLY_ROWS[dataset]
+        raw = pl.DataFrame([{date_key: "2024-07-15", **row, "settlement_period": 2}])
+        result = _make_transformer(cls, dataset).transform(raw)
+        assert result["timestamp_utc"][0] == datetime(2024, 7, 14, 23, 0, tzinfo=UTC)
 
-        FAILS under the old UTC-midnight cast, which stamped 2024-07-15T00:00Z
-        (1h after the real local-midnight start) and so disagreed with the
-        half-hourly INDO series for the same date.
-        """
-        result = self._transform("2024-07-15")
-        ts = result["timestamp_utc"][0]
-        assert ts == datetime(2024, 7, 14, 23, 0, tzinfo=UTC)
 
-    def test_daily_timestamp_matches_halfhourly_sp1(self):
-        """The daily roll-up's timestamp equals INDO's SP1 for the same date."""
-        for d in ["2024-01-15", "2024-07-15", "2024-10-27", "2024-03-31"]:
-            daily_ts = self._transform(d)["timestamp_utc"][0]
-            sp1_ts = settlement_period_to_utc(date.fromisoformat(d), 1)
-            assert daily_ts == sp1_ts, f"INDOD daily vs INDO SP1 mismatch on {d}"
+def test_soso_end_time_without_zone_is_kept_as_text():
+    """SOSO sends ``endTime`` with no zone marker, while ``startTime`` ends in Z.
+
+    The vendor documents no zone for it, so the text is kept as sent and the
+    parsed column is filled only when a value carries its zone. Before, the
+    text was dropped and every unzoned value became null.
+    """
+    base = {"settlementDate": "2026-09-15", "tradeDirection": "Bid"}
+    raw = pl.DataFrame(
+        [
+            {
+                **base,
+                "contractIdentification": "NG_1",
+                "startTime": "2026-09-15T22:00:00Z",
+                "endTime": "2026-09-15T23:00:00",
+            },
+            {
+                **base,
+                "contractIdentification": "NG_2",
+                "startTime": "2026-09-15T23:00:00Z",
+                "endTime": "2026-09-16T00:00:00Z",
+            },
+        ]
+    )
+    result = _make_transformer(SOSOTransformer).transform(raw).sort("contract_identification")
+
+    assert result["end_time_raw"].to_list() == ["2026-09-15T23:00:00", "2026-09-16T00:00:00Z"]
+    assert result["end_time"].to_list() == [None, datetime(2026, 9, 16, 0, 0, tzinfo=UTC)]
 
 
 # ---------------------------------------------------------------------------

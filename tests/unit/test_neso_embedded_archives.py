@@ -39,18 +39,20 @@ from __future__ import annotations
 
 import json
 import re
-import subprocess
-import sys
 import tempfile
-import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import assert_same_output, install_generated, snapshot, write_capture
+from _neso_generic_support import (
+    assert_same_output,
+    install_generated,
+    query,
+    snapshot,
+    write_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
@@ -74,7 +76,7 @@ from gridflow.storage.duckdb import init_catalogue
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable
 
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry import Registry, SchemaRecord
@@ -157,25 +159,6 @@ W_2025 = datetime(2026, 10, 8, 11, 0, 0, tzinfo=UTC)
 W_DUMP = datetime(2026, 10, 8, 10, 52, 46, tzinfo=UTC)
 
 
-def _run(code: str, *args: str) -> subprocess.CompletedProcess[str]:
-    """Run ``code`` in a fresh interpreter with the project on its path."""
-    return subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code), *args],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-
-
-def _assert_ok(result: subprocess.CompletedProcess[str]) -> str:
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout, result.stdout
-    return result.stdout
-
-
 _CONSTANTS = f"""
 ARCHIVE = {ARCHIVE!r}
 LIVE = {LIVE!r}
@@ -193,7 +176,9 @@ DUMP_ID = {DUMP_ID!r}
 """
 
 
-def test_ef1_every_csv_resource_routes_to_one_owner_or_a_hold() -> None:
+def test_ef1_every_csv_resource_routes_to_one_owner_or_a_hold(
+    run_fresh: Callable[..., str],
+) -> None:
     """Detects an archive CSV resource left unrouted, routed to two owners, routed into
     the live family, or a record drifting from P-3/P-4 (criterion 1)."""
     code = (
@@ -245,10 +230,10 @@ assert tuple(e.header for e in dump.epochs) == (H9,)
 
 live = families[LIVE].model_dump(mode="json", exclude={"record"})
 assert live == {
-    "key": LIVE, "kind": "tabular", "legacy": True, "archetype": "FC",
+    "key": LIVE, "kind": "tabular", "archetype": "FC",
     "refresh": "intraday", "empty_allowed": False, "max_download_bytes": 8388608,
-    "name_regex": None, "transformer": "bespoke",
 }, live
+assert families[LIVE].legacy
 assert families[LIVE].record is not None and families[LIVE].record.siblings == ()
 live_res = csv[LIVE_ID].model_dump(mode="json")
 assert live_res == {
@@ -269,20 +254,19 @@ assert ARCHIVE not in generated.transformers
 print("OK")
 """
     )
-    _assert_ok(_run(code))
+    assert "OK" in run_fresh(code)
 
 
-def test_ef8_the_raised_cap_is_this_family_only() -> None:
+def test_ef8_the_raised_cap_is_this_family_only(run_fresh: Callable[..., str]) -> None:
     """Detects the 2025 upload (645,655,728 B) still refused at the archive's cap, or a
     cap raised on any other family (P-2) beyond the one recorded raise: the EAC-BR sell
     orders' dump (K-AS-4b, 805,306,368 B, P1 estimated ~561 MB)."""
     code = (
         _CONSTANTS
         + """
-from gridflow.connectors.neso_data_portal.endpoints import build_families
 from gridflow.connectors.neso_data_portal.registry import load_registry
 
-families = build_families(load_registry())
+families = {key: family for key, (_package, family) in load_registry().families.items()}
 cap = families[ARCHIVE].max_download_bytes
 assert cap == 805306368 and cap > 645655728, cap
 above = sorted(k for k, f in families.items() if f.max_download_bytes > 536870912)
@@ -293,7 +277,7 @@ assert families["embedded_wind_solar_forecast_files"].max_download_bytes == 5368
 print("OK")
 """
     )
-    _assert_ok(_run(code))
+    assert "OK" in run_fresh(code)
 
 
 # --------------------------------------------------------------------------- #
@@ -302,12 +286,11 @@ print("OK")
 
 
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root (ADR-036 MAX_PATH margin); gold views out of scope."""
     pipeline_runner.import_transformers()
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(prefix="ef", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def _fixture(name: str) -> bytes:
@@ -657,7 +640,9 @@ class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
         )
         _dump_capture(data, _fixture("dump_2026.csv"))
 
-    def test_a_functional_isolation(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_a_functional_isolation(
+        self, data: Path, short_base: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Detects an archive body reaching the live family's reader, or changing
         its output, when both live on one partition date."""
         seen: list[Path] = []
@@ -680,13 +665,15 @@ class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
         mixed = snapshot(data, LIVE)
         assert mixed["outputs"]
 
-        with tempfile.TemporaryDirectory(prefix="ef", ignore_cleanup_errors=True) as other:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as other:
             alone = Path(other)
             self._live(alone)
             live(alone).run(DAY, run_id="r")
             assert_same_output(mixed, snapshot(alone, LIVE), live.ENTITY_KEY_COLUMNS)
 
-    def test_c_registry_routes_only_the_live_resource_to_the_live_family(self) -> None:
+    def test_c_registry_routes_only_the_live_resource_to_the_live_family(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
         """Detects an archive resource disposed into the live family, a record
         reading the live family's directory, or the legacy selector widened."""
         code = (
@@ -710,7 +697,7 @@ assert names == frozenset({("Embedded Solar and Wind Forecast", "CSV")}), names
 print("OK")
 """
         )
-        _assert_ok(_run(code))
+        assert "OK" in run_fresh(code)
 
     def test_d_the_issue_token_matches_live_files_only(self) -> None:
         """16b: detects the live token pattern matching an archive filename, or no
@@ -746,14 +733,6 @@ def test_ef6_vintage_guards_hold_under_the_owners(
     assert context.published_at is None and context.url_type == "upload"
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def _ids(frame: pl.DataFrame) -> list[str]:
     return sorted(frame["bronze_capture_id"].to_list())
 
@@ -761,11 +740,11 @@ def _ids(frame: pl.DataFrame) -> list[str]:
 def _sql_as_of(db: Path, key: str, as_of: datetime | None) -> list[str]:
     view = f"silver_{SOURCE}_{key}"
     if as_of is None:
-        return _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
-    columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        return _ids(query(db, f'SELECT * FROM "{view}_latest"'))
+    columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
     select = latest_select_sql(view, LATEST_VIEW_SPECS[(SOURCE, key)], columns, as_of_param=True)
     assert select is not None
-    return _ids(_query(db, select, {"as_of": as_of.isoformat()}))
+    return _ids(query(db, select, {"as_of": as_of.isoformat()}))
 
 
 def _polars_as_of(data: Path, key: str, as_of: datetime | None) -> list[str]:
@@ -990,11 +969,11 @@ def test_ef10_owner_outputs_are_typed_and_manifested(
     init_catalogue(db, data)
     for key in (UPLOAD_OWNER, DUMP_OWNER):
         for suffix in ("", "_latest"):
-            (count,) = _query(db, f'SELECT count(*) AS n FROM "silver_{SOURCE}_{key}{suffix}"').row(
+            (count,) = query(db, f'SELECT count(*) AS n FROM "silver_{SOURCE}_{key}{suffix}"').row(
                 0
             )
             assert count > 0, (key, suffix)
-    latest = _query(db, f'SELECT * FROM "silver_{SOURCE}_{UPLOAD_OWNER}_latest"')
+    latest = query(db, f'SELECT * FROM "silver_{SOURCE}_{UPLOAD_OWNER}_latest"')
     targets = _targets(b2024) | _targets(b2025)
     assert latest.height == len(targets)
     assert latest.select("settlement_date", "settlement_period").unique().height == latest.height

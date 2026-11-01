@@ -9,9 +9,7 @@ Nothing touches ``C:/gridflow-data``.
 
 from __future__ import annotations
 
-import tempfile
 from datetime import UTC, date, datetime
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import polars as pl
@@ -40,7 +38,7 @@ from gridflow.silver.neso_data_portal.readers import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from pathlib import Path
 
 pytestmark = pytest.mark.usefixtures("forbid_zipfile_reads")
 
@@ -282,10 +280,9 @@ class TestRules:
 
 
 @pytest.fixture
-def root() -> Iterator[Path]:
+def root(short_root: Path) -> Path:
     """A short tmp data root (Windows MAX_PATH)."""
-    with tempfile.TemporaryDirectory(prefix="b", ignore_cleanup_errors=True) as tmp:
-        yield Path(tmp)
+    return short_root
 
 
 def _capture(

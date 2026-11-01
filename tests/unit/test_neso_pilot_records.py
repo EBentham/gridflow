@@ -12,14 +12,12 @@ originals are (E7); no test asserts on a committed file's raw bytes.
 
 from __future__ import annotations
 
-import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import record_of, silver_frame, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.profile import SP_HEADER
@@ -34,9 +32,6 @@ from gridflow.silver.neso_data_portal.completion import (
     scan_completions,
 )
 from gridflow.silver.registry import get_transformer
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
 
 SOURCE = "neso_data_portal"
 PILOT_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "pilot"
@@ -112,7 +107,7 @@ Q3 = (
 
 
 @pytest.fixture
-def data() -> Iterator[Path]:
+def data(short_root: Path) -> Path:
     """A data root with a short path.
 
     The engine's output and completion names run to ~120 characters under
@@ -120,8 +115,7 @@ def data() -> Iterator[Path]:
     pilot families' longest keys pass Windows' 260-character MAX_PATH. The
     production root (``C:/gridflow-data``) is short.
     """
-    with tempfile.TemporaryDirectory(prefix="pr", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def pilot_body(name: str) -> bytes:
@@ -159,17 +153,6 @@ def _capture(
     return capture_id_for(path, data)
 
 
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _record(key: str) -> Any:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
 def _naive_utc(stamp: str) -> datetime:
     return datetime.fromisoformat(stamp).replace(tzinfo=UTC)
 
@@ -199,8 +182,8 @@ def test_t_pr1_every_pilot_family_types_its_vendor_body(data: Path, key: str) ->
     assert completion["rows_excluded"] == 0
     assert len(scan_completions(data, key).collect()) == 1
 
-    frame = _silver(data, key)
-    expected = [name for name, _type in generic.output_columns(_record(key))]
+    frame = silver_frame(data, key)
+    expected = [name for name, _type in generic.output_columns(record_of(key))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected if c not in ("year", "month")
     ]
@@ -214,7 +197,7 @@ def test_t_pr1_every_pilot_family_types_its_vendor_body(data: Path, key: str) ->
 def _run_one(data: Path, key: str, body: bytes | None = None) -> pl.DataFrame:
     _capture(data, key, body if body is not None else pilot_body(key))
     get_transformer(SOURCE, key, data).run(DAY, run_id="r")
-    return _silver(data, key)
+    return silver_frame(data, key)
 
 
 def test_t_pr2_tec_dates_are_day_first_and_both_pro_000053_rows_survive(
@@ -268,7 +251,7 @@ def test_da_perf_settlement_periods_outside_1_to_50_are_excluded(data: Path) -> 
     assert transformer.last_excluded_row_count == 2
     completion = read_completion(data, "da_demand_fc_performance", capture_id)
     assert completion is not None and completion["rows_excluded"] == 2
-    periods = _silver(data, "da_demand_fc_performance")["settlement_period"]
+    periods = silver_frame(data, "da_demand_fc_performance")["settlement_period"]
     assert periods.min() == 1 and periods.max() == 50
 
 
@@ -406,18 +389,18 @@ def test_t_pr5_eligibility_and_no_time_recipe() -> None:
     ``sp_pair``, ``date_sp1``, ``month``) entering a pilot record.
     """
     for key in ("tec_register", "interconnector_register", "embedded_register"):
-        assert _record(key).eligibility is None, key
+        assert record_of(key).eligibility is None, key
     for key, question in (
         ("demand_forecast_2_52w", Q1),
         ("da_demand_fc_performance", Q2),
         ("constraint_cost_fc_24m", Q3),
     ):
-        eligibility = _record(key).eligibility
+        eligibility = record_of(key).eligibility
         assert isinstance(eligibility, Held), key
         assert eligibility.unit == "E-SEM"
         assert eligibility.question == question
     for key in PILOT_KEYS:
-        record = _record(key)
+        record = record_of(key)
         assert record.temporal.kind == "none", key
         assert record.vintage == "ckan_last_modified", key
         assert all(

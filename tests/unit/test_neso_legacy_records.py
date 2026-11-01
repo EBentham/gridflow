@@ -13,7 +13,6 @@ is disclosed beside each (``tests/fixtures/neso_data_portal/``).
 
 from __future__ import annotations
 
-import tempfile
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -29,8 +28,6 @@ from gridflow.silver.registry import get_transformer_class
 from gridflow.utils.time import settlement_period_to_utc
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     import polars as pl
 
 SOURCE = "neso_data_portal"
@@ -78,10 +75,9 @@ EWSF_HEADER = (
 
 
 @pytest.fixture
-def data() -> Iterator[Path]:
+def data(short_root: Path) -> Path:
     """A short data root under the system temp directory."""
-    with tempfile.TemporaryDirectory(prefix="nl", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def _fixture(name: str) -> bytes:

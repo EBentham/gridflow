@@ -33,17 +33,15 @@ from __future__ import annotations
 import csv
 import io
 import logging
-import os
-import tempfile
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import record_of, silver_frame, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -58,11 +56,6 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.neso_data_portal.reconcile import reconcile
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "gen1"
@@ -392,21 +385,11 @@ POLARS_DTYPES: dict[str, Any] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (a 40-character family key plus the engine's run-id names
-    pass MAX_PATH under the long per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for these catalogues."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="g1", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def body(filename: str) -> bytes:
@@ -461,17 +444,6 @@ def _capture(data: Path, filename: str, *, raw: bytes | None = None) -> str:
     return capture_id_for(path, data)
 
 
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
 def _run(data: Path, key: str) -> dict[str, str]:
     """Capture every fixture of ``key`` and transform them; filename -> capture id."""
     ids = {filename: _capture(data, filename) for filename in _filenames(key)}
@@ -501,8 +473,8 @@ def test_every_fixture_types_with_no_exclusion(data: Path, key: str) -> None:
         assert completion["row_count"] == _rows(filename), filename
         assert completion["rows_excluded"] == 0, filename
 
-    record = _record(key)
-    frame = _silver(data, key)
+    record = record_of(key)
+    frame = silver_frame(data, key)
     expected = [name for name, _type in generic.output_columns(record)]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected if c not in ("year", "month")
@@ -518,7 +490,7 @@ def test_entity_key_is_unique_in_the_output(data: Path, key: str) -> None:
     across everything the family wrote (the engine's duplicate guard would otherwise fail the
     real bodies), and the fixture must be non-trivial."""
     _run(data, key)
-    silver = _silver(data, key)
+    silver = silver_frame(data, key)
     assert silver.height > 0
     assert silver.select(list(ENTITY_KEYS[key])).is_duplicated().sum() == 0
 
@@ -529,7 +501,7 @@ def test_record_shapes_match_the_unit_table(key: str) -> None:
     whole-capture selection, the temporal recipe, the entity key, the issue recipe, the
     vintage, eligibility; and that only temporal inputs and issue columns exclude rows (every
     other column nullable, no invented null token, no bound but the settlement period's 1..50)."""
-    record = _record(key)
+    record = record_of(key)
     assert record.reader == "csv"
     assert record.encoding == "utf-8"
     assert len(record.epochs) == 1
@@ -584,7 +556,7 @@ def test_eligible_fixture_targets_are_after_the_capture_vintage(data: Path, key:
     capture's CKAN ``last_modified`` (RULINGS 529: the vintage is then a safe issue proxy; the
     property DEM-1 pins for the cardinal-point forecasts)."""
     _run(data, key)
-    frame = _silver(data, key)
+    frame = silver_frame(data, key)
     published = _naive_utc(next(v[4] for v in SIDECARS.values() if v[0] == key) or "")
     assert frame["published_at"].unique().to_list() == [published]
     assert frame["timestamp_utc"].min() > published
@@ -597,7 +569,7 @@ def test_held_fixtures_keep_targets_at_or_before_the_vintage(data: Path, key: st
     at or before the CKAN vintage in the fixture, so the forward-target property is shown to
     fail for them (and a cut that quietly dropped those rows would fail here)."""
     _run(data, key)
-    frame = _silver(data, key)
+    frame = silver_frame(data, key)
     assert frame.filter(pl.col("timestamp_utc") <= pl.col("published_at")).height > 0
 
 
@@ -609,10 +581,10 @@ def test_bom_bodies_type_their_first_column(data: Path) -> None:
         assert body(filename).startswith(BOM), filename
     for key in (DAYS_AHEAD, DAYS_AHEAD_BMU):
         _run(data, key)
-        frame = _silver(data, key)
+        frame = silver_frame(data, key)
         assert frame.schema["datetime"] == pl.Datetime("us", "UTC"), key
         assert frame["datetime"].null_count() == 0, key
-        assert _record(key).epochs[0].columns[0].source == "Datetime"
+        assert record_of(key).epochs[0].columns[0].source == "Datetime"
     # the bodies without a BOM do not gain one
     assert not body("14da_wind_forecast_all.csv").startswith(BOM)
 
@@ -623,7 +595,7 @@ def test_national_issue_columns_declare_the_production_instant(data: Path) -> No
     / ``ForecastDateTime``, ``...Z``), and ``issue_time`` is that instant."""
     for key, stamp in ((METERED, "2026-10-08T09:52:34"), (DAYS_AHEAD, "2026-10-08T11:30:00")):
         _run(data, key)
-        frame = _silver(data, key)
+        frame = silver_frame(data, key)
         assert frame["issue_time"].unique().to_list() == [_naive_utc(stamp)], key
         assert (frame["issue_time"] == frame["forecast_datetime"]).all(), key
 
@@ -635,7 +607,7 @@ def test_wind_values_keep_zeros_negatives_and_names_as_is(data: Path) -> None:
     ``Capacity`` cells are kept as 0.0."""
     for key in (METERED_FARM, DAYS_AHEAD_BMU, DA_BMU, HIST_BMU):
         ids = _run(data, key)
-        silver = _silver(data, key)
+        silver = silver_frame(data, key)
         for filename, capture_id in ids.items():
             rows = _populated(body(filename))
             part = silver.filter(pl.col("bronze_capture_id") == capture_id)
@@ -645,7 +617,7 @@ def test_wind_values_keep_zeros_negatives_and_names_as_is(data: Path) -> None:
             ], filename
             assert part["wind_forecast"].to_list() == [float(r["Wind_Forecast"]) for r in rows]
             assert part["capacity"].to_list() == [float(r["Capacity"]) for r in rows]
-    farm = _silver(data, METERED_FARM)
+    farm = silver_frame(data, METERED_FARM)
     assert (farm["wind_forecast"] == 0.0).sum() > 0
     assert (farm["capacity"] == 0.0).sum() > 0
 
@@ -655,7 +627,7 @@ def test_historic_bmu_resources_type_and_latest_returns_every_resource(data: Pat
     Polars, a resource whose rows are lost, and ``resource_id`` missing from the output: all
     eight archive resources are captured, typed, and served by ``_latest`` with their own rows."""
     ids = _run(data, HIST_BMU)
-    silver = _silver(data, HIST_BMU)
+    silver = silver_frame(data, HIST_BMU)
     resource_ids = {SIDECARS[f][1] for f in HIST_BMU_FILES}
     assert len(resource_ids) == 8
     assert set(silver["resource_id"].to_list()) == resource_ids
@@ -688,7 +660,7 @@ def test_historic_bmu_timestamp_converts_from_london_to_utc(data: Path) -> None:
     equal. The fixtures hold both seasons, and every row is checked against an independent
     ``zoneinfo`` conversion."""
     ids = _run(data, HIST_BMU)
-    silver = _silver(data, HIST_BMU)
+    silver = silver_frame(data, HIST_BMU)
     offsets: set[timedelta] = set()
     for filename, capture_id in ids.items():
         rows = _populated(body(filename))
@@ -711,7 +683,7 @@ def test_historic_bmu_dump_vintage_is_the_capture_instant(data: Path) -> None:
     vintage (ADR-035): a ``capture_fallback`` family stamps no CKAN ``published_at`` and its
     ``available_at`` is the capture's own ``written_at``."""
     ids = _run(data, HIST_BMU)
-    silver = _silver(data, HIST_BMU)
+    silver = silver_frame(data, HIST_BMU)
     assert silver["published_at"].null_count() == silver.height
     for filename, capture_id in ids.items():
         part = silver.filter(pl.col("bronze_capture_id") == capture_id)
@@ -732,7 +704,7 @@ def test_historic_national_keeps_both_labels_of_a_shared_target(data: Path) -> N
     assert shared, "the fixture must keep a target with two Forecast_Timestamp labels"
 
     _run(data, HIST)
-    silver = _silver(data, HIST)
+    silver = silver_frame(data, HIST)
     assert silver.height == len(rows)
     assert silver.schema["forecast_timestamp"] == pl.Utf8
     assert silver["forecast_timestamp"].to_list() == [r["Forecast_Timestamp"] for r in rows]
@@ -755,7 +727,7 @@ def test_da_wind_forecast_day_ahead_clock_has_no_z_suffix(data: Path) -> None:
     body carries ``%Y-%m-%dT%H:%M:%S`` UTC with no suffix and period 1 is 23:00 UTC the day
     before its settlement date in BST."""
     _run(data, DA)
-    silver = _silver(data, DA)
+    silver = silver_frame(data, DA)
     assert silver["datetime_gmt"][0] == datetime(2026, 10, 8, 23, 0, tzinfo=UTC)
     assert silver["date"][0] == date(2026, 10, 9)
     assert silver["settlement_period"][0] == 1
@@ -773,11 +745,11 @@ def test_opmr_trailing_space_headers_type_through_the_stripped_epoch(data: Path)
         assert b"Maximum IC Export ," in header, filename
         assert b"National Surplus ," in header, filename
     for key, filename in ((DAILY_OPMR, "csv_opmr_daily.csv"), (WEEKLY_OPMR, "csv_opmr_weekly.csv")):
-        sources = [c.source for c in _record(key).epochs[0].columns]
+        sources = [c.source for c in record_of(key).epochs[0].columns]
         assert "Maximum IC Export" in sources and "National Surplus" in sources, key
         assert "Maximum IC Export " not in sources and "National Surplus " not in sources, key
         _run(data, key)
-        silver = _silver(data, key)
+        silver = silver_frame(data, key)
         rows = _populated(body(filename))
         assert silver.schema["maximum_ic_export"] == pl.Float64
         assert silver.schema["national_surplus"] == pl.Float64
@@ -811,7 +783,7 @@ def test_opmr_blank_row_is_dropped_by_the_logged_reader_path(
     messages = [r.getMessage() for r in caplog.records if "blank row" in r.getMessage()]
     assert len(messages) == 1, messages
     assert messages[0].startswith("dropped 1 blank row(s)")
-    silver = _silver(data, key)
+    silver = silver_frame(data, key)
     assert silver["maximum_ic_import"].null_count() == sum(
         1 for r in populated if not r["Maximum IC Import"].strip()
     )
@@ -828,18 +800,18 @@ def test_opmr_publish_date_is_a_date_and_not_an_issue(data: Path) -> None:
     integers and has no target anchor (``timestamp_utc`` is the capture's own instant)."""
     for key in (DAILY_OPMR, WEEKLY_OPMR):
         _run(data, key)
-        silver = _silver(data, key)
+        silver = silver_frame(data, key)
         assert silver.schema["publish_date"] == pl.Date
         assert "issue_time" not in silver.columns
-        assert _record(key).epochs[0].issue.kind == "none"
-    weekly = _silver(data, WEEKLY_OPMR)
+        assert record_of(key).epochs[0].issue.kind == "none"
+    weekly = silver_frame(data, WEEKLY_OPMR)
     assert weekly.schema["eng_year"] == pl.Int64
     assert weekly.schema["eng_week"] == pl.Int64
     assert (
         weekly["timestamp_utc"].unique().to_list()
         == weekly["capture_written_at"].unique().to_list()
     )
-    daily = _silver(data, DAILY_OPMR)
+    daily = silver_frame(data, DAILY_OPMR)
     assert daily.schema["date"] == pl.Date
 
 
@@ -863,14 +835,14 @@ def test_national_and_scotland_nrapm_stay_separate_series(data: Path) -> None:
     ):
         _run(data, national)
         _run(data, scotland)
-        n, s = _silver(data, national), _silver(data, scotland)
+        n, s = silver_frame(data, national), silver_frame(data, scotland)
         assert value_n in n.columns and value_n not in s.columns
         assert value_s in s.columns and value_s not in n.columns
         keys = list(ENTITY_KEYS[national])
         assert n.height == s.height > 0
         assert sorted(n.select(keys).rows()) == sorted(s.select(keys).rows())
-    daily_n = _silver(data, NRAPM_N).sort("date", "cp")
-    daily_s = _silver(data, NRAPM_S).sort("date", "cp")
+    daily_n = silver_frame(data, NRAPM_N).sort("date", "cp")
+    daily_s = silver_frame(data, NRAPM_S).sort("date", "cp")
     assert daily_n["mw_away_from_risk_of_system_level_nrapm_forecast_conditions"].to_list() != (
         daily_s["mw_away_from_risk_of_scotland_level_nrapm_forecast_conditions"].to_list()
     )

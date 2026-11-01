@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import polars as pl
+
 UK_TZ = ZoneInfo("Europe/London")
 
 
@@ -40,6 +42,47 @@ def settlement_period_to_utc(settlement_date: date, period: int) -> datetime:
     """
     sp1_utc = _settlement_day_start_utc(settlement_date)
     return sp1_utc + timedelta(minutes=30 * (period - 1))
+
+
+def settlement_period_to_utc_expr(
+    settlement_date: str | pl.Expr, period: str | pl.Expr | int = 1
+) -> pl.Expr:
+    """Vector form of :func:`settlement_period_to_utc`, as a ``Datetime("us", "UTC")``.
+
+    Column names or expressions are accepted. With no ``period`` it stamps the
+    start of settlement period 1, 00:00 UK local, which is where every
+    date-only Elexon row sits. UK local midnight is never inside a clock
+    change, so the zone lookup cannot hit a gap or a fold, and the period
+    offset is real elapsed time from that instant, as in the scalar form.
+
+    With a ``period`` column, a null date or period raises ``ValueError`` when
+    the frame is evaluated, as the scalar form does, rather than stamp a null
+    instant that schema validation would only count. A null date with the
+    default period gives a null instant.
+    """
+    if isinstance(settlement_date, str):
+        settlement_date = pl.col(settlement_date)
+    if isinstance(period, str):
+        period = pl.col(period)
+    if isinstance(period, pl.Expr):
+        period = pl.struct(settlement_date.alias("date"), period.alias("period")).map_batches(
+            _period_or_raise, return_dtype=pl.Int64
+        )
+    day_start = (
+        settlement_date.cast(pl.Datetime("us"))
+        .dt.replace_time_zone(UK_TZ.key)
+        .dt.convert_time_zone("UTC")
+    )
+    return day_start + pl.duration(minutes=30 * (period - 1))
+
+
+def _period_or_raise(pair: pl.Series) -> pl.Series:
+    """The period half of a (date, period) struct column, refusing a null in either."""
+    parts = pair.struct.unnest()
+    nulls = parts.null_count().sum_horizontal().item()
+    if nulls:
+        raise ValueError(f"{nulls} null settlement date or period value(s): no instant to stamp")
+    return parts.to_series(1).cast(pl.Int64)
 
 
 def settlement_periods_in_day(settlement_date: date) -> int:

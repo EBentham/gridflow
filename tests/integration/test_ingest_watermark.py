@@ -40,6 +40,8 @@ from gridflow.connectors.base import RawResponse
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from conftest import IsolatedPaths
+
 
 def _data_response() -> RawResponse:
     """A minimal successful (http_status=200) data-bearing response.
@@ -59,18 +61,11 @@ def _data_response() -> RawResponse:
 runner = CliRunner()
 
 
-def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    # elexon resolves its key from ELEXON_API_KEY; the fake connector ignores it.
+@pytest.fixture(autouse=True)
+def _elexon_key(isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every test here runs isolated; elexon resolves its key from ELEXON_API_KEY and
+    the fake connector ignores it."""
     monkeypatch.setenv("ELEXON_API_KEY", "test-key")
-    # Gold SQL views reference silver tables absent from test tmpdirs; stub out
-    # (mirrors test_cli_transform_refresh.py / test_ingest_partial_fetch_warnings.py).
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return db_path
 
 
 class _FakeConnector:
@@ -138,14 +133,15 @@ def _read_watermark(db_path: Path, source: str, dataset: str) -> datetime | None
 
 @pytest.mark.integration
 def test_incremental_success_writes_watermark_at_end_dt(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """A ``--incremental`` ingest that observes data sets ``watermark == end_dt``.
 
     end_dt is resolved to "now" up front; assert the written watermark is at that
     same instant (within a second of the invocation).
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
     before = datetime.now(UTC)
 
@@ -160,7 +156,8 @@ def test_incremental_success_writes_watermark_at_end_dt(
 
 @pytest.mark.integration
 def test_incremental_empty_fetch_does_not_advance_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """R3-F04: an EMPTY fetch (no responses) leaves the watermark unchanged.
 
@@ -168,7 +165,7 @@ def test_incremental_empty_fetch_does_not_advance_watermark(
     advancing past a window that had no data yet permanently strands it once the
     data lands.
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = []  # empty but successful
 
     result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
@@ -181,14 +178,15 @@ def test_incremental_empty_fetch_does_not_advance_watermark(
 
 @pytest.mark.integration
 def test_incremental_partial_fetch_does_not_advance_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """R3-F04: a PARTIAL fetch (skipped units) does NOT advance the frontier.
 
     Data-bearing responses are present, but ``last_skipped_units`` > 0 means the
     window is incomplete; advancing to end_dt would strand the skipped units.
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
     _FakeConnector.last_skipped_units = 2
 
@@ -202,11 +200,12 @@ def test_incremental_partial_fetch_does_not_advance_watermark(
 
 @pytest.mark.integration
 def test_incremental_all_no_result_responses_do_not_advance_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """R3-F04: a fetch whose only responses are http_status >= 400 (ENTSO-G's
     "No result found" 404 short-circuit) carries no evidence — no advance."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [
         RawResponse(
             body=b'{"message": "No result found"}',
@@ -227,14 +226,15 @@ def test_incremental_all_no_result_responses_do_not_advance_watermark(
 
 @pytest.mark.integration
 def test_failed_ingest_writes_no_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """A FAILED ingest must never advance the frontier (no watermark row).
 
     The frontier may only move after a successful write — this is the
     silent-bug guard for late/failed runs.
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.raise_on_fetch = True
 
     result = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
@@ -248,11 +248,12 @@ def test_failed_ingest_writes_no_watermark(
 @respx.mock
 @pytest.mark.integration
 def test_incremental_pn_http_failure_preserves_bronze_and_watermark(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """A failed real PN connector fetch is atomic before Bronze and watermark writes."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     monkeypatch.setenv("GRIDFLOW_INCREMENTAL_OVERLAP_HOURS", "0")
 
     from gridflow.observability import update_watermark
@@ -329,14 +330,15 @@ def test_incremental_pn_http_failure_preserves_bronze_and_watermark(
 
 @pytest.mark.integration
 def test_second_incremental_run_resolves_start_from_first_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """The 2nd ``--incremental`` run starts from the 1st run's watermark minus overlap.
 
     Run 1 observes data and advances the watermark to its end_dt; run 2 resolves
     its start to ``watermark - incremental_overlap_hours`` (the 72h default).
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
 
     first = runner.invoke(app, ["ingest", "elexon", "fuelhh", "--incremental"])
@@ -357,7 +359,10 @@ def test_second_incremental_run_resolves_start_from_first_watermark(
 
 @pytest.mark.integration
 def test_backfill_does_not_advance_existing_forward_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """A ``backfill`` whose range ends AFTER an existing watermark does not move it.
 
@@ -369,7 +374,7 @@ def test_backfill_does_not_advance_existing_forward_watermark(
     transform is stubbed so the backfill's silver stage is a no-op (this test
     only asserts the watermark frontier).
     """
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
 
     # Create the metadata tables, then establish a forward watermark deliberately
     # inside the backfill range (the table must exist before we seed it).
@@ -433,13 +438,13 @@ def _seed_watermark(
 
 @pytest.mark.integration
 def test_incremental_true_gap_refuses_advance_and_warns(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T2-a/T2-i: a 30-day stall is a TRUE GAP -- refused, exactly one WARNING."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     stale = datetime.now(UTC) - timedelta(days=30)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
     _FakeConnector.responses = [_data_response()]
@@ -462,14 +467,14 @@ def test_incremental_true_gap_refuses_advance_and_warns(
 
 @pytest.mark.integration
 def test_incremental_clamped_no_gap_advances_with_info_not_warning(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T2-j (anti-wedge): a 5-day stall clamps but has no gap -- advances, INFO
     only; a second run is not clamped at all and still advances."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     stale = datetime.now(UTC) - timedelta(hours=120)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
     _FakeConnector.responses = [_data_response()]
@@ -492,10 +497,13 @@ def test_incremental_clamped_no_gap_advances_with_info_not_warning(
 
 @pytest.mark.integration
 def test_incremental_start_equals_frontier_boundary_advances(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """T2-k: with overlap=0, start == frontier exactly -- permitted (<=), advances."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     monkeypatch.setenv("GRIDFLOW_INCREMENTAL_OVERLAP_HOURS", "0")
     frontier = datetime.now(UTC) - timedelta(hours=1)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", frontier)
@@ -511,11 +519,12 @@ def test_incremental_start_equals_frontier_boundary_advances(
 
 @pytest.mark.integration
 def test_explicit_ingest_advances_via_unified_cas_and_raises_nothing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """T2-l (#19): an explicit --start/--end ingest with data advances (via the
     CAS) and raises nothing -- the repair-command regression."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
 
     result = runner.invoke(
@@ -529,11 +538,13 @@ def test_explicit_ingest_advances_via_unified_cas_and_raises_nothing(
 
 @pytest.mark.integration
 def test_gap_repair_command_lands_exactly_on_gap_end(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    _patch_connector: None,
 ) -> None:
     """T2-m (#21): Command 1 with gap-local data advances via CAS Arm A, landing
     exactly on gap_end; an empty gap correctly does not advance."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     gap_start = datetime(2024, 1, 1, tzinfo=UTC)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", gap_start)
     gap_end = datetime(2024, 1, 5, tzinfo=UTC)
@@ -575,15 +586,15 @@ def test_gap_repair_command_lands_exactly_on_gap_end(
 @pytest.mark.integration
 @pytest.mark.parametrize("delta", [timedelta(hours=1), timedelta(days=30)])
 def test_explicit_future_end_denied_bronze_kept_one_warning(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
     delta: timedelta,
 ) -> None:
     """T2-s (#34, the CLI-reachable case): a future --end is denied at the write
     decision (D-23); bronze is kept; exactly one WARNING (FUTURE_END)."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
     future_end = (datetime.now(UTC) + delta).isoformat()
 
@@ -604,6 +615,7 @@ def test_explicit_future_end_denied_bronze_kept_one_warning(
 
 @pytest.mark.integration
 def test_explicit_unreadable_frontier_denies_bronze_kept(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
@@ -611,7 +623,7 @@ def test_explicit_unreadable_frontier_denies_bronze_kept(
 ) -> None:
     """T2-t(a) (#35): the explicit path's own write-decision snapshot fails
     closed -- no write attempt, one WARNING carrying frontier_error (redacted)."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
 
     from gridflow.observability import WatermarkRead
@@ -639,6 +651,7 @@ def test_explicit_unreadable_frontier_denies_bronze_kept(
 
 @pytest.mark.integration
 def test_explicit_path_interloper_between_snapshot_and_cas_is_mismatch(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
@@ -648,7 +661,7 @@ def test_explicit_path_interloper_between_snapshot_and_cas_is_mismatch(
     path's fresh snapshot and BEFORE the CAS call -- CAS_MISMATCH, frontier is
     the interloper's, WARNING names expected vs observed (timing is
     load-bearing: Sol pass-5 nit 1)."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     existing = datetime(2024, 1, 1, tzinfo=UTC)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", existing)
 
@@ -684,14 +697,14 @@ def test_explicit_path_interloper_between_snapshot_and_cas_is_mismatch(
 
 @pytest.mark.integration
 def test_refused_and_partial_produces_one_warning_with_both_conditions(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T2-n (#4 x #21): refused AND partial -- one record at WARNING, real
     rows_skipped, no advance."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     stale = datetime.now(UTC) - timedelta(days=30)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
     _FakeConnector.responses = [_data_response()]
@@ -711,14 +724,14 @@ def test_refused_and_partial_produces_one_warning_with_both_conditions(
 
 @pytest.mark.integration
 def test_clamped_no_gap_no_evidence_is_info_not_warning(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T2-o (#25): clamped-no-gap with an all-empty fetch -- INFO, "no
     evidence"; frontier really unchanged."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     stale = datetime.now(UTC) - timedelta(hours=120)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
     _FakeConnector.responses = []
@@ -734,14 +747,14 @@ def test_clamped_no_gap_no_evidence_is_info_not_warning(
 
 @pytest.mark.integration
 def test_clamped_no_gap_partial_is_warning_and_never_claims_advance(
+    isolated_env: IsolatedPaths,
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T2-p (#25/P3-4): clamped-no-gap PARTIAL run -- WARNING, never claims the
     frontier moved."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     stale = datetime.now(UTC) - timedelta(hours=120)
     _seed_watermark(db_path, tmp_path / "data", "elexon", "fuelhh", stale)
     _FakeConnector.responses = [_data_response()]
@@ -760,7 +773,7 @@ def test_clamped_no_gap_partial_is_warning_and_never_claims_advance(
 
 @pytest.mark.integration
 def test_write_failure_reports_write_failed_one_warning_rows_still_reported(
-    tmp_path: Path,
+    isolated_env: IsolatedPaths,
     monkeypatch: pytest.MonkeyPatch,
     _patch_connector: None,
     caplog: pytest.LogCaptureFixture,
@@ -768,7 +781,7 @@ def test_write_failure_reports_write_failed_one_warning_rows_still_reported(
     """T2-q (#2/#31/#38): a write exception -> WRITE_FAILED; the record says
     the attempt failed and carries the redacted detail; rows are still
     reported; caplog counts exactly ONE WARNING for the pair (D-26)."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
 
     from gridflow.observability import WatermarkOutcome, WatermarkWrite
@@ -794,7 +807,9 @@ def test_write_failure_reports_write_failed_one_warning_rows_still_reported(
 
 @pytest.mark.integration
 def test_multi_dataset_run_mixes_refused_clamped_and_healthy(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    tmp_path: Path,
+    _patch_connector: None,
 ) -> None:
     """T2-g (#13): three datasets in one run -- refused / clamped-no-gap /
     healthy -- the window is a per-iteration local, never global state.
@@ -805,7 +820,7 @@ def test_multi_dataset_run_mixes_refused_clamped_and_healthy(
     from gridflow.config.settings import load_settings
     from gridflow.pipeline import runner as runner_module
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     data_dir = tmp_path / "data"
     now = datetime.now(UTC)
     _seed_watermark(db_path, data_dir, "elexon", "refused_ds", now - timedelta(days=30))
@@ -839,11 +854,13 @@ def test_multi_dataset_run_mixes_refused_clamped_and_healthy(
 
 @pytest.mark.integration
 def test_run_backfill_over_400_days_issues_every_chunk_no_advance(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    monkeypatch: pytest.MonkeyPatch,
+    _patch_connector: None,
 ) -> None:
     """T2-h (#14/R-3): a 400-day backfill, chunk_days=1 -- every chunk issued,
     no advance; the clamp never touches the backfill path."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [_data_response()]
     monkeypatch.setattr("gridflow.cli.transform", lambda **kwargs: None)
 
@@ -879,18 +896,14 @@ def test_run_backfill_over_400_days_issues_every_chunk_no_advance(
 @respx.mock
 @pytest.mark.integration
 def test_elexon_settlement_date_empty_data_array_does_not_advance_watermark(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """T3-a (RED-first): an incremental Elexon run over a genuinely stamped
-    path (``_fetch_date``) whose every response is HTTP 200 with a parsed,
-    empty ``data`` array must NOT advance the watermark (C-8).
+    per-date path whose every response is HTTP 200 with a parsed, empty
+    ``data`` array must NOT advance the watermark (C-8).
 
-    No production ``ENDPOINTS`` entry currently uses the plain
-    ``SETTLEMENT_DATE`` style (all active datasets use
-    ``SETTLEMENT_DATE_PERIOD`` / ``PUBLISH_DATETIME`` / ``DATE_PATH`` /
-    ``NO_PARAMS``), so a throwaway dataset entry is registered for the
-    duration of this test to exercise ``_fetch_date`` specifically -- it is
-    removed automatically by ``monkeypatch`` teardown.
+    A throwaway ``DATE_PATH`` dataset entry is registered for the duration of
+    this test -- it is removed automatically by ``monkeypatch`` teardown.
 
     Before C-8 is closed, ``data_responses`` only filters on ``http_status``,
     so this 200-with-empty-array response counts as evidence and the
@@ -899,14 +912,14 @@ def test_elexon_settlement_date_empty_data_array_does_not_advance_watermark(
     from gridflow.connectors.elexon.client import ENDPOINTS
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint, ParamStyle
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     monkeypatch.setitem(
         ENDPOINTS,
         "c8_settlement_date_probe",
         ElexonEndpoint(
             path="/datasets/C8PROBE",
-            description="R2-C T3-a boundary probe (SETTLEMENT_DATE, test-only)",
-            param_style=ParamStyle.SETTLEMENT_DATE,
+            description="R2-C T3-a boundary probe (DATE_PATH, test-only)",
+            param_style=ParamStyle.DATE_PATH,
         ),
     )
     respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8PROBE").mock(
@@ -927,7 +940,7 @@ def test_elexon_settlement_date_empty_data_array_does_not_advance_watermark(
 @respx.mock
 @pytest.mark.integration
 def test_elexon_mixed_empty_and_populated_responses_advances(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """#7: a mixed run (some responses carry records, some are genuinely
     empty) still advances -- the boundary excludes only the zero-record
@@ -935,19 +948,19 @@ def test_elexon_mixed_empty_and_populated_responses_advances(
     from gridflow.connectors.elexon.client import ENDPOINTS
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint, ParamStyle
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     monkeypatch.setitem(
         ENDPOINTS,
         "c8_mixed_probe",
         ElexonEndpoint(
             path="/datasets/C8MIXED",
             description="R2-C mixed-evidence boundary probe (test-only)",
-            param_style=ParamStyle.SETTLEMENT_DATE,
+            param_style=ParamStyle.DATE_PATH,
         ),
     )
 
     def handler(request: httpx.Request) -> httpx.Response:
-        settlement_date = request.url.params.get("settlementDate", "")
+        settlement_date = request.url.path.rsplit("/", 1)[-1]
         if settlement_date == "2024-01-15":
             body = {
                 "data": [{"settlementDate": settlement_date, "x": i} for i in range(5)],
@@ -985,7 +998,7 @@ def test_elexon_mixed_empty_and_populated_responses_advances(
 @respx.mock
 @pytest.mark.integration
 def test_elexon_truncated_json_stamps_none_and_advances_unchanged(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """#5: a truncated/malformed JSON body stamps ``record_count is None``
     (a parse failure, not zero records, D-8) -- treated as evidence exactly
@@ -994,14 +1007,14 @@ def test_elexon_truncated_json_stamps_none_and_advances_unchanged(
     from gridflow.connectors.elexon.client import ENDPOINTS
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint, ParamStyle
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     monkeypatch.setitem(
         ENDPOINTS,
         "c8_truncated_probe",
         ElexonEndpoint(
             path="/datasets/C8TRUNC",
             description="R2-C truncated-JSON boundary probe (test-only)",
-            param_style=ParamStyle.SETTLEMENT_DATE,
+            param_style=ParamStyle.DATE_PATH,
         ),
     )
     respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8TRUNC").mock(
@@ -1021,7 +1034,7 @@ def test_elexon_truncated_json_stamps_none_and_advances_unchanged(
 @respx.mock
 @pytest.mark.integration
 def test_entsoe_valid_empty_paginated_page_stamps_zero_and_does_not_advance(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """T3-g (#37, the non-vacuous stamping test, D-25/W-7): a VALID, empty
     paginated ENTSO-E document -- well-formed XML carrying zero
@@ -1043,7 +1056,7 @@ def test_entsoe_valid_empty_paginated_page_stamps_zero_and_does_not_advance(
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.entsoe.client import EntsoeConnector
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     monkeypatch.setenv("ENTSOE_API_KEY", "test-token")
 
     async def _no_sleep(*_args: Any, **_kwargs: Any) -> None:
@@ -1120,13 +1133,14 @@ class _StampedFakeConnector:
 
 @pytest.mark.integration
 def test_entsog_unstamped_connector_behaves_exactly_as_before(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, _patch_connector: None
+    isolated_env: IsolatedPaths,
+    _patch_connector: None,
 ) -> None:
     """An unstamped connector (ENTSO-G, EXEMPT per D-18) is unaffected by C-8:
     ``record_count`` stays at its default ``None`` (evidence, as today), so a
     populated 200 response still advances exactly as before the boundary was
     added."""
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     _FakeConnector.responses = [
         RawResponse(
             body=b'{"data": [{"x": 1}]}',

@@ -343,9 +343,8 @@ def test_available_at_is_a_failclosed_cutoff_not_time_travel(tmp_path: Path) -> 
     ``as_of`` that falls before vintage B's stamp cuts it away entirely —
     vintage A is not there to fall back to. Genuine historical PIT is
     ``available_at <= as_of`` then latest-of-survivors, evaluated against the
-    ALL-vintage base view (``silver_elexon_system_prices``) or its deprecated
-    ``silver_system_prices`` alias, both of which still return every vintage
-    by design.
+    ALL-vintage base view (``silver_elexon_system_prices``), which returns
+    every vintage by design.
     """
     data_dir = tmp_path / "data"
     _seed_silver_two_vintages(data_dir)

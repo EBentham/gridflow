@@ -11,38 +11,12 @@
     {
       "key": "eac_br_results_buy_orders",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "auctionID",
-              "orderID",
-              "serviceType",
-              "auctionProduct",
-              "deliveryStart",
-              "deliveryEnd",
-              "quantity",
-              "price",
-              "joinedFamily",
-              "substitutabilityFamily",
-              "paradoxicallyAcceptanceAllowed",
-              "orderEntryTime",
-              "acceptanceRatio",
-              "status",
-              "executedQuantity",
-              "clearingPrice",
-              "reasonRejected"
-            ],
             "columns": [
               {
                 "source": "auctionID",
@@ -146,10 +120,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -166,32 +137,12 @@
     {
       "key": "eac_br_results_by_unit",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "registeredAuctionParticipant",
-              "auctionUnit",
-              "serviceType",
-              "auctionProduct",
-              "executedQuantity",
-              "clearingPrice",
-              "deliveryStart",
-              "deliveryEnd",
-              "technologyType",
-              "postCode",
-              "unitResultID"
-            ],
             "columns": [
               {
                 "source": "registeredAuctionParticipant",
@@ -259,10 +210,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -278,28 +226,12 @@
     {
       "key": "eac_br_results_summary",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "auctionID",
-              "auctionProduct",
-              "serviceType",
-              "deliveryStart",
-              "deliveryEnd",
-              "clearedVolume",
-              "clearingPrice"
-            ],
             "columns": [
               {
                 "source": "auctionID",
@@ -343,10 +275,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -364,41 +293,13 @@
     {
       "key": "eac_br_results_sell_orders",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
       "max_download_bytes": 805306368,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "auctionID",
-              "registeredAuctionParticipant",
-              "auctionUnit",
-              "basketID",
-              "serviceType",
-              "deliveryStart",
-              "deliveryEnd",
-              "orderID",
-              "orderType",
-              "auctionProduct",
-              "productID",
-              "quantity",
-              "priceLimit",
-              "loopedBasketID",
-              "orderEntryTime",
-              "acceptanceRatio",
-              "status",
-              "executedQuantity",
-              "clearingPrice",
-              "reasonRejected"
-            ],
             "columns": [
               {
                 "source": "auctionID",
@@ -520,10 +421,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -4,7 +4,7 @@ on:
   push:
     branches: [master]
     # Prose only. docs/ also holds test inputs (the endpoint catalogues,
-    # CANONICAL_SCHEMA.yaml, docs/neso_data_portal/), so it is not ignored whole.
+    # docs/neso_data_portal/), so it is not ignored whole.
     # Not on pull_request: its run is the required check and must always start.
     paths-ignore:
       - "*.md"
