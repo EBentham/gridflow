@@ -206,7 +206,7 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
 
     _register_latest_views(con, latest_bases)
 
-    _drop_retired_silver_aliases(con)
+    _drop_retired_silver_aliases(con, silver_root)
 
     # Gold views
     if gold_root.exists():
@@ -340,19 +340,28 @@ def _register_latest_views(
             con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
 
-def _drop_retired_silver_aliases(con: duckdb.DuckDBPyConnection) -> None:
+def _drop_retired_silver_aliases(con: duckdb.DuckDBPyConnection, silver_root: Path) -> None:
     """Drop the single-token ``silver_{dataset}`` views earlier inits registered.
 
     They were deprecation shims for the source-qualified rename (C1-4) and are
     retired. ``CREATE OR REPLACE`` never removes a view, so a catalogue built
-    before the retirement keeps them until this drops them. A name that is also
-    a registered qualified view is never dropped.
+    before the retirement keeps them until this drops them. They were made from
+    the silver dirs, so a dir with no registered transformer counts too. A name
+    that is also a qualified view is never dropped.
     """
     from gridflow.silver.registry import list_transformers
 
-    registered = list_transformers()
-    qualified = {f"silver_{source}_{dataset}" for source, dataset in registered}
-    for name in sorted({f"silver_{dataset}" for _source, dataset in registered} - qualified):
+    pairs = set(list_transformers())
+    if silver_root.exists():
+        pairs |= {
+            (source_dir.name, dataset_dir.name)
+            for source_dir in silver_root.iterdir()
+            if source_dir.is_dir()
+            for dataset_dir in source_dir.iterdir()
+            if dataset_dir.is_dir()
+        }
+    qualified = {f"silver_{source}_{dataset}" for source, dataset in pairs}
+    for name in sorted({f"silver_{dataset}" for _source, dataset in pairs} - qualified):
         con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(name)}")
 
 

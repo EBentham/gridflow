@@ -176,24 +176,26 @@ def test_init_drops_the_retired_single_token_aliases(
 ) -> None:
     """A catalogue built before the aliases were retired loses them on the next init.
 
-    ``CREATE OR REPLACE`` never removes a view, so an old ``silver_system_prices``
-    alias would otherwise outlive the code that made it.
+    ``CREATE OR REPLACE`` never removes a view, so an old alias would otherwise
+    outlive the code that made it. Aliases were made from the silver dirs, so a
+    dir with no registered transformer (``retired_feed``) had one too.
     """
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
 
     data_dir = tmp_path / "data"
     db_path = tmp_path / "gridflow.duckdb"
-    _write_parquet(
-        pl.DataFrame({"value": [7]}),
-        data_dir / "silver" / "elexon" / "system_prices" / "year=2024" / "month=01" / "sp.parquet",
-    )
+    for dataset in ("system_prices", "retired_feed"):
+        _write_parquet(
+            pl.DataFrame({"value": [7]}),
+            data_dir / "silver" / "elexon" / dataset / "year=2024" / "month=01" / "x.parquet",
+        )
     init_catalogue(db_path, data_dir)
     con = get_connection(db_path)
     try:
-        con.execute(
-            "CREATE OR REPLACE VIEW silver_system_prices AS "
-            "SELECT * FROM silver_elexon_system_prices"
-        )
+        for dataset in ("system_prices", "retired_feed"):
+            con.execute(
+                f"CREATE OR REPLACE VIEW silver_{dataset} AS SELECT * FROM silver_elexon_{dataset}"
+            )
     finally:
         con.close()
 
@@ -211,7 +213,8 @@ def test_init_drops_the_retired_single_token_aliases(
         con.close()
 
     assert qualified == [(7,)]
-    assert "silver_system_prices" not in present
+    assert {"silver_system_prices", "silver_retired_feed"}.isdisjoint(present)
+    assert "silver_elexon_retired_feed" in present
 
 
 def test_gold_view_reads_mixed_schemas(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
