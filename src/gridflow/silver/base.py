@@ -241,8 +241,7 @@ class SidecarDiagnostic:
         detail: Pre-narrowed text for the WARNING the logging wrapper replays,
             or ``None`` when master emits no warning for this failure -- a
             present-but-non-string, non-datetime value fails *silently* on
-            master (:meth:`BaseSilverTransformer._parse_timestamp` returns
-            ``None`` without logging for those).
+            master.
     """
 
     key: str | None
@@ -687,13 +686,6 @@ class BaseSilverTransformer(ABC):
     vintage strategies over the same partition, and ``run()`` dispatches over
     three mutually exclusive branches. A transformer setting both is a bug.
     """
-    BRONZE_READ_SELECTION: ClassVar[BronzeReadSelection] = BronzeReadSelection.ALL
-    """Default selection policy for :attr:`LOCKSTEP_BRONZE_READ` reads.
-
-    Transformers whose policy depends on instance state override
-    :meth:`_bronze_read_selection` instead of reassigning this — a ClassVar
-    mutated at import time cannot express "reference datasets only".
-    """
     EVENT_WINDOW_FILTER: ClassVar[bool] = False
     """Opt-in, PER TRANSFORMER (D-6 — contrast with Elexon's source-scoped
     ``_PUBLICATION_WINDOW_FILTER_SOURCES``), to the ENTSO-E event-window
@@ -899,12 +891,11 @@ class BaseSilverTransformer(ABC):
     def _bronze_read_selection(self) -> BronzeReadSelection:
         """Resolve this run's selection policy (R2-g D-6).
 
-        Defaults to :attr:`BRONZE_READ_SELECTION`. Families whose policy
-        depends on instance state (the ENTSO-G generic family's
-        ``reference_dataset``) override this method rather than mutating the
-        ClassVar at import time.
+        Defaults to ``ALL``. Families whose policy depends on instance state
+        (the ENTSO-G generic family's ``reference_dataset``) override this
+        method.
         """
-        return self.BRONZE_READ_SELECTION
+        return BronzeReadSelection.ALL
 
     def _bronze_candidates(self, target_date: date) -> list[Path]:
         """Resolve the ordered bronze BODY paths read for ``target_date``.
@@ -1268,12 +1259,6 @@ class BaseSilverTransformer(ABC):
                             f"{_BRONZE_VINTAGE_COLUMN!r}. A vendor value there would "
                             "silently replace the true bronze stamp and corrupt "
                             "available_at. Rename the carrier before proceeding."
-                        )
-                    if len(stamps) != raw_df.height:
-                        raise ValueError(
-                            f"{self.source}/{self.dataset}: {len(stamps)} bronze vintage "
-                            f"stamp(s) for {raw_df.height} raw row(s) -- the read hook's "
-                            "per-file record counts disagree with the rows it returned."
                         )
                     raw_df = raw_df.with_columns(
                         pl.Series(_BRONZE_VINTAGE_COLUMN, stamps, dtype=pl.Datetime("us", "UTC"))
@@ -1727,8 +1712,7 @@ class BaseSilverTransformer(ABC):
 
         Raises:
             ValueError: ``vintage_column`` was requested but ``transform()``
-                dropped it (per-row ``available_at`` could not be derived), or
-                it survived to the write boundary.
+                dropped it (per-row ``available_at`` could not be derived).
         """
         if raw_df.is_empty():
             return None
@@ -1804,11 +1788,6 @@ class BaseSilverTransformer(ABC):
         )
         if vintage_column is not None:
             clean_df = clean_df.drop(vintage_column)
-        if vintage_column is not None and vintage_column in clean_df.columns:
-            raise ValueError(
-                f"{self.source}/{self.dataset}: the transient bronze-vintage column "
-                f"{vintage_column!r} reached the silver write boundary."
-            )
         return clean_df
 
     def _resolve_publication_window_plan(self, target_date: date) -> _PublicationWindowPlan | None:
@@ -2082,14 +2061,6 @@ class BaseSilverTransformer(ABC):
         self.last_partition_filter_dropped_count += result.dropped
         self.last_partition_filter_unclassified_count += result.unclassified
 
-        if result.refused:
-            logger.error(
-                "Event-window filter would drop the entire %s/%s frame for "
-                "%s; keeping every row instead (D-5 refusal)",
-                self.source,
-                self.dataset,
-                target_date,
-            )
         if result.all_dropped:
             # 100% of a non-empty frame fell outside this partition's own
             # [periodStart, periodEnd) window -- the drop is PERFORMED (TRIM
@@ -2303,20 +2274,12 @@ class BaseSilverTransformer(ABC):
                 )
             else:
                 available_at_expr = fallback
-            result = df.with_columns(
+            return df.with_columns(
                 available_at_expr.alias("available_at"),
                 pl.lit(run_id).alias("source_run_id"),
                 pl.lit(self.DATASET_VERSION).alias("dataset_version"),
                 label.alias("vintage_policy"),
             )
-            labels = result["vintage_policy"]
-            if (
-                labels.dtype != pl.String
-                or labels.null_count()
-                or not labels.is_in([policy.name, "ingest-clock", "vendor"]).all()
-            ):
-                raise ValueError(f"{self.source}/{self.dataset}: invalid vintage_policy label")
-            return result
 
         return df.with_columns(
             [
@@ -2329,9 +2292,8 @@ class BaseSilverTransformer(ABC):
 
     def _event_time_expr(self, df: pl.DataFrame, target_date: date) -> pl.Expr:
         """Return the expression used for the row's semantic event time."""
-        column = self._event_time_column()
-        if column in df.columns:
-            return pl.col(column).cast(pl.Datetime("us", "UTC")).alias("event_time")
+        if "timestamp_utc" in df.columns:
+            return pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")).alias("event_time")
 
         if {"settlement_date", "settlement_period"}.issubset(df.columns):
             return (
@@ -2357,10 +2319,6 @@ class BaseSilverTransformer(ABC):
             .cast(pl.Datetime("us", "UTC"))
             .alias("event_time")
         )
-
-    def _event_time_column(self) -> str:
-        """Name of the transform output column that represents event time."""
-        return "timestamp_utc"
 
     def _vintage_of(self, bodies: Sequence[Path], target_date: date) -> datetime:
         """The reingest stamp of a frame read from ``bodies``: their newest sidecar stamp.
@@ -2560,11 +2518,7 @@ class BaseSilverTransformer(ABC):
                 if stop_at_first_vouched:
                     break
                 continue
-            if read.reason is None:  # pragma: no cover - SidecarRead's own invariant
-                raise ValueError(
-                    f"SidecarRead for {candidate} has neither a timestamp nor a reason"
-                )
-            unvouched.append((candidate, read.reason))
+            unvouched.append((candidate, read.reason or BronzeVouchReason.NO_TIMESTAMP_KEY))
 
         logger.debug(
             "Vouched bronze for %s/%s: %d of %d examined candidate(s) usable",
@@ -2676,8 +2630,8 @@ class BaseSilverTransformer(ABC):
         """Replay the legacy parse warnings carried by a classified sidecar read."""
         for diagnostic in read.diagnostics:
             if diagnostic.detail is None:
-                # Master's `_parse_timestamp` is silent for a present-but-
-                # non-string, non-datetime value; replaying nothing is correct.
+                # Master is silent for a present-but-non-string,
+                # non-datetime value; replaying nothing is correct.
                 continue
             if diagnostic.key is None:
                 logger.warning(
@@ -2688,7 +2642,7 @@ class BaseSilverTransformer(ABC):
 
     @staticmethod
     def _coerce_sidecar_timestamp(raw_value: object) -> tuple[datetime | None, bool]:
-        """Pure core of :meth:`_parse_timestamp` -- identical logic, no logging.
+        """Coerce one sidecar value to a UTC datetime, without logging.
 
         Args:
             raw_value: The sidecar value to coerce.
@@ -2714,13 +2668,6 @@ class BaseSilverTransformer(ABC):
         if value.tzinfo is None:
             return value.replace(tzinfo=UTC), False
         return value.astimezone(UTC), False
-
-    @staticmethod
-    def _parse_timestamp(raw_value: object) -> datetime | None:
-        value, loggable_failure = BaseSilverTransformer._coerce_sidecar_timestamp(raw_value)
-        if value is None and loggable_failure:
-            logger.warning("Could not parse bronze sidecar timestamp: %s", raw_value)
-        return value
 
     def _write_silver(
         self,

@@ -1,7 +1,7 @@
 """ENTSO-E event-window filter — classification + D-3d durability tests (R2-A Task 4).
 
-Covers A-6 (classification completeness), the transform-backed replacement
-for the ineffective rev-2 ``_event_time_column`` assertion, and A-16's D-3d
+Covers A-6 (classification completeness), a transform-backed check that each
+opt-in emits the filter's ``timestamp_utc`` column, and A-16's D-3d
 per-instant lower-bound durability proof (the S4-1 mixed-ownership
 regression, demonstrated RED against both an unconditional-trim and a
 per-date ``frozenset[date]`` implementation via the git history this plan
@@ -130,11 +130,9 @@ class TestHorizonDatasetsNeverFiltered:
 
 
 class TestOptedInTransformersProduceFilterableTimestamp:
-    """Transform-backed replacement for the ineffective rev-2
-    ``_event_time_column`` assertion (``base.py``'s ``_event_time_column``
-    returns the literal ``"timestamp_utc"`` unconditionally, overridden
-    nowhere) -- actually runs ``read_bronze()`` + ``transform()`` against a
-    real fixture and asserts ``timestamp_utc`` is present and populated.
+    """The event-window filter always reads ``timestamp_utc``, so each opt-in
+    runs ``read_bronze()`` + ``transform()`` against a real fixture and
+    asserts ``timestamp_utc`` is present and populated.
     """
 
     @pytest.mark.parametrize(
