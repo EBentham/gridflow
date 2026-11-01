@@ -11,34 +11,12 @@
     {
       "key": "bs_contract_enactment_balancing",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "ID",
-              "StartTime",
-              "EndTime",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO_Flag",
-              "Reason",
-              "AssetID",
-              "CP_Name",
-              "Area",
-              "Note",
-              "Last_Updated"
-            ],
             "columns": [
               {
                 "source": "ID",
@@ -124,10 +102,7 @@
                 "nullable": true,
                 "zone": "UTC"
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -151,30 +126,12 @@
     {
       "key": "bs_contract_enactment_balancing_service",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Record",
-              "Counterparty",
-              "Unit",
-              "Start Time",
-              "End Time",
-              "Volume",
-              "Price",
-              "Notes",
-              "Last Updated"
-            ],
             "columns": [
               {
                 "source": "Record",
@@ -230,10 +187,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -253,14 +207,7 @@
     },
     {
       "key": "bs_contract_enactment_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

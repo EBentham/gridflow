@@ -2,14 +2,10 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
-from datetime import UTC, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import httpx
-
-from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
+from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.openmeteo.endpoints import (
     ARCHIVE_BASE_URL,
     DATASET_SPECS,
@@ -17,7 +13,10 @@ from gridflow.connectors.openmeteo.endpoints import (
     WeatherLocation,
 )
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import window_dates
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +24,9 @@ logger = logging.getLogger(__name__)
 class OpenMeteoConnector(BaseConnector):
     """Connector for the Open-Meteo weather API.
 
-    Open-Meteo is a public API with no authentication. It uses two different
-    base URLs for historical (archive) vs forecast data, so we override
-    ``__aenter__`` to create a client without a fixed base_url.
+    Open-Meteo is a public API with no authentication. Historical (archive)
+    and forecast data live on two hosts, so every request uses an absolute
+    URL, which httpx sends as given whatever the client's ``base_url``.
 
     Datasets are role-split into six keys
     (``historical_demand``/``historical_wind``/``historical_solar`` and the
@@ -39,12 +38,6 @@ class OpenMeteoConnector(BaseConnector):
 
     source_name = "open_meteo"
 
-    async def __aenter__(self) -> OpenMeteoConnector:
-        """Create an httpx client without a fixed base_url (uses absolute URLs)."""
-        self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._client = httpx.AsyncClient(timeout=self.config.timeout, verify=_make_ssl_context())
-        return self
-
     def list_datasets(self) -> list[str]:
         return list(self.config.datasets.keys())
 
@@ -53,17 +46,11 @@ class OpenMeteoConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch weather data for all locations of the dataset's role.
 
         ``dataset`` is one of the six role keys in ``DATASET_SPECS``.
         """
-        # Reset the partial-fetch counter at the top of the public entry point so
-        # a reused connector never inherits a prior call's count (CC-4 / matches
-        # GIE). This connector is raise-on-any, so it stays 0 — the explicit
-        # reset documents that invariant rather than relying on it.
-        self.last_skipped_units = 0
         if dataset not in DATASET_SPECS:
             raise ValueError(
                 f"Unknown open_meteo dataset {dataset!r}; expected one of "
@@ -77,22 +64,11 @@ class OpenMeteoConnector(BaseConnector):
         # population centres); silently dropping one re-weights that run's
         # aggregate with no error raised. ``_request`` already retries transients
         # (429 / archive-host timeout), so only a persistent failure reaches here.
-        #
-        # Locations are independent units, so they fetch concurrently via
-        # asyncio.gather (CH3-03 / C2-7); the ``rate_limit_per_second`` semaphore
-        # inside ``_request`` keeps in-flight HTTP bounded. ``gather`` preserves
-        # input order, so the returned list matches the sequential one exactly.
-        # ``return_exceptions=True`` collects every result, then the first
-        # exception is re-raised — preserving the raise-on-any contract (one bad
-        # location fails the whole run; ``last_skipped_units`` stays 0).
-        results = await asyncio.gather(
-            *(self._fetch_location(dataset, location, start, end) for location in spec.locations),
-            return_exceptions=True,
+        # Locations are independent units, so they fetch concurrently (CH3-03 /
+        # C2-7); one bad location fails the whole run.
+        return await self._gather_units(
+            [self._fetch_location(dataset, location, start, end) for location in spec.locations]
         )
-        for result in results:
-            if isinstance(result, BaseException):
-                raise result
-        return [resp for resp in results if isinstance(resp, RawResponse)]
 
     async def _fetch_location(
         self,
@@ -100,8 +76,8 @@ class OpenMeteoConnector(BaseConnector):
         location: WeatherLocation,
         start: datetime,
         end: datetime,
-    ) -> RawResponse:
-        """Fetch one location's data and return a RawResponse."""
+    ) -> list[RawResponse]:
+        """Fetch one location's data as a one-response list."""
         spec = DATASET_SPECS[dataset]
         is_historical = dataset.startswith("historical")
         url = f"{ARCHIVE_BASE_URL}/archive" if is_historical else f"{FORECAST_BASE_URL}/forecast"
@@ -111,42 +87,25 @@ class OpenMeteoConnector(BaseConnector):
             "longitude": location.longitude,
             "hourly": ",".join(spec.hourly),
             "start_date": start.strftime("%Y-%m-%d"),
-            "end_date": end.strftime("%Y-%m-%d"),
+            "end_date": window_dates(start, end)[-1].isoformat(),
             "timezone": "UTC",
         }
         if spec.extra_params:
             request_params.update(dict(spec.extra_params))
 
-        response = await self._request(url, request_params)
-
-        location_dataset = f"{dataset}__{location.name}"
-        return RawResponse(
-            body=response.content,
-            content_type="application/json",
-            source="open_meteo",
-            dataset=location_dataset,
-            fetched_at=datetime.now(UTC),
-            request_url=str(response.url),
-            request_params=request_params,
-            data_date=start.date(),
-        )
-
-    @RETRY_POLICY
-    async def _request(self, url: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET.
-
-        Carries @RETRY_POLICY so a transient 429 / archive-host timeout is
-        retried rather than silently dropping a capacity-weighted location —
-        parity with the Elexon and GIE connectors, which already decorate their
-        request path. The per-location failure policy after retries are
-        exhausted is unchanged (the caller's warning-only swallow); only
-        transient recovery is added here.
-        """
-        assert self._client is not None
-        async with self._semaphore:
-            response = await self._client.get(url, params=params)
-            response.raise_for_status()
-            return response
+        response = await self._get(url, request_params)
+        # The sidecar has always carried an empty api_version for this source.
+        return [
+            RawResponse.from_httpx(
+                response,
+                source="open_meteo",
+                dataset=f"{dataset}__{location.name}",
+                params=request_params,
+                content_type="application/json",
+                api_version="",
+                data_date=start.date(),
+            )
+        ]
 
 
 register_connector("open_meteo", OpenMeteoConnector)

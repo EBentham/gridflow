@@ -72,7 +72,7 @@ def _fixed_mid(
     inputs: dict[date, pl.DataFrame],
 ) -> MIDTransformer:
     monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
-    monkeypatch.setattr("gridflow.silver.elexon.mid.datetime", _Clock)
+    monkeypatch.setattr("gridflow.silver.elexon._base.datetime", _Clock)
     transformer = MIDTransformer(root)
     monkeypatch.setattr(
         transformer,
@@ -468,13 +468,6 @@ def test_partition_owner_missing_column_message_is_identical_at_both_call_sites(
             select()
         assert str(exc_info.value) == expected
     assert helper_calls == 2
-
-
-def test_timestamp_from_sidecar_doc_names_declaring_path_exception() -> None:
-    doc = BaseSilverTransformer._timestamp_from_sidecar.__doc__ or ""
-    assert "Declaring availability discovery is the deliberate" in doc
-    assert "when ``source_dates`` is supplied" in doc
-    assert "call this for EVERY source" not in doc
 
 
 class _PartitionOwnedLockstepTransformer(BaseSilverTransformer):

@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     from pathlib import Path
 
     import pytest
+    from conftest import IsolatedPaths
 
     from gridflow.pipeline.runner import DatasetResult
 
@@ -88,19 +89,8 @@ def _write_unparseable_sidecar(directory: Path, name: str, payload: dict[str, An
     return body
 
 
-def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Path]:
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "catalogue" / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return data_dir, db_path
-
-
 def _run(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
+    isolated_env: IsolatedPaths,
     seed: Any,
     dataset: str = FLOWS,
     *,
@@ -111,7 +101,7 @@ def _run(
     from gridflow.pipeline import runner as pipeline_runner
     from gridflow.storage.duckdb import get_connection, init_catalogue
 
-    data_dir, db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
     seed(data_dir)
 
     settings = load_settings()
@@ -151,9 +141,7 @@ def _alarms(caplog: pytest.LogCaptureFixture) -> list[logging.LogRecord]:
 # --------------------------------------------------------------------------- #
 
 
-def test_partial_exclusion_warns_and_counts_files_not_rows(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_partial_exclusion_warns_and_counts_files_not_rows(isolated_env: IsolatedPaths) -> None:
     """T3-c (I-7, I-10)."""
 
     def seed(data_dir: Path) -> None:
@@ -162,7 +150,7 @@ def test_partial_exclusion_warns_and_counts_files_not_rows(
         _write_orphan(partition, "raw_1000_b.json", {"operationalData": [_flow("ORPHAN1", DAY_1)]})
         _write_orphan(partition, "raw_1100_c.json", {"operationalData": [_flow("ORPHAN2", DAY_1)]})
 
-    result = _run(tmp_path, monkeypatch, seed)
+    result = _run(isolated_env, seed)
 
     assert result.status == "completed_with_warnings"
     assert result.bronze_unvouched == 2
@@ -174,7 +162,8 @@ def test_partial_exclusion_warns_and_counts_files_not_rows(
 
 
 def test_exactly_one_record_for_seven_files_across_three_dates(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    isolated_env: IsolatedPaths,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T3-b (I-6): the count is exact; only the EXAMPLES are capped at 5."""
 
@@ -194,7 +183,7 @@ def test_exactly_one_record_for_seven_files_across_three_dates(
         _partition(data_dir, FLOWS, DAY_3)
 
     with caplog.at_level(logging.DEBUG):
-        result = _run(tmp_path, monkeypatch, seed, first=DAY_1, last=DAY_3)
+        result = _run(isolated_env, seed, first=DAY_1, last=DAY_3)
 
     assert result.status == "completed_with_warnings"
     assert result.bronze_unvouched == 7
@@ -208,7 +197,7 @@ def test_exactly_one_record_for_seven_files_across_three_dates(
 
 
 def test_the_signal_does_not_self_clear_on_a_second_identical_run(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths,
 ) -> None:
     """T3-l (I-7): bronze is never deleted, so the orphan persists and re-reports."""
 
@@ -217,8 +206,8 @@ def test_the_signal_does_not_self_clear_on_a_second_identical_run(
         _write_pair(partition, "raw_ok.json", {"operationalData": [_flow("GOOD", DAY_1)]})
         _write_orphan(partition, "raw_orphan.json", {"operationalData": [_flow("X", DAY_1)]})
 
-    first = _run(tmp_path, monkeypatch, seed)
-    second = _run(tmp_path, monkeypatch, lambda _data_dir: None)
+    first = _run(isolated_env, seed)
+    second = _run(isolated_env, lambda _data_dir: None)
 
     assert (first.status, first.bronze_unvouched) == ("completed_with_warnings", 1)
     assert (second.status, second.bronze_unvouched) == (first.status, first.bronze_unvouched)
@@ -229,9 +218,7 @@ def test_the_signal_does_not_self_clear_on_a_second_identical_run(
 # --------------------------------------------------------------------------- #
 
 
-def test_one_orphan_over_three_dates_is_counted_once(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_one_orphan_over_three_dates_is_counted_once(isolated_env: IsolatedPaths) -> None:
     """T3-n: the reference candidate scan ignores target_date.
 
     Integer accumulation across the date loop would treble a single orphan and
@@ -242,13 +229,14 @@ def test_one_orphan_over_three_dates_is_counted_once(
         partition = _partition(data_dir, REFERENCE_DATASET, DAY_1)
         _write_orphan(partition, "raw_orphan.json", {"interconnections": [{"id": "x"}]})
 
-    result = _run(tmp_path, monkeypatch, seed, dataset=REFERENCE_DATASET, first=DAY_1, last=DAY_3)
+    result = _run(isolated_env, seed, dataset=REFERENCE_DATASET, first=DAY_1, last=DAY_3)
 
     assert result.bronze_unvouched == 1, "one orphan body, seen on 3 dates, is ONE file"
 
 
 def test_two_orphans_with_different_reasons_report_each_reason_once(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    isolated_env: IsolatedPaths,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T3-n2 (S-15's decisive case).
 
@@ -267,9 +255,7 @@ def test_two_orphans_with_different_reasons_report_each_reason_once(
         _write_pair(partition, "raw_a_ok.json", {"interconnections": [{"id": "GOOD"}]})
 
     with caplog.at_level(logging.DEBUG):
-        result = _run(
-            tmp_path, monkeypatch, seed, dataset=REFERENCE_DATASET, first=DAY_1, last=DAY_3
-        )
+        result = _run(isolated_env, seed, dataset=REFERENCE_DATASET, first=DAY_1, last=DAY_3)
 
     assert result.bronze_unvouched == 2
     records = [r for r in _alarms(caplog) if "unvouched" in r.getMessage()]
@@ -285,7 +271,8 @@ def test_two_orphans_with_different_reasons_report_each_reason_once(
 
 
 def test_total_exclusion_hard_fails_with_a_single_error_record(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    isolated_env: IsolatedPaths,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T3-i (I-7).
 
@@ -301,9 +288,7 @@ def test_total_exclusion_hard_fails_with_a_single_error_record(
         _write_orphan(partition, "raw_b.json", {"interconnections": [{"id": "y"}]})
 
     with caplog.at_level(logging.DEBUG):
-        result = _run(
-            tmp_path, monkeypatch, seed, dataset=REFERENCE_DATASET, first=DAY_1, last=DAY_3
-        )
+        result = _run(isolated_env, seed, dataset=REFERENCE_DATASET, first=DAY_1, last=DAY_3)
 
     assert result.status == "failed"
     assert result.ok is False
@@ -323,7 +308,7 @@ def test_total_exclusion_hard_fails_with_a_single_error_record(
 
 
 def test_total_exclusion_leaves_a_stale_parquet_untouched_and_writes_nothing(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, tmp_path: Path
 ) -> None:
     """T3-i companion (case 17): the failed status is what stops the stale file
     being read as current."""
@@ -332,7 +317,7 @@ def test_total_exclusion_leaves_a_stale_parquet_untouched_and_writes_nothing(
         partition = _partition(data_dir, FLOWS, DAY_1)
         _write_orphan(partition, "raw_a.json", {"operationalData": [_flow("X", DAY_1)]})
 
-    result = _run(tmp_path, monkeypatch, seed)
+    result = _run(isolated_env, seed)
 
     assert result.status == "failed"
     silver_dir = tmp_path / "data" / "silver" / "entsog" / FLOWS
@@ -341,7 +326,7 @@ def test_total_exclusion_leaves_a_stale_parquet_untouched_and_writes_nothing(
 
 
 def test_total_exclusion_is_recorded_as_failed_in_pipeline_runs(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths,
 ) -> None:
     """T3-i, exit-code half: `gridflow status` reads pipeline_runs, so the
     signal is structured, not merely logged."""
@@ -349,7 +334,7 @@ def test_total_exclusion_is_recorded_as_failed_in_pipeline_runs(
     from gridflow.pipeline import runner as pipeline_runner
     from gridflow.storage.duckdb import get_connection, init_catalogue
 
-    data_dir, db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
     partition = _partition(data_dir, FLOWS, DAY_1)
     _write_orphan(partition, "raw_a.json", {"operationalData": [_flow("X", DAY_1)]})
 
@@ -388,7 +373,8 @@ def test_total_exclusion_is_recorded_as_failed_in_pipeline_runs(
 
 
 def test_partial_exclusion_with_zero_surviving_rows_still_warns_exactly_once(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    isolated_env: IsolatedPaths,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T3-o: one UNVOUCHED body plus one VOUCHED body holding only off-date rows.
 
@@ -403,7 +389,7 @@ def test_partial_exclusion_with_zero_surviving_rows_still_warns_exactly_once(
         _write_orphan(partition, "raw_orphan.json", {"operationalData": [_flow("X", DAY_1)]})
 
     with caplog.at_level(logging.DEBUG):
-        result = _run(tmp_path, monkeypatch, seed)
+        result = _run(isolated_env, seed)
 
     assert result.status == "completed_with_warnings"
     assert result.bronze_unvouched == 1
@@ -420,7 +406,7 @@ def test_partial_exclusion_with_zero_surviving_rows_still_warns_exactly_once(
 
 
 def test_a_resolver_error_fails_closed_with_a_redacted_message(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """T3-k (case 14): never swallowed, never a quiet zero-row success."""
     from gridflow.silver.base import BaseSilverTransformer
@@ -434,14 +420,14 @@ def test_a_resolver_error_fails_closed_with_a_redacted_message(
         partition = _partition(data_dir, FLOWS, DAY_1)
         _write_pair(partition, "raw_ok.json", {"operationalData": [_flow("GOOD", DAY_1)]})
 
-    result = _run(tmp_path, monkeypatch, seed)
+    result = _run(isolated_env, seed)
 
     assert result.status == "failed"
     assert result.error is not None
 
 
 def test_a_run_exception_after_classification_still_reports_unvouched_count(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """R2-g finding 1: ``run()`` classifies an orphan, then raises.
 
@@ -466,14 +452,16 @@ def test_a_run_exception_after_classification_still_reports_unvouched_count(
         _write_pair(partition, "raw_ok.json", {"operationalData": [_flow("GOOD", DAY_1)]})
         _write_orphan(partition, "raw_orphan.json", {"operationalData": [_flow("X", DAY_1)]})
 
-    result = _run(tmp_path, monkeypatch, seed)
+    result = _run(isolated_env, seed)
 
     assert result.status == "failed"
     assert result.bronze_unvouched > 0
 
 
 def test_all_dropped_keeps_precedence_but_does_not_swallow_the_count(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+    isolated_env: IsolatedPaths,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     """T3-j (extended by S-33).
 
@@ -499,7 +487,7 @@ def test_all_dropped_keeps_precedence_but_does_not_swallow_the_count(
         _write_orphan(partition, "raw_orphan.json", {"operationalData": [_flow("X", DAY_1)]})
 
     with caplog.at_level(logging.DEBUG):
-        result = _run(tmp_path, monkeypatch, seed)
+        result = _run(isolated_env, seed)
 
     assert result.status == "failed"
     assert "event-window filter excluded 100%" in (result.error or "")

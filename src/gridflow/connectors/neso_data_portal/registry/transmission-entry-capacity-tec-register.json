@@ -11,36 +11,13 @@
     {
       "key": "tec_register",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "REG",
-      "refresh": "daily",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Project Name",
-              "Customer Name",
-              "Connection Site",
-              "Stage",
-              "MW Connected",
-              "MW Increase / Decrease",
-              "Cumulative Total Capacity (MW)",
-              "MW Effective From",
-              "Project Status",
-              "Agreement Type",
-              "HOST TO",
-              "Plant Type",
-              "Project ID",
-              "Project Number",
-              "Gate"
-            ],
             "columns": [
               {
                 "source": "Project Name",
@@ -133,10 +110,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

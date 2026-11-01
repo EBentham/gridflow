@@ -11,36 +11,12 @@
     {
       "key": "regional_ci_forecast",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "datetime",
-              "North Scotland",
-              "South Scotland",
-              "North West England",
-              "North East England",
-              "Yorkshire",
-              "North Wales and Merseyside",
-              "South Wales",
-              "West Midlands",
-              "East Midlands",
-              "East England",
-              "South West England",
-              "South England",
-              "London",
-              "South East England"
-            ],
             "columns": [
               {
                 "source": "datetime",
@@ -132,10 +108,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -155,14 +128,7 @@
     },
     {
       "key": "regional_ci_forecast_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

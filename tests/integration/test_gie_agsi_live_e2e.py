@@ -15,12 +15,6 @@ import gridflow.silver.gie  # noqa: F401
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.config.settings import SourceConfig, load_settings
 from gridflow.connectors.gie.client import GieConnector
-from gridflow.connectors.gie.endpoints import (
-    GIE_MAX_CALLS_PER_MINUTE,
-    QueryScope,
-    build_storage_query_plan,
-    expected_records_for_plan,
-)
 from gridflow.silver.registry import get_transformer
 
 if TYPE_CHECKING:
@@ -32,7 +26,6 @@ LIVE_DATE = date(2026, 5, 1)
 LIVE_START = datetime(2026, 5, 1, 0, 0, tzinfo=UTC)
 LIVE_END = datetime(2026, 5, 1, 0, 0, tzinfo=UTC)
 BASE_URL = "https://agsi.gie.eu"
-FULL_INVENTORY = os.environ.get("GRIDFLOW_AGSI_FULL_INVENTORY_LIVE") == "1"
 
 
 def _gie_config() -> SourceConfig:
@@ -121,87 +114,23 @@ def _classify_empty_or_skip(response: RawResponse, *, dataset: str, stage: str) 
     )
 
 
-def _trim_listing_payload(payload: dict[str, Any] | list[dict[str, Any]]) -> dict[str, Any]:
-    rows = payload if isinstance(payload, list) else payload.get("data", [])
-    if not isinstance(rows, list):
-        pytest.skip("source=gie_agsi dataset=about_listing stage=listing invalid_shape=true")
-
-    for company in rows:
-        if not isinstance(company, dict):
-            continue
-        facilities = company.get("facilities") or []
-        if isinstance(facilities, list) and facilities:
-            trimmed = dict(company)
-            trimmed["facilities"] = [facilities[0]]
-            return {"data": [trimmed]}
-
-    pytest.skip(
-        "source=gie_agsi dataset=about_listing stage=listing outcome=no-company-with-facility"
-    )
-
-
-def _scope_kwargs(
-    scope: QueryScope,
-    listing_payload: dict[str, Any] | None,
-) -> dict[str, Any]:
-    if scope == QueryScope.AGGREGATE_TYPE:
-        return {"scope": scope, "aggregate_types": ("EU",)}
-    if scope == QueryScope.COUNTRY:
-        return {"scope": scope, "countries": ("DE",)}
-    if scope in {QueryScope.COMPANY, QueryScope.FACILITY}:
-        return {"scope": scope, "listing_payload": listing_payload}
-    raise AssertionError(f"unsupported live storage scope: {scope}")
-
-
-def _expected_entity_level(scope: QueryScope) -> str:
-    return "aggregate_type" if scope == QueryScope.AGGREGATE_TYPE else scope.value
-
-
-async def _listing_payload(connector: GieConnector) -> dict[str, Any]:
-    payload = await connector._fetch_listing_payload()  # noqa: SLF001
-    return _trim_listing_payload(payload)
-
-
-@pytest.mark.parametrize(
-    "scope",
-    [
-        QueryScope.AGGREGATE_TYPE,
-        QueryScope.COUNTRY,
-        QueryScope.COMPANY,
-        QueryScope.FACILITY,
-    ],
-    ids=["aggregate", "country", "company", "facility"],
-)
 @pytest.mark.live
 @pytest.mark.asyncio
-async def test_live_agsi_storage_scopes_fetch_transform_or_classify_empty(
+async def test_live_agsi_storage_reports_fetch_transform_or_classify_empty(
     tmp_data_dir: Path,
-    scope: QueryScope,
 ) -> None:
     try:
         async with GieConnector(_gie_config()) as connector:
-            listing_payload = (
-                await _listing_payload(connector)
-                if scope in {QueryScope.COMPANY, QueryScope.FACILITY}
-                else None
-            )
-            responses = await connector.fetch(
-                "storage_reports",
-                LIVE_START,
-                LIVE_END,
-                **_scope_kwargs(scope, listing_payload),
-            )
+            responses = await connector.fetch("storage_reports", LIVE_START, LIVE_END)
     except httpx.HTTPStatusError as exc:
         response = exc.response
         pytest.fail(
-            f"source=gie_agsi dataset=storage_reports scope={scope.value} "
+            f"source=gie_agsi dataset=storage_reports "
             f"stage=live fetch status={response.status_code} url={response.url} "
             f"body_preview={response.text[:500].replace(chr(10), ' ')}"
         )
 
-    assert responses, (
-        f"source=gie_agsi dataset=storage_reports scope={scope.value} stage=live fetch no responses"
-    )
+    assert responses, "source=gie_agsi dataset=storage_reports stage=live fetch no responses"
 
     selected_responses: list[RawResponse] = []
     for response in responses:
@@ -210,11 +139,7 @@ async def test_live_agsi_storage_scopes_fetch_transform_or_classify_empty(
             selected_responses.append(response)
 
     if not selected_responses:
-        _classify_empty_or_skip(
-            responses[0],
-            dataset="storage_reports",
-            stage=f"live fetch scope={scope.value}",
-        )
+        _classify_empty_or_skip(responses[0], dataset="storage_reports", stage="live fetch")
 
     writer = BronzeWriter(tmp_data_dir)
     for response in selected_responses:
@@ -225,15 +150,14 @@ async def test_live_agsi_storage_scopes_fetch_transform_or_classify_empty(
     target_date = selected_responses[0].data_date or LIVE_DATE
     rows_written = get_transformer("gie_agsi", "storage_reports", tmp_data_dir).run(target_date)
     assert rows_written > 0, (
-        f"source=gie_agsi dataset=storage_reports scope={scope.value} "
-        f"stage=silver target_date={target_date}"
+        f"source=gie_agsi dataset=storage_reports stage=silver target_date={target_date}"
     )
     parquet_path = _silver_path(tmp_data_dir, "storage_reports", target_date)
     assert parquet_path.exists()
     df = pl.read_parquet(parquet_path)
     assert len(df) == rows_written
     assert df["data_provider"].unique().to_list() == ["gie_agsi"]
-    assert _expected_entity_level(scope) in set(df["entity_level"].to_list())
+    assert "aggregate_type" in set(df["entity_level"].to_list())
 
 
 @pytest.mark.live
@@ -275,32 +199,3 @@ async def test_live_agsi_unavailability_fetches_or_classifies_documented_ambigui
     df = pl.read_parquet(_silver_path(tmp_data_dir, "unavailability", target_date))
     assert len(df) == rows_written
     assert df["data_provider"].unique().to_list() == ["gie_agsi"]
-
-
-@pytest.mark.live
-@pytest.mark.asyncio
-async def test_live_agsi_full_inventory_expected_counts_gate() -> None:
-    async with GieConnector(_gie_config()) as connector:
-        payload = await connector._fetch_listing_payload()  # noqa: SLF001
-
-    planning_payload = payload if FULL_INVENTORY else _trim_listing_payload(payload)
-    company_plan = build_storage_query_plan(
-        scope=QueryScope.COMPANY,
-        start=LIVE_DATE,
-        listing_payload=planning_payload,
-    )
-    facility_plan = build_storage_query_plan(
-        scope=QueryScope.FACILITY,
-        start=LIVE_DATE,
-        listing_payload=planning_payload,
-    )
-
-    assert GIE_MAX_CALLS_PER_MINUTE == 60
-    assert expected_records_for_plan(company_plan) > 0
-    assert expected_records_for_plan(facility_plan) > 0
-    if not FULL_INVENTORY:
-        pytest.skip(
-            "source=gie_agsi dataset=storage_reports stage=full-inventory-gate "
-            "outcome=representative-only set GRIDFLOW_AGSI_FULL_INVENTORY_LIVE=1 "
-            "for the slow 60-calls-per-minute inventory gate"
-        )

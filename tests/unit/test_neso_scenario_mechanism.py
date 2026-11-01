@@ -13,19 +13,16 @@ from __future__ import annotations
 
 import subprocess
 import sys
-import tempfile
 import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pydantic
 import pytest
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import install_generated, query, write_capture
 from _neso_registry_support import column, epoch, family, package, record, resource
-from test_neso_dem1_records import _short_base
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import SchemaRecord
@@ -64,7 +61,7 @@ from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "neso_data_portal"
@@ -77,13 +74,10 @@ def _t(hour: int, minute: int = 0) -> datetime:
 
 
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root (MAX_PATH); gold views are out of scope for these catalogues."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def unpivot_epoch(
@@ -141,7 +135,6 @@ def _validate(document: dict[str, Any]) -> None:
         SchemaRecord.model_validate(document),
         key="scn",
         kind="tabular",
-        legacy=False,
         package_families={"scn": True},
         family_url_types=frozenset({"upload"}),
     )
@@ -172,25 +165,17 @@ def _silver(data: Path, key: str) -> pl.DataFrame:
     )
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def both_latest(db: Path, data: Path, key: str, as_of: datetime | None) -> pl.DataFrame:
     """The catalogue's ``_latest`` (or the parameterised select) = Polars; the SQL rows."""
     view = f"silver_{SOURCE}_{key}"
     spec = LATEST_VIEW_SPECS[(SOURCE, key)]
     if as_of is None:
-        sql = _query(db, f'SELECT * FROM "{view}_latest"')
+        sql = query(db, f'SELECT * FROM "{view}_latest"')
     else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
         select = latest_select_sql(view, spec, columns, as_of_param=True)
         assert select is not None
-        sql = _query(db, select, {"as_of": as_of.isoformat()})
+        sql = query(db, select, {"as_of": as_of.isoformat()})
     files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
     lf = pl.scan_parquet(files, hive_partitioning=False)
     polars = select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
@@ -384,7 +369,7 @@ class TestRecordRules:
         assert again.epochs[1].unpivot is not None
         assert again.epochs[1].unpivot.years == (("FY32", 2032), ("2033", 2033))
 
-    def test_t_sc2_i_every_committed_record_loads(self) -> None:
+    def test_t_sc2_i_every_committed_record_loads(self, run_fresh: Callable[..., str]) -> None:
         """Detects a committed record broken by the new shape rules, V-4, V-18 or the
         reserved ``edition`` (in a fresh interpreter, so nothing imported can mask it)."""
         code = textwrap.dedent(
@@ -395,17 +380,8 @@ class TestRecordRules:
             print("OK", len(recorded))
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
     def test_t_sc2_j_epoch_outputs_is_the_identity_without_unpivot(self) -> None:
         """Detects ``epoch_outputs`` rebuilding (or extending) a non-unpivot epoch's specs,

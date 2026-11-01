@@ -308,3 +308,39 @@ class TestRunnerEntryPoint:
         assert ingest_calls == [("elexon", ["system_prices"])] * 2, (
             "the chunk loop did not run for a normal source"
         )
+
+    def test_run_backfill_skips_a_chunk_transform_when_its_ingest_failed(
+        self, sample_config: GridflowConfig, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A transform of partial bronze would write silver that marks the chunk done.
+
+        gridflow_models' backfill counts one silver row in a chunk as complete,
+        so a chunk whose ingest failed must not be transformed, or it is never
+        retried.
+        """
+        transform_calls: list[object] = []
+
+        @contextlib.contextmanager
+        def _fake_context(_settings: object) -> Iterator[object]:
+            yield object()
+
+        monkeypatch.setattr(runner, "build_context", _fake_context)
+        monkeypatch.setattr(
+            runner,
+            "run_ingest",
+            lambda ctx, source, datasets, *a, **k: [
+                runner.DatasetResult(source, datasets[0], "ingest", "failed", error="boom")
+            ],
+        )
+        monkeypatch.setattr(
+            runner, "run_transform", lambda *a, **k: transform_calls.append(a) or []
+        )
+        monkeypatch.setattr(runner, "refresh_views", lambda *a, **k: None)
+
+        start = datetime(2024, 1, 1, tzinfo=UTC)
+        report = runner.run_backfill(
+            sample_config, "elexon", ["system_prices"], start, start + timedelta(days=2)
+        )
+
+        assert transform_calls == []
+        assert [r.status for r in report.results] == ["failed", "failed"]

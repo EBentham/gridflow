@@ -102,7 +102,7 @@ def test_every_neso_transformer_is_a_generic_neso_json_transformer_subclass(
     is a subclass of the base the exact-read fix lives on.
 
     A future bespoke NESO transformer that bypasses
-    ``GenericNesoJsonTransformer`` (and its exact-partition ``_bronze_files``)
+    ``GenericNesoJsonTransformer`` (and its exact-partition ``_bronze_candidates``)
     would silently reintroduce the covering-fallback duplication -- this
     fails loudly instead.
     """

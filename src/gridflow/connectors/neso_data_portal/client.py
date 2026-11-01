@@ -74,14 +74,20 @@ from gridflow.connectors.registry import register_connector
 from gridflow.silver.csv_bronze import CsvBronzeError, read_csv_bronze_body
 from gridflow.storage.paths import PathBuilder
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import window_dates
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Sequence
+    from datetime import date
     from pathlib import Path
 
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.neso_data_portal.captures import Capture
-    from gridflow.connectors.neso_data_portal.endpoints import FamilySpec
+    from gridflow.connectors.neso_data_portal.registry import (
+        FamilyEntry,
+        PackageEntry,
+        Registry,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -115,9 +121,9 @@ _TRACED_RESPONSE_HEADERS = ("date", "content-type", "etag", "last-modified")
 # D-34 window admission. Covers host clock skew and nothing else.
 _FUTURE_WINDOW_TOLERANCE = timedelta(minutes=5)
 
-# ``--end 2026-08-16`` parses to midnight UTC, so a legitimate "yesterday to
-# today" explicit window can end up to ~24 h behind the wall clock; 48 h clears
-# that with margin. Deliberately NOT tightened: a *recent* historical window is
+# A bare ``--end`` date is inclusive, so ``--end <yesterday>`` ends at today
+# 00:00 UTC and a legitimate explicit window can end up to ~24 h behind the wall
+# clock; 48 h clears that with margin. Deliberately NOT tightened: a *recent* historical window is
 # indistinguishable from a live one by recency, definitionally, so no value of
 # this constant makes it a backfill guard. D-35's capability check is that.
 _HISTORICAL_WINDOW_TOLERANCE = timedelta(hours=48)
@@ -132,8 +138,9 @@ _HISTORICAL_WINDOW_TOLERANCE = timedelta(hours=48)
 # an ordinary command recurringly: ``ingest --incremental`` resolves each
 # dataset's start from its watermark widened by ``incremental_overlap_hours``
 # (72 h), so every run after the first resolves a span of roughly four days.
-# ``max_query_days`` is, additionally, dead config — no code in the repo reads
-# it. The coupling to the declared 168 h ceiling is pinned by assertion in
+# ``max_query_days`` feeds only the span notice in ``_assert_window_admissible``;
+# ``load_settings`` fills 0 for every portal dataset, which keeps that notice
+# quiet. The coupling to the declared 168 h ceiling is pinned by assertion in
 # ``tests/unit/test_neso_data_portal.py``, so widening that ceiling fails there
 # rather than silently turning this check into a false refusal.
 _MAX_INGEST_WINDOW = timedelta(days=7)
@@ -1494,9 +1501,10 @@ class NesoDataPortalConnector(BaseConnector):
                 ``end < start``. The CLI already rejects naive input, so this is
                 defence for direct programmatic callers — tests, notebooks,
                 future schedulers — and protection for D-13, which derives a
-                bronze partition from ``end.date()``: a non-UTC ``end`` would
-                silently partition to the wrong day.
-            NesoFutureWindowError: ``end`` is beyond the clock-skew tolerance.
+                bronze partition from the window's last UTC day: a non-UTC
+                ``end`` would silently partition to the wrong day.
+            NesoFutureWindowError: The partition day is after today, beyond the
+                clock-skew tolerance.
             NesoHistoricalWindowError: ``end`` is more than 48 h stale.
             NesoWindowTooLongError: The span exceeds what any automated path can
                 resolve.
@@ -1511,7 +1519,8 @@ class NesoDataPortalConnector(BaseConnector):
             if offset != timedelta(0):
                 raise ValueError(
                     f"neso_data_portal.fetch: {label} must carry a zero UTC offset, got "
-                    f"{value!r} (offset {offset}); D-13 partitions bronze at end.date(), so "
+                    f"{value!r} (offset {offset}); D-13 partitions bronze at the window's "
+                    "last UTC day, so "
                     "a non-UTC endpoint would land the capture on the wrong day"
                 )
         if end < start:
@@ -1521,14 +1530,15 @@ class NesoDataPortalConnector(BaseConnector):
             )
 
         now = datetime.now(UTC)
-        if end > now + _FUTURE_WINDOW_TOLERANCE:
+        day = window_dates(start, end)[-1]
+        if day > (now + _FUTURE_WINDOW_TOLERANCE).date():
             raise NesoFutureWindowError(
-                f"neso_data_portal.fetch: window end {end.isoformat()} is in the future "
-                f"(now {now.isoformat()}). The portal has no future snapshot, and a future "
-                "partition is the one shape D-13 cannot recover from: ingest would report "
-                "success while transform stayed permanently silent. Use --last 24h, or "
-                f"--end {now.date().isoformat()} — note that a bare --end <date> means "
-                "midnight at the START of that date."
+                f"neso_data_portal.fetch: window end {end.isoformat()} would partition the "
+                f"capture at {day.isoformat()}, a future day (now {now.isoformat()}). The "
+                "portal has no future snapshot, and a future partition is the one shape D-13 "
+                "cannot recover from: ingest would report success while transform stayed "
+                "permanently silent. Use --last 24h, or "
+                f"--end {now.date().isoformat()} (a bare --end date means through that day)."
             )
         if end < now - _HISTORICAL_WINDOW_TOLERANCE:
             raise NesoHistoricalWindowError(
@@ -1558,7 +1568,7 @@ class NesoDataPortalConnector(BaseConnector):
                 dataset,
                 span,
                 max_query_days,
-                end.date().isoformat(),
+                day.isoformat(),
             )
 
     async def fetch(
@@ -1566,7 +1576,6 @@ class NesoDataPortalConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Not supported: every dataset of this source is captured by :meth:`iter_members`.
 
@@ -1599,7 +1608,8 @@ class NesoDataPortalConnector(BaseConnector):
         Args:
             dataset: A registry family key.
             start: Window start, tz-aware UTC (D-34).
-            end: Window end, tz-aware UTC; ``end.date()`` is the partition.
+            end: Window end (exclusive), tz-aware UTC. The window's last UTC
+                day is the partition, the day a transform of the same window reads.
 
         Yields:
             One :class:`MemberEvent` per member, plus one ``absent`` event per
@@ -1611,9 +1621,11 @@ class NesoDataPortalConnector(BaseConnector):
             NesoResourceSelectionError: No member at all, or a listed member
                 matched twice (definitive-absent, ADR-023).
         """
-        family = endpoints.FAMILIES.get(dataset)
-        if family is None:
+        registry = registry_module.load_registry()
+        entry = registry.families.get(dataset)
+        if entry is None:
             raise ValueError(f"unknown neso_data_portal dataset {dataset!r}")
+        package, family = entry
         if self._bronze_root is None:
             raise RuntimeError(
                 "iter_members needs bind_data_dir() first: the unchanged-member skip reads "
@@ -1621,20 +1633,20 @@ class NesoDataPortalConnector(BaseConnector):
             )
         self.last_skipped_units = 0
         self._assert_window_admissible(dataset, start, end)
-        if not family.names and family.name_regex is None:
+        day = window_dates(start, end)[-1]
+        if not registry.family_names(dataset):
             # ADR-037 P-10: a sibling-fed family reads its siblings' bronze and
             # owns no resource, so there is nothing to select or fetch.
             logger.info("%s: sibling-fed family, no own resources; nothing to fetch", dataset)
             return
 
-        package_payload = await self._package_show(family.package)
+        package_payload = await self._package_show(package.package)
         live = package_payload.get("resources")
         if not isinstance(live, list):
             raise NesoResourceSelectionError(
-                f"{dataset}: CKAN package {family.package!r} carried no resources list"
+                f"{dataset}: CKAN package {package.package!r} carried no resources list"
             )
-        registry = registry_module.load_registry()
-        self._warn_unassigned(family.package, live)
+        self._warn_unassigned(registry, package, live)
 
         legacy_spec = DATASETS.get(dataset) if family.legacy else None
         absent: list[MemberEvent] = []
@@ -1642,7 +1654,7 @@ class NesoDataPortalConnector(BaseConnector):
             resource, _redirector = self._select_resource(package_payload, legacy_spec, dataset)
             members = [resource]
         else:
-            members, absent = _select_members(live, family, registry, dataset)
+            members, absent = _select_members(live, registry, dataset)
 
         scan = captures_module.scan_dataset(self._bronze_root / dataset, registry)
         newest = captures_module.newest_by_resource(scan.captures)
@@ -1664,11 +1676,13 @@ class NesoDataPortalConnector(BaseConnector):
                 dump_event = await self._dump_member(
                     package_payload,
                     resource,
+                    package,
                     family,
                     dataset,
                     registry,
                     None if basis_blocked else newest.get(resource_id),
                     end,
+                    day=day,
                 )
                 yield dump_event
                 del dump_event
@@ -1696,7 +1710,7 @@ class NesoDataPortalConnector(BaseConnector):
                 continue
             try:
                 response, extension = await self._capture_member(
-                    package_payload, resource, family, legacy_spec, dataset, end
+                    package_payload, resource, package, family, legacy_spec, dataset, day=day
                 )
             except (NesoDataPortalError, CsvBronzeError, httpx.HTTPError, OSError) as exc:
                 yield MemberEvent(resource_id, "failed", detail=_safe_detail(exc))
@@ -1710,12 +1724,14 @@ class NesoDataPortalConnector(BaseConnector):
         self,
         package_payload: dict[str, Any],
         resource: dict[str, Any],
-        family: FamilySpec,
+        package: PackageEntry,
+        family: FamilyEntry,
         legacy_spec: CkanDataset | None,
         dataset: str,
-        end: datetime,
+        *,
+        day: date,
     ) -> tuple[RawResponse, str]:
-        """Download and admit one upload member; return its response and extension."""
+        """Download and admit one upload member, partitioned at ``day``."""
         redirector = self._assert_redirector_url(package_payload, resource, dataset)
         max_bytes = (
             legacy_spec.max_download_bytes if legacy_spec is not None else family.max_download_bytes
@@ -1734,7 +1750,7 @@ class NesoDataPortalConnector(BaseConnector):
                 empty_allowed=family.empty_allowed,
                 label=f"{dataset}: {redirector_url}",
             )
-        request_params = _provenance_params(family.package, package_payload, resource, body)
+        request_params = _provenance_params(package.package, package_payload, resource, body)
         request_params.update(
             {
                 "capture_family": dataset,
@@ -1752,7 +1768,7 @@ class NesoDataPortalConnector(BaseConnector):
             request_params=request_params,
             api_version="3",
             http_status=http_status,
-            data_date=end.date(),
+            data_date=day,
         )
         return response, extension
 
@@ -1803,11 +1819,14 @@ class NesoDataPortalConnector(BaseConnector):
         self,
         package_payload: dict[str, Any],
         resource: dict[str, Any],
-        family: FamilySpec,
+        package: PackageEntry,
+        family: FamilyEntry,
         dataset: str,
         registry: Any,
         candidate: Capture | None,
         end: datetime,
+        *,
+        day: date,
     ) -> MemberEvent:
         """Capture, suppress or skip one datastore member (ADR-035 P-9).
 
@@ -1819,14 +1838,15 @@ class NesoDataPortalConnector(BaseConnector):
         Args:
             package_payload: The live ``package_show`` result.
             resource: The live datastore resource.
+            package: The family's registry package.
             family: The family being captured.
             dataset: The family key.
             registry: The loaded registry.
             candidate: The newest usable capture of this resource, or ``None``
                 when there is none or an unusable sidecar blocks the basis
                 (P-8 (i)-(iii)).
-            end: The window end; ``end.date()`` is the partition and the
-                cadence clock.
+            end: The window end, the cadence clock (a check stamp records it).
+            day: The partition, the window's last UTC day.
 
         Returns:
             One ``captured``, ``unchanged`` or ``failed`` event.
@@ -1862,7 +1882,7 @@ class NesoDataPortalConnector(BaseConnector):
             return MemberEvent(rid, "failed", detail=_safe_detail(exc))
 
         request_params = _dump_provenance_params(
-            family.package,
+            package.package,
             package_payload,
             resource,
             dump,
@@ -1884,7 +1904,7 @@ class NesoDataPortalConnector(BaseConnector):
             request_params=request_params,
             api_version="3",
             http_status=dump.http_status,
-            data_date=end.date(),
+            data_date=day,
         )
         return MemberEvent(rid, "captured", response, "csv")
 
@@ -1894,15 +1914,16 @@ class NesoDataPortalConnector(BaseConnector):
             raise RuntimeError("the dump leg needs bind_data_dir() first")
         return self._data_paths.dump_check_dir(self.source_name, dataset) / f"{resource_id}.json"
 
-    def _warn_unassigned(self, package: str, live: list[Any]) -> None:
+    def _warn_unassigned(self, registry: Registry, package: PackageEntry, live: list[Any]) -> None:
         """Log, once per process, each live resource no family of ``package`` claims."""
-        families = [spec for spec in endpoints.FAMILIES.values() if spec.package == package]
         for item in live:
             if not isinstance(item, dict):
                 continue
             name, fmt = str(item.get("name", "")), str(item.get("format", ""))
-            key = (package, str(item.get("id", "")))
-            if key in _WARNED_UNASSIGNED or any(spec.selects(name, fmt) for spec in families):
+            key = (package.package, str(item.get("id", "")))
+            if key in _WARNED_UNASSIGNED or any(
+                registry.family_selects(family.key, name, fmt) for family in package.families
+            ):
                 continue
             _WARNED_UNASSIGNED.add(key)
             logger.warning(
@@ -1911,12 +1932,12 @@ class NesoDataPortalConnector(BaseConnector):
                 key[1],
                 name,
                 fmt,
-                package,
+                package.package,
             )
 
     def list_datasets(self) -> list[str]:
         """Return every registry family key this connector serves (P-3)."""
-        return list(endpoints.FAMILIES)
+        return list(registry_module.load_registry().families)
 
 
 # Every (package, resource id) already warned as unassigned in this process (P-6).
@@ -2166,8 +2187,7 @@ def _admit_member_body(
 
 def _select_members(
     live: list[Any],
-    family: FamilySpec,
-    registry: Any,
+    registry: Registry,
     dataset: str,
 ) -> tuple[list[dict[str, Any]], list[MemberEvent]]:
     """P-6: the family's live members in payload order, and its absent listed members.
@@ -2176,33 +2196,34 @@ def _select_members(
         NesoResourceSelectionError: No live member at all, or one listed
             ``(name, format)`` matched by two live resources.
     """
+    package, _family = registry.families[dataset]
+    names = registry.family_names(dataset)
     members = [
         item
         for item in live
         if isinstance(item, dict)
-        and family.selects(str(item.get("name", "")), str(item.get("format", "")))
+        and registry.family_selects(dataset, str(item.get("name", "")), str(item.get("format", "")))
     ]
     matched: dict[tuple[str, str], int] = {}
     for item in members:
         pair = (str(item.get("name", "")), str(item.get("format", "")).upper())
-        if pair in family.names:
+        if pair in names:
             matched[pair] = matched.get(pair, 0) + 1
     ambiguous = sorted(pair for pair, count in matched.items() if count > 1)
     if ambiguous:
         raise NesoResourceSelectionError(
             f"{dataset}: listed member(s) {ambiguous!r} match more than one live resource in "
-            f"CKAN package {family.package!r}; refusing to guess"
+            f"CKAN package {package.package!r}; refusing to guess"
         )
     if not members:
         actual = [str(item.get("name")) for item in live if isinstance(item, dict)]
         raise NesoResourceSelectionError(
-            f"{dataset}: no live resource in CKAN package {family.package!r} is a member; "
+            f"{dataset}: no live resource in CKAN package {package.package!r} is a member; "
             f"the package returned {actual!r}"
         )
-    package_entry, _family_entry = registry.families[dataset]
     seeded = {
         (resource.name, resource.format): resource.id
-        for resource in package_entry.resources
+        for resource in package.resources
         if resource.family == dataset
     }
     absent = [
@@ -2211,7 +2232,7 @@ def _select_members(
             "absent",
             detail=f"listed member {pair[0]!r} ({pair[1]}) is not in the live package",
         )
-        for pair in sorted(family.names)
+        for pair in sorted(names)
         if pair not in matched
     ]
     return members, absent

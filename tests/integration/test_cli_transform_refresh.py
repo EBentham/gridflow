@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import duckdb
 import polars as pl
@@ -25,19 +26,11 @@ from typer.testing import CliRunner
 
 from gridflow.cli import app
 
+if TYPE_CHECKING:
+    from conftest import IsolatedPaths
+
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
 runner = CliRunner()
-
-
-def _isolated_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Path]:
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    # F15-D: gold SQL views reference silver tables absent from test tmpdirs.
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return data_dir, db_path
 
 
 def _write_fuelhh_bronze(data_dir: Path) -> None:
@@ -57,9 +50,7 @@ def _write_fuelhh_bronze(data_dir: Path) -> None:
 
 
 @pytest.mark.integration
-def test_transform_makes_silver_view_queryable_immediately(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
+def test_transform_makes_silver_view_queryable_immediately(isolated_env: IsolatedPaths) -> None:
     """F15-C / PBI-04: silver_elexon_fuelhh view returns rows the moment transform exits.
 
     Pre-F15-C: init_catalogue at transform-start sees an empty data_dir; the
@@ -69,7 +60,7 @@ def test_transform_makes_silver_view_queryable_immediately(
     Post-F15-C: transform calls refresh_views after writing; the view is
     registered and a fresh connection can query it immediately.  PASSES GREEN.
     """
-    data_dir, db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
     _write_fuelhh_bronze(data_dir)
 
     result = runner.invoke(
@@ -95,7 +86,9 @@ def test_transform_makes_silver_view_queryable_immediately(
 
 
 @pytest.mark.integration
-def test_build_refreshes_gold_views(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_build_refreshes_gold_views(
+    isolated_env: IsolatedPaths, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """F15-C / PBI-04: gold parquet written by build is queryable immediately.
 
     The fake builder writes one gold parquet row; post-F15-C, build calls
@@ -104,7 +97,7 @@ def test_build_refreshes_gold_views(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     Pre-F15-C: DuckDB raises CatalogException on the query.  FAILS RED.
     Post-F15-C: view exists and returns rows.  PASSES GREEN.
     """
-    data_dir, db_path = _isolated_env(tmp_path, monkeypatch)
+    data_dir, db_path = isolated_env.data_dir, isolated_env.duckdb_path
     gold_dir = data_dir / "gold" / "system_marginal_price"
 
     class _FakeBuilder:
@@ -143,9 +136,9 @@ def test_build_refreshes_gold_views(tmp_path: Path, monkeypatch: pytest.MonkeyPa
     assert rows[0] > 0, "gold_system_marginal_price view should be queryable post-build"
 
 
-def test_refresh_views_is_idempotent(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_refresh_views_is_idempotent(isolated_env: IsolatedPaths, tmp_path: Path) -> None:
     """refresh_views can be called twice without error (CREATE OR REPLACE VIEW)."""
-    _, db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     data = tmp_path / "data"
     data.mkdir(exist_ok=True)
 

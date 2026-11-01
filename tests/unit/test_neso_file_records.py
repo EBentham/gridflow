@@ -18,7 +18,6 @@ from __future__ import annotations
 
 import csv
 import io
-import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -46,8 +45,6 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.registry import get_transformer
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
@@ -105,22 +102,11 @@ FIXTURE_EMPTY = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (ADR-036: engine names pass MAX_PATH there); tmp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for this catalogue."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="f1", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def body() -> bytes:

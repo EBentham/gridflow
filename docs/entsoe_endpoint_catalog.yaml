@@ -1013,7 +1013,7 @@ entries:
     status: deferred
     dataset: activated_balancing_qty
     batch: H8-balancing-extension
-    reason: H5.5 live cleanup found the default GB control area rejects A83 as not allowed to be fetched via the service. Transformer/schema support remains, but active UK-centric all-dataset ingestion excludes this endpoint until a supported control-area strategy is introduced.
+    reason: H5.5 live cleanup found the default GB control area rejects A83 as not allowed to be fetched via the service. The unused transformer and schema were deleted on 2026-11-01; restore them from git history when a supported control-area strategy is introduced.
 
   - domain: Master Data
     name: Production and Generation Units
