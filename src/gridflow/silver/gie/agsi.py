@@ -436,7 +436,9 @@ class AgsiJsonTransformer(BaseSilverTransformer):
         files = self._all_bronze_files()
         if not files:
             return []
-        latest_parent = max({path.parent for path in files}, key=lambda path: path.stat().st_mtime)
+        # The latest DATE partition (YYYY/MM/DD sorts by date), never the newest
+        # mtime: reingest lists twice, and an mtime can move to an older partition.
+        latest_parent = max({path.parent for path in files})
         return sorted(path for path in files if path.parent == latest_parent)
 
     def _all_bronze_files(self) -> list[Path]:
