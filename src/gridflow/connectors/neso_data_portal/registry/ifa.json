@@ -11,25 +11,12 @@
     {
       "key": "ifa_da_id_weekly_itls",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
-              "Flow (MW) to GB",
-              "Flow (MW) from GB",
-              "Reason for restriction"
-            ],
             "columns": [
               {
                 "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
@@ -55,10 +42,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -79,28 +63,12 @@
     {
       "key": "ifa_itl",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Data Upload Time GMT",
-              "Auction Type",
-              "Operational Period Start Date and Time GMT",
-              "Flow in MW To GB",
-              "Reason For Restriction To GB",
-              "Flow in MW From GB",
-              "Reason For Restriction From GB"
-            ],
             "columns": [
               {
                 "source": "Data Upload Time GMT",

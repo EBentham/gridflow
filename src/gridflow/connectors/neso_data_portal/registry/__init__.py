@@ -89,9 +89,16 @@ KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,39}$")
 # The three keys onboarded before the registry existed. ``legacy`` now means only
 # fetch-time admission through their in-code header contracts (endpoints.DATASETS);
 # their silver runs through the generic engine on frozen records like any other.
-LEGACY_KEYS: frozenset[str] = frozenset(
-    {"daily_wind_availability", "historic_generation_mix", "embedded_wind_solar_forecast"}
+# Ordered: master's DATASETS order, which DATASETS and the configured dataset list
+# keep.
+LEGACY_KEYS: tuple[str, ...] = (
+    "daily_wind_availability",
+    "historic_generation_mix",
+    "embedded_wind_solar_forecast",
 )
+
+# The streaming size cap per member (A9) for a family that sets none.
+DEFAULT_MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
 
 FROZEN_KEYS_FILE = "_frozen_keys.json"
 ADJUDICATIONS_FILE = "_adjudications.json"
@@ -182,18 +189,24 @@ Disposition = Annotated[
 
 
 class FamilyEntry(_Frozen):
-    """One gridflow dataset key: a set of CKAN resources of one package."""
+    """One gridflow dataset key: a set of CKAN resources of one package.
+
+    A family file entry may leave out ``archetype`` and ``refresh``; it then
+    takes its package's (:class:`PackageEntry` fills them in).
+    """
 
     key: str
     kind: Literal["tabular", "files"]
-    legacy: bool
     archetype: Archetype
     refresh: Refresh
-    empty_allowed: bool
-    max_download_bytes: int = Field(gt=0)
-    name_regex: str | None = None
-    transformer: Literal["bespoke"] | None = None
+    empty_allowed: bool = False
+    max_download_bytes: int = Field(default=DEFAULT_MAX_DOWNLOAD_BYTES, gt=0)
     record: SchemaRecord | None = None
+
+    @property
+    def legacy(self) -> bool:
+        """One of the :data:`LEGACY_KEYS`, admitted at fetch time by ``endpoints.DATASETS``."""
+        return self.key in LEGACY_KEYS
 
 
 class ChildEntry(_Frozen):
@@ -226,6 +239,19 @@ class PackageEntry(_Frozen):
     eligibility: Eligibility
     families: tuple[FamilyEntry, ...]
     resources: tuple[ResourceEntry, ...]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _inherit(cls, data: Any) -> Any:
+        """A family that leaves out ``archetype`` or ``refresh`` takes the package's."""
+        if not isinstance(data, dict) or not isinstance(data.get("families"), list | tuple):
+            return data
+        inherited = {name: data[name] for name in ("archetype", "refresh") if name in data}
+        families = [
+            {**inherited, **family} if isinstance(family, dict) else family
+            for family in data["families"]
+        ]
+        return {**data, "families": families}
 
 
 class FrozenKey(_Frozen):
@@ -337,26 +363,13 @@ class Registry:
         """Return the exact ``(name, FORMAT)`` pairs seeded under ``key``."""
         return self._names[key]
 
-    def family_formats(self, key: str) -> frozenset[str]:
-        """Return the upper-case CKAN formats of ``key``'s seeded resources."""
-        return frozenset(fmt for _name, fmt in self._names[key])
-
     def family_selects(self, key: str, name: str, fmt: str) -> bool:
-        """Whether a resource ``(name, fmt)`` satisfies family ``key``'s selector.
+        """Whether a resource ``(name, fmt)`` is one of family ``key``'s seeded members.
 
-        Exact name set first; then the anchored ``name_regex`` with a format
-        among the family's seeded formats. Names are compared as stored: no
-        strip, no case-fold, no normalisation (P-6).
+        Names are compared as stored: no strip, no case-fold, no normalisation
+        (P-6).
         """
-        upper = fmt.upper()
-        if (name, upper) in self._names[key]:
-            return True
-        _package, family = self.families[key]
-        if family.name_regex is None:
-            return False
-        return upper in self.family_formats(key) and (
-            re.fullmatch(family.name_regex, name) is not None
-        )
+        return (name, fmt.upper()) in self._names[key]
 
 
 def dump_json(obj: Any) -> str:
@@ -395,24 +408,6 @@ def _validate_package(name: str, entry: PackageEntry) -> dict[str, frozenset[tup
             )
         if family.key in family_keys:
             raise RegistryError(f"registry file {name}: family key {family.key!r} repeats")
-        if family.legacy != (family.key in LEGACY_KEYS):
-            raise RegistryError(
-                f"registry file {name}: family {family.key!r} has legacy={family.legacy}, "
-                f"but the legacy keys are exactly {sorted(LEGACY_KEYS)}"
-            )
-        if family.legacy != (family.transformer == "bespoke"):
-            raise RegistryError(
-                f"registry file {name}: family {family.key!r} legacy={family.legacy} "
-                f"disagrees with transformer={family.transformer!r}"
-            )
-        if family.name_regex is not None:
-            try:
-                re.compile(family.name_regex)
-            except re.error as exc:
-                raise RegistryError(
-                    f"registry file {name}: family {family.key!r} name_regex does not "
-                    f"compile ({exc})"
-                ) from exc
         family_keys[family.key] = family
 
     names: dict[str, set[tuple[str, str]]] = {key: set() for key in family_keys}
@@ -696,10 +691,9 @@ def load_registry(path: Path | None = None) -> Registry:
             disagree with each other (a key or resource id declared twice, a
             resource naming an undeclared family, a SILVER resource outside its
             own tabular family or a recorded sibling owner (V-11), an invalid
-            key, a non-compiling ``name_regex``, a frozen schema record breaking
-            V-1..V-10 or V-13, an ungrounded COVERED grant (V-12), a
-            SILVER target whose reader does not fit the body's shape (V-15,
-            V-15b)).
+            key, a frozen schema record breaking V-1..V-10 or V-13, an
+            ungrounded COVERED grant (V-12), a SILVER target whose reader does
+            not fit the body's shape (V-15, V-15b)).
     """
     return _load(None if path is None else Path(path))
 

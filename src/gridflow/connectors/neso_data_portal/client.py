@@ -81,7 +81,11 @@ if TYPE_CHECKING:
 
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.neso_data_portal.captures import Capture
-    from gridflow.connectors.neso_data_portal.endpoints import FamilySpec
+    from gridflow.connectors.neso_data_portal.registry import (
+        FamilyEntry,
+        PackageEntry,
+        Registry,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -132,8 +136,9 @@ _HISTORICAL_WINDOW_TOLERANCE = timedelta(hours=48)
 # an ordinary command recurringly: ``ingest --incremental`` resolves each
 # dataset's start from its watermark widened by ``incremental_overlap_hours``
 # (72 h), so every run after the first resolves a span of roughly four days.
-# ``max_query_days`` is, additionally, dead config — no code in the repo reads
-# it. The coupling to the declared 168 h ceiling is pinned by assertion in
+# ``max_query_days`` feeds only the span notice in ``_assert_window_admissible``;
+# ``load_settings`` fills 0 for every portal dataset, which keeps that notice
+# quiet. The coupling to the declared 168 h ceiling is pinned by assertion in
 # ``tests/unit/test_neso_data_portal.py``, so widening that ceiling fails there
 # rather than silently turning this check into a false refusal.
 _MAX_INGEST_WINDOW = timedelta(days=7)
@@ -1611,9 +1616,11 @@ class NesoDataPortalConnector(BaseConnector):
             NesoResourceSelectionError: No member at all, or a listed member
                 matched twice (definitive-absent, ADR-023).
         """
-        family = endpoints.FAMILIES.get(dataset)
-        if family is None:
+        registry = registry_module.load_registry()
+        entry = registry.families.get(dataset)
+        if entry is None:
             raise ValueError(f"unknown neso_data_portal dataset {dataset!r}")
+        package, family = entry
         if self._bronze_root is None:
             raise RuntimeError(
                 "iter_members needs bind_data_dir() first: the unchanged-member skip reads "
@@ -1621,20 +1628,19 @@ class NesoDataPortalConnector(BaseConnector):
             )
         self.last_skipped_units = 0
         self._assert_window_admissible(dataset, start, end)
-        if not family.names and family.name_regex is None:
+        if not registry.family_names(dataset):
             # ADR-037 P-10: a sibling-fed family reads its siblings' bronze and
             # owns no resource, so there is nothing to select or fetch.
             logger.info("%s: sibling-fed family, no own resources; nothing to fetch", dataset)
             return
 
-        package_payload = await self._package_show(family.package)
+        package_payload = await self._package_show(package.package)
         live = package_payload.get("resources")
         if not isinstance(live, list):
             raise NesoResourceSelectionError(
-                f"{dataset}: CKAN package {family.package!r} carried no resources list"
+                f"{dataset}: CKAN package {package.package!r} carried no resources list"
             )
-        registry = registry_module.load_registry()
-        self._warn_unassigned(family.package, live)
+        self._warn_unassigned(registry, package, live)
 
         legacy_spec = DATASETS.get(dataset) if family.legacy else None
         absent: list[MemberEvent] = []
@@ -1642,7 +1648,7 @@ class NesoDataPortalConnector(BaseConnector):
             resource, _redirector = self._select_resource(package_payload, legacy_spec, dataset)
             members = [resource]
         else:
-            members, absent = _select_members(live, family, registry, dataset)
+            members, absent = _select_members(live, registry, dataset)
 
         scan = captures_module.scan_dataset(self._bronze_root / dataset, registry)
         newest = captures_module.newest_by_resource(scan.captures)
@@ -1664,6 +1670,7 @@ class NesoDataPortalConnector(BaseConnector):
                 dump_event = await self._dump_member(
                     package_payload,
                     resource,
+                    package,
                     family,
                     dataset,
                     registry,
@@ -1696,7 +1703,7 @@ class NesoDataPortalConnector(BaseConnector):
                 continue
             try:
                 response, extension = await self._capture_member(
-                    package_payload, resource, family, legacy_spec, dataset, end
+                    package_payload, resource, package, family, legacy_spec, dataset, end
                 )
             except (NesoDataPortalError, CsvBronzeError, httpx.HTTPError, OSError) as exc:
                 yield MemberEvent(resource_id, "failed", detail=_safe_detail(exc))
@@ -1710,7 +1717,8 @@ class NesoDataPortalConnector(BaseConnector):
         self,
         package_payload: dict[str, Any],
         resource: dict[str, Any],
-        family: FamilySpec,
+        package: PackageEntry,
+        family: FamilyEntry,
         legacy_spec: CkanDataset | None,
         dataset: str,
         end: datetime,
@@ -1734,7 +1742,7 @@ class NesoDataPortalConnector(BaseConnector):
                 empty_allowed=family.empty_allowed,
                 label=f"{dataset}: {redirector_url}",
             )
-        request_params = _provenance_params(family.package, package_payload, resource, body)
+        request_params = _provenance_params(package.package, package_payload, resource, body)
         request_params.update(
             {
                 "capture_family": dataset,
@@ -1803,7 +1811,8 @@ class NesoDataPortalConnector(BaseConnector):
         self,
         package_payload: dict[str, Any],
         resource: dict[str, Any],
-        family: FamilySpec,
+        package: PackageEntry,
+        family: FamilyEntry,
         dataset: str,
         registry: Any,
         candidate: Capture | None,
@@ -1819,6 +1828,7 @@ class NesoDataPortalConnector(BaseConnector):
         Args:
             package_payload: The live ``package_show`` result.
             resource: The live datastore resource.
+            package: The family's registry package.
             family: The family being captured.
             dataset: The family key.
             registry: The loaded registry.
@@ -1862,7 +1872,7 @@ class NesoDataPortalConnector(BaseConnector):
             return MemberEvent(rid, "failed", detail=_safe_detail(exc))
 
         request_params = _dump_provenance_params(
-            family.package,
+            package.package,
             package_payload,
             resource,
             dump,
@@ -1894,15 +1904,16 @@ class NesoDataPortalConnector(BaseConnector):
             raise RuntimeError("the dump leg needs bind_data_dir() first")
         return self._data_paths.dump_check_dir(self.source_name, dataset) / f"{resource_id}.json"
 
-    def _warn_unassigned(self, package: str, live: list[Any]) -> None:
+    def _warn_unassigned(self, registry: Registry, package: PackageEntry, live: list[Any]) -> None:
         """Log, once per process, each live resource no family of ``package`` claims."""
-        families = [spec for spec in endpoints.FAMILIES.values() if spec.package == package]
         for item in live:
             if not isinstance(item, dict):
                 continue
             name, fmt = str(item.get("name", "")), str(item.get("format", ""))
-            key = (package, str(item.get("id", "")))
-            if key in _WARNED_UNASSIGNED or any(spec.selects(name, fmt) for spec in families):
+            key = (package.package, str(item.get("id", "")))
+            if key in _WARNED_UNASSIGNED or any(
+                registry.family_selects(family.key, name, fmt) for family in package.families
+            ):
                 continue
             _WARNED_UNASSIGNED.add(key)
             logger.warning(
@@ -1911,12 +1922,12 @@ class NesoDataPortalConnector(BaseConnector):
                 key[1],
                 name,
                 fmt,
-                package,
+                package.package,
             )
 
     def list_datasets(self) -> list[str]:
         """Return every registry family key this connector serves (P-3)."""
-        return list(endpoints.FAMILIES)
+        return list(registry_module.load_registry().families)
 
 
 # Every (package, resource id) already warned as unassigned in this process (P-6).
@@ -2166,8 +2177,7 @@ def _admit_member_body(
 
 def _select_members(
     live: list[Any],
-    family: FamilySpec,
-    registry: Any,
+    registry: Registry,
     dataset: str,
 ) -> tuple[list[dict[str, Any]], list[MemberEvent]]:
     """P-6: the family's live members in payload order, and its absent listed members.
@@ -2176,33 +2186,34 @@ def _select_members(
         NesoResourceSelectionError: No live member at all, or one listed
             ``(name, format)`` matched by two live resources.
     """
+    package, _family = registry.families[dataset]
+    names = registry.family_names(dataset)
     members = [
         item
         for item in live
         if isinstance(item, dict)
-        and family.selects(str(item.get("name", "")), str(item.get("format", "")))
+        and registry.family_selects(dataset, str(item.get("name", "")), str(item.get("format", "")))
     ]
     matched: dict[tuple[str, str], int] = {}
     for item in members:
         pair = (str(item.get("name", "")), str(item.get("format", "")).upper())
-        if pair in family.names:
+        if pair in names:
             matched[pair] = matched.get(pair, 0) + 1
     ambiguous = sorted(pair for pair, count in matched.items() if count > 1)
     if ambiguous:
         raise NesoResourceSelectionError(
             f"{dataset}: listed member(s) {ambiguous!r} match more than one live resource in "
-            f"CKAN package {family.package!r}; refusing to guess"
+            f"CKAN package {package.package!r}; refusing to guess"
         )
     if not members:
         actual = [str(item.get("name")) for item in live if isinstance(item, dict)]
         raise NesoResourceSelectionError(
-            f"{dataset}: no live resource in CKAN package {family.package!r} is a member; "
+            f"{dataset}: no live resource in CKAN package {package.package!r} is a member; "
             f"the package returned {actual!r}"
         )
-    package_entry, _family_entry = registry.families[dataset]
     seeded = {
         (resource.name, resource.format): resource.id
-        for resource in package_entry.resources
+        for resource in package.resources
         if resource.family == dataset
     }
     absent = [
@@ -2211,7 +2222,7 @@ def _select_members(
             "absent",
             detail=f"listed member {pair[0]!r} ({pair[1]}) is not in the live package",
         )
-        for pair in sorted(family.names)
+        for pair in sorted(names)
         if pair not in matched
     ]
     return members, absent

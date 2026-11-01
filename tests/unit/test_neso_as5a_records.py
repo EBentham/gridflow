@@ -971,7 +971,6 @@ def test_the_two_packages_stay_eligible_and_the_package_files_hold_the_seven_rec
         document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), package
     assert found == {*RECORDED, ARCHIVE, *AS5C_RECORDED}
     containers = [
         r for r in package_doc(P2_PACKAGE)["resources"] if r["family"] == "ffr_phase2_auction_files"
@@ -1019,7 +1018,7 @@ def test_the_sibling_families_carry_no_record_and_every_resource_is_silver_to_th
     registry = registry_module.load_registry()
     for sibling, key in OWNER_OF.items():
         entry = registry.families[sibling][1]
-        assert entry.record is None and entry.transformer is None, sibling
+        assert entry.record is None, sibling
         resources = [
             r for r in package_doc(PACKAGE_OF[sibling])["resources"] if r["family"] == sibling
         ]

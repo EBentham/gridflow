@@ -806,7 +806,6 @@ def test_the_two_packages_stay_eligible_and_hold_exactly_the_five_records() -> N
         document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), package
     assert found == set(RECORDED)
 
 
@@ -829,7 +828,7 @@ def test_every_resource_disposition_is_unchanged_and_the_hash_file_stays_doc() -
     assert stor[H_ST_ID]["family"] == STOR_FILES
     assert stor[CAPTURES["st"].resource_id]["disposition"] == {"kind": "SILVER", "key": STOR}
     files = registry_module.load_registry().families[STOR_FILES][1]
-    assert files.record is None and files.transformer is None
+    assert files.record is None
 
 
 def _report_line(key: str) -> str:

@@ -684,22 +684,18 @@ class TestRegistryPins:
         assert "OK" in stdout, stdout
 
     def test_t_f11_generated_artefacts_are_current_and_show_the_hold(self) -> None:
-        """Detects a registry commit without regenerated ``sources.yaml`` or eligibility
-        report, and the report not showing the 2014 family held with its question."""
-        for module in (
-            ["gridflow.connectors.neso_data_portal.eligibility", "--check"],
-            ["gridflow.connectors.neso_data_portal.registry", "yaml", "--check"],
-        ):
-            result = subprocess.run(
-                [sys.executable, "-m", *module],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                timeout=300,
-                check=False,
-            )
-            assert result.returncode == 0, (module, result.stdout, result.stderr)
+        """Detects a registry commit without a regenerated eligibility report, and the
+        report not showing the 2014 family held with its question."""
+        result = subprocess.run(
+            [sys.executable, "-m", "gridflow.connectors.neso_data_portal.eligibility", "--check"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=300,
+            check=False,
+        )
+        assert result.returncode == 0, (result.stdout, result.stderr)
         report = (PROJECT_ROOT / "docs" / "neso_data_portal" / "eligibility.md").read_text(
             encoding="utf-8"
         )

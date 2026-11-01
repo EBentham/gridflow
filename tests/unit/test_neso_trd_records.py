@@ -838,7 +838,6 @@ def test_the_package_files_carry_exactly_the_nine_records() -> None:
     for slug in PACKAGES:
         document = package_doc(slug)
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), slug
     assert found == set(RECORDED)
 
 
@@ -1279,6 +1278,6 @@ def test_every_family_is_generic_tabular_silver_with_its_own_record() -> None:
     registry = load_registry()
     for key in RECORDED:
         package, entry = registry.families[key]
-        assert entry.record is not None and entry.transformer is None, key
+        assert entry.record is not None, key
         assert entry.kind == "tabular", key
         assert not isinstance(package.eligibility, Held), key

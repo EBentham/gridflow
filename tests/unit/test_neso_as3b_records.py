@@ -772,7 +772,7 @@ def test_the_four_daily_mock_families_are_empty_allowed_and_have_no_record() -> 
     for key in DAILY_MOCKS:
         package, entry = registry.families[key]
         assert entry.empty_allowed is True, key
-        assert entry.record is None and entry.transformer is None, key
+        assert entry.record is None, key
         assert package.package == MOCK_PKG
         with pytest.raises(ValueError, match="No transformer registered"):
             get_transformer(SOURCE, key, Path("__test__"))
@@ -876,7 +876,6 @@ def test_the_package_files_carry_exactly_the_ten_records_and_no_ledger_entry() -
         document = package_doc(slug)
         assert document["package_id"] == PACKAGE_IDS[slug]
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), slug
         if slug != ORPS_PKG:
             assert all(r["disposition"]["kind"] == "SILVER" for r in document["resources"]), slug
     assert found == set(RECORDED)
@@ -908,7 +907,7 @@ def test_ten_are_reported_as_silver_outputs_three_eligible_and_seven_held() -> N
 def test_every_family_is_generic_tabular_silver_with_its_own_record(key: str) -> None:
     """Detects a family wired to a bespoke transformer instead of the generic engine."""
     _package, entry = load_registry().families[key]
-    assert entry.record is not None and entry.transformer is None
+    assert entry.record is not None
     assert entry.kind == "tabular"
 
 

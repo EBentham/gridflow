@@ -672,7 +672,6 @@ def test_the_package_files_carry_exactly_the_nine_records_and_their_resources() 
     }
     assert len(tnuos["families"]) == 8 and len(tnuos["resources"]) == 8
     for document in (aahedc, tnuos):
-        assert all(f["transformer"] is None for f in document["families"])
         for resource in document["resources"]:
             assert resource["disposition"] == {"kind": "SILVER", "key": resource["family"]}
     registry = load_registry()
@@ -979,7 +978,7 @@ def test_every_family_is_generic_tabular_silver_with_its_own_record() -> None:
     registry = load_registry()
     for key in RECORDED:
         package, entry = registry.families[key]
-        assert entry.record is not None and entry.transformer is None, key
+        assert entry.record is not None, key
         assert entry.kind == "tabular", key
         assert not isinstance(package.eligibility, Held), key
     resources = [r for _p, r in registry.resources.values() if r.family in RECORDED]

@@ -645,7 +645,6 @@ def test_the_package_files_carry_exactly_the_nine_records_and_no_ledger_entry() 
     for slug in PACKAGES:
         document = package_doc(slug)
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), slug
         assert all(r["disposition"]["kind"] == "SILVER" for r in document["resources"]), slug
     assert found == set(RECORDED)
     entries = registry_module.load_reconcile_adjudications()
@@ -671,7 +670,7 @@ def test_all_nine_are_reported_as_silver_outputs_five_held() -> None:
 def test_every_family_is_generic_tabular_silver_with_its_own_record(key: str) -> None:
     """Detects a family wired to a bespoke transformer instead of the generic engine."""
     package, entry = load_registry().families[key]
-    assert entry.record is not None and entry.transformer is None
+    assert entry.record is not None
     assert entry.kind == "tabular"
     assert not isinstance(package.eligibility, Held)
 

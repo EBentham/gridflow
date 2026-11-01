@@ -641,7 +641,7 @@ def test_a_package_file_carries_exactly_its_four_records_and_no_ledger_entry(
     document = package_doc(package)
     families = [f["key"] for f in document["families"]]
     assert set(families) == {k for k in RECORDED if PACKAGE_OF[k] == package}
-    assert all("record" in f and f["transformer"] is None for f in document["families"])
+    assert all("record" in f for f in document["families"])
     resources = document["resources"]
     assert len(resources) == 4
     assert all(r["disposition"]["kind"] == "SILVER" for r in resources)
@@ -669,7 +669,7 @@ def test_eight_are_reported_as_silver_outputs_four_eligible_and_four_held() -> N
 def test_every_family_is_generic_tabular_silver_with_its_own_record(key: str) -> None:
     """Detects a family wired to a bespoke transformer instead of the generic engine."""
     _package, entry = load_registry().families[key]
-    assert entry.record is not None and entry.transformer is None
+    assert entry.record is not None
     assert entry.kind == "tabular"
 
 

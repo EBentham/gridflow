@@ -788,7 +788,6 @@ def test_the_three_packages_stay_eligible_and_hold_exactly_the_twelve_records() 
         document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         for family in document["families"]:
-            assert family["transformer"] is None, family["key"]
             if "record" in family:
                 found.add(family["key"])
                 if "eligibility" in family["record"]:

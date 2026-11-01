@@ -10,76 +10,17 @@
   "families": [
     {
       "key": "ffr_post_tender_reports_csv",
-      "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "tabular"
     },
     {
       "key": "ffr_post_tender_reports_csv_ext",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Codes",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day - From (Mon-Fri)",
-              "Tendered Frames per Service Day - To (Mon- Fri)",
-              "Tendered Frames per Service Day - Duration (Mon-Fri)",
-              "Tendered Frames per Service Day - From (Saturday)",
-              "Tendered Frames per Service Day - To (Saturday)",
-              "Tendered Frames per Service Day - Duration (Saturday)",
-              "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
-              "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
-              "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
-              "Tendered Prices - Availability Fee (£/h)",
-              "Tendered Prices - Nomination Fee (£/h)",
-              "Tendered Prices -  Window Initiation Fee (£/window)",
-              "BMUs  Only",
-              "Maximum Part Load Point (MW)",
-              "Minimum Part Load Point (MW)",
-              "Minimum MEL (MW)",
-              "Maximum SEL (MW)",
-              "Primary Response (max.) @ 0.2Hz (MW)",
-              "Primary Response (max.) @ 0.5Hz (MW)",
-              "Primary Response (max.) @ 0.8Hz (MW)",
-              "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "High Frequency Response (max.) @ 0.2Hz (MW)",
-              "High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Are you adding volume as per detail change provision",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.",
-              "Please indicate if this is a mutually exclusive tender",
-              "Automatic Response Energy Deliverable by 10s (MW)",
-              "Automatic Response Energy Deliverable by 30s (MW)",
-              "Post code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -339,56 +280,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Codes",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day - From (Mon-Fri)",
-              "Tendered Frames per Service Day - To (Mon- Fri)",
-              "Tendered Frames per Service Day - Duration (Mon-Fri)",
-              "Tendered Frames per Service Day - From (Saturday)",
-              "Tendered Frames per Service Day - To (Saturday)",
-              "Tendered Frames per Service Day - Duration (Saturday)",
-              "Tendered Frames per Service Day - From (Sunday/Bank Holidays)",
-              "Tendered Frames per Service Day - To (Sunday/Bank Holidays)",
-              "Tendered Frames per Service Day - Duration (Sunday/Bank Hol)",
-              "Tendered Prices - Availability Fee (£/h)",
-              "Tendered Prices - Nomination Fee (£/h)",
-              "Tendered Prices -  Window Initiation Fee (£/window)",
-              "BMUs  Only",
-              "Maximum Part Load Point (MW)",
-              "Minimum Part Load Point (MW)",
-              "Minimum MEL (MW)",
-              "Maximum SEL (MW)",
-              "Primary Response (max.) @ 0.2Hz (MW)",
-              "Primary Response (max.) @ 0.5Hz (MW)",
-              "Primary Response (max.) @ 0.8Hz (MW)",
-              "Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "High Frequency Response (max.) @ 0.2Hz (MW)",
-              "High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Are you adding volume as per detail change provision",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.",
-              "Please indicate if this is a mutually exclusive tender",
-              "Automatic Response Energy Deliverable by 10s (MW)",
-              "Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -642,10 +536,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -666,86 +557,21 @@
     },
     {
       "key": "ffr_post_tender_reports_ext",
-      "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "tabular"
     },
     {
       "key": "ffr_post_tender_reports_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     },
     {
       "key": "ffr_post_tender_reports_workbook",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "xlsx",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -999,56 +825,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -1302,56 +1081,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender \n\nClearly reference what lines are included in the mutually exclusive bids",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -1605,56 +1337,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please state if this is an all or nothing bid.Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -1908,56 +1593,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please state if this is an all or nothing bid.Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -2211,56 +1849,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejecton Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -2514,56 +2105,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Codes",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -2817,56 +2361,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please state if this is a mutually exclusive bid",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -3120,57 +2617,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -3430,57 +2879,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | From",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -3740,57 +3141,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Codes",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | L",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -4050,57 +3403,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | L",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -4360,57 +3665,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | L",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -4670,57 +3927,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | l",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -4980,57 +4189,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | ,",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -5290,57 +4451,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Tender Ref",
-              "Status",
-              "Rejection Code",
-              "Company Name",
-              "Tendered Unit \n(BMU/Unit ID)",
-              "TO connection  /  DNO connection",
-              "Generation Type",
-              "Start Date",
-              "End Date",
-              "Tendered Period \n(dd.mm.yy - dd.mm.yy)",
-              "Applicable FFR Capability Data Table",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | ,",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | To",
-              "Tendered Frames per Service Day | Working Days \n(Mon-Fri) | Duration (h)",
-              "Tendered Frames per Service Day | Saturdays | From",
-              "Tendered Frames per Service Day | Saturdays | To",
-              "Tendered Frames per Service Day | Saturdays | Duration (h)",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | From",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | To",
-              "Tendered Frames per Service Day | Sundays/Bank Holidays | Duration (h)",
-              "Tendered Prices*** | Availability Fee (£/h)",
-              "Tendered Prices*** | Nomination Fee (£/h)",
-              "Tendered Prices*** | Window Initiation Fee (£/window)",
-              "BMUs  Only - Applicable Balancing Service           (i.e. ABSVD Imbalance) YES/NO",
-              "Dynamic Providers Only | Maximum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum Part Load Point (MW)",
-              "Dynamic Providers Only | Minimum MEL (MW)",
-              "Dynamic Providers Only | Maximum SEL (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.5Hz (MW)",
-              "Dynamic Providers only | Primary Response (max.) @ 0.8Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.2/0.2Hz (MW)",
-              "Dynamic Providers only | Secondary Response (max.) @ 0.5/0.5Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.2Hz (MW)",
-              "Dynamic Providers only | High Frequency Response (max.) @ 0.5Hz (MW)",
-              "Please indicate as per detail change provision if you are adding volume",
-              "Please state the accepted tender that you are stacking onto",
-              "Please state if this is an all or nothing bid.\n\nClearly reference what lines are included in each all or nothing bid",
-              "Please indicate if this is a mutually exclusive tender",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 10s (MW)",
-              "Non-Dynamic Providers | Volume of Response Tendered | Automatic Response Energy Deliverable by 30s (MW)",
-              "Post Code",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Tender Ref",
@@ -5600,10 +4713,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -727,7 +727,6 @@ def test_the_package_file_carries_exactly_the_eleven_records_and_no_ledger_entry
     has a bespoke transformer, and the reconcile ledger names none of them."""
     document = _package_doc()
     assert {f["key"] for f in document["families"] if "record" in f} == set(RECORDED)
-    assert all(f["transformer"] is None for f in document["families"])
     resources = document["resources"]
     assert len(resources) == 52
     assert all(r["disposition"]["kind"] == "SILVER" for r in resources)
@@ -757,7 +756,7 @@ def test_eleven_are_reported_as_eligible_silver_outputs() -> None:
 def test_every_family_is_generic_tabular_silver_with_its_own_record(key: str) -> None:
     """Detects a family wired to a bespoke transformer instead of the generic engine."""
     package, entry = load_registry().families[key]
-    assert entry.record is not None and entry.transformer is None
+    assert entry.record is not None
     assert entry.kind == "tabular"
     assert package.eligibility == Eligible(status="eligible")
 

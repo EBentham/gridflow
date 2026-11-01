@@ -444,8 +444,8 @@ QUESTION_OF = {
     ),
 }
 
-# sha256 of disaggregated-bsad.json with line endings normalised to LF (the file is byte-unchanged).
-DISAGGREGATED_FILE_SHA256 = "e3365706681512c42d54be0087061669ab317d8fdd62f9be3e89f2e0d2e36e82"
+# sha256 of disaggregated-bsad.json with line endings normalised to LF, in its compacted form.
+DISAGGREGATED_FILE_SHA256 = "04d4b799e59060f8d35700ba305173d2b3f36176788cb9473c5a53b725481415"
 
 
 @dataclass(frozen=True)
@@ -988,7 +988,6 @@ def test_the_four_packages_stay_eligible_and_the_package_files_hold_the_seven_re
         document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), package
         assert all(r["disposition"]["kind"] == "SILVER" for r in document["resources"]), package
         assert all(r["disposition"]["key"] == r["family"] for r in document["resources"]), package
     assert found == set(RECORDED)
@@ -1025,11 +1024,11 @@ def test_disaggregated_bsad_has_no_record_and_its_file_is_byte_unchanged() -> No
     family
     stays ingest-only (``get_transformer`` raises), its resources stay ``SILVER`` dispositions, the
     ledger names no disaggregated or DC family, and the package file (line endings normalised to LF)
-    matches the digest pinned from master. TODO: DISAGGREGATED-BSAD-ACTION-ID (a stable action
+    matches its pinned digest. TODO: DISAGGREGATED-BSAD-ACTION-ID (a stable action
     identity settles it); TODO: DISAGGREGATED-BSAD-COST-SIGN; the D08 encoding; the D-H2 date-format
     map (D10 ``%Y-%m-%dT%H:%M:%S``) for a future record."""
     package, entry = registry_module.load_registry().families[DIS]
-    assert entry.record is None and entry.transformer is None
+    assert entry.record is None
     assert package.package == PACKAGE_OF[DIS]
     with pytest.raises(ValueError, match="No transformer registered"):
         get_transformer(SOURCE, DIS, Path("__test__"))
