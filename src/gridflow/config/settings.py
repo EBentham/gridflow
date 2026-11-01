@@ -1,11 +1,10 @@
 """Pydantic Settings model and configuration loading for gridflow.
 
-Path resolution: relative `data_dir`, `duckdb_path`, and `log_dir` values
-are anchored to the project root (the main git worktree), not to CWD.
-This means running a gridflow CLI from a Jupyter kernel whose CWD is
-`notebooks/` writes data to `<gridflow_root>/data/`, not
-`notebooks/data/`. See ADR-001 (project-root resolution) — ported
-verbatim from gridflow_models D-WORKTREE-PATH (commit 3e9b7e8).
+Path resolution: the data root is ``GRIDFLOW_DATA_DIR``, defaulting to
+``~/gridflow-data`` on every OS, so a checkout, an installed package, a
+notebook kernel and a downstream repo all find the same data from any folder.
+The catalogue and the logs sit under it unless set on their own. Relative
+values resolve against the current folder.
 """
 
 from __future__ import annotations
@@ -13,12 +12,13 @@ from __future__ import annotations
 import os
 import subprocess
 from functools import cache
+from importlib.resources import files
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
 # PyYAML ships no type stubs; types-PyYAML is a dev-only stub, not a runtime dependency.
 import yaml  # type: ignore[import-untyped]
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 from pydantic import BaseModel, Field, model_validator
 from pydantic_settings import BaseSettings
 
@@ -27,13 +27,14 @@ from pydantic_settings import BaseSettings
 def _project_root() -> Path:
     """Resolve the project root via `git rev-parse --git-common-dir`.
 
+    Used only by the ``reset``/``prune`` containment guard, which refuses to
+    delete an ancestor of the checkout; data paths do not depend on it.
+
     Worktree-safe: from a worktree, `--git-common-dir` returns the
     canonical .git directory; the project root is its parent.
 
     Falls back to walk-up-for-pyproject.toml then Path.cwd() if git
-    is unavailable (CI minimal containers, sdist installs).
-
-    Ported verbatim from gridflow_models D-WORKTREE-PATH (commit 3e9b7e8).
+    is unavailable (CI minimal containers, installed packages).
     """
     here = Path(__file__).resolve().parent
     try:
@@ -85,18 +86,21 @@ class QualityConfig(BaseModel):
 
 
 class PipelineSettings(BaseSettings):
-    """Main pipeline settings, loaded from env vars and .env file.
+    """Main pipeline settings, read from ``GRIDFLOW_*`` environment variables.
 
-    Relative `data_dir`, `duckdb_path`, and `log_dir` are anchored to the
-    project root (the main git worktree) by `_resolve_paths`, not to CWD.
-    A drive-relative Windows path such as `C:x` is refused. See ADR-001.
+    ``load_settings`` loads the nearest ``.env`` first. `_resolve_paths` puts
+    an unset `duckdb_path` and `log_dir` under `data_dir` and resolves relative
+    values against the current folder. A drive-relative Windows path such as
+    `C:x` is refused.
     """
 
-    model_config = {"env_prefix": "GRIDFLOW_", "env_file": ".env", "extra": "ignore"}
+    model_config = {"env_prefix": "GRIDFLOW_", "extra": "ignore"}
 
-    data_dir: Path = Path("./data")
-    log_dir: Path = Path("./logs")
-    duckdb_path: Path = Path("./data/gridflow.duckdb")
+    # A factory, so the home folder is read when settings load, not at import.
+    data_dir: Path = Field(default_factory=lambda: Path.home() / "gridflow-data")
+    # Unless set, these two are relative to data_dir (see _resolve_paths).
+    log_dir: Path = Path("logs")
+    duckdb_path: Path = Path("gridflow.duckdb")
     # This generic default is unchanged; the runner separately warns when the
     # effective transformed dates are insufficient for a dataset's declared
     # positive partition-source offsets.
@@ -142,10 +146,11 @@ class PipelineSettings(BaseSettings):
 
     @model_validator(mode="after")
     def _resolve_paths(self) -> PipelineSettings:
+        # data_dir first: the other two may be placed under it.
         for name in ("data_dir", "duckdb_path", "log_dir"):
             path: Path = getattr(self, name)
             # `C:x` has a drive but no root, so it is relative and would be joined
-            # to the project root with no error; an unquoted `C:\x` loses its
+            # to the current folder with no error; an unquoted `C:\x` loses its
             # backslash in a POSIX shell and arrives this way. The text is read as
             # a Windows path on every OS so the Linux CI runner exercises the
             # refusal (Python 3.11 drops the separator when converting a PosixPath).
@@ -155,8 +160,11 @@ class PipelineSettings(BaseSettings):
                     f"{name} {str(path)!r} is drive-relative (a drive with no root); "
                     "write it as an absolute path with forward slashes, e.g. C:/gridflow-data"
                 )
+            if name != "data_dir" and name not in self.model_fields_set:
+                path = self.data_dir / path
             if not path.is_absolute():
-                object.__setattr__(self, name, (_project_root() / path).resolve())
+                path = (Path.cwd() / path).resolve()
+            object.__setattr__(self, name, path)
         return self
 
     @model_validator(mode="after")
@@ -230,14 +238,7 @@ class GridflowConfig(BaseModel):
 
 
 def _find_config_dir() -> Path:
-    """Find the config directory, searching up from cwd."""
-    candidates = [
-        Path.cwd() / "config",
-        Path(__file__).resolve().parent.parent.parent.parent / "config",
-    ]
-    for candidate in candidates:
-        if candidate.is_dir():
-            return candidate
+    """The folder of the optional ``settings.yaml`` override: ``config/`` in the current folder."""
     return Path.cwd() / "config"
 
 
@@ -274,16 +275,24 @@ def _neso_portal_datasets() -> dict[str, DatasetConfig]:
 def load_settings() -> GridflowConfig:
     """Load the complete gridflow configuration.
 
-    Merges settings.yaml, sources.yaml, environment variables, and .env file.
+    Merges the optional ``config/settings.yaml`` in the current folder, the
+    packaged sources.yaml, environment variables, and the nearest ``.env``.
+    Pipeline settings take the environment first, then settings.yaml, then the
+    code defaults.
     The ``neso_data_portal`` datasets come from its registry unless
     sources.yaml lists some.
     """
     config_dir = _find_config_dir()
-    load_dotenv(config_dir.parent / ".env", override=False)
+    # The nearest .env at or above the current folder, as for any tool run from
+    # a project; an installed gridflow has no checkout of its own to look in.
+    load_dotenv(find_dotenv(usecwd=True), override=False)
 
     # Load YAML configs
     settings_data = _load_yaml(config_dir / "settings.yaml")
-    sources_data = _load_yaml(config_dir / "sources.yaml")
+    # Sources are code (endpoints, pacing) and ship inside the package.
+    sources_data = yaml.safe_load(
+        files("gridflow.config").joinpath("sources.yaml").read_text(encoding="utf-8")
+    )
 
     # Build pipeline settings (env vars override YAML)
     pipeline_yaml = settings_data.get("pipeline", {})

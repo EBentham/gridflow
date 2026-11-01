@@ -20,6 +20,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "fastexcel>=0.21.0",
     "certifi>=2024.7.4",  # imported by connectors/base.py for its CA bundle, not only via httpx
+    "truststore>=0.10",  # connectors trust the OS certificate store, as behind a corporate proxy
 ]
 
 [project.optional-dependencies]
@@ -42,7 +43,9 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
+"gridflow.config" = ["sources.yaml"]
 "gridflow.connectors.neso_data_portal.registry" = ["*.json"]
+"gridflow.gold" = ["views/*.sql", "views/held/*.sql"]
 
 [tool.ruff]
 target-version = "py311"

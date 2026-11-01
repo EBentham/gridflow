@@ -69,9 +69,9 @@ class GridflowClient:
 
     Args:
         db_path: Path to the DuckDB catalogue. When omitted, the path comes
-            from gridflow settings: process environment
-            ``GRIDFLOW_DUCKDB_PATH`` first, then repo-root ``.env``, then
-            ``config/settings.yaml``, then the default.
+            from gridflow settings: ``GRIDFLOW_DUCKDB_PATH`` if set, else
+            ``gridflow.duckdb`` under the data root, ``GRIDFLOW_DATA_DIR``
+            (default ``~/gridflow-data``).
 
     Usage:
         gf = GridflowClient()
@@ -88,7 +88,8 @@ class GridflowClient:
             raise FileNotFoundError(
                 "DuckDB catalogue not found at "
                 + str(self._db_path)
-                + ". Run 'gridflow init' to create it."
+                + ". Run 'gridflow init' to create it, or set GRIDFLOW_DATA_DIR"
+                + " to your data root."
             )
         self._con: duckdb.DuckDBPyConnection | None = duckdb.connect(
             str(self._db_path), read_only=True

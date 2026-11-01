@@ -92,21 +92,9 @@ def _diagnostic_context(dataset: str, stage: str, exc: Exception | None = None) 
     return detail
 
 
-def _copy_config_with_temp_paths(
-    tmp_path: Path,
-    tmp_data_dir: Path,
-    entsoe_datasets: list[str] | None = None,
-) -> Path:
+def _copy_config_with_temp_paths(tmp_path: Path, tmp_data_dir: Path) -> Path:
     config_dir = tmp_path / "config"
     config_dir.mkdir()
-    sources = yaml.safe_load((PROJECT_ROOT / "config" / "sources.yaml").read_text())
-    if entsoe_datasets is not None:
-        configured = sources["sources"]["entsoe"]["datasets"]
-        sources["sources"]["entsoe"]["datasets"] = {
-            dataset: configured[dataset] for dataset in entsoe_datasets
-        }
-    (config_dir / "sources.yaml").write_text(yaml.safe_dump(sources, sort_keys=False))
-
     settings = {
         "pipeline": {
             "data_dir": str(tmp_data_dir),
@@ -124,6 +112,19 @@ def _copy_config_with_temp_paths(
     }
     (config_dir / "settings.yaml").write_text(yaml.safe_dump(settings, sort_keys=False))
     return config_dir
+
+
+def _restrict_entsoe_datasets(monkeypatch: pytest.MonkeyPatch, datasets: list[str]) -> None:
+    """Serve the CLI a config whose ENTSO-E source lists only ``datasets``.
+
+    Sources ship inside the package, so a ``config/sources.yaml`` in the
+    current folder no longer narrows them. Call after changing into the folder
+    whose ``config/settings.yaml`` points the paths at tmp.
+    """
+    config = load_settings()
+    entsoe = config.sources["entsoe"]
+    entsoe.datasets = {dataset: entsoe.datasets[dataset] for dataset in datasets}
+    monkeypatch.setattr("gridflow.config.settings.load_settings", lambda: config)
 
 
 def _assert_live_responses(dataset: str, responses: list[RawResponse]) -> None:
@@ -509,12 +510,9 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(
-            tmp_path,
-            tmp_data_dir,
-            entsoe_datasets=LIVE_CLI_DATASETS,
-        )
+        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
         monkeypatch.chdir(tmp_path)
+        _restrict_entsoe_datasets(monkeypatch, LIVE_CLI_DATASETS)
 
         runner = CliRunner()
         result = runner.invoke(app, ["pipeline", "entsoe", "all", "--last", "24h"])
@@ -539,12 +537,9 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(
-            tmp_path,
-            tmp_data_dir,
-            entsoe_datasets=LIVE_CLI_DATASETS,
-        )
+        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
         monkeypatch.chdir(tmp_path)
+        _restrict_entsoe_datasets(monkeypatch, LIVE_CLI_DATASETS)
 
         runner = CliRunner()
         result = runner.invoke(app, ["ingest", "entsoe", "all", "--last", "24h"])
@@ -565,12 +560,9 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(
-            tmp_path,
-            tmp_data_dir,
-            entsoe_datasets=LIVE_CLI_DATASETS,
-        )
+        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
         monkeypatch.chdir(tmp_path)
+        _restrict_entsoe_datasets(monkeypatch, LIVE_CLI_DATASETS)
 
         runner = CliRunner()
         ingest_result = runner.invoke(app, ["ingest", "entsoe", "all", "--last", "24h"])
@@ -594,12 +586,9 @@ class TestEntsoeLiveCliCommands:
         tmp_data_dir: Path,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
-        _copy_config_with_temp_paths(
-            tmp_path,
-            tmp_data_dir,
-            entsoe_datasets=LIVE_H7_DATASETS,
-        )
+        _copy_config_with_temp_paths(tmp_path, tmp_data_dir)
         monkeypatch.chdir(tmp_path)
+        _restrict_entsoe_datasets(monkeypatch, LIVE_H7_DATASETS)
 
         runner = CliRunner()
         result = runner.invoke(

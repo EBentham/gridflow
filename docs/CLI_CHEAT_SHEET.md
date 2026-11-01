@@ -275,14 +275,14 @@ python -m gridflow status
 
 ## File Locations
 
-Default `<data-root>` is repo-local `data/`. Override it with
-`GRIDFLOW_DATA_DIR` and `GRIDFLOW_DUCKDB_PATH` in the process environment or an
-untracked repo-root `.env`.
+Default `<data-root>` is `~/gridflow-data`. Override it with `GRIDFLOW_DATA_DIR`
+in the process environment or a `.env` in (or above) the folder you run from;
+the catalogue follows it unless `GRIDFLOW_DUCKDB_PATH` is set.
 
 | What | Path |
 |------|------|
 | CLI entrypoint | `src/gridflow/cli.py` |
-| Config files | `config/settings.yaml`, `config/sources.yaml` |
+| Config files | `config/settings.yaml` (optional override, read from the current folder), `src/gridflow/config/sources.yaml` (ships in the package) |
 | Raw data (bronze) | `<data-root>/bronze/{source}/{dataset}/YYYY/MM/DD/` |
 | Clean data (silver) | `<data-root>/silver/{source}/{dataset}/year=YYYY/month=MM/` |
 | Analytics data (gold) | `<data-root>/gold/{dataset}/year=YYYY/` |

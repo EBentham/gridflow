@@ -31,15 +31,23 @@ _NEXT_SEND_AT: dict[str, float] = {}
 
 
 def _make_ssl_context() -> ssl.SSLContext:
-    """Return an SSL context compatible with Python 3.12 and 3.13.
+    """Return the SSL context every connector verifies vendors with.
+
+    truststore verifies against the OS certificate store, so a corporate proxy
+    whose root only the OS trusts works from the CLI as it does in a browser.
+    Without truststore, fall back to the certifi bundle.
 
     Python 3.13 enables ssl.VERIFY_X509_STRICT by default, which rejects CA
     certificates that don't mark Basic Constraints as critical. Several public
-    CA chains (ENTSO-E, GIE) pre-date this requirement. Load the certifi CA
-    bundle and clear the strict flag so TLS handshakes succeed on both versions.
+    CA chains (ENTSO-E, GIE) pre-date this requirement, so clear the flag either way.
     """
-    ctx = ssl.create_default_context()
-    ctx.load_verify_locations(certifi.where())
+    try:
+        import truststore
+    except ImportError:
+        ctx = ssl.create_default_context()
+        ctx.load_verify_locations(certifi.where())
+    else:
+        ctx = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     ctx.verify_flags &= ~ssl.VERIFY_X509_STRICT
     return ctx
 

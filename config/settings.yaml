@@ -1,7 +1,7 @@
+# Optional override, read from config/ in the folder gridflow runs from. These
+# values equal the code defaults. Set the data root with GRIDFLOW_DATA_DIR
+# (default ~/gridflow-data), not here, so every folder finds the same data.
 pipeline:
-  data_dir: "./data"
-  log_dir: "./logs"
-  duckdb_path: "./data/gridflow.duckdb"
   default_lookback_hours: 24
   max_concurrent_requests: 5
   console_log_level: "WARNING"
