@@ -443,12 +443,20 @@ class TestSettlementPeriodToUtcExpr:
         out = frame.select(settlement_period_to_utc_expr(pl.col("d"), pl.col("p")))
         assert out.dtypes == [pl.Datetime("us", "UTC")]
 
-    def test_null_date_or_period_gives_null(self):
+    @pytest.mark.parametrize(
+        "row",
+        [{"d": None, "p": 1}, {"d": date(2024, 1, 15), "p": None}],
+    )
+    def test_null_date_or_period_raises_like_the_scalar(self, row):
         frame = pl.DataFrame(
-            {"d": [None, date(2024, 1, 15)], "p": [1, None]},
-            schema={"d": pl.Date, "p": pl.Int32},
+            [{"d": date(2024, 1, 15), "p": 2}, row], schema={"d": pl.Date, "p": pl.Int32}
         )
-        assert frame.select(settlement_period_to_utc_expr("d", "p")).to_series().to_list() == [
+        with pytest.raises(ValueError, match="1 null settlement date or period"):
+            frame.select(settlement_period_to_utc_expr("d", "p"))
+
+    def test_null_date_alone_gives_null(self):
+        frame = pl.DataFrame({"d": [None, date(2024, 1, 15)]}, schema={"d": pl.Date})
+        assert frame.select(settlement_period_to_utc_expr("d")).to_series().to_list() == [
             None,
-            None,
+            datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
         ]
