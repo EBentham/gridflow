@@ -622,3 +622,37 @@ def test_pruned_hand_written_dataset_does_not_break_init_or_refresh(
         con.close()
     assert "silver_elexon_system_prices" not in names
     assert "silver_elexon_system_prices_latest" not in names
+
+
+def test_quality_connection_closes_itself_when_setup_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A failed support-relation registration must not leave the connection open.
+
+    The caller's ``closing()`` only owns the connection once it is returned.
+    """
+    import duckdb
+    import pytest
+
+    from gridflow.storage import duckdb as duckdb_mod
+
+    opened: list[duckdb.DuckDBPyConnection] = []
+    connect = duckdb.connect
+
+    def recording_connect(*args: object, **kwargs: object) -> duckdb.DuckDBPyConnection:
+        con = connect(*args, **kwargs)
+        opened.append(con)
+        return con
+
+    def broken(*args: object) -> None:
+        raise RuntimeError("bad completion relation")
+
+    monkeypatch.setattr(duckdb_mod.duckdb, "connect", recording_connect)
+    monkeypatch.setattr(duckdb_mod, "_register_support_relations", broken)
+
+    with pytest.raises(RuntimeError, match="bad completion relation"):
+        duckdb_mod.quality_connection(tmp_path, "256MB", tmp_path / "spill")
+
+    assert len(opened) == 1
+    with pytest.raises(duckdb.ConnectionException):
+        opened[0].execute("SELECT 1")

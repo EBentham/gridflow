@@ -333,8 +333,12 @@ def quality_connection(
             "preserve_insertion_order": False,
         }
     )
-    con.execute("SET enable_progress_bar = false")
-    _register_support_relations(con, data_dir, _registered_relation_owners())
+    try:
+        con.execute("SET enable_progress_bar = false")
+        _register_support_relations(con, data_dir, _registered_relation_owners())
+    except BaseException:
+        con.close()
+        raise
     return con
 
 
