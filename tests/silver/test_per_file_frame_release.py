@@ -6,15 +6,18 @@ grew with its body count. P-9 replaces the list with a running row and frame
 count. Two things are pinned here:
 
 1. **Byte-unchanged behaviour.** :func:`run_harness` drives the per-file branch
-   over the ``elexon/system_prices`` JSON shape and the NESO
-   ``daily_wind_availability`` CSV fixture, including unvouched and
-   unusable-provenance bodies and the opt-in silver CSV sidecar, and records the
-   silver filenames and column order, every written row (minus the per-run
-   ``source_run_id`` and system_prices' wall-clock ``ingested_at``), the CSV
-   rows, ``run()``'s return value and every ``last_*`` counter.
-   The golden ``tests/fixtures/per_file_branch_golden.json`` was produced by
-   this exact harness on a checkout of master ``d7cf513`` (before P-9), via
-   ``json.dumps(run_harness(root), indent=2, sort_keys=True)``.
+   over the ``elexon/system_prices`` JSON shape and a per-file CSV stub (no
+   partition column), including unvouched and declined bodies and the opt-in
+   silver CSV sidecar, and records the silver filenames and column order, every
+   written row (minus the per-run ``source_run_id`` and system_prices'
+   wall-clock ``ingested_at``), the CSV rows, ``run()``'s return value and every
+   ``last_*`` counter. The golden ``tests/fixtures/per_file_branch_golden.json``
+   was produced by this exact harness on a checkout of master ``d7cf513``
+   (before P-9), via ``json.dumps(run_harness(root), indent=2, sort_keys=True)``.
+   The stub's case replaced the NESO ``daily_wind_availability`` case when that
+   bespoke transformer retired (ADR-034 Amendment 2); it was captured on
+   ``d7cf513`` too. Three write-only window-filter counters, all 0 here, were
+   later deleted from the base class and from the golden.
 2. **Release.** A weak reference to each body's written frame is dead once the
    next body is being written. On ``d7cf513`` the list kept every frame alive,
    so that assertion fails there.
@@ -27,21 +30,18 @@ import json
 import weakref
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
-from gridflow.silver.neso_data_portal.daily_wind_availability import (
-    DailyWindAvailabilityTransformer,
-)
 
 if TYPE_CHECKING:
     import pytest
 
 GOLDEN = Path(__file__).resolve().parents[1] / "fixtures" / "per_file_branch_golden.json"
-DWA_FIXTURE = (
+CSV_FIXTURE = (
     Path(__file__).resolve().parents[1]
     / "fixtures"
     / "neso_data_portal"
@@ -50,7 +50,32 @@ DWA_FIXTURE = (
 SP_DATE = date(2024, 1, 15)
 _CLOCK_COLUMNS = frozenset({"source_run_id", "ingested_at"})
 """Per-run values: the run id and system_prices' own wall-clock ``ingested_at``."""
-DWA_DATE = date(2026, 8, 16)
+CSV_DATE = date(2026, 8, 16)
+
+
+class _PerFileCsv(BaseSilverTransformer):
+    """A per-file CSV transformer with no ``PARTITION_DATE_COLUMN``: the path P-9 changed."""
+
+    source = "test_per_file"
+    dataset = "csv_bodies"
+    schema_cls = None
+    APPEND_ONLY: ClassVar[bool] = True
+    VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = True
+    BRONZE_BODY_GLOB: ClassVar[str] = "raw_*.csv"
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ("BMU_ID", "Date")
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        """Unused on the per-file branch."""
+        return pl.DataFrame()
+
+    def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """An empty frame declines the body, as a provenance rule would."""
+        if "declined" in raw_path.name:
+            return pl.DataFrame()
+        return pl.read_csv(raw_path)
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df
 
 
 def _sp_payload(day: date, sell_price: float) -> str:
@@ -89,42 +114,27 @@ def _seed_sp(data_dir: Path, *, vintages: bool = True, unvouched: bool = True) -
         (partition / "raw_nostamp.meta.json").write_text(json.dumps({"other": "x"}))
 
 
-def _dwa_sidecar(written_at: datetime, ckan_last_modified: str) -> dict[str, Any]:
-    return {
-        "source": "neso_data_portal",
-        "dataset": "daily_wind_availability",
-        "written_at": written_at.isoformat(),
-        "request_params": {
-            "package": "daily-wind-availability",
-            "package_id": "3758a0ed-6c96-4e36-88d0-107f5020ddf3",
-            "resource_id": "7aa508eb-36f5-4298-820f-2fa6745ae2e7",
-            "resource_name": "Daily Wind Availability",
-            "resource_filename": "windavailability.csv",
-            "ckan_last_modified": ckan_last_modified,
-            "ckan_format": "CSV",
-            "body_sha256": "0" * 64,
-        },
-    }
-
-
-def _seed_dwa(data_dir: Path, *, all_valid: bool = False) -> None:
-    partition = data_dir / "bronze" / "neso_data_portal" / "daily_wind_availability"
-    partition = partition / "2026" / "08" / "16"
+def _seed_csv(data_dir: Path, *, unvouched: bool = False) -> None:
+    partition = data_dir / "bronze" / "test_per_file" / "csv_bodies" / "2026" / "08" / "16"
     partition.mkdir(parents=True, exist_ok=True)
-    fixture = DWA_FIXTURE.read_bytes()
+    fixture = CSV_FIXTURE.read_bytes()
     revised = fixture.replace(b"120.5", b"121.5")
-    bodies = (
-        ("20260816T090000Z_aaaa", fixture, datetime(2026, 8, 16, 9, tzinfo=UTC), "08:55"),
-        ("20260816T183000Z_bbbb", revised, datetime(2026, 8, 16, 18, 30, tzinfo=UTC), "18:20"),
-        ("20260816T200000Z_cccc", fixture, datetime(2026, 8, 16, 20, tzinfo=UTC), ""),
-    )
-    for name, body, written_at, modified in bodies:
+    bodies = [
+        ("20260816T090000Z_aaaa", fixture, datetime(2026, 8, 16, 9, tzinfo=UTC)),
+        ("20260816T183000Z_bbbb", revised, datetime(2026, 8, 16, 18, 30, tzinfo=UTC)),
+        ("20260816T200000Z_cccc", fixture, datetime(2026, 8, 16, 20, tzinfo=UTC)),
+    ]
+    if unvouched:
+        bodies.append(("declined", fixture, datetime(2026, 8, 16, 21, tzinfo=UTC)))
+    for name, body, written_at in bodies:
         (partition / f"raw_{name}.csv").write_bytes(body)
-        modified = modified or ("20:00" if all_valid else "")
-        lm = f"2026-08-16T{modified}:00.000001" if modified else ""
         (partition / f"raw_{name}.meta.json").write_text(
-            json.dumps(_dwa_sidecar(written_at, lm), indent=2)
+            json.dumps({"written_at": written_at.isoformat()})
         )
+    if unvouched:
+        (partition / "raw_orphan.csv").write_bytes(fixture)
+        (partition / "raw_nostamp.csv").write_bytes(fixture)
+        (partition / "raw_nostamp.meta.json").write_text(json.dumps({"other": "x"}))
 
 
 def _jsonable(value: Any) -> Any:
@@ -220,9 +230,9 @@ def run_harness(base: Path) -> dict[str, Any]:
     root = base / "sp_empty"
     cases["sp_empty"] = _run_case(root, SystemPriceTransformer, SP_DATE)
 
-    root = base / "dwa"
-    _seed_dwa(root)
-    cases["dwa"] = _run_case(root, DailyWindAvailabilityTransformer, DWA_DATE)
+    root = base / "csv_per_file"
+    _seed_csv(root, unvouched=True)
+    cases["csv_per_file"] = _run_case(root, _PerFileCsv, CSV_DATE, write_csv=True)
     return cases
 
 
@@ -241,13 +251,13 @@ def test_each_bodys_frame_is_released_before_the_next_is_written(
 ) -> None:
     """Detects the per-file branch retaining written frames across bodies.
 
-    Driven through ``daily_wind_availability`` (``VINTAGE_PER_BRONZE_FILE``, no
+    Driven through a per-file CSV stub (``VINTAGE_PER_BRONZE_FILE``, no
     ``PARTITION_DATE_COLUMN``); ``system_prices`` declares a partition column, so
     it runs the partition-owned path P-9 leaves untouched. On ``d7cf513``
     ``frames.append(clean_df)`` kept every body's frame alive until ``run()``
     returned, so these weak references stayed live (``[0, 1, 2]``).
     """
-    _seed_dwa(tmp_path, all_valid=True)
+    _seed_csv(tmp_path)
     refs: list[weakref.ref[pl.DataFrame]] = []
     alive_at_next_write: list[int] = []
     original = BaseSilverTransformer._write_silver
@@ -261,7 +271,7 @@ def test_each_bodys_frame_is_released_before_the_next_is_written(
         original(self, df, target_date, available_at)
 
     monkeypatch.setattr(BaseSilverTransformer, "_write_silver", _spy)
-    transformer = DailyWindAvailabilityTransformer(tmp_path)
+    transformer = _PerFileCsv(tmp_path)
     assert transformer.PARTITION_DATE_COLUMN is None
-    assert transformer.run(DWA_DATE, run_id="release") == 18
+    assert transformer.run(CSV_DATE, run_id="release") == 18
     assert alive_at_next_write == [0, 0, 0]

@@ -17,7 +17,7 @@ from gridflow.schemas.entsoe import (
     EntsoeCrossZonalBalancingCapacity,
 )
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class _H8BalancingTransformer(EntsoeXmlTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset: ClassVar[tuple[str, ...]] = ("timestamp_utc", "area_code", "business_type")
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ("timestamp_utc", "area_code", "business_type")
     #: Read only the latest fetch of each distinct request. ENTSO-E stamps a
     #: fresh document mRID on every reply and A15 restarts its series mRIDs at
     #: 1 on every page, so neither identifies a row across pages or re-fetches;
@@ -101,8 +101,8 @@ class _H8BalancingTransformer(EntsoeXmlTransformer):
                 ]
             )
             .select(list(self.output_cols))
-            .unique(subset=list(self.unique_subset), keep="last")
-            .sort(list(self.unique_subset))
+            .pipe(self.dedup_to_grain)
+            .sort(list(self.ENTITY_KEY_COLUMNS))
         )
 
         return df
@@ -144,7 +144,7 @@ class CurrentBalancingStateTransformer(_H8BalancingTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = ("timestamp_utc", "area_code", "business_type", "direction")
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type", "direction")
 
 
 class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
@@ -174,7 +174,7 @@ class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
     )
     # One bid mRID can carry several standard products at different prices
     # (BE, 2026-08-01: 326 such groups), so the product is part of the key.
-    unique_subset: ClassVar[tuple[str, ...]] = (
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = (
         "timestamp_utc",
         "area_code",
         "bid_mrid",
@@ -245,7 +245,7 @@ class ProcuredBalancingCapacityTransformer(_H8BalancingTransformer):
     # Each series is one procured offer: several share every descriptive
     # attribute at the same time with different quantities and prices
     # (2026-08-01: 496 such groups), so a row is one series of one reply.
-    unique_subset = ("timestamp_utc", "area_code", "document_mrid", "series_mrid")
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "document_mrid", "series_mrid")
     # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, CET-boundary
     # over-span, same shape as the already-proven A44 case (R3-RESEARCH.md:55,
     # B-7); see ADR-026 Appendix A.
@@ -269,7 +269,7 @@ class CrossZonalBalancingCapacityTransformer(_H8BalancingTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = (
+    ENTITY_KEY_COLUMNS = (
         "timestamp_utc",
         "acquiring_area_code",
         "connecting_area_code",
@@ -305,7 +305,7 @@ class BalancingFinancialExpensesIncomeTransformer(_H8BalancingTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = ("timestamp_utc", "area_code", "business_type")
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type")
 
 
 def _with_optional_columns(df: pl.DataFrame) -> pl.DataFrame:

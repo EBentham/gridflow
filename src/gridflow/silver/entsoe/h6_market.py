@@ -13,7 +13,7 @@ from gridflow.schemas.entsoe import (
     EntsoeTransmissionMarketQuantity,
 )
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -28,6 +28,7 @@ class _H6ZonePairTransformer(EntsoeXmlTransformer):
     value_tag = "quantity"
     value_column = "quantity_mw"
     schema_cls: ClassVar[type[BaseModel]] = EntsoeTransmissionMarketQuantity
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "in_area_code", "out_area_code", "business_type")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -64,15 +65,7 @@ class _H6ZonePairTransformer(EntsoeXmlTransformer):
                     pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
                 ]
             )
-            .unique(
-                subset=[
-                    "timestamp_utc",
-                    "in_area_code",
-                    "out_area_code",
-                    "business_type",
-                ],
-                keep="last",
-            )
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "in_area_code", "out_area_code"])
         )
 

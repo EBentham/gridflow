@@ -10,23 +10,28 @@ import polars as pl
 
 from gridflow.schemas.entsoe import EntsoeImbalanceVolume
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.entsoe._enum_maps import count_unmapped, map_enums
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
+
+_ENUMS = {"direction": ("flow_direction", {"A01": "long", "A02": "short"})}
 
 
 class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E imbalance volumes (A86/A16) bronze XML → silver Parquet.
 
     Maps flow_direction A01→"long", A02→"short" via replace_strict.
-    Deduplicates on (timestamp_utc, area_code, direction).
+    Deduplicates on (timestamp_utc, area_code, flow_direction).
     """
 
     source = "entsoe"
     dataset = "imbalance_volume"
     schema_cls = EntsoeImbalanceVolume
+    DATASET_VERSION = "2.0.0"
+    # The raw codes, not their labels: two unknown codes stay two rows (ADR-022).
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "flow_direction")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live FR 2025-04-01: real
     populated data, PT15M (R3-RESEARCH.md:68); window-bound comparison not
@@ -50,15 +55,7 @@ class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
                 "value": "volume_mwh",
                 "control_area_domain": "area_code",
             }
-        ).with_columns(
-            pl.col("flow_direction")
-            .replace_strict(
-                {"A01": "long", "A02": "short"},
-                default=UNMAPPED_SENTINEL,
-                return_dtype=pl.Utf8,
-            )
-            .alias("direction")
-        )
+        ).with_columns(map_enums(_ENUMS))
 
         # F-02 fix: derive published_at from document_created_at BEFORE the
         # column-dropping select below, which otherwise discards
@@ -70,13 +67,14 @@ class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
                 [
                     "timestamp_utc",
                     "area_code",
+                    "flow_direction",
                     "direction",
                     "volume_mwh",
                     "resolution",
                     "published_at",
                 ]
             )
-            .unique(subset=["timestamp_utc", "area_code", "direction"], keep="last")
+            .pipe(self.dedup_to_grain)
             .sort(["timestamp_utc", "area_code", "direction"])
             .with_columns(
                 [
@@ -90,6 +88,7 @@ class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
         output_cols = [
             "timestamp_utc",
             "area_code",
+            "flow_direction",
             "direction",
             "volume_mwh",
             "resolution",
@@ -100,19 +99,7 @@ class ImbalanceVolumeTransformer(EntsoeXmlTransformer):
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)
 
-        self.last_unmapped_count = int(df.filter(pl.col("direction") == UNMAPPED_SENTINEL).height)
-        if self.last_unmapped_count > 0:
-            raw_codes = raw_df.get_column("flow_direction").unique().to_list()
-            unmapped_codes = sorted(c for c in raw_codes if c not in {"A01", "A02"})
-            logger.warning(
-                "%s/%s: %d unmapped flow_direction row(s) labelled %r; unmapped raw codes: %s",
-                self.source,
-                self.dataset,
-                self.last_unmapped_count,
-                UNMAPPED_SENTINEL,
-                unmapped_codes,
-            )
-
+        self.last_unmapped_count = count_unmapped(df, raw_df, _ENUMS, dataset=self.dataset)
         return df
 
 

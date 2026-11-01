@@ -34,21 +34,29 @@ from __future__ import annotations
 import csv
 import io
 import json
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    tree_bytes,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     Eligible,
@@ -57,20 +65,13 @@ from gridflow.connectors.neso_data_portal.registry import (
     load_registry,
 )
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "trd"
@@ -486,23 +487,11 @@ FIRST_OF = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="trd", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str, *, crlf: bool | None = None) -> bytes:
@@ -532,51 +521,15 @@ def capture(data: Path, alias: str, *, raw: bytes | None = None) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
     slug = PACKAGE_OF[meta.family]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=slug,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=slug,
         package_id=PACKAGES[slug],
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
-        ckan_last_modified=meta.modified,
         url_type=meta.kind,
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-
-
-def _package_doc(slug: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / f"{slug}.json").read_text("utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
 
 
 def _fmt(family: str, source: str) -> str:
@@ -624,9 +577,9 @@ def _load_clean(data: Path, *aliases: str) -> pl.DataFrame:
         assert completion is not None
         assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
         assert read_failure(data, family, capture_id) is None
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     assert frame.height == written
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(family)
     assert not [c for c in frame.columns if "﻿" in c]
     return frame
 
@@ -701,7 +654,7 @@ def test_every_record_is_utf8_csv_with_the_spec_key_selection_and_no_issue(key: 
     by resource only where the spec says so), ``capture_fallback`` vintage for the datastore
     families and ``ckan_last_modified`` for the GTMA uploads, the spec's entity key, the vendor
     header(s) as its epoch(s) and ``issue: none`` (an update column is never an issue time)."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     expected_vintage = (
         "ckan_last_modified"
@@ -712,13 +665,13 @@ def test_every_record_is_utf8_csv_with_the_spec_key_selection_and_no_issue(key: 
     assert record.latest == "whole_capture"
     assert record.latest_partition == ("resource_id" if key in PARTITIONED else None)
     assert list(record.entity_key) == KEY_OF[key]
-    assert record.run_type_column is None and "run_type" not in _columns(key)
+    assert record.run_type_column is None and "run_type" not in output_names(key)
     assert record.siblings == () and record.xlsx is None and record.edition_by_filename is None
     assert record.zip_member is None
     for epoch in record.epochs:
         assert epoch.issue.kind == "none"
     assert has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
     headers = [list(e.header) for e in record.epochs]
     if key == "ssel_contract_enactment":
         assert headers == [H_S, H_A]
@@ -736,7 +689,7 @@ def test_columns_are_typed_without_trim_tokens_or_bounds(key: str) -> None:
     ``Last_Updated`` stay raw strings, and no column declares ``trim``, ``null_tokens``,
     ``formats_by_filename``, ``min`` or ``max`` (except the settlement period, bounded 1..50: DST
     days run 46 to 50 periods)."""
-    columns = _record(key).epochs[0].columns
+    columns = record_of(key).epochs[0].columns
     assert [c.source for c in columns] == [s[0] for s in COLS[key]]
     assert [c.name for c in columns] == [s[1] for s in COLS[key]]
     for column, (_source, _name, kind) in zip(columns, COLS[key], strict=True):
@@ -766,7 +719,7 @@ def test_ssel_has_two_epochs_with_legacy_and_modern_value_columns_kept_apart() -
     ``reduction_mw`` and ``price_mw_hr`` (float64) and the modern epoch owns ``volume`` /
     ``price`` /
     ``cost``."""
-    legacy, modern = _record("ssel_contract_enactment").epochs
+    legacy, modern = record_of("ssel_contract_enactment").epochs
     by_source = {c.source: c for c in legacy.columns}
     assert [(c.source, c.name) for c in legacy.columns] == [
         ("Record", "id"),
@@ -784,7 +737,7 @@ def test_ssel_has_two_epochs_with_legacy_and_modern_value_columns_kept_apart() -
     assert [(c.source, c.name) for c in modern.columns] == [(s[0], s[1]) for s in A_COLS]
     assert {c.name for c in legacy.columns}.isdisjoint({"volume", "price", "cost"})
     assert {c.name for c in modern.columns}.isdisjoint({"reduction_mw", "price_mw_hr"})
-    assert _record("ssel_contract_enactment").temporal.column == "starttime"
+    assert record_of("ssel_contract_enactment").temporal.column == "starttime"
 
 
 @pytest.mark.parametrize(
@@ -794,14 +747,14 @@ def test_ssel_has_two_epochs_with_legacy_and_modern_value_columns_kept_apart() -
 def test_the_temporal_recipe_is_the_utc_start_instant(key: str, temporal: str) -> None:
     """Detects a delivery window anchored on its end, an update column or a capture time: the seven
     window families use ``utc_instant`` on their start column."""
-    recipe = _record(key).temporal
+    recipe = record_of(key).temporal
     assert (recipe.kind, recipe.column) == ("utc_instant", temporal)
 
 
 def test_the_legacy_balancing_table_has_no_temporal_recipe_and_raw_clocks() -> None:
     """Detects a ``date_sp1`` anchor on the truncated legacy start (it would fabricate a start
     instant) or a parsed end / update clock whose zone NESO does not document."""
-    record = _record("bs_contract_enactment_balancing_service")
+    record = record_of("bs_contract_enactment_balancing_service")
     assert record.temporal.kind == "none"
     clocks = {
         c.name: c.dtype for c in record.epochs[0].columns if "time" in c.name or "updated" in c.name
@@ -813,7 +766,7 @@ def test_upcoming_trades_uses_the_settlement_pair_recipe_and_keeps_empty_allowed
     """Detects a UTC date + period composition or a lost empty-capture allowance: the recipe is the
     existing ``sp_pair`` on the body's day and period, the key carries both of them with the trade
     id, and the resource still accepts a marked empty capture."""
-    record = _record("upcoming_trades")
+    record = record_of("upcoming_trades")
     assert (record.temporal.kind, record.temporal.date_column, record.temporal.period_column) == (
         "sp_pair",
         "date",
@@ -830,7 +783,7 @@ def test_seven_records_are_held_with_the_verbatim_question_and_the_package_stays
     """Detects a hold lost, reworded or moved to the package: each of the seven records carries its
     verbatim question and this unit, is effectively held, and its package stays eligible."""
     package, family = registry_module.load_registry().families[key]
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert (record.eligibility.unit, record.eligibility.question) == (UNIT, HELD[key])
     assert effective_eligibility(package, family) == record.eligibility
@@ -842,7 +795,7 @@ def test_the_two_gtma_upload_records_are_eligible(key: str) -> None:
     """Detects a hold on the clean GTMA families: both uploads carry no eligibility override and
     are effectively eligible."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
 
 
@@ -883,9 +836,8 @@ def test_the_package_files_carry_exactly_the_nine_records() -> None:
     transformer."""
     found: set[str] = set()
     for slug in PACKAGES:
-        document = _package_doc(slug)
+        document = package_doc(slug)
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), slug
     assert found == set(RECORDED)
 
 
@@ -1119,13 +1071,13 @@ def test_gu6_feeds_no_silver_and_is_never_deduplicated(data: Path) -> None:
     emitting a row of GU6's resource."""
     gu6_capture = capture(data, "gu6")
     get_transformer(SOURCE, "gtma_trades_data", data).run(DAY, run_id="r")
-    assert _no_silver(data, "gtma_trades_data")
+    assert no_silver(data, "gtma_trades_data")
     assert read_completion(data, "gtma_trades_data", gu6_capture) is None
     assert read_failure(data, "gtma_trades_data", gu6_capture) is None
     gu5_capture = capture(data, "gu5")
     written = get_transformer(SOURCE, "gtma_trades_data", data).run(DAY, run_id="r2")
     assert written == len(rows("gu5"))
-    frame = _silver(data, "gtma_trades_data")
+    frame = silver_frame(data, "gtma_trades_data")
     assert set(frame["resource_id"].to_list()) == {CAPTURES["gu5"].resource_id}
     assert "ES00104406" not in frame["trade_id"].to_list()
     assert read_completion(data, "gtma_trades_data", gu5_capture) is not None
@@ -1145,7 +1097,7 @@ def test_an_eligible_gtma_resource_with_a_repeated_trade_id_still_fails_loud(dat
         (capture_id, "DuplicateEntityKeyError")
     ]
     assert read_completion(data, "gtma_trades_data", capture_id) is None
-    assert _no_silver(data, "gtma_trades_data")
+    assert no_silver(data, "gtma_trades_data")
 
 
 def test_the_gtma_family_reconciles_clean_with_gu6_held(
@@ -1154,7 +1106,7 @@ def test_the_gtma_family_reconciles_clean_with_gu6_held(
     """Detects a held capture reported as a reconcile gap (missing / failed / orphaned): GU5
     transformed and GU6 captured but held reconcile with no gap and no ledger entry."""
     install_generated(
-        monkeypatch, data / "_registry", [_package_doc(PACKAGE_OF["gtma_trades_data"])]
+        monkeypatch, data / "_registry", [package_doc(PACKAGE_OF["gtma_trades_data"])]
     )
     capture(data, "gu5")
     capture(data, "gu6")
@@ -1168,14 +1120,6 @@ def _entries(family: str) -> list[dict[str, Any]]:
     path = REGISTRY_DIR / registry_module.RECONCILE_ADJUDICATIONS_FILE
     entries = json.loads(path.read_text(encoding="utf-8"))
     return [e for e in entries if e["family"] == family]
-
-
-def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
-    return {
-        p.relative_to(data / top).as_posix(): p.read_bytes()
-        for p in sorted((data / top).rglob("*"))
-        if p.is_file()
-    }
 
 
 def test_the_committed_ledger_adjudicates_exactly_the_gf1_gf2_overlap() -> None:
@@ -1215,10 +1159,10 @@ def test_the_overlap_is_served_from_both_resources_and_adjudicated_not_open(
     with the committed entry (capture ids swapped for the fixture captures') every gap is
     adjudicated, none is open or stale, the line names ruling 707 and the silver and state bytes are
     equal before and after."""
-    install_generated(monkeypatch, data / "_registry", [_package_doc(PACKAGE_OF["gtma_trades_fy"])])
+    install_generated(monkeypatch, data / "_registry", [package_doc(PACKAGE_OF["gtma_trades_fy"])])
     ids = {alias: capture(data, alias) for alias in ("gf1", "gf2")}
     get_transformer(SOURCE, "gtma_trades_fy", data).run(DAY, run_id="r")
-    frame = _silver(data, "gtma_trades_fy")
+    frame = silver_frame(data, "gtma_trades_fy")
     assert frame.height == len(rows("gf1")) + len(rows("gf2"))
     shared = frame.filter(pl.col("id").is_in(["ES00165376", "ES00165377"]))
     assert shared.height == 4
@@ -1226,7 +1170,7 @@ def test_the_overlap_is_served_from_both_resources_and_adjudicated_not_open(
         pl.col("volume").n_unique().alias("v"), pl.col("last_updated").n_unique().alias("u")
     )
     assert values["v"].to_list() == [1, 1] and values["u"].to_list() == [1, 1]
-    before = (_tree_bytes(data, "silver"), _tree_bytes(data, "state"))
+    before = (tree_bytes(data, "silver"), tree_bytes(data, "state"))
 
     code, lines = run_cli("gtma_trades_fy", "--cutoff", DAY.isoformat())
     assert code == 1, lines
@@ -1246,7 +1190,7 @@ def test_the_overlap_is_served_from_both_resources_and_adjudicated_not_open(
     assert "SUMMARY adjudicated 2" in lines and "SUMMARY stale_adjudication 0" in lines
     adjudicated = [line for line in lines if line.startswith("ADJUDICATED overlap")]
     assert len(adjudicated) == 2 and all("ruling 707" in line for line in adjudicated)
-    assert (_tree_bytes(data, "silver"), _tree_bytes(data, "state")) == before
+    assert (tree_bytes(data, "silver"), tree_bytes(data, "state")) == before
 
 
 # --------------------------------------------------------------------------- #
@@ -1267,7 +1211,7 @@ def test_a_header_outside_the_epoch_fails_loud(data: Path, family: str) -> None:
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize(
@@ -1287,7 +1231,7 @@ def test_a_repeated_key_fails_the_capture_as_a_duplicate(data: Path, family: str
         (capture_id, "DuplicateEntityKeyError")
     ]
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("alias", ["ba1", "gu5", "ut"])
@@ -1301,7 +1245,7 @@ def test_the_vintage_is_the_capture_time_or_the_ckan_last_modified_and_as_of_is_
     meta = CAPTURES[alias]
     capture_id = capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     if meta.kind == "upload":
         vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     else:
@@ -1334,25 +1278,6 @@ def test_every_family_is_generic_tabular_silver_with_its_own_record() -> None:
     registry = load_registry()
     for key in RECORDED:
         package, entry = registry.families[key]
-        assert entry.record is not None and entry.transformer is None, key
+        assert entry.record is not None, key
         assert entry.kind == "tabular", key
         assert not isinstance(package.eligibility, Held), key
-
-
-@pytest.mark.parametrize("slug", list(PACKAGES))
-def test_the_skeleton_pages_render_the_new_records(slug: str) -> None:
-    """Detects a record the docs generator cannot render (the held questions, the pound-sign
-    headers, the two SSEL epochs)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": slug,
-            "title": slug,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    for key in (k for k in RECORDED if PACKAGE_OF[k] == slug):
-        assert f"`{key}`" in page, key

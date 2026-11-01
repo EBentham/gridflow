@@ -83,14 +83,14 @@ class TestEntsogEndpoints:
 
         assert params["pointDirection"] == ",".join(DEFAULT_POINT_DIRECTIONS)
 
-    def test_build_params_allows_live_limit_override(self):
+    def test_build_params_for_reference_dataset_has_no_dates(self):
         endpoint = ENDPOINTS["operators"]
-        params = build_params(endpoint, start=START, end=END, limit=1)
+        params = build_params(endpoint, start=START, end=END)
 
         assert "from" not in params
         assert "to" not in params
         assert params["hasData"] == 1
-        assert params["limit"] == 1
+        assert params["limit"] == -1
 
 
 # ---------------------------------------------------------------------------

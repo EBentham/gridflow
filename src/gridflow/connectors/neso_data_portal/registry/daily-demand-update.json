@@ -11,44 +11,12 @@
     {
       "key": "daily_demand_update",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "SETTLEMENT_DATE",
-              "SETTLEMENT_PERIOD",
-              "ND",
-              "FORECAST_ACTUAL_INDICATOR",
-              "TSD",
-              "ENGLAND_WALES_DEMAND",
-              "EMBEDDED_WIND_GENERATION",
-              "EMBEDDED_WIND_CAPACITY",
-              "EMBEDDED_SOLAR_GENERATION",
-              "EMBEDDED_SOLAR_CAPACITY",
-              "NON_BM_STOR",
-              "PUMP_STORAGE_PUMPING",
-              "SCOTTISH_TRANSFER",
-              "IFA_FLOW",
-              "IFA2_FLOW",
-              "BRITNED_FLOW",
-              "MOYLE_FLOW",
-              "EAST_WEST_FLOW",
-              "NEMO_FLOW",
-              "NSL_FLOW",
-              "ELECLINK_FLOW",
-              "VIKING_FLOW",
-              "GREENLINK_FLOW"
-            ],
             "columns": [
               {
                 "source": "SETTLEMENT_DATE",
@@ -191,10 +159,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -238,14 +203,7 @@
     },
     {
       "key": "daily_demand_update_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

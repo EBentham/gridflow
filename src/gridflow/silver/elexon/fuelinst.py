@@ -24,7 +24,7 @@ class FuelInstTransformer(ElexonTransformer):
     # ElexonGenerationByFuel, which requires settlement_date + settlement_period
     # the transformer never emits.
     schema_cls = ElexonFuelInst
-    ENTITY_KEY_COLUMNS = ("timestamp_utc", "fuel_type")  # D-8: verbatim from unique() below
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "fuel_type")  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -74,7 +74,7 @@ class FuelInstTransformer(ElexonTransformer):
             logger.error("No timestamp column found in FUELINST data")
             return pl.DataFrame()
 
-        df = df.unique(subset=["timestamp_utc", "fuel_type"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

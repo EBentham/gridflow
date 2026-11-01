@@ -233,7 +233,7 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
     route = respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
     async with EntsogConnector(_entsog_config()) as connector:
-        responses = await connector.fetch(dataset, START, END, limit=1)
+        responses = await connector.fetch(dataset, START, END)
 
     assert route.called
     assert len(responses) == 1
@@ -241,9 +241,9 @@ async def test_active_datasets_fetch_with_expected_mocked_request_shape(
     params = dict(requests[0].url.params)
     response = responses[0]
 
-    assert params["limit"] == "1"
+    assert params["limit"] == "-1"
     assert params["timeZone"] == "UCT"
-    assert response.request_params["limit"] == 1
+    assert response.request_params["limit"] == -1
     assert response.data_date == (TARGET_DATE if endpoint.requires_dates else None)
 
     if endpoint.requires_dates:
@@ -400,7 +400,7 @@ class TestV2ENTSOG404ShortCircuit:
         respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
 
         async with EntsogConnector(_entsog_config()) as connector:
-            responses = await connector.fetch("methane_content", START, END, limit=1)
+            responses = await connector.fetch("methane_content", START, END)
 
         assert len(requests) == 1, (
             f"expected exactly 1 request for vendor empty convention; "
@@ -428,6 +428,6 @@ class TestV2ENTSOG404ShortCircuit:
 
         async with EntsogConnector(_entsog_config()) as connector:
             with pytest.raises(httpx.HTTPStatusError):
-                await connector.fetch("methane_content", START, END, limit=1)
+                await connector.fetch("methane_content", START, END)
 
         assert len(requests) > 1, f"expected retries for non-empty 404; got {len(requests)}"

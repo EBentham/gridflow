@@ -13,8 +13,9 @@ if TYPE_CHECKING:
 
 from gridflow.schemas.elexon import ElexonWindForecast
 from gridflow.silver.elexon._base import ElexonTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc
+from gridflow.utils.time import settlement_period_to_utc_expr
 
 logger = logging.getLogger(__name__)
 
@@ -27,25 +28,21 @@ class WindForecastTransformer(ElexonTransformer):
     schema_cls = ElexonWindForecast
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     # D-8: the static base key -- the PRIMARY (settlement-coordinate) shape.
-    # transform()'s own dedup_cols (below) has a real timestamp_utc-only
-    # FALLBACK when neither settlement_date nor settlement_period is
-    # present at all. That alternate shape is NOT expressible as an
-    # additive ENTITY_KEY_COLUMNS + OPTIONAL_ENTITY_KEY_COLUMNS refinement
-    # (it swaps the REQUIRED columns, not just an optional suffix), so
-    # resolve_entity_key() is overridden below to mirror transform()'s exact
-    # conditional instead. These two class attributes stay declared for the
-    # golden-map / completeness contract (A-4, A-13) and remain correct for
-    # the primary shape.
+    # Bronze without settlement_date and settlement_period falls back to a
+    # timestamp_utc grain. That swaps the REQUIRED columns, which no additive
+    # OPTIONAL_ENTITY_KEY_COLUMNS refinement can express, so
+    # resolve_entity_key() is overridden below. These two class attributes
+    # stay declared for the golden-map / completeness contract (A-4, A-13)
+    # and remain correct for the primary shape.
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")
     OPTIONAL_ENTITY_KEY_COLUMNS = ("published_at",)
 
     @classmethod
     def resolve_entity_key(cls, available_columns: Iterable[str]) -> tuple[str, ...]:
-        """Mirror transform()'s own dedup_cols conditional exactly (below):
-        settlement_date + settlement_period when both are present, else the
-        timestamp_utc-only fallback; published_at appended when present
-        (transform() always emits it -- typed-null when bronze lacks the
-        publish field, see the ``else`` branch below)."""
+        """The grain ``dedup_to_grain`` enforces: settlement_date +
+        settlement_period when both are present, else the timestamp_utc-only
+        fallback; published_at appended when present (transform() always
+        emits it -- typed-null when bronze lacks the publish field)."""
         available = set(available_columns)
         key: tuple[str, ...]
         if "settlement_date" in available and "settlement_period" in available:
@@ -94,14 +91,9 @@ class WindForecastTransformer(ElexonTransformer):
                 ]
             )
             df = df.with_columns(
-                pl.struct(["settlement_date", "settlement_period"])
-                .map_elements(
-                    lambda row: settlement_period_to_utc(
-                        row["settlement_date"], row["settlement_period"]
-                    ),
-                    return_dtype=pl.Datetime("us", "UTC"),
+                settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
+                    "timestamp_utc"
                 )
-                .alias("timestamp_utc")
             )
         elif "start_time" in df.columns:
             # Polars ≥1.x requires explicit format when string contains tz info.
@@ -116,26 +108,9 @@ class WindForecastTransformer(ElexonTransformer):
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
 
-        if "published_at" in df.columns:
-            df = df.with_columns(
-                pl.col("published_at")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-            )
-        else:
-            # WHY: the silver schema declares published_at as a nullable contract
-            # column. Emit it as typed-null when bronze lacks the publish field so the
-            # silver schema is deterministic and partition globs don't drift across
-            # history (a missing column breaks SELECT * reads spanning files that do
-            # carry it).
-            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
+        df = with_published_at(df, "published_at", dataset=self.dataset)
 
-        dedup_cols = ["timestamp_utc"]
-        if "settlement_date" in df.columns and "settlement_period" in df.columns:
-            dedup_cols = ["settlement_date", "settlement_period"]
-        if "published_at" in df.columns:
-            dedup_cols.append("published_at")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

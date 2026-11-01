@@ -72,19 +72,26 @@ class TestEntityKeyFallback:
         """Preserves today's behaviour exactly: a non-Elexon frame with
         neither a declared key nor the legacy pair is not checked at all
         (returns None), same as before this fix."""
-        available = ["timestamp_utc", "area_code", "price_eur_mwh"]
-        key = _entity_key_for("entsoe", "day_ahead_prices", available)
+        import gridflow.silver.openmeteo.historical  # noqa: F401 -- registers it
+
+        available = ["timestamp_utc", "location", "temperature_2m"]
+        key = _entity_key_for("open_meteo", "historical_demand", available)
         assert key is None
 
+    def test_entsoe_dataset_is_checked_on_its_declared_grain(self) -> None:
+        """ENTSO-E declares ENTITY_KEY_COLUMNS (its dedup key), so its frames are checked."""
+        import gridflow.silver.entsoe.day_ahead_prices  # noqa: F401 -- registers it
+
+        available = ["timestamp_utc", "area_code", "price_eur_mwh"]
+        key = _entity_key_for("entsoe", "day_ahead_prices", available)
+        assert key == ["timestamp_utc", "area_code"]
+
     def test_optional_column_included_only_when_present(self) -> None:
-        with_boundary = _entity_key_for(
-            "elexon", "tsdf", ["settlement_date", "settlement_period", "boundary"]
-        )
-        without_boundary = _entity_key_for(
-            "elexon", "tsdf", ["settlement_date", "settlement_period"]
-        )
-        assert with_boundary == ["settlement_date", "settlement_period", "boundary"]
-        assert without_boundary == ["settlement_date", "settlement_period"]
+        grain = ["settlement_date", "settlement_period", "published_at"]
+        with_boundary = _entity_key_for("elexon", "tsdf", [*grain, "boundary"])
+        without_boundary = _entity_key_for("elexon", "tsdf", grain)
+        assert with_boundary == [*grain, "boundary"]
+        assert without_boundary == grain
 
 
 def test_fuelhh_entity_key_columns_class_attribute() -> None:

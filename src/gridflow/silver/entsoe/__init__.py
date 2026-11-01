@@ -1,7 +1,6 @@
 """ENTSO-E silver transformers — import all modules to trigger registration."""
 
 from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
-from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_generation_units import ActualGenerationUnitsTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
@@ -78,7 +77,6 @@ __all__ = [
     "NetTransferCapacityTransformer",
     "ImbalancePricesTransformer",
     "ImbalanceVolumeTransformer",
-    "ActivatedBalancingQtyTransformer",
     "ActivatedBalancingPricesTransformer",
     "ContractedReservesTransformer",
     "InstalledCapacityUnitsTransformer",

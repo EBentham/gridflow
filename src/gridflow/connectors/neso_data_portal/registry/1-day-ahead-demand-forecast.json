@@ -11,29 +11,12 @@
     {
       "key": "demand_forecast_1d_day_ahead_national",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DAYSAHEAD",
-              "TARGETDATE",
-              "FORECASTDEMAND",
-              "CARDINALPOINT",
-              "CP_TYPE",
-              "CP_ST_TIME",
-              "CP_END_TIME",
-              "F_Point"
-            ],
             "columns": [
               {
                 "source": "DAYSAHEAD",
@@ -84,10 +67,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -111,30 +91,12 @@
     {
       "key": "demand_forecast_1d_historic_day_ahead",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DAYSAHEAD",
-              "TARGETDATE",
-              "FORECASTDEMAND",
-              "CARDINALPOINT",
-              "CP_TYPE",
-              "CP_ST_TIME",
-              "CP_END_TIME",
-              "F_Point",
-              "FORECAST_TIMESTAMP"
-            ],
             "columns": [
               {
                 "source": "DAYSAHEAD",
@@ -191,10 +153,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -223,14 +182,7 @@
     },
     {
       "key": "demand_forecast_1d_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

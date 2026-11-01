@@ -10,8 +10,9 @@ import polars as pl
 
 from gridflow.schemas.elexon import ElexonDemandForecast
 from gridflow.silver.elexon._base import ElexonTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc
+from gridflow.utils.time import settlement_period_to_utc_expr
 
 logger = logging.getLogger(__name__)
 
@@ -83,31 +84,14 @@ class DemandForecastTransformer(ElexonTransformer):
         if "transmission_demand_mw" in df.columns:
             df = df.with_columns(pl.col("transmission_demand_mw").cast(pl.Float64))
 
-        if "published_at" in df.columns:
-            df = df.with_columns(
-                pl.col("published_at")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-            )
-        else:
-            # WHY: the silver schema declares published_at as a nullable contract
-            # column. Emit it as typed-null when bronze lacks the publish field so the
-            # silver schema is deterministic and partition globs don't drift across
-            # history (a missing column breaks SELECT * reads spanning files that do
-            # carry it).
-            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
+        df = with_published_at(df, "published_at", dataset=self.dataset)
 
         # Derive timestamp from settlement date/period or start_time
         if has_sp:
             df = df.with_columns(
-                pl.struct(["settlement_date", "settlement_period"])
-                .map_elements(
-                    lambda row: settlement_period_to_utc(
-                        row["settlement_date"], row["settlement_period"]
-                    ),
-                    return_dtype=pl.Datetime("us", "UTC"),
+                settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
+                    "timestamp_utc"
                 )
-                .alias("timestamp_utc")
             )
         elif "start_time" in df.columns:
             df = df.with_columns(
@@ -120,10 +104,7 @@ class DemandForecastTransformer(ElexonTransformer):
         forecast_type = "day_ahead" if self.dataset == "ndf" else "2_14_day"
         df = df.with_columns(pl.lit(forecast_type).alias("forecast_type"))
 
-        dedup_cols = ["settlement_date", "settlement_period", "forecast_type"]
-        if "published_at" in df.columns:
-            dedup_cols.append("published_at")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

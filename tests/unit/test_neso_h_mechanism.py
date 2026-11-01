@@ -21,7 +21,6 @@ Synthetic packages go through a tmp registry (``install_generated``) and a short
 from __future__ import annotations
 
 import json
-import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -43,7 +42,7 @@ from gridflow.silver.neso_data_portal.completion import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable
 
 SOURCE = "neso_data_portal"
 DAY = date(2026, 10, 8)
@@ -61,22 +60,11 @@ TYPED_FAMILIES = (
 )
 
 
-def _short_base() -> str:
-    """The drive root on Windows (ADR-036: engine names pass MAX_PATH there); tmp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for these catalogues."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="hf", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def r3_dtm(**overrides: Any) -> dict[str, Any]:
@@ -151,14 +139,14 @@ def _body(*cells: str) -> bytes:
 
 
 class TestByteUnchanged:
-    def test_t_f1_every_family_at_the_base_matches_the_golden(self) -> None:
+    def test_t_f1_every_family_at_the_base_matches_the_golden(self, short_base: Path) -> None:
         """Detects any change to a pre-existing generated family's ``_latest`` SQL (both
         as-of modes), record dump (so a COVERED evidence digest), output columns or DEM-1
         engine output against the golden written on the untouched base (master
         ``4c4b8ec``), and any family vanishing. A non-``None`` default on ``alt_formats``
         or ``overlap_group`` changes every dump and fails here."""
         golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
-        current = json.loads(dump(generated_pin()))
+        current = json.loads(dump(generated_pin(short_base)))
         for section in ("sql", "records", "columns", "engine"):
             assert set(golden[section]) <= set(current[section]), section
             for key, value in golden[section].items():
@@ -863,12 +851,12 @@ class TestGroupOverlap:
 
 
 class TestCommittedGroup:
-    def test_t_f4_e_exactly_the_four_typed_families_form_the_group(self) -> None:
+    def test_t_f4_e_exactly_the_four_typed_families_form_the_group(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
         """Detects the raw 2014 family joining the typed group (FM-10), a typed family left
         out of it (its month edges unchecked), or any other record carrying a group (in a
         fresh interpreter, so nothing collection imported can mask it)."""
-        import subprocess
-        import sys
         import textwrap
 
         code = textwrap.dedent(
@@ -884,14 +872,5 @@ class TestCommittedGroup:
             print("OK")
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=300,
-            check=False,
-        )
-        assert result.returncode == 0, (result.stdout, result.stderr)
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout

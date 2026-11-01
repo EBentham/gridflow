@@ -11,25 +11,12 @@
     {
       "key": "da_constraint_flows_limits",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Constraint Group",
-              "Date_ Time GMT_BST",
-              "Limit_MW",
-              "Flow_MW"
-            ],
             "columns": [
               {
                 "source": "Constraint Group",
@@ -55,10 +42,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -79,14 +63,7 @@
     },
     {
       "key": "da_constraint_flows_limits_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

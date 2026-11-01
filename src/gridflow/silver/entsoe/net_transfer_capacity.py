@@ -2,84 +2,43 @@
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
 from typing import ClassVar
 
 import polars as pl
 
 from gridflow.schemas.entsoe import EntsoeNetTransferCapacity
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-
-logger = logging.getLogger(__name__)
 
 
 class NetTransferCapacityTransformer(EntsoeXmlTransformer):
     """Transform ENTSO-E net transfer capacity XML from bronze to silver.
 
-    A61/A01 (NTC day-ahead).  Fetched per zone-pair (like cross_border_flows)
-    so each bronze file contains data for a specific in_domain / out_domain
-    pair.  The ``quantity`` value is the NTC in MW.
+    A61/A01 (NTC day-ahead), fetched per zone pair like cross_border_flows,
+    so each bronze file holds one in_domain / out_domain pair. The
+    ``quantity`` value is the NTC in MW.
     """
 
     source = "entsoe"
     dataset = "net_transfer_capacity"
     schema_cls = EntsoeNetTransferCapacity
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "in_area_code", "out_area_code")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """B4 (N-9): FILTER_SAFE, vault-recorded live GB-FR: window-bounded
     single Point, curveType A03 (R3-RESEARCH.md:53); see
     ADR-026 Appendix A."""
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        required = ["timestamp_utc", "value", "in_domain", "out_domain"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error("Missing required columns in net_transfer_capacity: %s", missing)
-            return pl.DataFrame()
-
-        df = raw_df.rename(
-            {
-                "value": "ntc_mw",
-                "in_domain": "in_area_code",
-                "out_domain": "out_area_code",
-            }
-        )
-
-        if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
-
-        df = df.with_columns(pl.col("ntc_mw").cast(pl.Float64))
-
-        df = df.unique(subset=["timestamp_utc", "in_area_code", "out_area_code"], keep="last")
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        # ADR-025 P1.1: carry the document publication vintage (createdDateTime) as published_at.
-        df = with_published_at(df, dataset=self.dataset)
-
-        output_cols = [
-            "timestamp_utc",
-            "in_area_code",
-            "out_area_code",
-            "ntc_mw",
-            "resolution",
-            "published_at",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc", "in_area_code", "out_area_code")
+    COLUMN_MAP = {"value": "ntc_mw", "in_domain": "in_area_code", "out_domain": "out_area_code"}
+    REQUIRED = ("timestamp_utc", "ntc_mw", "in_area_code", "out_area_code")
+    CASTS = {"ntc_mw": pl.Float64()}
+    OUTPUT_COLS = (
+        "timestamp_utc",
+        "in_area_code",
+        "out_area_code",
+        "ntc_mw",
+        "resolution",
+        "published_at",
+    )
+    SORT = ("timestamp_utc", "in_area_code", "out_area_code")
 
 
 register_transformer("entsoe", "net_transfer_capacity", NetTransferCapacityTransformer)
