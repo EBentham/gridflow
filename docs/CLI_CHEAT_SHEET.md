@@ -275,9 +275,9 @@ python -m gridflow status
 
 ## File Locations
 
-Default `<data-root>` is repo-local `data/`. Override it with
-`GRIDFLOW_DATA_DIR` and `GRIDFLOW_DUCKDB_PATH` in the process environment or an
-untracked repo-root `.env`.
+Default `<data-root>` is `~/gridflow-data`. Override it with `GRIDFLOW_DATA_DIR`
+in the process environment or a `.env` in (or above) the folder you run from;
+the catalogue follows it unless `GRIDFLOW_DUCKDB_PATH` is set.
 
 | What | Path |
 |------|------|

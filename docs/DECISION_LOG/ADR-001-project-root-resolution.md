@@ -1,8 +1,20 @@
 # ADR-001 — Project root resolution via git-common-dir
 
-**Status:** Accepted
+**Status:** Superseded in part (2026-11-01)
 **Date:** 2026-05-10
 **Phase:** Companion to gridflow_models F11 / WBH-04
+
+## Superseded in part (2026-11-01)
+
+Anchoring data paths to the git checkout breaks once gridflow installs as a
+package: the installed file has no checkout, so relative paths landed in
+whichever repo or folder installed it. The data root is now one variable,
+`GRIDFLOW_DATA_DIR`, defaulting to `~/gridflow-data` on every OS; the
+catalogue and logs default to `<data root>/gridflow.duckdb` and
+`<data root>/logs`; relative values resolve against the current folder. A
+stable absolute default still fixes the bug below (every folder, kernel and
+downstream repo finds the same data) without asking where the code lives.
+`_project_root()` stays only for the `reset`/`prune` containment guard.
 
 ## Context
 

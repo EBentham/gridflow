@@ -528,7 +528,10 @@ def status() -> None:
     settings = load_settings()
 
     if not settings.pipeline.duckdb_path.exists():
-        typer.echo("No DuckDB catalogue found. Run 'gridflow init' first.")
+        typer.echo(
+            f"No DuckDB catalogue found at {settings.pipeline.duckdb_path}. "
+            "Run 'gridflow init' first, or set GRIDFLOW_DATA_DIR to your data root."
+        )
         raise typer.Exit(1)
 
     con = get_connection(settings.pipeline.duckdb_path, read_only=True)

@@ -276,11 +276,12 @@ Two YAML files:
 - **`config/settings.yaml`** — optional override, read from the current folder: lookback defaults, quality thresholds
 - **`src/gridflow/config/sources.yaml`** — ships in the package: every source with base URLs, auth, rate limits, and per-dataset endpoint configs
 
-The default data root is repo-local `data/`, with the DuckDB catalogue at
-`data/gridflow.duckdb`. Override it with `GRIDFLOW_DATA_DIR` and
-`GRIDFLOW_DUCKDB_PATH` in the process environment or an untracked repo-root
-`.env`; absolute paths pass through unchanged. Precedence is process
-environment, then repo-root `.env`, then `config/settings.yaml`, then built-in
+The default data root is `~/gridflow-data`, with the DuckDB catalogue at
+`<data root>/gridflow.duckdb` and logs in `<data root>/logs`. Override it with
+`GRIDFLOW_DATA_DIR` in the process environment or a `.env` in (or above) the
+folder you run from; `GRIDFLOW_DUCKDB_PATH` and `GRIDFLOW_LOG_DIR` are optional.
+Relative paths resolve against the current folder. Precedence is the
+environment (including `.env`), then `config/settings.yaml`, then built-in
 defaults.
 
 API keys are resolved from environment variables (e.g. `ENTSOE_API_KEY`, `GIE_API_KEY`). Sources without auth (Elexon, Open-Meteo, ENTSO-G, NESO) work out of the box.
