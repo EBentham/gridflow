@@ -29,9 +29,7 @@ def _non_python_files() -> list[PurePosixPath]:
     return sorted(
         PurePosixPath(path.relative_to(PACKAGE_ROOT.parent).as_posix())
         for path in PACKAGE_ROOT.rglob("*")
-        if path.is_file()
-        and "__pycache__" not in path.parts
-        and path.suffix not in {".py", ".pyc"}
+        if path.is_file() and "__pycache__" not in path.parts and path.suffix not in {".py", ".pyc"}
     )
 
 
