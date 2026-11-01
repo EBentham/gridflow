@@ -43,6 +43,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "gridflow.connectors.neso_data_portal.registry" = ["*.json"]
+"gridflow.gold" = ["views/*.sql", "views/held/*.sql"]
 
 [tool.ruff]
 target-version = "py311"
