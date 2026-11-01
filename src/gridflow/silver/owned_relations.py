@@ -18,8 +18,6 @@ from gridflow.silver.base import BaseSilverTransformer
 if TYPE_CHECKING:
     from pathlib import Path
 
-    import polars as pl
-
 __all__ = ["RegisteredRelationsTransformer", "SupportRelation"]
 
 
@@ -55,8 +53,3 @@ class RegisteredRelationsTransformer(BaseSilverTransformer):
     @abstractmethod
     def support_relations(cls, data_dir: Path) -> tuple[SupportRelation, ...]:
         """The relations this family's ``_latest`` view reads, under ``data_dir``."""
-
-    @classmethod
-    @abstractmethod
-    def completions(cls, data_dir: Path) -> pl.LazyFrame:
-        """The completion records a ``whole_capture`` selection needs."""
