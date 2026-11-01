@@ -65,6 +65,9 @@ so the existing cross-repo sync test remains valid.
 The `weather` serving alias is documented as a pre-existing SDK
 compatibility misnomer. It maps to `silver_elexon_itsdo`, which is GB
 Initial Transmission System Demand Outturn, not meteorological weather.
+(2026-11-01: `weather` now maps to `silver_open_meteo_historical_demand`,
+the Open-Meteo population-centre weather the method was named for. Against
+ITSDO, which has no `location` column, every call raised.)
 
 The decommissioned Elexon `bod` transformer remains excluded. It is not
 registered by `src/gridflow/silver/elexon/__init__.py`, but the retained
