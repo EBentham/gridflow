@@ -11,8 +11,10 @@ the real command and reads the persisted ``quality_reports.passed`` outcome.
 
 from __future__ import annotations
 
+import tempfile
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
@@ -29,7 +31,6 @@ from gridflow.storage.parquet import write_parquet
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-    from pathlib import Path
 
     import pytest
 
@@ -307,3 +308,46 @@ def test_gap_check_measures_a_revised_forecast_as_one_series(
         write_parquet(df, data_dir / "silver" / "elexon" / "tsdf" / "part-0.parquet")
 
     assert _gap_results(tmp_path, monkeypatch, write) == [True]
+
+
+# --- (A4) the checks run in DuckDB under the configured memory limit ---------
+
+
+def test_checks_run_in_duckdb_under_the_configured_memory_limit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Each check runs on a DuckDB connection capped at the configured limit.
+
+    Collecting whole datasets into Polars ran ``quality --all`` out of memory on
+    the live catalogue. Under the cap DuckDB spills a large aggregation to a
+    temporary directory, which the run removes when it finishes.
+    """
+    from gridflow.quality import checks
+
+    cfg = _make_settings(tmp_path, QualityConfig(duckdb_memory_limit="1GiB"))
+    _write_silver_with_null_rate(cfg.pipeline.data_dir)
+    monkeypatch.setattr(settings_module, "load_settings", lambda: cfg)
+    seen: list[tuple[str, str, bool]] = []
+    check_row_count = checks.check_row_count
+
+    def spy(rel: duckdb.DuckDBPyRelation, *args: Any, **kwargs: Any) -> checks.QualityResult:
+        seen.append(
+            rel.query(
+                "probe",
+                "SELECT current_setting('memory_limit'), current_setting('temp_directory'), "
+                "current_setting('preserve_insertion_order')",
+            ).fetchone()
+        )
+        return check_row_count(rel, *args, **kwargs)
+
+    monkeypatch.setattr(checks, "check_row_count", spy)
+
+    result = runner.invoke(app, ["quality", "--all"])
+
+    assert result.exit_code == 0, result.output
+    assert len(seen) == 1
+    memory_limit, spill_dir, preserve_insertion_order = seen[0]
+    assert memory_limit == "1.0 GiB"
+    assert Path(spill_dir).parent == Path(tempfile.gettempdir())
+    assert not Path(spill_dir).exists()
+    assert preserve_insertion_order is False

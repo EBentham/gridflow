@@ -29,6 +29,7 @@ from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import duckdb
 import httpx
 import polars as pl
 import pytest
@@ -1251,8 +1252,8 @@ async def test_two_identical_captures_duplicate_in_the_base_view_only(
 
     **Observed while writing this, and reported rather than asserted away:**
     FM-11's prose says `gridflow quality`'s duplicate check surfaces these
-    loudly. It does not -- `cli.quality` applies `select_latest_vintage` before
-    the check, which collapses the tie to one row per coarse key, so the
+    loudly. It does not -- `cli.quality` checks the `_latest` view, whose
+    latest-vintage selection collapses the tie to one row per coarse key, so the
     entity-key check afterwards can never see them. The duplication is real and
     visible in the base view; only the stated DETECTOR is wrong.
     """
@@ -1330,9 +1331,9 @@ async def test_two_identical_captures_duplicate_in_the_base_view_only(
         how="vertical",
     )
     key = list(transformer.ENTITY_KEY_COLUMNS)
-    assert not check_duplicates(frame, key).passed
+    assert not check_duplicates(duckdb.from_arrow(frame), key).passed
     projected = select_latest_vintage(frame.lazy(), LATEST_VIEW_SPECS[(SOURCE, DATASET)]).collect()
-    assert check_duplicates(projected, key).passed
+    assert check_duplicates(duckdb.from_arrow(projected), key).passed
 
 
 # --------------------------------------------------------------------------- #

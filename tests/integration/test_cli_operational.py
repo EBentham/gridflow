@@ -27,8 +27,8 @@ the "Could not query pipeline runs" line for this case.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
@@ -190,6 +190,56 @@ def test_quality_runs_over_small_silver_tree(
         con.close()
     assert count is not None
     assert count[0] >= 1
+
+
+@pytest.mark.integration
+def test_quality_never_collects_a_datasets_rows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """quality checks each dataset in DuckDB instead of collecting its rows into Polars.
+
+    Collecting whole datasets ran ``quality --all`` on the live catalogue out of
+    memory (a native crash, exit 139): NESO portal families such as
+    system_frequency_gmt_csv hold over 100 million rows. An unregistered
+    dataset on the settlement grain takes the legacy key, so the row-count,
+    null-rate, gap and duplicate checks all run here.
+    """
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    _isolated_env(data_dir, tmp_path, monkeypatch)
+    start = datetime(2024, 1, 15, tzinfo=UTC)
+    half_hour = start + timedelta(minutes=30)
+    _stage_silver_parquet(
+        data_dir,
+        "elexon",
+        "settlement_series_probe",
+        pl.DataFrame(
+            {
+                "settlement_date": ["2024-01-15"] * 3,
+                "settlement_period": [1, 2, 2],
+                "timestamp_utc": [start, half_hour, half_hour],
+                "price": [45.5, None, 46.0],
+            }
+        ),
+    )
+    heights: list[int] = []
+    collect = pl.LazyFrame.collect
+
+    def recording_collect(self: pl.LazyFrame, *args: Any, **kwargs: Any) -> pl.DataFrame:
+        out = collect(self, *args, **kwargs)
+        heights.append(out.height)
+        return out
+
+    monkeypatch.setattr(pl.LazyFrame, "collect", recording_collect)
+
+    result = runner.invoke(app, ["quality"])
+
+    assert result.exit_code == 0, result.output
+    # The repeated period is both a zero interval and a duplicate key.
+    assert "[elexon/settlement_series_probe] time_series_gaps" in result.output
+    assert "1 duplicate key combinations found" in result.output
+    assert "price: 33.33% null/NaN" in result.output
+    assert max(heights, default=0) <= 1
 
 
 @pytest.mark.integration

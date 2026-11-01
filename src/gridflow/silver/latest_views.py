@@ -6,10 +6,11 @@ is the single home for the "current best value" selection, rendered two ways
 (guarded by a parity test):
 
 - :func:`latest_view_sql` — a DuckDB ``QUALIFY ROW_NUMBER()`` view for catalogue
-  consumers (``silver_{source}_{dataset}_latest``).
+  consumers (``silver_{source}_{dataset}_latest``) and the quality CLI, which
+  builds the same view on its own in-memory connection.
 - :func:`select_latest_vintage` — the same selection as a Polars transform for
-  Polars-native readers (the quality CLI), which must not depend on the DuckDB
-  catalogue file.
+  Polars-native readers (gold builds, NESO reconcile), which must not depend on
+  the DuckDB catalogue file.
 
 R1-A/F-18 correction: the two renderers make the SAME selection and the SAME
 skip decision (both delegate to :func:`_resolve_selection`, so the decision is
@@ -19,11 +20,12 @@ REACT to a skip. This is a deliberate, documented asymmetry, not a bug:
 - :func:`latest_view_sql` returns ``None`` on a skip, so ``storage.duckdb``
   DROPs the ``_latest`` projection entirely — fail-closed: the DuckDB
   consumer gets no surface at all, and any gold view reading it fails to
-  register (raise under strict/pytest mode, WARNING in production).
-- :func:`select_latest_vintage` returns the frame UNCHANGED (all vintages) on
-  a skip, with a warning — so the quality CLI's checks then see the raw
+  register (raise under strict/pytest mode, WARNING in production). The
+  quality CLI checks the base view instead, so its checks see the raw
   vintages and surface the drift loudly (e.g. a false duplicate-key failure)
   rather than crashing the whole run.
+- :func:`select_latest_vintage` returns the frame UNCHANGED (all vintages) on
+  a skip, with a warning, for the same reason.
 
 A present rank column counts as a usable ordering term ON ITS OWN: a
 rank-only schema (key columns + a rank column, no ``available_at`` at all)
@@ -419,9 +421,9 @@ def select_latest_vintage(
     :func:`latest_view_sql` / :func:`latest_select_sql` (all delegate to
     :func:`_resolve_selection`, parity-tested) — they diverge only in how they
     REACT to a skip: this function returns the frame unchanged (all vintages)
-    with a warning, rather than dropping anything, so downstream checks (the
-    quality CLI) then see the raw vintages and surface the drift loudly rather
-    than crashing the whole run.
+    with a warning, rather than dropping anything, so downstream checks then
+    see the raw vintages and surface the drift loudly rather than crashing the
+    whole run.
 
     Args:
         lf: Frame carrying all vintages of one dataset.

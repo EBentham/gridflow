@@ -56,7 +56,6 @@ from gridflow.silver.neso_data_portal.completion import (
     is_valid,
     read_completion,
     record_completion,
-    scan_completions,
     write_failure,
 )
 from gridflow.silver.neso_data_portal.readers import read_children
@@ -217,11 +216,6 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
                 COMPLETION_RELATION, completion_dir(data_dir), COMPLETION_DUCKDB_COLUMNS
             ),
         )
-
-    @classmethod
-    def completions(cls, data_dir: Path) -> pl.LazyFrame:
-        """Every completion record under ``data_dir`` (the quality CLI's input)."""
-        return scan_completions(data_dir)
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Not used (ADR-034 P-6): the engine reads per capture in ``run_captures``."""

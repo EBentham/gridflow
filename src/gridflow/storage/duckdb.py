@@ -287,12 +287,7 @@ def _register_owned_relations(
         has none, in registration order.
     """
     paths = PathBuilder(data_dir)
-    seen: set[str] = set()
-    for key in sorted(owners):
-        for support in owners[key].support_relations(data_dir):
-            if support.name not in seen:
-                seen.add(support.name)
-                _register_view_or_empty(con, support.name, support.directory, support.columns)
+    _register_support_relations(con, data_dir, owners)
 
     bases: list[tuple[str, LatestViewSpec | None]] = []
     for source, dataset in sorted(owners):
@@ -303,6 +298,71 @@ def _register_owned_relations(
         )
         bases.append((view_name, LATEST_VIEW_SPECS.get((source, dataset))))
     return bases
+
+
+def _register_support_relations(
+    con: duckdb.DuckDBPyConnection,
+    data_dir: Path,
+    owners: dict[tuple[str, str], type[RegisteredRelationsTransformer]],
+) -> None:
+    """Register every owner's support relations (a ``_latest`` may read them), once per name."""
+    seen: set[str] = set()
+    for key in sorted(owners):
+        for support in owners[key].support_relations(data_dir):
+            if support.name not in seen:
+                seen.add(support.name)
+                _register_view_or_empty(con, support.name, support.directory, support.columns)
+
+
+def quality_connection(
+    data_dir: Path, memory_limit: str, spill_dir: Path
+) -> duckdb.DuckDBPyConnection:
+    """An in-memory connection for ``gridflow quality``, capped at ``memory_limit``.
+
+    Past the cap DuckDB spills a large aggregation to ``spill_dir`` instead of
+    failing or growing the process; the largest NESO portal families hold over
+    100 million rows. The support relations are registered so a whole-capture
+    ``_latest`` view can be built on it. The catalogue file is never opened, so
+    a long run holds no lock on it.
+    """
+    con = duckdb.connect(
+        config={
+            "memory_limit": memory_limit,
+            "temp_directory": str(spill_dir),
+            # The checks only aggregate; keeping row order would cost memory.
+            "preserve_insertion_order": False,
+        }
+    )
+    try:
+        con.execute("SET enable_progress_bar = false")
+        _register_support_relations(con, data_dir, _registered_relation_owners())
+    except BaseException:
+        con.close()
+        raise
+    return con
+
+
+def register_check_relation(
+    con: duckdb.DuckDBPyConnection, source: str, dataset: str, directory: Path
+) -> duckdb.DuckDBPyRelation:
+    """Register a silver dataset's view and its ``_latest`` view as the catalogue does.
+
+    Returns the relation the quality checks read: the ``_latest`` view, or the
+    base view when the dataset has no spec or its selection is skipped
+    (:func:`latest_view_sql` logs why), so the checks then see every vintage
+    and surface the drift, as they did before.
+    """
+    view = f"silver_{source}_{dataset}"
+    _create_parquet_view(con, view, str(directory / _SAFE_PARQUET_GLOB).replace("\\", "/"))
+    spec = LATEST_VIEW_SPECS.get((source, dataset))
+    latest = f"{view}_latest"
+    sql = None
+    if spec is not None:
+        sql = latest_view_sql(view, latest, spec, available_columns=set(con.view(view).columns))
+    if sql is None:
+        return con.view(view)
+    con.execute(sql)
+    return con.view(latest)
 
 
 def _register_latest_views(
@@ -400,6 +460,15 @@ def _is_benign_absent_parquet(exc: Exception) -> bool:
     return "no files found" in msg or "no files that match" in msg
 
 
+def _create_parquet_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
+    """``CREATE OR REPLACE VIEW`` over the Parquet files ``pattern`` matches."""
+    con.execute(
+        f"CREATE OR REPLACE VIEW {_quote_identifier(view_name)} AS "
+        f"SELECT * FROM read_parquet({_quote_string_literal(pattern)}, "
+        f"hive_partitioning=true, union_by_name=true)"
+    )
+
+
 def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> bool:
     """Create a view over the Parquet files, if any have been written.
 
@@ -413,11 +482,7 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
         Whether the view was created; ``False`` only for a swallowed failure.
     """
     try:
-        con.execute(
-            f"CREATE OR REPLACE VIEW {_quote_identifier(view_name)} AS "
-            f"SELECT * FROM read_parquet({_quote_string_literal(pattern)}, "
-            f"hive_partitioning=true, union_by_name=true)"
-        )
+        _create_parquet_view(con, view_name, pattern)
         logger.info(f"Registered view: {view_name}")
     except Exception as e:
         if _is_strict_mode():

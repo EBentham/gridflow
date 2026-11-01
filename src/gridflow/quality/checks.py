@@ -1,15 +1,28 @@
-"""Reusable data quality check functions."""
+"""Reusable data quality check functions.
+
+The checks ``gridflow quality`` runs reduce a DuckDB relation to a few numbers
+in SQL instead of collecting the dataset: NESO portal families hold over 100
+million rows, and collecting them into Polars ran the command out of memory.
+Under the connection's memory limit DuckDB spills a large aggregation to disk.
+"""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
+from gridflow.silver.latest_views import _quote_identifier
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    import duckdb
+
+# The name each check's SQL reads its relation under.
+_INPUT = "quality_check_input"
+_FLOAT_TYPES = frozenset({"DOUBLE", "FLOAT"})
 
 
 @dataclass
@@ -24,52 +37,72 @@ class QualityResult:
     detail: str = ""
 
 
-def check_null_rate(
-    df: pl.DataFrame,
-    column: str,
+def _one_row(rel: duckdb.DuckDBPyRelation, sql: str) -> tuple[Any, ...]:
+    """Run ``sql``, which reads ``rel`` as ``_INPUT``, and return its single row."""
+    row = rel.query(_INPUT, sql).fetchone()
+    assert row is not None  # every query here is an ungrouped aggregate
+    return row
+
+
+def check_null_rates(
+    rel: duckdb.DuckDBPyRelation,
+    columns: Sequence[str],
     source: str = "",
     dataset: str = "",
     max_rate: float = 0.05,
-) -> QualityResult:
-    """Flag if null rate exceeds threshold."""
-    if column not in df.columns:
-        return QualityResult(
-            check_name="null_rate",
-            dataset=dataset,
-            source=source,
-            passed=False,
-            metric=1.0,
-            detail=f"Column '{column}' not found in DataFrame",
-        )
+) -> list[QualityResult]:
+    """Flag each column whose null rate exceeds the threshold, in one pass over ``rel``."""
+    types = dict(zip(rel.columns, (str(t) for t in rel.types), strict=True))
+    present = [c for c in columns if c in types]
+    missing_exprs = []
+    for column in present:
+        col = _quote_identifier(column)
+        expr = f"count(*) - count({col})"
+        # count() counts float NaN as a value. An upstream API emitting an
+        # all-NaN numeric column would otherwise be reported as 0% null and pass.
+        if types[column] in _FLOAT_TYPES:
+            expr += f" + count(*) FILTER (WHERE isnan({col}))"
+        missing_exprs.append(expr)
+    select = ", ".join(["count(*)", *missing_exprs])
+    rows, *missing = _one_row(rel, f"SELECT {select} FROM {_INPUT}")
+    missing_by_column = dict(zip(present, missing, strict=True))
 
-    if len(df) == 0:
-        return QualityResult(
-            check_name="null_rate",
-            dataset=dataset,
-            source=source,
-            passed=True,
-            metric=0.0,
-            detail=f"{column}: empty DataFrame",
-        )
-
-    missing = df[column].null_count()
-    # null_count() does NOT count float NaN. An upstream API emitting an
-    # all-NaN numeric column would otherwise be reported as 0% null and pass.
-    if df[column].dtype.is_float():
-        missing += int(df[column].is_nan().sum())
-    null_rate = missing / len(df)
-    return QualityResult(
-        check_name="null_rate",
-        dataset=dataset,
-        source=source,
-        passed=null_rate <= max_rate,
-        metric=null_rate,
-        detail=f"{column}: {null_rate:.2%} null/NaN (threshold: {max_rate:.2%})",
-    )
+    results = []
+    for column in columns:
+        if column not in types:
+            result = QualityResult(
+                check_name="null_rate",
+                dataset=dataset,
+                source=source,
+                passed=False,
+                metric=1.0,
+                detail=f"Column '{column}' not found in DataFrame",
+            )
+        elif rows == 0:
+            result = QualityResult(
+                check_name="null_rate",
+                dataset=dataset,
+                source=source,
+                passed=True,
+                metric=0.0,
+                detail=f"{column}: empty DataFrame",
+            )
+        else:
+            null_rate = missing_by_column[column] / rows
+            result = QualityResult(
+                check_name="null_rate",
+                dataset=dataset,
+                source=source,
+                passed=null_rate <= max_rate,
+                metric=null_rate,
+                detail=f"{column}: {null_rate:.2%} null/NaN (threshold: {max_rate:.2%})",
+            )
+        results.append(result)
+    return results
 
 
 def check_time_series_gaps(
-    df: pl.DataFrame,
+    rel: duckdb.DuckDBPyRelation,
     time_col: str = "timestamp_utc",
     expected_freq_minutes: int = 30,
     source: str = "",
@@ -85,44 +118,50 @@ def check_time_series_gaps(
     - intervals smaller than expected, including zero intervals from duplicate
       timestamps and a switch to a too-frequent cadence.
 
-    The frame is sorted first, so negative intervals cannot occur and are not
-    checked. (Duplicate-key detection beyond the time column is the job of
-    :func:`check_duplicates`.)
+    Intervals are measured in time order, so negative intervals cannot occur
+    and are not checked. Null timestamps sort first, as they did in the Polars
+    check, and every interval touching one is skipped. (Duplicate-key detection
+    beyond the time column is the job of :func:`check_duplicates`.)
 
-    ``group_by`` names the entity columns of a frame holding several series
+    ``group_by`` names the entity columns of a relation holding several series
     (one per fuel type, BM unit, ...): intervals are measured within each
     series, since across them every shared timestamp is a zero interval.
     """
-    if time_col not in df.columns or len(df) < 2:
-        return QualityResult(
-            check_name="time_series_gaps",
-            dataset=dataset,
-            source=source,
-            passed=True,
-            metric=0,
-            detail="Insufficient data for gap detection",
-        )
+    insufficient = QualityResult(
+        check_name="time_series_gaps",
+        dataset=dataset,
+        source=source,
+        passed=True,
+        metric=0,
+        detail="Insufficient data for gap detection",
+    )
+    if time_col not in rel.columns:
+        return insufficient
 
-    interval = pl.col(time_col).diff()
+    time = _quote_identifier(time_col)
+    partition = ""
     if group_by:
-        interval = interval.over(group_by)
-    diffs = df.sort(time_col).select(interval).to_series().drop_nulls()
-
-    # Use stdlib timedelta values so the comparison stays in Series space.
-    # pl.duration(...) returns an Expr, which Series.filter cannot consume
-    # (raises TypeError under Polars 1.40.1).
-    expected = timedelta(minutes=expected_freq_minutes)
-    tolerance = timedelta(minutes=1)
-    anomalies = diffs.filter((diffs > expected + tolerance) | (diffs < expected - tolerance))
+        partition = f"PARTITION BY {', '.join(_quote_identifier(c) for c in group_by)} "
+    step = f"epoch_ns({time}) - lag(epoch_ns({time})) OVER ({partition}ORDER BY {time} NULLS FIRST)"
+    minute_ns = 60 * 10**9
+    upper = (expected_freq_minutes + 1) * minute_ns
+    lower = (expected_freq_minutes - 1) * minute_ns
+    rows, anomalies = _one_row(
+        rel,
+        f"SELECT count(*), count(*) FILTER (WHERE step > {upper} OR step < {lower}) "
+        f"FROM (SELECT {step} AS step FROM {_INPUT})",
+    )
+    if rows < 2:
+        return insufficient
 
     return QualityResult(
         check_name="time_series_gaps",
         dataset=dataset,
         source=source,
-        passed=len(anomalies) == 0,
-        metric=float(len(anomalies)),
+        passed=anomalies == 0,
+        metric=float(anomalies),
         detail=(
-            f"Found {len(anomalies)} intervals deviating from "
+            f"Found {anomalies} intervals deviating from "
             f"{expected_freq_minutes}min (gaps or too-frequent/duplicate rows)"
         ),
     )
@@ -163,30 +202,31 @@ def check_range(
 
 
 def check_row_count(
-    df: pl.DataFrame,
+    rel: duckdb.DuckDBPyRelation,
     min_rows: int = 1,
     source: str = "",
     dataset: str = "",
 ) -> QualityResult:
-    """Check that DataFrame has at least min_rows."""
+    """Check that the relation has at least min_rows."""
+    (rows,) = _one_row(rel, f"SELECT count(*) FROM {_INPUT}")
     return QualityResult(
         check_name="row_count",
         dataset=dataset,
         source=source,
-        passed=len(df) >= min_rows,
-        metric=float(len(df)),
-        detail=f"{len(df)} rows (minimum: {min_rows})",
+        passed=rows >= min_rows,
+        metric=float(rows),
+        detail=f"{rows} rows (minimum: {min_rows})",
     )
 
 
 def check_duplicates(
-    df: pl.DataFrame,
+    rel: duckdb.DuckDBPyRelation,
     key_columns: list[str],
     source: str = "",
     dataset: str = "",
 ) -> QualityResult:
-    """Check for duplicate rows based on key columns."""
-    missing = [c for c in key_columns if c not in df.columns]
+    """Check for duplicate rows based on key columns; rows sharing a null key count."""
+    missing = [c for c in key_columns if c not in rel.columns]
     if missing:
         return QualityResult(
             check_name="duplicates",
@@ -196,12 +236,16 @@ def check_duplicates(
             detail=f"Key columns not found: {missing}",
         )
 
-    dupes = df.group_by(key_columns).len().filter(pl.col("len") > 1)
+    keys = ", ".join(_quote_identifier(c) for c in key_columns)
+    (dupes,) = _one_row(
+        rel,
+        f"SELECT count(*) FROM (SELECT 1 FROM {_INPUT} GROUP BY {keys} HAVING count(*) > 1)",
+    )
     return QualityResult(
         check_name="duplicates",
         dataset=dataset,
         source=source,
-        passed=len(dupes) == 0,
-        metric=float(len(dupes)),
-        detail=f"{len(dupes)} duplicate key combinations found",
+        passed=dupes == 0,
+        metric=float(dupes),
+        detail=f"{dupes} duplicate key combinations found",
     )
