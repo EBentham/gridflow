@@ -20,6 +20,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "fastexcel>=0.21.0",
     "certifi>=2024.7.4",  # imported by connectors/base.py for its CA bundle, not only via httpx
+    "truststore>=0.10",  # connectors trust the OS certificate store, as behind a corporate proxy
 ]
 
 [project.optional-dependencies]
