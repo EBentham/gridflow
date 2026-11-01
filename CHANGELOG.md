@@ -83,9 +83,9 @@ October 2026 code review of the connectors, the silver layer and the CLI.
   UOU2T14D, TSDFD, INDDEM, INDGEN, TSDF, LOLPDRM, IMBALNGC, MELNGC and the ENTSO-E load,
   generation and wind and solar forecasts keep every publication, read through their `_latest`
   views. PN and BOAL keep each segment's `time_from`/`time_to`, IMBALNGC and MELNGC their
-  `boundary`, SOSO its `trader_unit`, and PN units known only by their National Grid id. The
-  five ENTSO-E datasets that map vendor codes key on the raw codes, so two unknown codes stay
-  two rows.
+  `boundary`, SOSO its `trader_unit`, and PN units known only by their National Grid id.
+  ENTSO-E imbalance volume, imbalance prices, activated balancing prices and contracted reserves
+  key on the raw vendor codes, so two unknown codes stay two rows.
 - **Elexon date-only datasets are stamped at the start of the UK settlement day.** TSDFD,
   FOU2T14D and UOU2T14D stamp a forecast date at local midnight, as INDOD and NDFD already did,
   so in summer a day's row sits at 23:00 UTC the day before. SOSO keeps the vendor's
@@ -93,7 +93,8 @@ October 2026 code review of the connectors, the silver layer and the CLI.
 - **A bronze body that cannot be parsed refuses its date.** Every transformer used to skip it
   with a warning and write the rest, so a run could report success with fewer rows. Now nothing
   is written for that date, the old file stays, the rest of the range still transforms, and the
-  dataset ends `failed` naming the file.
+  dataset ends `failed` naming the file. Elexon system prices is the exception: each body is its
+  own vintage file, so a bad one is still skipped with a warning.
 - **A reingest stamps `available_at` from the bronze bodies it actually read**, so a past date
   no longer gets an older or newer file's availability time.
 - **NESO daily wind availability, historic generation mix and the embedded wind and solar
@@ -109,8 +110,8 @@ October 2026 code review of the connectors, the silver layer and the CLI.
 - **API keys come only from each source's `api_key_env`** in `sources.yaml` (`ENTSOE_API_KEY`,
   `GIE_API_KEY`).
 - **Retries and pacing.** Connectors retry only 408, 429 and 5xx responses, so other 4xx errors
-  fail at once; the NESO portal retries a temporary DNS failure. GIE requests are paced to its
-  60 calls a minute, shared across every connector in the process.
+  fail at once (ENTSO-G still retries a 404); the NESO portal retries a temporary DNS failure.
+  GIE requests are paced to its 60 calls a minute, shared across every connector in the process.
 - **Catalogue setup is faster**: every `_latest` view is built from one column query (about 8 s
   less per init on a large catalogue, 3.5 s to 0.6 s on an empty one). Each gold view that fails
   to register logs one WARNING with DuckDB's message.
@@ -166,7 +167,8 @@ October 2026 code review of the connectors, the silver layer and the CLI.
   price and every offer. A null code next to an unknown one no longer fails the outages
   transform.
 - **ENTSO-G**: capacity and CMP records are kept on every gas day they are in force, not only
-  the day they start; `timestamp_utc` is taken per row; the two registers are dated by
+  the day they start, and the vendor's `dataset` and `dataSet` spellings land in one
+  `data_set` column; `timestamp_utc` is taken per row; the two registers are dated by
   `ingested_at`, so a date-range query returns their rows; flow rows with a missing or unknown
   unit are dropped with a warning.
 - **GIE**: AGSI unavailability is typed, keyed and filed under the days each outage overlaps;
