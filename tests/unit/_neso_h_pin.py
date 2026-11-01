@@ -38,7 +38,7 @@ def _engine_digests(short_base: Path) -> dict[str, str]:
 
     out: dict[str, str] = {}
     for key in sorted(SIDECARS):
-        with tempfile.TemporaryDirectory(dir=short_base) as root:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as root:
             data = Path(root)
             _capture(data, key, dem1_body(key))
             get_transformer("neso_data_portal", key, data).run(DAY, run_id="pin")
@@ -86,8 +86,11 @@ def dump(pin: dict[str, Any]) -> str:
     return json.dumps(pin, sort_keys=True, indent=2).replace("\\\\", "/") + "\n"
 
 
-def write_golden() -> Path:
-    """Write :data:`PIN_PATH` from the current tree (run once, on the base)."""
+def write_golden(short_base: Path) -> Path:
+    """Write :data:`PIN_PATH` from the current tree (run once, on the base).
+
+    ``short_base`` is any short directory for the engine runs' data roots.
+    """
     PIN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    PIN_PATH.write_bytes(dump(generated_pin()).encode("utf-8"))
+    PIN_PATH.write_bytes(dump(generated_pin(short_base)).encode("utf-8"))
     return PIN_PATH

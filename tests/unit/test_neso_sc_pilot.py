@@ -235,7 +235,7 @@ def pilot(short_base: Path) -> Iterator[Pilot]:
     """Every ED1 fixture captured with E2's sidecar values, run once, catalogued."""
     with (
         pytest.MonkeyPatch.context() as patch,
-        tempfile.TemporaryDirectory(dir=short_base) as root,
+        tempfile.TemporaryDirectory(prefix="", dir=short_base) as root,
     ):
         patch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
         data = Path(root)
@@ -358,7 +358,7 @@ class TestPilot:
         """Detects a fifth (or re-versioned) file given a guessed edition (FM-3)."""
         monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
         item = BY_FILENAME["fes2025_ed1_v006.csv"]
-        with tempfile.TemporaryDirectory(dir=short_base) as root:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as root:
             data = Path(root)
             capture_id = capture(
                 data, item, raw=body(item.filename), resource_filename="fes2027_ed1_v001.csv"
@@ -502,7 +502,7 @@ class TestLeakageMatrix:
         rows[0][changed] = repr(original_value + 1000.0)
         buffer = io.StringIO()
         csv.writer(buffer, lineterminator="\r\n").writerows([header, *rows])
-        with tempfile.TemporaryDirectory(dir=short_base) as root:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as root:
             data = Path(root)
             ids = {entry.edition: capture(data, entry) for entry in EDITIONS}
             correction = capture(

@@ -666,7 +666,7 @@ class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
         mixed = snapshot(data, LIVE)
         assert mixed["outputs"]
 
-        with tempfile.TemporaryDirectory(dir=short_base) as other:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as other:
             alone = Path(other)
             self._live(alone)
             live(alone).run(DAY, run_id="r")

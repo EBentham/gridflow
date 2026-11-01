@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import json
 import os
 import shutil
@@ -10,7 +9,6 @@ import subprocess
 import sys
 import tempfile
 import textwrap
-import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -121,42 +119,31 @@ def tmp_data_dir(tmp_path: Path) -> Path:
     return tmp_path
 
 
-_SHORT_PARENT_NAME = "gft"
-_STALE_SECONDS = 24 * 3600
-
-
 @pytest.fixture(scope="session")
 def short_base() -> Iterator[Path]:
-    """This session's directory for short data roots, under ``<drive>:/gft``.
+    """This session's directory for short data roots, ``<drive>:/gft<8 chars>``.
 
     A family key appears twice in an engine output path, so the silver and
     completion names pass Windows' 260-character MAX_PATH below pytest's long
-    ``tmp_path``; on Windows the parent sits at the drive root, elsewhere under
-    the system temp. The session removes its directory at the end, and the
-    parent too once no other session uses it. A session killed before its
-    teardown leaves its directory behind, so a directory untouched for a day is
-    removed when the next session starts.
+    ``tmp_path``; on Windows the directory sits at the drive root, elsewhere
+    under the system temp. The session removes it at the end. Only a process
+    killed mid-run leaves it behind, and its ``gft`` name says what it is.
     """
     drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    parent = Path(drive + os.sep if drive else tempfile.gettempdir()) / _SHORT_PARENT_NAME
-    parent.mkdir(exist_ok=True)
-    for stale in parent.iterdir():
-        if stale.stat().st_mtime < time.time() - _STALE_SECONDS:
-            shutil.rmtree(stale, ignore_errors=True)
-    base = Path(tempfile.mkdtemp(prefix="", dir=parent))
+    base = Path(tempfile.mkdtemp(prefix="gft", dir=drive + os.sep if drive else None))
     yield base
     shutil.rmtree(base)
-    with contextlib.suppress(OSError):
-        parent.rmdir()
 
 
 @pytest.fixture
 def short_root(short_base: Path) -> Iterator[Path]:
     """A fresh short data root for one test, removed at teardown.
 
-    The root name is eight characters, so the longest engine path stays under
-    MAX_PATH. Removal errors are not ignored: a root that cannot be removed
-    fails the test instead of being left on the drive.
+    The root is 23 characters on Windows (``C:\\gft<8>\\<8>``), which keeps the
+    longest engine path under MAX_PATH; a directory made under ``short_base``
+    by hand takes ``prefix=""`` for the same reason. Removal errors are not
+    ignored: a root that cannot be removed fails the test instead of being
+    left on the drive.
     """
     root = Path(tempfile.mkdtemp(prefix="", dir=short_base))
     yield root

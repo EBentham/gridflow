@@ -120,7 +120,7 @@ def digest(family: str, short_base: Path) -> dict[str, Any]:
     _package, entry = registry.families[family]
     record = entry.record
     assert record is not None
-    with tempfile.TemporaryDirectory(dir=short_base) as tmp:
+    with tempfile.TemporaryDirectory(prefix="", dir=short_base) as tmp:
         root = Path(tmp)
         write_capture(
             root,
