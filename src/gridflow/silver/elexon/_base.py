@@ -50,8 +50,8 @@ class ElexonTransformer(BaseSilverTransformer):
     to ``Date`` and ``Int32`` without being listed."""
     SETTLEMENT_DATE: ClassVar[str | None] = "settlement_date"
     """The UK settlement day ``timestamp_utc`` is stamped from: the start of the
-    row's ``settlement_period``, or of period 1 when the frame has no period.
-    ``None`` when bronze carries the instant itself."""
+    row's ``settlement_period`` when ``COLUMN_MAP`` maps one and the frame has
+    it, else of period 1. ``None`` when bronze carries the instant itself."""
     OUTPUT_COLS: ClassVar[tuple[str, ...]] = ()
     """The silver columns in order, before ``data_provider`` and ``ingested_at``.
     Those outside ``REQUIRED`` and ``timestamp_utc`` appear only when bronze
@@ -82,13 +82,18 @@ class ElexonTransformer(BaseSilverTransformer):
             logger.error("Missing required columns in %s: %s", self.dataset, missing)
             return pl.DataFrame()
 
+        # Only a period the spec maps counts: a daily dataset stays on period 1
+        # whatever columns its frame happens to carry.
+        has_period = "settlement_period" in self.COLUMN_MAP.values()
         casts = dict(self.CASTS)
         if self.SETTLEMENT_DATE is not None:
-            casts = {self.SETTLEMENT_DATE: pl.Date(), "settlement_period": pl.Int32(), **casts}
+            casts[self.SETTLEMENT_DATE] = pl.Date()
+            if has_period:
+                casts["settlement_period"] = pl.Int32()
         df = df.with_columns([_cast(c, t) for c, t in casts.items() if c in df.columns])
 
         if self.SETTLEMENT_DATE is not None:
-            period = "settlement_period" if "settlement_period" in df.columns else 1
+            period = "settlement_period" if has_period and "settlement_period" in df.columns else 1
             df = df.with_columns(
                 settlement_period_to_utc_expr(self.SETTLEMENT_DATE, period).alias("timestamp_utc")
             )
