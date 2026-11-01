@@ -61,7 +61,11 @@ Bootstrap cell.
 
 `tests/notebooks/test_notebook_static.py` checks that every notebook here
 compiles, imports neither pandas nor the gridflow-models package, and names only
-views the catalogue registers.
+views the catalogue registers. `tests/notebooks/test_notebooks_run.py` runs every
+`NN_*.py` notebook top to bottom against a sample store, a temp data root built
+from the test fixtures, which cover 15 January 2024. It fails on an uncaught
+error, on a `NameError`, `UnboundLocalError` or `AttributeError` in either output
+stream, or when `01_sources.py` shows fewer than 8 of its 11 datasets.
 
 ## Adding a notebook
 
