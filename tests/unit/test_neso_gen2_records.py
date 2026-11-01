@@ -26,8 +26,6 @@ from __future__ import annotations
 import csv
 import io
 import logging
-import os
-import tempfile
 import textwrap
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -45,7 +43,7 @@ from gridflow.silver.neso_data_portal.completion import capture_id_for, read_com
 from gridflow.silver.registry import get_transformer
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -70,21 +68,11 @@ QUESTION = (
 )
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for these catalogues."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="g2", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def body() -> bytes:

@@ -30,11 +30,9 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_dem1_records import _short_base
+from _neso_generic_support import query, write_capture
 
 from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.registry import Held, load_registry
@@ -202,25 +200,17 @@ def pilot_record() -> SchemaRecord:
     return record
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def both_latest(db: Path, data: Path, as_of: datetime | None) -> pl.DataFrame:
     """The catalogue's ``_latest`` (or the parameterised select); asserts SQL = Polars."""
     view = f"silver_{SOURCE}_{PILOT}"
     spec = LATEST_VIEW_SPECS[(SOURCE, PILOT)]
     if as_of is None:
-        sql = _query(db, f'SELECT * FROM "{view}_latest"')
+        sql = query(db, f'SELECT * FROM "{view}_latest"')
     else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
         select = latest_select_sql(view, spec, columns, as_of_param=True)
         assert select is not None
-        sql = _query(db, select, {"as_of": as_of.isoformat()})
+        sql = query(db, select, {"as_of": as_of.isoformat()})
     files = sorted((data / "silver" / SOURCE / PILOT).rglob("[!.]*.parquet"))
     lf = pl.scan_parquet(files, hive_partitioning=False)
     polars = select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
@@ -241,13 +231,11 @@ class Pilot:
 
 
 @pytest.fixture(scope="module")
-def pilot() -> Iterator[Pilot]:
+def pilot(short_base: Path) -> Iterator[Pilot]:
     """Every ED1 fixture captured with E2's sidecar values, run once, catalogued."""
     with (
         pytest.MonkeyPatch.context() as patch,
-        tempfile.TemporaryDirectory(
-            prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root,
+        tempfile.TemporaryDirectory(dir=short_base) as root,
     ):
         patch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
         data = Path(root)
@@ -364,13 +352,13 @@ class TestPilot:
         assert report.gaps == ()
         assert "SUMMARY overlap 0" in report.lines()
 
-    def test_t_sc5_g_an_unmapped_filename_fails(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_t_sc5_g_an_unmapped_filename_fails(
+        self, short_base: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Detects a fifth (or re-versioned) file given a guessed edition (FM-3)."""
         monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
         item = BY_FILENAME["fes2025_ed1_v006.csv"]
-        with tempfile.TemporaryDirectory(
-            prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root:
+        with tempfile.TemporaryDirectory(dir=short_base) as root:
             data = Path(root)
             capture_id = capture(
                 data, item, raw=body(item.filename), resource_filename="fes2027_ed1_v001.csv"
@@ -502,7 +490,7 @@ class TestLeakageMatrix:
                 assert clocks.filter(pl.col("capture_written_at") <= as_of).height == 0
 
     def test_t_sc6_a_correction_is_served_only_from_its_vintage(
-        self, monkeypatch: pytest.MonkeyPatch
+        self, short_base: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Detects a correction of one edition leaking into an as-of before its vintage, the
         original surviving after it, or another edition disturbed by it."""
@@ -514,9 +502,7 @@ class TestLeakageMatrix:
         rows[0][changed] = repr(original_value + 1000.0)
         buffer = io.StringIO()
         csv.writer(buffer, lineterminator="\r\n").writerows([header, *rows])
-        with tempfile.TemporaryDirectory(
-            prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root:
+        with tempfile.TemporaryDirectory(dir=short_base) as root:
             data = Path(root)
             ids = {entry.edition: capture(data, entry) for entry in EDITIONS}
             correction = capture(

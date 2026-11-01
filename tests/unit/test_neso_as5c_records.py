@@ -26,7 +26,6 @@ from __future__ import annotations
 import copy
 import json
 import re
-import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -40,7 +39,7 @@ from _container_support import (  # noqa: F401 - forbid_zipfile_reads is a fixtu
     lineage_workbook,
     zip_bytes,
 )
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import install_generated, package_doc, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -56,8 +55,6 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.registry import get_transformer
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gridflow.connectors.neso_data_portal.registry import Registry
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -165,19 +162,11 @@ ATLAS: list[tuple[str, str, int, int, int, str]] = [
 
 
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short tmp data root; transformer modules imported under the real registry."""
     pipeline_runner.import_transformers()
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(prefix="c", ignore_cleanup_errors=True) as root:
-        yield Path(root)
-
-
-def _package_doc(slug: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads(
-        (REGISTRY_DIR / f"{slug}.json").read_text(encoding="utf-8")
-    )
-    return document
+    return short_root
 
 
 def _record(key: str) -> SchemaRecord:
@@ -209,7 +198,7 @@ def _resource_doc(document: dict[str, Any], resource_id: str) -> dict[str, Any]:
 
 
 def _lineage_capture(data: Path, body: bytes, lineage: dict[str, Any]) -> str:
-    resource = _resource_doc(_package_doc(FFR_PKG), lineage["resource_id"])
+    resource = _resource_doc(package_doc(FFR_PKG), lineage["resource_id"])
     path, _sidecar = write_capture(
         data,
         WB_DIR,
@@ -232,7 +221,7 @@ def _install_lineage(
     monkeypatch: pytest.MonkeyPatch, data: Path, lineage: dict[str, Any], **change: int
 ) -> tuple[Registry, Any]:
     """The committed FFR package with the lineage resource's block cut to its fixture rows."""
-    document = copy.deepcopy(_package_doc(FFR_PKG))
+    document = copy.deepcopy(package_doc(FFR_PKG))
     record = _family_doc(document, WB)["record"]
     (block,) = [b for b in record["xlsx_blocks"] if b["resource_id"] == lineage["resource_id"]]
     block["data_last"] = lineage["header_first"] + 7
@@ -263,7 +252,7 @@ def test_a1_every_workbook_resource_is_dispositioned_on_evidence() -> None:
     tender sheets are SILVER(workbook), TR123 and TR125 (resource and sheet) are HOLDs with the
     plan's reasons under this unit, TR121's empty ``Sheet1`` stays DOC, and nothing in either AS-5
     package still says a record is pending in AS-5."""
-    document = _package_doc(FFR_PKG)
+    document = package_doc(FFR_PKG)
     resources = _workbook_resources(document)
     assert len(resources) == 61
     silver = 0
@@ -282,7 +271,7 @@ def test_a1_every_workbook_resource_is_dispositioned_on_evidence() -> None:
     (tr121,) = [r for r in resources if r["id"].startswith("e692dc29")]
     assert {c["child"]: c["disposition"] for c in tr121["children"]}["Sheet1"] == {"kind": "DOC"}
     for slug in (FFR_PKG, "phase-2-ffr-auction-results-summary"):
-        text = json.dumps(_package_doc(slug), ensure_ascii=False)
+        text = json.dumps(package_doc(slug), ensure_ascii=False)
         assert "records pending in AS-5" not in text, slug
         assert "record pending in AS-5" not in text, slug
 
@@ -343,7 +332,7 @@ def test_a2a_the_block_map_equals_the_atlas() -> None:
 def test_a9_no_workbook_is_covered() -> None:
     """Detects a COVERED grant without the harness proof (I-9): no FFR resource or child is
     COVERED; the 16 vintage-passing nominations are SILVER workbooks."""
-    document = _package_doc(FFR_PKG)
+    document = package_doc(FFR_PKG)
     text = json.dumps(document)
     assert '"COVERED"' not in text
     nominated = ("140", "142", "144", "145", "147", "148", "149", "152", "156", "157", "158")
@@ -448,7 +437,7 @@ def test_a2c_an_unlisted_resource_fails_with_no_fallback(
     """Detects a SILVER workbook read without a declared block (FM-6): removing the resource's
     block fails its capture by name."""
     body, lineage = lineage_workbook("tr122")
-    document = copy.deepcopy(_package_doc(FFR_PKG))
+    document = copy.deepcopy(package_doc(FFR_PKG))
     record = _family_doc(document, WB)["record"]
     record["xlsx_blocks"] = [
         b for b in record["xlsx_blocks"] if b["resource_id"] != lineage["resource_id"]
@@ -641,7 +630,7 @@ def _archive_capture(data: Path, key: str, body: bytes) -> str:
 
 def _p2_containers() -> list[dict[str, Any]]:
     return [
-        r for r in _package_doc(P2_PKG)["resources"] if r["family"] == P2_DIR and r.get("children")
+        r for r in package_doc(P2_PKG)["resources"] if r["family"] == P2_DIR and r.get("children")
     ]
 
 
@@ -847,7 +836,7 @@ def test_a8_reading_the_collided_member_fails_the_whole_capture(
 ) -> None:
     """Detects the duplicate guard bypassed (I-8's fallback): a test-local registry with the
     2019-11-22 child SILVER fails the capture with ``DuplicateEntityKeyError`` and no output."""
-    document = copy.deepcopy(_package_doc(P2_PKG))
+    document = copy.deepcopy(package_doc(P2_PKG))
     (resource,) = [r for r in document["resources"] if r["id"] == ZIP_OF[RU].resource_id]
     for child in resource["children"]:
         child["disposition"] = {"kind": "SILVER", "key": RU}

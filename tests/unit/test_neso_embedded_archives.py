@@ -44,10 +44,15 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import assert_same_output, install_generated, snapshot, write_capture
+from _neso_generic_support import (
+    assert_same_output,
+    install_generated,
+    query,
+    snapshot,
+    write_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
@@ -71,7 +76,7 @@ from gridflow.storage.duckdb import init_catalogue
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
 
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry import Registry, SchemaRecord
@@ -282,12 +287,11 @@ print("OK")
 
 
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root (ADR-036 MAX_PATH margin); gold views out of scope."""
     pipeline_runner.import_transformers()
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(prefix="ef", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def _fixture(name: str) -> bytes:
@@ -637,7 +641,9 @@ class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
         )
         _dump_capture(data, _fixture("dump_2026.csv"))
 
-    def test_a_functional_isolation(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_a_functional_isolation(
+        self, data: Path, short_base: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Detects an archive body reaching the live family's reader, or changing
         its output, when both live on one partition date."""
         seen: list[Path] = []
@@ -660,7 +666,7 @@ class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
         mixed = snapshot(data, LIVE)
         assert mixed["outputs"]
 
-        with tempfile.TemporaryDirectory(prefix="ef", ignore_cleanup_errors=True) as other:
+        with tempfile.TemporaryDirectory(dir=short_base) as other:
             alone = Path(other)
             self._live(alone)
             live(alone).run(DAY, run_id="r")
@@ -728,14 +734,6 @@ def test_ef6_vintage_guards_hold_under_the_owners(
     assert context.published_at is None and context.url_type == "upload"
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def _ids(frame: pl.DataFrame) -> list[str]:
     return sorted(frame["bronze_capture_id"].to_list())
 
@@ -743,11 +741,11 @@ def _ids(frame: pl.DataFrame) -> list[str]:
 def _sql_as_of(db: Path, key: str, as_of: datetime | None) -> list[str]:
     view = f"silver_{SOURCE}_{key}"
     if as_of is None:
-        return _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
-    columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        return _ids(query(db, f'SELECT * FROM "{view}_latest"'))
+    columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
     select = latest_select_sql(view, LATEST_VIEW_SPECS[(SOURCE, key)], columns, as_of_param=True)
     assert select is not None
-    return _ids(_query(db, select, {"as_of": as_of.isoformat()}))
+    return _ids(query(db, select, {"as_of": as_of.isoformat()}))
 
 
 def _polars_as_of(data: Path, key: str, as_of: datetime | None) -> list[str]:
@@ -972,11 +970,11 @@ def test_ef10_owner_outputs_are_typed_and_manifested(
     init_catalogue(db, data)
     for key in (UPLOAD_OWNER, DUMP_OWNER):
         for suffix in ("", "_latest"):
-            (count,) = _query(db, f'SELECT count(*) AS n FROM "silver_{SOURCE}_{key}{suffix}"').row(
+            (count,) = query(db, f'SELECT count(*) AS n FROM "silver_{SOURCE}_{key}{suffix}"').row(
                 0
             )
             assert count > 0, (key, suffix)
-    latest = _query(db, f'SELECT * FROM "silver_{SOURCE}_{UPLOAD_OWNER}_latest"')
+    latest = query(db, f'SELECT * FROM "silver_{SOURCE}_{UPLOAD_OWNER}_latest"')
     targets = _targets(b2024) | _targets(b2025)
     assert latest.height == len(targets)
     assert latest.select("settlement_date", "settlement_period").unique().height == latest.height

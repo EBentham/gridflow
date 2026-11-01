@@ -2,11 +2,15 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import textwrap
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -27,7 +31,7 @@ from gridflow.connectors import base as connector_base
 from gridflow.connectors.base import RawResponse
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Iterator
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(PROJECT_ROOT / ".env", override=False)
@@ -115,6 +119,48 @@ def tmp_data_dir(tmp_path: Path) -> Path:
     for layer in ["bronze", "silver", "gold"]:
         (tmp_path / layer).mkdir()
     return tmp_path
+
+
+_SHORT_PARENT_NAME = "gft"
+_STALE_SECONDS = 24 * 3600
+
+
+@pytest.fixture(scope="session")
+def short_base() -> Iterator[Path]:
+    """This session's directory for short data roots, under ``<drive>:/gft``.
+
+    A family key appears twice in an engine output path, so the silver and
+    completion names pass Windows' 260-character MAX_PATH below pytest's long
+    ``tmp_path``; on Windows the parent sits at the drive root, elsewhere under
+    the system temp. The session removes its directory at the end, and the
+    parent too once no other session uses it. A session killed before its
+    teardown leaves its directory behind, so a directory untouched for a day is
+    removed when the next session starts.
+    """
+    drive = os.path.splitdrive(tempfile.gettempdir())[0]
+    parent = Path(drive + os.sep if drive else tempfile.gettempdir()) / _SHORT_PARENT_NAME
+    parent.mkdir(exist_ok=True)
+    for stale in parent.iterdir():
+        if stale.stat().st_mtime < time.time() - _STALE_SECONDS:
+            shutil.rmtree(stale, ignore_errors=True)
+    base = Path(tempfile.mkdtemp(prefix="", dir=parent))
+    yield base
+    shutil.rmtree(base)
+    with contextlib.suppress(OSError):
+        parent.rmdir()
+
+
+@pytest.fixture
+def short_root(short_base: Path) -> Iterator[Path]:
+    """A fresh short data root for one test, removed at teardown.
+
+    The root name is eight characters, so the longest engine path stays under
+    MAX_PATH. Removal errors are not ignored: a root that cannot be removed
+    fails the test instead of being left on the drive.
+    """
+    root = Path(tempfile.mkdtemp(prefix="", dir=short_base))
+    yield root
+    shutil.rmtree(root)
 
 
 @dataclass(frozen=True)

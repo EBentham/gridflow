@@ -44,20 +44,28 @@ import csv
 import io
 import json
 import logging
-import os
-import tempfile
 import zipfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    tree_bytes,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -71,11 +79,9 @@ from gridflow.connectors.neso_data_portal.registry import (
     load_registry,
 )
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -83,11 +89,6 @@ from gridflow.silver.neso_data_portal.readers import read_csv_body, read_xlsx_bo
 from gridflow.silver.neso_data_portal.reconcile import reconcile
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "constraint_mgmt"
@@ -347,21 +348,11 @@ PACKAGE_FILES = {
 FAMILIES = tuple(PACKAGE_FILES)
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="con", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -400,38 +391,19 @@ def capture(
         if raw is not None
         else ((FIXTURES / meta.fixture).read_bytes() if meta.extension == "xlsx" else body(alias))
     )
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.bronze,
-        body=payload,
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=meta.package,
+        meta,
+        payload,
+        day=DAY,
+        package=meta.package,
         package_id=meta.package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
+        key=meta.bronze,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
         ckan_format=meta.ckan_format,
         extension=meta.extension,
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
 
 
 def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
@@ -439,19 +411,6 @@ def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
     capture_id = capture(data, alias, **kwargs)
     written = get_transformer(SOURCE, CAPTURES[alias].family, data).run(DAY, run_id="r")
     return capture_id, written
-
-
-def _package_doc(filename: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
 
 
 def _assert_clean_load(data: Path, alias: str, expected_rows: int) -> pl.DataFrame:
@@ -464,8 +423,8 @@ def _assert_clean_load(data: Path, alias: str, expected_rows: int) -> pl.DataFra
     )
     assert completion is not None
     assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
-    frame = _silver(data, meta.family)
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(meta.family)
+    frame = silver_frame(data, meta.family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(meta.family)
     return frame
 
 
@@ -553,7 +512,7 @@ def test_every_record_is_csv_or_xlsx_utf8_version_1_with_ckan_last_modified_and_
     """Detects a record that invents an issue time or a fallback vintage: every family's record is
     version 1, utf-8, ``ckan_last_modified`` vintage (all captures are uploads), whole-capture
     selection, and no epoch declares an issue recipe (``issue_time`` is never emitted)."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding) == ("1", "utf-8")
     assert record.reader == ("xlsx" if key.endswith("_xlsx") else "csv")
     assert (record.vintage, record.vintage_evidence) == ("ckan_last_modified", None)
@@ -561,7 +520,7 @@ def test_every_record_is_csv_or_xlsx_utf8_version_1_with_ckan_last_modified_and_
     assert all(epoch.issue.kind == "none" for epoch in record.epochs)
     assert has_issue_time(record) is False
     assert "issue_time" not in record.entity_key
-    assert "issue_time" not in _columns(key)
+    assert "issue_time" not in output_names(key)
 
 
 def test_constraint_limits_record() -> None:
@@ -570,7 +529,7 @@ def test_constraint_limits_record() -> None:
     non-nullable int64 kept raw, the 12 boundary columns are nullable int64 named by their
     lower-cased vendor code (MW), temporal is ``none``, the key is the pair, selection is
     family-scope."""
-    record = _record("constraint_limits_24m")
+    record = record_of("constraint_limits_24m")
     (epoch,) = record.epochs
     assert list(epoch.header) == L_HEADER
     assert [(c.source, c.name, c.dtype, c.nullable) for c in epoch.columns[:2]] == [
@@ -593,7 +552,7 @@ def test_cmis_record_keeps_two_epochs_and_two_fee_columns() -> None:
     two epochs (``£ / SP`` for M1/M2, ``£ / MWH`` plus ``B6/EC5`` for M3-M5), the fees two separate
     nullable float64 silver names (GBP/SP and GBP/MWh, never in one epoch together), the arming and
     disarming times raw strings, the cost GBP, the key resource-partitioned."""
-    record = _record("cmis_intertrip")
+    record = record_of("cmis_intertrip")
     old, new = record.epochs
     assert list(old.header) == CMIS_OLD and list(new.header) == CMIS_NEW
     old_names = {c.source: c for c in old.columns}
@@ -634,7 +593,7 @@ def test_day_ahead_record_keeps_the_target_timestamp_raw() -> None:
     undocumented) or a value column in the key: the timestamp is a raw non-nullable string, limit
     and flow nullable int64, temporal ``none``, key ``(constraint_group, raw timestamp)``, no
     resource partition and no ordinal."""
-    record = _record("da_constraint_flows_limits")
+    record = record_of("da_constraint_flows_limits")
     (epoch,) = record.epochs
     assert list(epoch.header) == D_HEADER
     assert [(c.name, c.dtype, c.nullable, c.format) for c in epoch.columns] == [
@@ -654,7 +613,7 @@ def test_otf_record() -> None:
     meaning invented: ``Date`` is a non-nullable ``%Y-%m-%d`` date and the engine's ``date_sp1``
     anchor only, the 22 value columns are nullable float64 named ``<label>_<actual|forecast>`` in
     vendor order, the key is ``(date,)``."""
-    record = _record("otf_network_congestion")
+    record = record_of("otf_network_congestion")
     (epoch,) = record.epochs
     assert list(epoch.header) == OTF_HEADER
     date_column, *values = epoch.columns
@@ -683,8 +642,8 @@ def test_thermal_csv_and_workbook_records_share_columns_but_not_the_date_spellin
     sibling-fed ``xlsx`` record on header row 1, columns ``A:C``, no ``last_row`` (X1 and X2
     differ)."""
     csv_record, xlsx_record = (
-        _record("thermal_constraint_costs"),
-        _record("thermal_constraint_costs_xlsx"),
+        record_of("thermal_constraint_costs"),
+        record_of("thermal_constraint_costs_xlsx"),
     )
     for record, fmt in ((csv_record, "%Y-%m-%d"), (xlsx_record, CALAMINE_DATE)):
         (epoch,) = record.epochs
@@ -717,7 +676,7 @@ def test_voltage_record() -> None:
     ``Group`` a string kept as-is, both dates ``%Y-%m-%d`` (``End Date`` not the temporal input),
     temporal ``date_sp1(start_date)``, key ``(start_date, group, last_updated)``, no ``issue_time``
     anywhere."""
-    record = _record("voltage_requirement")
+    record = record_of("voltage_requirement")
     (epoch,) = record.epochs
     assert list(epoch.header) == VOLTAGE_HEADER
     by_name = {c.name: c for c in epoch.columns}
@@ -751,7 +710,7 @@ def test_held_exactly_as_ruled_and_the_package_stays_eligible(key: str) -> None:
     held families carry the spec's verbatim E-SEM question, are effectively held, and the package
     itself stays eligible."""
     package, family = registry_module.load_registry().families[key]
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert (record.eligibility.unit, record.eligibility.question) == ("E-SEM", HELD[key])
     assert effective_eligibility(package, family) == record.eligibility
@@ -763,7 +722,7 @@ def test_thermal_families_are_eligible(key: str) -> None:
     """Detects a hold wrongly put on the thermal costs: neither family carries a record-level
     eligibility, so each is effectively eligible (T1 is a resource-level HOLD, not a family one)."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
 
 
@@ -777,7 +736,7 @@ def test_each_family_is_in_the_package_file_the_spec_names() -> None:
     for key, filename in PACKAGE_FILES.items():
         by_file.setdefault(filename, set()).add(key)
     for filename, keys in by_file.items():
-        document = _package_doc(filename)
+        document = package_doc(filename)
         assert {f["key"] for f in document["families"] if "record" in f} == keys, filename
         for resource in document["resources"]:
             family = resource["family"]
@@ -861,7 +820,7 @@ def test_cmis_epochs_land_in_separate_fee_columns_never_merged(data: Path) -> No
     ``b6_ec5`` is null for the older epoch and the vendor code for the newer."""
     for alias in ("m1", "m4"):
         _run(data, alias)
-    frame = _silver(data, "cmis_intertrip")
+    frame = silver_frame(data, "cmis_intertrip")
     old = frame.filter(pl.col("resource_id") == CAPTURES["m1"].resource_id)
     new = frame.filter(pl.col("resource_id") == CAPTURES["m4"].resource_id)
     assert old.height == len(rows("m1")) and new.height == len(rows("m4"))
@@ -931,7 +890,7 @@ def test_day_ahead_repeated_keys_fail_the_capture_and_are_never_deduplicated(dat
     failure = read_failure(data, "da_constraint_flows_limits", capture_id)
     assert failure is not None and failure["error_class"] == DuplicateEntityKeyError.__name__
     assert read_completion(data, "da_constraint_flows_limits", capture_id) is None
-    assert _no_silver(data, "da_constraint_flows_limits")
+    assert no_silver(data, "da_constraint_flows_limits")
 
 
 def test_otf_fixture_types_and_keeps_blank_actuals_null(data: Path) -> None:
@@ -943,7 +902,7 @@ def test_otf_fixture_types_and_keeps_blank_actuals_null(data: Path) -> None:
     frame = _assert_clean_load(data, "o", len(source))
     assert frame.schema["date"] == pl.Date
     assert frame["date"].to_list() == [date.fromisoformat(r["Date"]) for r in source]
-    record = _record("otf_network_congestion")
+    record = record_of("otf_network_congestion")
     for spec in record.epochs[0].columns[1:]:
         assert frame.schema[spec.name] == pl.Float64, spec.name
         assert frame[spec.name].to_list() == [
@@ -999,8 +958,8 @@ def test_the_2021_22_thermal_resource_is_a_hold_that_is_never_transformed_or_cas
 
     t1_id = capture(data, "t1")
     path = next((data / "bronze" / SOURCE / "thermal_constraint_costs").rglob(f"*{held.id}*.csv"))
-    parsed = next(read_csv_body(path, _record("thermal_constraint_costs"), ()))
-    assert list(parsed.header) == list(_record("thermal_constraint_costs").epochs[0].header)
+    parsed = next(read_csv_body(path, record_of("thermal_constraint_costs"), ()))
+    assert list(parsed.header) == list(record_of("thermal_constraint_costs").epochs[0].header)
     comma = [r["Daily Cost (GBP)"] for r in rows("t1") if "," in r["Daily Cost (GBP)"]]
     assert comma
     with pytest.raises(pl.exceptions.InvalidOperationError):
@@ -1013,7 +972,7 @@ def test_the_2021_22_thermal_resource_is_a_hold_that_is_never_transformed_or_cas
     assert read_failure(data, "thermal_constraint_costs", t1_id) is None
     completion = read_completion(data, "thermal_constraint_costs", t2_id)
     assert completion is not None and completion["rows_excluded"] == 0
-    frame = _silver(data, "thermal_constraint_costs")
+    frame = silver_frame(data, "thermal_constraint_costs")
     assert set(frame["resource_id"].to_list()) == {CAPTURES["t2"].resource_id}
     report = reconcile(data, registry, ["thermal_constraint_costs"], DAY)
     assert report.gaps == (), report.lines()
@@ -1028,12 +987,12 @@ def test_workbook_date_spelling_is_the_calamine_spelling_and_is_frozen(data: Pat
     path = next((data / "bronze" / SOURCE / "thermal_constraint_costs_files").rglob("*.xlsx"))
     resource = registry_module.load_registry().resources[CAPTURES["x1"].resource_id][1]
     (table,) = read_xlsx_body(
-        path, _record("thermal_constraint_costs_xlsx"), ("Data",), resource=resource
+        path, record_of("thermal_constraint_costs_xlsx"), ("Data",), resource=resource
     )
     dates = table.frame["Settlement Date"].to_list()
     assert dates[0] == "2019-08-01 00:00:00"
     assert all(len(d) == 19 and d.endswith(" 00:00:00") for d in dates)
-    spec = _record("thermal_constraint_costs_xlsx").epochs[0].columns[0]
+    spec = record_of("thermal_constraint_costs_xlsx").epochs[0].columns[0]
     assert spec.format == CALAMINE_DATE
     assert datetime.strptime(dates[0], CALAMINE_DATE).date() == date(2019, 8, 1)
     with pytest.raises(pl.exceptions.InvalidOperationError):
@@ -1052,8 +1011,8 @@ def test_workbook_data_sheet_types_through_the_sibling_fed_record(data: Path) ->
     completion = read_completion(data, "thermal_constraint_costs_xlsx", capture_id)
     assert completion is not None
     assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
-    frame = _silver(data, "thermal_constraint_costs_xlsx")
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(
+    frame = silver_frame(data, "thermal_constraint_costs_xlsx")
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(
         "thermal_constraint_costs_xlsx"
     )
     assert set(frame["child_id"].to_list()) == {"Data"}
@@ -1071,7 +1030,7 @@ def test_workbook_data_sheet_types_through_the_sibling_fed_record(data: Path) ->
     assert 0 in frame["daily_cost_gbp"].to_list()
     key = ["resource_id", "settlement_date", "constraint_group"]
     assert frame.select(key).is_duplicated().sum() == 0
-    assert _no_silver(data, "thermal_constraint_costs")
+    assert no_silver(data, "thermal_constraint_costs")
 
 
 def test_workbook_resource_dispositions_feed_only_the_data_sheet() -> None:
@@ -1153,7 +1112,7 @@ def test_a_last_updated_other_than_the_measured_z_spelling_fails_loud(
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, "voltage_requirement", data).run(DAY, run_id="r")
     assert read_completion(data, "voltage_requirement", capture_id) is None
-    assert _no_silver(data, "voltage_requirement")
+    assert no_silver(data, "voltage_requirement")
 
 
 @pytest.mark.parametrize(
@@ -1178,7 +1137,7 @@ def test_an_undocumented_token_is_never_read_as_null_or_repaired(
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
     assert read_completion(data, meta.family, capture_id) is None
-    assert _no_silver(data, meta.family)
+    assert no_silver(data, meta.family)
 
 
 # --------------------------------------------------------------------------- #
@@ -1206,14 +1165,6 @@ def _entry() -> dict[str, Any]:
     assert len(ours) == 1 and isinstance(ours[0], dict)
     entry: dict[str, Any] = ours[0]
     return entry
-
-
-def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
-    return {
-        p.relative_to(data / top).as_posix(): p.read_bytes()
-        for p in sorted((data / top).rglob("*"))
-        if p.is_file()
-    }
 
 
 def test_the_committed_ledger_entry_is_the_ruled_text_and_backed_by_the_registry() -> None:
@@ -1254,12 +1205,12 @@ def test_the_day_ahead_failure_is_adjudicated_not_open_and_not_stale(
     install_generated(
         monkeypatch,
         data / "_registry",
-        [_package_doc("day-ahead-constraint-flows-and-limits.json")],
+        [package_doc("day-ahead-constraint-flows-and-limits.json")],
     )
     capture_id = capture(data, "dc")
     with contextlib.suppress(NesoCaptureFailedError):
         get_transformer(SOURCE, "da_constraint_flows_limits", data).run(DAY, run_id="r")
-    before = (_tree_bytes(data, "silver"), _tree_bytes(data, "state"))
+    before = (tree_bytes(data, "silver"), tree_bytes(data, "state"))
     code, lines = run_cli("da_constraint_flows_limits", "--cutoff", DAY.isoformat())
     assert code == 1, lines
     assert any(line.startswith("GAP failed") and capture_id in line for line in lines), lines
@@ -1276,7 +1227,7 @@ def test_the_day_ahead_failure_is_adjudicated_not_open_and_not_stale(
     assert len(adjudicated) == 1
     assert adjudicated[0].startswith("ADJUDICATED failed da_constraint_flows_limits")
     assert "DuplicateEntityKeyError" in adjudicated[0] and "ruling 632" in adjudicated[0]
-    assert (_tree_bytes(data, "silver"), _tree_bytes(data, "state")) == before
+    assert (tree_bytes(data, "silver"), tree_bytes(data, "state")) == before
 
 
 def test_the_ledger_has_exactly_one_new_entry_after_the_building_block_ones() -> None:
@@ -1303,10 +1254,10 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     view and in Polars; for the voltage record the in-row ``Last Updated`` plays no part."""
     meta = CAPTURES[alias]
     capture_id, _ = _run(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
-    recipe = _record(meta.family).temporal
+    recipe = record_of(meta.family).temporal
     if recipe.kind == "none":
         assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}
     else:

@@ -24,17 +24,15 @@ import json
 import shutil
 import subprocess
 import sys
-import tempfile
 import zipfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import query, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -55,7 +53,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -152,22 +150,11 @@ MEMBERS: dict[str, Member] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (ADR-036: engine names pass MAX_PATH there); tmp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for this catalogue."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="h1", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def fixture(name: str) -> bytes:
@@ -262,25 +249,17 @@ def overlap_gaps(report: Any) -> list[Any]:
     return [gap for gap in report.gaps if gap.category == "overlap"]
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def both_as_of(db: Path, data: Path, key: str, as_of: datetime | None) -> pl.DataFrame:
     """``_latest`` (or the parameterised select) = Polars ``select_latest_vintage``; rows."""
     view = f"silver_{SOURCE}_{key}"
     spec = LATEST_VIEW_SPECS[(SOURCE, key)]
     if as_of is None:
-        sql = _query(db, f'SELECT * FROM "{view}_latest"')
+        sql = query(db, f'SELECT * FROM "{view}_latest"')
     else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
         select = latest_select_sql(view, spec, columns, as_of_param=True)
         assert select is not None
-        sql = _query(db, select, {"as_of": as_of.isoformat()})
+        sql = query(db, select, {"as_of": as_of.isoformat()})
     files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
     lf = pl.scan_parquet(files, hive_partitioning=False)
     polars = select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
@@ -347,7 +326,7 @@ class TestRevisedMonth:
         assert sorted(before["bronze_capture_id"].to_list()) == sorted(
             [original] * 3 + [february] * 2
         )
-        views = _query(
+        views = query(
             db,
             "SELECT sql FROM duckdb_views() WHERE view_name = $name",
             {"name": f"silver_{SOURCE}_{GMT_CSV}_latest"},

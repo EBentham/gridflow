@@ -30,27 +30,29 @@ PIN_PATH = (
 )
 
 
-def _engine_digests() -> dict[str, str]:
-    from test_neso_dem1_records import DAY, SIDECARS, _capture, _short_base, _silver, dem1_body
+def _engine_digests(short_base: Path) -> dict[str, str]:
+    from _neso_generic_support import silver_frame
+    from test_neso_dem1_records import DAY, SIDECARS, _capture, dem1_body
 
     from gridflow.silver.registry import get_transformer
 
     out: dict[str, str] = {}
     for key in sorted(SIDECARS):
-        with tempfile.TemporaryDirectory(
-            prefix="dh", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root:
+        with tempfile.TemporaryDirectory(dir=short_base) as root:
             data = Path(root)
             _capture(data, key, dem1_body(key))
             get_transformer("neso_data_portal", key, data).run(DAY, run_id="pin")
-            frame = _silver(data, key).drop("source_run_id")
+            frame = silver_frame(data, key).drop("source_run_id")
             frame = frame.sort(frame.columns)
             out[key] = hashlib.sha256(frame.write_csv().encode("utf-8")).hexdigest()
     return out
 
 
-def generated_pin() -> dict[str, Any]:
-    """The pin of every generated family of the committed registry (see the module doc)."""
+def generated_pin(short_base: Path) -> dict[str, Any]:
+    """The pin of every generated family of the committed registry (see the module doc).
+
+    ``short_base`` holds the engine runs' data roots (``tests/conftest.py``).
+    """
     from gridflow.connectors.neso_data_portal.registry import load_registry
     from gridflow.silver.latest_views import latest_select_sql
     from gridflow.silver.neso_data_portal.generic import generated_registrations, output_columns
@@ -71,7 +73,12 @@ def generated_pin() -> dict[str, Any]:
         }
         records[key] = record.model_dump(mode="json", exclude_none=True)
         columns[key] = [[name, kind] for name, kind in output_columns(record)]
-    return {"sql": sql, "records": records, "columns": columns, "engine": _engine_digests()}
+    return {
+        "sql": sql,
+        "records": records,
+        "columns": columns,
+        "engine": _engine_digests(short_base),
+    }
 
 
 def dump(pin: dict[str, Any]) -> str:

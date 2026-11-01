@@ -27,20 +27,25 @@ from __future__ import annotations
 
 import csv
 import io
-import json
 import re
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import (
+    both_as_of,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -48,20 +53,13 @@ from gridflow.connectors.neso_data_portal.eligibility import effective_eligibili
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
 from gridflow.silver.date_columns import DATE_COL_SQL_TYPES
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "dfsb"
@@ -424,23 +422,11 @@ CAPTURES: dict[str, Capture] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="dfsb", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -467,51 +453,15 @@ def capture(data: Path, alias: str, *, raw: bytes | None = None) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
     package = PACKAGE_OF[FAMILY_OF[alias]]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        FAMILY_OF[alias],
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=package,
         package_id=PACKAGE_ID_OF[package],
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
-        ckan_format="CSV",
-        extension="csv",
+        key=FAMILY_OF[alias],
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-
-
-def _package_doc(package: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / f"{package}.json").read_text("utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
 
 
 def _expected(kind: str, fmt: str | None, cell: str) -> Any:
@@ -556,9 +506,9 @@ def _load_clean(data: Path, *aliases: str) -> pl.DataFrame:
         assert completion is not None, alias
         assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
         assert read_failure(data, family, capture_id) is None
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     assert frame.height == written
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(family)
     assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
     return frame
 
@@ -574,7 +524,7 @@ def _fail(data: Path, alias: str, *, raw: bytes | None = None) -> tuple[str, str
     assert got_id == capture_id
     assert read_completion(data, family, capture_id) is None
     assert read_failure(data, family, capture_id) is not None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
     return got_id, cls
 
 
@@ -638,20 +588,20 @@ def test_every_record_is_utf8_csv_with_the_spec_key_whole_capture_vintage_and_no
     wrong vintage: every record is version 1, utf-8 CSV, whole-capture selection, the spec's entity
     key, ``ckan_last_modified``, with the vendor header as its one epoch and ``issue: none``."""
     alias = ALIAS_OF[key]
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     assert record.latest == "whole_capture" and record.latest_partition is None
     assert record.vintage == "ckan_last_modified" and record.vintage_evidence is None
     assert list(record.entity_key) == KEY_OF[alias]
     assert "resource_id" not in record.entity_key
-    assert record.run_type_column is None and "run_type" not in _columns(key)
+    assert record.run_type_column is None and "run_type" not in output_names(key)
     assert record.siblings == () and record.xlsx is None and record.edition_by_filename is None
     assert record.zip_member is None
     assert [list(e.header) for e in record.epochs] == [HEADER_OF[alias]]
     (epoch,) = record.epochs
     assert epoch.issue.kind == "none" and epoch.unpivot is None
     assert has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
 
 
 def test_each_epoch_header_is_read_from_the_body_not_retyped() -> None:
@@ -660,8 +610,8 @@ def test_each_epoch_header_is_read_from_the_body_not_retyped() -> None:
     Live / Test summaries' physical trailing spaces), equals the frozen epoch; the column counts are
     6, 8, 26, 9, 4, 4, 40, 10."""
     for alias, key in FAMILY_OF.items():
-        assert header(alias) == list(_record(key).epochs[0].header), alias
-    counts = {a: len(_record(f).epochs[0].header) for a, f in FAMILY_OF.items()}
+        assert header(alias) == list(record_of(key).epochs[0].header), alias
+    counts = {a: len(record_of(f).epochs[0].header) for a, f in FAMILY_OF.items()}
     assert counts == {
         "n23": 6,
         "q23": 8,
@@ -679,7 +629,8 @@ def test_each_epoch_header_is_read_from_the_body_not_retyped() -> None:
     assert header("bl") == header("bt") and header("ql") == header("qt")
     assert header("nl") == header("nt") and header("sl") == header("st")
     assert (
-        "North Wales, Merseyside and Cheshire" in _record("dfs_utilisation_report").epochs[0].header
+        "North Wales, Merseyside and Cheshire"
+        in record_of("dfs_utilisation_report").epochs[0].header
     )
 
 
@@ -693,7 +644,7 @@ def test_columns_are_typed_without_trim_tokens_or_bounds(key: str) -> None:
     temporal input are ``nullable: false`` and nothing else is, and no column carries a bound."""
     alias = ALIAS_OF[key]
     non_null = set(KEY_OF[alias]) | {TEMPORAL_INPUT[alias]}
-    (epoch,) = _record(key).epochs
+    (epoch,) = record_of(key).epochs
     assert [c.source for c in epoch.columns] == HEADER_OF[alias]
     for column in epoch.columns:
         name = silver_name(column.source, alias)
@@ -717,7 +668,7 @@ def test_the_spec_silver_names_and_window_labels() -> None:
     ``Time`` is ``time_label``, the comma-bearing 2023/24 regional cell is the one silver column
     ``north_wales_merseyside_and_cheshire``, the Live / Test report spells ``north_wales_merseyside
     _cheshire`` and the 16 ``d0_`` counterparts, and the summaries keep ``d0_dfs_procured``."""
-    names = {k: [c.name for c in _record(k).epochs[0].columns] for k in RECORDED}
+    names = {k: [c.name for c in record_of(k).epochs[0].columns] for k in RECORDED}
     for key in RECORDED:
         assert not {"from", "to"} & set(names[key]), key
         assert len(set(names[key])) == len(names[key]), key
@@ -747,7 +698,7 @@ def test_no_window_or_notification_clock_is_typed() -> None:
     ``despatch_time`` are ``string``, and no column of any of the twelve records is a datetime."""
     typed: list[tuple[str, str]] = []
     for key in RECORDED:
-        (epoch,) = _record(key).epochs
+        (epoch,) = record_of(key).epochs
         types = {c.name: c.dtype for c in epoch.columns}
         for name in (
             "window_from",
@@ -765,7 +716,7 @@ def test_no_window_or_notification_clock_is_typed() -> None:
 def test_the_temporal_recipe_is_the_spec_recipe(key: str) -> None:
     """Detects a wrong anchor: every record takes ``date_sp1`` of its service date (the
     notifications of their posting date, not a window start or the requirement date)."""
-    recipe = _record(key).temporal
+    recipe = record_of(key).temporal
     assert recipe.kind == "date_sp1"
     assert recipe.date_column == TEMPORAL_INPUT[ALIAS_OF[key]]
     assert recipe.column is None
@@ -784,7 +735,7 @@ def test_every_dfs_b_resource_is_an_upload_with_one_resource_per_family() -> Non
     resource is an upload) or a second resource arriving unrecorded: each package holds exactly
     four resources, one per family, with the captured resource ids."""
     for package in (SERVICE, LIVE, TEST):
-        document = _package_doc(package)
+        document = package_doc(package)
         assert document["package_id"] == PACKAGE_ID_OF[package]
         assert {r["url_type"] for r in document["resources"]} == {"upload"}
         assert len(document["resources"]) == 4
@@ -793,7 +744,7 @@ def test_every_dfs_b_resource_is_an_upload_with_one_resource_per_family() -> Non
         }
     for alias, meta in CAPTURES.items():
         package = PACKAGE_OF[FAMILY_OF[alias]]
-        (resource,) = [r for r in _package_doc(package)["resources"] if r["id"] == meta.resource_id]
+        (resource,) = [r for r in package_doc(package)["resources"] if r["id"] == meta.resource_id]
         assert resource["family"] == FAMILY_OF[alias]
         assert resource["name"] == meta.name
 
@@ -809,7 +760,7 @@ def test_the_ten_eligible_records_carry_no_override(key: str) -> None:
     included: all five windows start after its upload): each is effectively eligible, in an eligible
     package."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
     assert package.eligibility == Eligible(status="eligible")
 
@@ -820,7 +771,7 @@ def test_the_two_requirements_are_held_with_the_verbatim_question_and_the_unit(k
     2023/24 and the 2022/23 test-event requirements are ``held`` with the spec's question verbatim
     and unit ``v0.22-K-DFS-b``, effectively held, while their package stays eligible."""
     package, family = registry_module.load_registry().families[key]
-    eligibility = _record(key).eligibility
+    eligibility = record_of(key).eligibility
     assert eligibility == Held(status="held", question=QUESTION_OF[key], unit=UNIT)
     assert effective_eligibility(package, family) == eligibility
     assert package.eligibility == Eligible(status="eligible")
@@ -834,7 +785,7 @@ def test_the_three_packages_stay_eligible_and_hold_exactly_the_twelve_records() 
     found: set[str] = set()
     held: set[str] = set()
     for package in (SERVICE, LIVE, TEST):
-        document = _package_doc(package)
+        document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         for family in document["families"]:
             assert family["transformer"] is None, family["key"]
@@ -851,7 +802,7 @@ def test_every_resource_disposition_is_unchanged() -> None:
     """Detects a changed disposition: every resource of the three packages stays ``SILVER`` to its
     own family (nothing becomes ``DOC`` or ``HOLD``)."""
     for package in (SERVICE, LIVE, TEST):
-        for resource in _package_doc(package)["resources"]:
+        for resource in package_doc(package)["resources"]:
             assert resource["disposition"] == {"kind": "SILVER", "key": resource["family"]}
 
 
@@ -1114,8 +1065,8 @@ def test_live_and_test_records_never_share_a_silver_dataset(data: Path) -> None:
     and Test reports have equal epoch headers yet distinct family keys, loading both leaves each
     silver dataset with only its own rows and no shared delivery date in the slices, and the
     2023/24 table is a third dataset that is never joined to either."""
-    assert list(_record("dfs_live_events_utilisation_report").epochs[0].header) == list(
-        _record("dfs_test_events_utilisation_report").epochs[0].header
+    assert list(record_of("dfs_live_events_utilisation_report").epochs[0].header) == list(
+        record_of("dfs_test_events_utilisation_report").epochs[0].header
     )
     assert FAMILY_OF["bl"] != FAMILY_OF["bt"]
     live = _load_clean(data, "bl")
@@ -1143,7 +1094,7 @@ def test_dfs_b_carries_no_join_sum_or_composed_columns() -> None:
         "procured_total",
     }
     for key in RECORDED:
-        assert not banned & set(_columns(key)), key
+        assert not banned & set(output_names(key)), key
 
 
 # --------------------------------------------------------------------------- #
@@ -1178,7 +1129,7 @@ def test_a_repeated_key_fails_the_capture_as_a_duplicate(data: Path, alias: str)
         (capture_id, "DuplicateEntityKeyError")
     ]
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 def test_the_padded_notification_type_is_a_distinct_key_not_a_duplicate(data: Path) -> None:
@@ -1193,7 +1144,7 @@ def test_the_padded_notification_type_is_a_distinct_key_not_a_duplicate(data: Pa
     capture(data, "nl", raw=raw)
     written = get_transformer(SOURCE, FAMILY_OF["nl"], data).run(DAY, run_id="r")
     assert written == len(rows("nl")) + 1
-    assert _silver(data, FAMILY_OF["nl"]).select(KEY_OF["nl"]).n_unique() == written
+    assert silver_frame(data, FAMILY_OF["nl"]).select(KEY_OF["nl"]).n_unique() == written
 
 
 @pytest.mark.parametrize("alias", sorted(FAMILY_OF))
@@ -1205,7 +1156,7 @@ def test_the_vintage_is_ckan_last_modified(data: Path, alias: str) -> None:
     meta = CAPTURES[alias]
     capture_id = capture(data, alias)
     get_transformer(SOURCE, family, data).run(DAY, run_id="r")
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     db = data / "cat.duckdb"

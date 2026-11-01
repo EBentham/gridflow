@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Any
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import both_as_of, install_generated, query, write_capture
 from _neso_registry_support import (
     column,
     epoch,
@@ -36,7 +36,6 @@ from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import RegistryError, SchemaRecord
 from gridflow.connectors.neso_data_portal.registry.record import RESERVED, ColumnSpec
 from gridflow.silver.latest_views import (
-    LATEST_VIEW_SPECS,
     LatestViewSpec,
     latest_select_sql,
     select_latest_vintage,
@@ -49,7 +48,6 @@ from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     capture_id_for,
     read_completion,
-    scan_completions,
 )
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
@@ -493,40 +491,6 @@ def data(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPat
     return tmp_path_factory.mktemp("m")
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
-def _ids(frame: pl.DataFrame) -> list[str]:
-    return sorted(frame["bronze_capture_id"].to_list())
-
-
-def both_as_of(db: Path, data: Path, key: str, as_of: datetime | None) -> list[str]:
-    """The catalogue's ``_latest`` (or P-3's parameterised select) = Polars; capture ids."""
-    view = f"silver_{SOURCE}_{key}"
-    spec = LATEST_VIEW_SPECS[(SOURCE, key)]
-    if as_of is None:
-        sql = _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
-    else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
-        select = latest_select_sql(view, spec, columns, as_of_param=True)
-        assert select is not None
-        sql = _ids(_query(db, select, {"as_of": as_of.isoformat()}))
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    polars: list[str] = []
-    if files:
-        lf = pl.scan_parquet(files, hive_partitioning=False)
-        polars = _ids(
-            select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
-        )
-    assert sql == polars, (key, as_of)
-    return sql
-
-
 class TestEngineAndCatalogue:
     """T-H5: three resources through ``run()``, the catalogue and Polars."""
 
@@ -567,7 +531,7 @@ class TestEngineAndCatalogue:
             assert stamped.len() > 0
             assert stamped.unique().to_list() == [by_capture[letter]]
 
-        views = _query(
+        views = query(
             db,
             "SELECT sql FROM duckdb_views() WHERE view_name = $name",
             {"name": f"silver_{SOURCE}_{KEY}_latest"},

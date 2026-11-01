@@ -40,7 +40,6 @@ from __future__ import annotations
 import csv
 import io
 import json
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -48,9 +47,15 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    package_doc,
+    point_settings,
+    run_cli,
+    tree_bytes,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -69,7 +74,6 @@ from gridflow.connectors.neso_data_portal.registry.record import (
 from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -77,8 +81,6 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
@@ -355,23 +357,11 @@ EDITION_OF = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="ba2", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -409,23 +399,18 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        FAMILY,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(written or meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=PACKAGE,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=PACKAGE,
         package_id=PACKAGE_ID,
+        key=FAMILY,
+        written_at=datetime.fromisoformat(written or meta.written).astimezone(UTC),
         resource_id=resource_id or meta.resource_id,
-        resource_name=meta.name,
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
 
 
 def _record(key: str = FAMILY) -> SchemaRecord:
@@ -441,11 +426,6 @@ def _silver(data: Path) -> pl.DataFrame:
 
 def _no_silver(data: Path) -> bool:
     return not list((data / "silver" / SOURCE / FAMILY).rglob("[!.]*.parquet"))
-
-
-def _package_doc(filename: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
-    return document
 
 
 def _columns() -> list[str]:
@@ -887,7 +867,7 @@ def test_the_22_failures_are_adjudicated_not_open_and_not_stale(
     committed entry (its capture ids swapped for the fixture captures') every gap is adjudicated
     with ruling 667, none is open or stale, and the silver and state bytes are equal before and
     after."""
-    install_generated(monkeypatch, data / "_registry", [_package_doc(f"{PACKAGE}.json")])
+    install_generated(monkeypatch, data / "_registry", [package_doc(f"{PACKAGE}.json")])
     (template,) = _ledger()
     ids: list[str] = []
     for index, path in enumerate(template["captures"]):
@@ -903,7 +883,7 @@ def test_the_22_failures_are_adjudicated_not_open_and_not_stale(
     assert sorted(c for c, _cls, _m in info.value.failures) == sorted(ids)
     assert {cls for _c, cls, _m in info.value.failures} == {"UnicodeDecodeError"}
     assert read_completion(data, FAMILY, good) is not None
-    before = (_tree_bytes(data, "silver"), _tree_bytes(data, "state"))
+    before = (tree_bytes(data, "silver"), tree_bytes(data, "state"))
 
     code, lines = run_cli(FAMILY, "--cutoff", DAY.isoformat())
     assert code == 1, lines
@@ -920,15 +900,7 @@ def test_the_22_failures_are_adjudicated_not_open_and_not_stale(
     adjudicated = [line for line in lines if line.startswith("ADJUDICATED failed")]
     assert len(adjudicated) == 22
     assert all("UnicodeDecodeError" in line and "ruling 667" in line for line in adjudicated)
-    assert (_tree_bytes(data, "silver"), _tree_bytes(data, "state")) == before
-
-
-def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
-    return {
-        p.relative_to(data / top).as_posix(): p.read_bytes()
-        for p in sorted((data / top).rglob("*"))
-        if p.is_file()
-    }
+    assert (tree_bytes(data, "silver"), tree_bytes(data, "state")) == before
 
 
 # --------------------------------------------------------------------------- #
@@ -978,7 +950,7 @@ def test_the_workbook_archive_stays_hold_with_the_updated_reason_and_the_pdf_sta
     """Detects the ZIP-of-XLSX archive promoted or its reason left on the old pending-BAL-2 text,
     or the communications PDF changed: the archive and each of its 151 children stay HOLD with
     ``TODO: WORKBOOK-CHILD-RECORDS``, the PDF stays DOC."""
-    document = _package_doc(f"{PACKAGE}.json")
+    document = package_doc(f"{PACKAGE}.json")
     files = [r for r in document["resources"] if r["family"] == "bsuos_monthly_forecast_files"]
     assert len(files) == 2
     (archive,) = [r for r in files if r["format"] == "XLSX"]

@@ -46,18 +46,23 @@ from __future__ import annotations
 
 import csv
 import io
-import json
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import (
+    both_as_of,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -69,20 +74,13 @@ from gridflow.connectors.neso_data_portal.registry import (
     load_registry,
 )
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "bal2c"
@@ -439,23 +437,11 @@ CAPTURES: dict[str, Capture] = {
 ALIAS_OF = {meta.family: alias for alias, meta in CAPTURES.items()}
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="ba2c", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -486,51 +472,14 @@ def capture(data: Path, alias: str, *, raw: bytes | None = None) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
     slug, package_id = PACKAGE_OF[meta.family]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=slug,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=slug,
         package_id=package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-
-
-def _package_doc(slug: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / f"{slug}.json").read_text("utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
 
 
 def _load_clean(data: Path, family: str) -> pl.DataFrame:
@@ -543,9 +492,9 @@ def _load_clean(data: Path, family: str) -> pl.DataFrame:
     assert completion is not None
     assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
     assert read_failure(data, family, capture_id) is None
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     assert frame.height == len(rows(alias))
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(family)
     assert not [c for c in frame.columns if "﻿" in c]
     return frame
 
@@ -615,7 +564,7 @@ def test_every_record_is_one_epoch_csv_utf8_with_ckan_last_modified_and_no_issue
     selection with no partition, temporal ``none`` (the financial year and publication date are
     labels, not instants), one epoch whose header is the body's, no issue recipe, no run column and
     the spec's entity key."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     assert (record.vintage, record.vintage_evidence) == ("ckan_last_modified", None)
     assert (record.latest, record.latest_partition) == ("whole_capture", None)
@@ -624,8 +573,8 @@ def test_every_record_is_one_epoch_csv_utf8_with_ckan_last_modified_and_no_issue
     assert len(record.epochs) == 1
     assert list(record.epochs[0].header) == HEADER_OF[key]
     assert record.epochs[0].issue.kind == "none" and has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
-    assert record.run_type_column is None and "run_type" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
+    assert record.run_type_column is None and "run_type" not in output_names(key)
     assert record.siblings == () and record.xlsx is None and record.edition_by_filename is None
     assert record.zip_member is None
 
@@ -639,7 +588,7 @@ def test_columns_are_typed_without_trim_tokens_or_bounds(key: str) -> None:
     local circuit (a non-nullable raw string), every label column is a string with no format (only
     the zone name and the TDR notes may be null), every measure is a nullable float64, and no
     column declares ``trim``, ``null_tokens`` or ``formats_by_filename``."""
-    columns = _record(key).epochs[0].columns
+    columns = record_of(key).epochs[0].columns
     assert [c.name for c in columns] == NAMES_OF[key]
     for column in columns:
         assert column.trim is None and column.null_tokens == ()
@@ -672,7 +621,7 @@ def test_the_unit_is_in_the_silver_name_and_never_rescaled() -> None:
     ``per_year``), and the TDR value column carries no unit suffix because the unmetered band's
     unit conflicts (TODO: TDR-UNMETERED-UNIT)."""
     for key in RECORDED:
-        measures = [c.name for c in _record(key).epochs[0].columns if c.dtype == "float64"]
+        measures = [c.name for c in record_of(key).epochs[0].columns if c.dtype == "float64"]
         assert measures, key
         if key == "tnuos_tariffs_transmission_demand":
             assert measures == ["tdr_tariff"]
@@ -684,7 +633,7 @@ def test_the_unit_is_in_the_silver_name_and_never_rescaled() -> None:
         )
         assert all(m.endswith(suffix) for m in measures), key
         assert not [m for m in measures if m.endswith("_per_year")]
-    assert len(_record("tnuos_tariffs_embedded_export").epochs[0].columns) == 9
+    assert len(record_of("tnuos_tariffs_embedded_export").epochs[0].columns) == 9
 
 
 @pytest.mark.parametrize("key", list(HELD))
@@ -696,7 +645,7 @@ def test_every_record_is_held_with_the_ruled_question_and_the_package_stays_elig
     held, and the package itself stays eligible (the TDR record adds the unmetered-unit conflict,
     the local circuit record the trailing-whitespace question)."""
     package, family = registry_module.load_registry().families[key]
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert (record.eligibility.unit, record.eligibility.question) == (UNIT, HELD[key])
     assert effective_eligibility(package, family) == record.eligibility
@@ -715,8 +664,8 @@ def test_the_package_files_carry_exactly_the_nine_records_and_their_resources() 
     holds one record, the TNUoS file eight, every CSV resource is SILVER of its family, each
     capture's resource id belongs to the family the fixture is for, and no family gained a
     transformer."""
-    aahedc = _package_doc(AAHEDC_PACKAGE[0])
-    tnuos = _package_doc(TNUOS_PACKAGE[0])
+    aahedc = package_doc(AAHEDC_PACKAGE[0])
+    tnuos = package_doc(TNUOS_PACKAGE[0])
     assert {f["key"] for f in aahedc["families"] if "record" in f} == {"aahedc_tariffs"}
     assert {f["key"] for f in tnuos["families"] if "record" in f} == set(RECORDED) - {
         "aahedc_tariffs"
@@ -768,7 +717,7 @@ def test_a_fixture_loads_with_zero_exclusions_and_every_cell_equal_to_the_body(
     stage_name = "publication_type" if family == "aahedc_tariffs" else "publication"
     assert set(frame[stage_name].to_list()) == {r[HEADER_OF[family][0]] for r in source}
     assert set(frame[stage_name].to_list()) <= STAGES
-    assert not frame.select(_record(family).entity_key).is_duplicated().any()
+    assert not frame.select(record_of(family).entity_key).is_duplicated().any()
 
 
 @pytest.mark.parametrize(
@@ -835,7 +784,7 @@ def test_wholly_blank_rows_are_dropped_by_the_reader_before_typing_and_logged(
         assert completion is not None
         assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
         assert read_failure(data, family, capture_id) is None
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         assert frame.height == len(source)
         for column in KEY_OF[family]:
             assert frame[column].null_count() == 0, (family, column)
@@ -874,7 +823,7 @@ def test_a_partly_blank_row_is_excluded_by_its_non_nullable_key_column_with_a_ta
     assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 1)
     assert read_failure(data, family, capture_id) is None
     assert any("null" in r.getMessage() for r in caplog.records)
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     assert frame.height == len(source) - 1
     assert frame[KEY_OF[family][-1]].null_count() == 0
 
@@ -910,7 +859,7 @@ def test_tdr_keeps_the_mojibake_source_header_with_a_clean_unitless_silver_name(
     header (UTF-8 bytes ``c3 82 c2 a3`` before ``/(Site Day)``), the silver column is ``tdr_tariff``
     with every value as published (the unmetered band's ``2.568147`` kept, no daily or annual
     conversion)."""
-    record = _record("tnuos_tariffs_transmission_demand")
+    record = record_of("tnuos_tariffs_transmission_demand")
     (value,) = [c for c in record.epochs[0].columns if c.name == "tdr_tariff"]
     assert value.source.encode("utf-8") == b"TDR Tariff in \xc3\x82\xc2\xa3/(Site Day)"
     assert "Â" not in value.name and "£" not in value.name
@@ -932,7 +881,7 @@ def test_tdr_header_with_the_repaired_pound_sign_fails_loud(data: Path) -> None:
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, "tnuos_tariffs_transmission_demand", data).run(DAY, run_id="r")
     assert read_completion(data, "tnuos_tariffs_transmission_demand", capture_id) is None
-    assert _no_silver(data, "tnuos_tariffs_transmission_demand")
+    assert no_silver(data, "tnuos_tariffs_transmission_demand")
 
 
 def test_local_substation_dimensions_are_strings_as_supplied_and_blank_rows_have_no_key(
@@ -944,7 +893,7 @@ def test_local_substation_dimensions_are_strings_as_supplied_and_blank_rows_have
     family = "tnuos_tariffs_local_substation_tariff"
     capture(data, "ls")
     get_transformer(SOURCE, family, data).run(DAY, run_id="r")
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     source = rows("ls")
     assert frame["sum_of_tec_at_connecting_substation"].to_list() == [
         r["Sum of TEC at Connecting Substation"] for r in source
@@ -978,7 +927,7 @@ def test_a_repeated_key_fails_the_capture_as_a_duplicate(data: Path, family: str
         (capture_id, "DuplicateEntityKeyError")
     ]
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("family", RECORDED)
@@ -995,7 +944,7 @@ def test_a_header_outside_the_epoch_fails_loud(data: Path, family: str) -> None:
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("alias", ["aa", "ee", "of", "lc"])
@@ -1010,7 +959,7 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     meta = CAPTURES[alias]
     capture_id = capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     assert vintage < datetime.fromisoformat(meta.written)

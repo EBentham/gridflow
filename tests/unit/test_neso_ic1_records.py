@@ -36,8 +36,6 @@ import csv
 import hashlib
 import io
 import json
-import os
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -45,9 +43,16 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    package_doc,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -56,7 +61,6 @@ from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -64,9 +68,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
+    from collections.abc import Callable
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "ic1"
@@ -511,21 +513,11 @@ EXPECTED_DTYPES = {
 across the batch, so G-3 sees one type per meaning)."""
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="ic", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -545,32 +537,17 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=meta.package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=meta.package,
         package_id=meta.package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         ckan_last_modified=meta.modified or None,
         url_type=meta.url_type,
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
 
 
 def _load(data: Path, *aliases: str) -> dict[str, str]:
@@ -648,7 +625,7 @@ def test_record_shape_matches_the_unit_spec(key: str) -> None:
     whole-capture selection (per resource where two resources share the family), the vintage
     ADR-035 fixes by ``url_type``, and no invented null token, bound or format on a text or
     integer column."""
-    shape, record = SHAPES[key], _record(key)
+    shape, record = SHAPES[key], record_of(key)
     assert (record.reader, record.encoding, record.version) == ("csv", "utf-8", "1")
     assert [list(epoch.header) for epoch in record.epochs] == list(shape.headers)
     assert tuple(epoch.issue.kind for epoch in record.epochs) == shape.issues
@@ -687,7 +664,7 @@ def test_the_silver_names_are_one_name_per_meaning() -> None:
     every family that carries it."""
     by_source: dict[str, set[str]] = {}
     for key in SHAPES:
-        for epoch in _record(key).epochs:
+        for epoch in record_of(key).epochs:
             for column in epoch.columns:
                 by_source.setdefault(column.source, set()).add(column.name)
     assert by_source["Flow in MW To GB"] == by_source["Flow (MW) To GB"] == {"flow_to_gb_mw"}
@@ -708,7 +685,7 @@ def test_every_family_is_held_with_its_question(key: str) -> None:
     """Detects a family published without its hold: the record carries the spec's one-sentence
     ``E-SEM`` question and that is the family's effective eligibility (the package itself
     stays eligible)."""
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert record.eligibility.unit == "E-SEM"
     assert record.eligibility.question == SHAPES[key].hold
@@ -755,8 +732,8 @@ def test_fixture_types_with_no_exclusion(data: Path, alias: str) -> None:
     assert completion["row_count"] == len(rows(alias))
     assert completion["rows_excluded"] == 0
 
-    frame = _silver(data, meta.family)
-    expected = [name for name, _type in generic.output_columns(_record(meta.family))]
+    frame = silver_frame(data, meta.family)
+    expected = [name for name, _type in generic.output_columns(record_of(meta.family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected if c not in ("year", "month")
     ]
@@ -773,7 +750,7 @@ def test_text_labels_and_values_survive_byte_identical(data: Path, alias: str) -
     zero limit stays a zero (no null conversion, no nameplate fill)."""
     meta = CAPTURES[alias]
     _load(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     source = rows(alias)
     to_name = {
         "Auction Type": "auction_type",
@@ -801,12 +778,12 @@ def test_a_fractional_limit_is_kept_not_a_capture_failure(data: Path) -> None:
     as ``927.0`` and ``972.75`` MW, an ``int64`` cast raises and loses the whole capture. Every
     directional limit in every record is ``float64`` and the fractional values arrive exact."""
     for key in SHAPES:
-        for epoch in _record(key).epochs:
+        for epoch in record_of(key).epochs:
             for column in epoch.columns:
                 if column.name.startswith("flow_"):
                     assert column.dtype == "float64", (key, column.name)
     _load(data, "B10")
-    frame = _silver(data, "nemolink_nemo_da_id_weekly_ntcs")
+    frame = silver_frame(data, "nemolink_nemo_da_id_weekly_ntcs")
     assert frame.schema["flow_from_gb_mw"] == pl.Float64
     assert {927.0, 972.75, 559.75} <= set(frame["flow_from_gb_mw"].to_list())
 
@@ -818,7 +795,7 @@ def test_reasons_keep_their_text_and_a_blank_is_null(data: Path, alias: str) -> 
     and nothing else is."""
     meta = CAPTURES[alias]
     _load(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     source = rows(alias)
     for header in HEADERS[alias]:
         if header.lower().startswith("reason"):
@@ -843,7 +820,7 @@ def test_m_instants_are_utc_and_the_issue_is_the_upload_time(data: Path, alias: 
     start (otherwise the capture time, never a derived instant)."""
     meta = CAPTURES[alias]
     _load(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     source = rows(alias)
     for name in ("data_upload_time_gmt", "operational_period_start_gmt", "issue_time"):
         assert frame.schema[name] == pl.Datetime("us", "UTC"), name
@@ -853,7 +830,7 @@ def test_m_instants_are_utc_and_the_issue_is_the_upload_time(data: Path, alias: 
     starts = [_upload(r["Operational Period Start Date and Time GMT"]) for r in source]
     assert frame["operational_period_start_gmt"].to_list() == starts
     assert frame["issue_time"].to_list() == frame["data_upload_time_gmt"].to_list()
-    if _record(meta.family).temporal.kind == "utc_instant":
+    if record_of(meta.family).temporal.kind == "utc_instant":
         assert frame["timestamp_utc"].to_list() == starts
     else:
         written = datetime.fromisoformat(meta.written).astimezone(UTC)
@@ -867,7 +844,7 @@ def test_archives_derive_no_instant_from_their_labels(data: Path, alias: str) ->
     stays the capture time and no date or datetime column exists beyond the engine's."""
     meta = CAPTURES[alias]
     _load(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     written = datetime.fromisoformat(meta.written).astimezone(UTC)
     assert set(frame["timestamp_utc"].to_list()) == {written}
     assert "issue_time" not in frame.columns or frame["issue_time"].null_count() == frame.height
@@ -880,7 +857,7 @@ def test_ifa_weekly_keeps_the_repeated_hour_and_the_unmarked_autumn_day(data: Pa
     keep ``01:00-02:00 (a)`` and ``(b)`` as two distinct keys, and ``20221030`` keeps its 24
     unmarked rows (this vendor labelling is preserved, not interpreted)."""
     _load(data, "B4")
-    frame = _silver(data, "ifa_da_id_weekly_itls")
+    frame = silver_frame(data, "ifa_da_id_weekly_itls")
     labels = frame["operational_date_and_hour"]
     fold = labels.filter(labels.str.starts_with("20241027 "))
     assert fold.len() == 25 and fold.n_unique() == 25
@@ -893,7 +870,7 @@ def test_nemolink_one_off_keeps_its_24_hours_undated(data: Path) -> None:
     hour: the 24 hourly labels survive in order, the family's only key is the hourly label
     and the resource stays a SILVER disposition (DOC needs vendor lifecycle evidence)."""
     _load(data, "B9")
-    frame = _silver(data, "nemolink_intraday")
+    frame = silver_frame(data, "nemolink_intraday")
     assert frame["hourly_time_period"].to_list() == [
         r["Hourly Time Period (GMT)"] for r in rows("B9")
     ]
@@ -920,7 +897,7 @@ def test_both_epochs_load_under_one_family_and_latest_serves_each(
     catalogue view and Polars agree) serves both captures, then serves a later dump capture
     with the archive still present."""
     ids = _load(data, m_alias, a_alias)
-    frame = _silver(data, key)
+    frame = silver_frame(data, key)
     m_rows, a_rows = _of(frame, m_alias), _of(frame, a_alias)
     assert (m_rows.height, a_rows.height) == (len(rows(m_alias)), len(rows(a_alias)))
     assert m_rows["operational_date"].null_count() == m_rows.height
@@ -1042,7 +1019,7 @@ def test_nsl_archive_fails_the_guard_and_the_dump_loads(data: Path) -> None:
     completion = read_completion(data, "nsl", b11)
     assert completion is not None and completion["rows_excluded"] == 0
     assert completion["row_count"] == len(rows("B11"))
-    silver = _silver(data, "nsl")
+    silver = silver_frame(data, "nsl")
     assert set(silver["bronze_capture_id"].to_list()) == {b11}
     assert silver.height == len(rows("B11"))
 
@@ -1062,7 +1039,7 @@ def test_nsl_failure_is_adjudicated_not_open(data: Path, monkeypatch: pytest.Mon
     B12 failure and exits 1; with the committed entry (its capture id swapped for the fixture
     capture's) it exits 0 reporting one adjudicated gap, and the silver, state and ``_latest``
     bytes are equal before and after."""
-    install_generated(monkeypatch, data / "_registry", [_package_doc("nsl.json")])
+    install_generated(monkeypatch, data / "_registry", [package_doc("nsl.json")])
     b11, b12 = capture(data, "B11"), capture(data, "B12")
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, "nsl", data).run(DAY, run_id="r")
@@ -1082,11 +1059,6 @@ def test_nsl_failure_is_adjudicated_not_open(data: Path, monkeypatch: pytest.Mon
     assert code == 0, lines
     assert "SUMMARY adjudicated 1" in lines
     assert (_bytes_under(data / "silver"), _bytes_under(data / "state")) == before
-
-
-def _package_doc(filename: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
-    return document
 
 
 def test_the_committed_ledger_carries_the_nsl_entry(run_fresh: Callable[..., str]) -> None:
@@ -1148,4 +1120,4 @@ def test_the_viking_package_id_is_unchanged(run_fresh: Callable[..., str]) -> No
     )
     assert loaded["package_id"] == expected
     assert loaded["families"] == ["viking_link_ntc", "viking_ntc"]
-    assert _package_doc("viking.json")["package_id"] == expected
+    assert package_doc("viking.json")["package_id"] == expected

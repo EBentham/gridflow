@@ -11,10 +11,8 @@ from __future__ import annotations
 import copy
 import dataclasses
 import shutil
-import tempfile
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -38,7 +36,7 @@ from gridflow.silver.neso_data_portal.equivalence import (
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from pathlib import Path
 
     from gridflow.connectors.neso_data_portal.registry import Registry
     from gridflow.silver.neso_data_portal.reconcile import Gap
@@ -76,11 +74,10 @@ CASES: dict[str, str] = {
 
 
 @pytest.fixture
-def data() -> Iterator[Path]:
+def data(short_root: Path) -> Path:
     """A short data root (output names are long; Windows paths are not)."""
     pipeline_runner.import_transformers()
-    with tempfile.TemporaryDirectory(prefix="q", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def _t(hour: int, minute: int = 0, day: date = DAY) -> datetime:

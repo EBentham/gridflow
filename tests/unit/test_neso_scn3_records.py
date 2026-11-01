@@ -32,18 +32,24 @@ import csv
 import io
 import json
 import re
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    no_silver,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    write_recorded_capture,
+)
 from polars.exceptions import InvalidOperationError
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal import skeleton
@@ -66,16 +72,12 @@ from gridflow.silver.neso_data_portal.casting import (
 from gridflow.silver.neso_data_portal.completion import (
     CaptureContext,
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.neso_data_portal.readers import read_csv_body
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "scn3"
@@ -528,23 +530,11 @@ FIRST_YEAR = {"w1": 2020, "w3": 2020, "w4": 2020, "e1": 2021, "e2": 2021, "e3": 
 FILENAME_OF = {a: c.filename for a, c in CAPTURES.items()}
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -618,36 +608,17 @@ def capture(
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
     slug, package_id = PACKAGES[meta.family]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=slug,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=slug,
         package_id=package_id,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         resource_id=resource_id or meta.resource_id,
-        resource_name=meta.name,
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
     )
-    return capture_id_for(path, data)
-
-
-def _record(family: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[family][1].record
-    assert record is not None
-    return record
-
-
-def _silver(data: Path, family: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / family).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, family: str) -> bool:
-    return not list((data / "silver" / SOURCE / family).rglob("[!.]*.parquet"))
 
 
 def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
@@ -819,7 +790,7 @@ def test_record_shape_matches_the_unit_spec(family: str) -> None:
     exact ``edition_by_filename`` pairs of the SILVER resources only (none for B2 and the
     results table) and the spec's entity key (``edition`` after ``resource_id`` exactly when the
     record maps editions)."""
-    record = _record(family)
+    record = record_of(family)
     assert (record.version, record.reader, record.encoding) == ("1", "csv", "utf-8")
     assert record.temporal.kind == "none"
     assert record.latest == "whole_capture"
@@ -838,12 +809,12 @@ def test_b2_and_the_results_table_carry_no_edition() -> None:
     results table (its description states none; associating it with the 2025 study is an
     inference): no map, no ``edition`` column and none in the key."""
     for family in (B2, A3F):
-        record = _record(family)
+        record = record_of(family)
         assert record.edition_by_filename is None
         names = [name for name, _type in generic.output_columns(record)]
         assert "edition" not in names and "edition" not in record.entity_key, family
     for family in (A1F, A2F):
-        assert "edition" in [n for n, _t in generic.output_columns(_record(family))]
+        assert "edition" in [n for n, _t in generic.output_columns(record_of(family))]
 
 
 @pytest.mark.parametrize(
@@ -863,7 +834,7 @@ def test_unpivot_epochs_carry_the_exact_year_labels(
     exactly the header's year columns in order, each mapped to its integer and ending in 2050
     (the 2026 ``2037``-``2050`` blank tail included), the value a nullable float64 with no token
     or bound."""
-    record = _record(family)
+    record = record_of(family)
     assert len(record.epochs) == len(epochs)
     for epoch, aliases in zip(record.epochs, epochs, strict=True):
         for alias in aliases:
@@ -898,7 +869,7 @@ def test_wide_records_have_no_unpivot_and_exact_epochs(
     merged (domestic D0 / D5 / D30, residential R24 / R25) or a header retyped: every epoch has
     no unpivot, is frozen exactly as its real body's reader-returned header and aligns 1:1 with
     its columns."""
-    record = _record(family)
+    record = record_of(family)
     assert len(record.epochs) == len(epochs)
     for epoch, aliases in zip(record.epochs, epochs, strict=True):
         assert epoch.unpivot is None
@@ -916,7 +887,7 @@ def test_columns_have_the_spec_names_types_and_nullability(alias: str) -> None:
     data never blanks (or the reverse), or a vendor name mangled: the epoch matching fixture
     ``alias`` declares exactly the spec's silver name, dtype and nullability per vendor column,
     no null tokens, no bounds and no trim."""
-    record = _record(CAPTURES[alias].family)
+    record = record_of(CAPTURES[alias].family)
     header, _ = table(alias)
     epoch = next(e for e in record.epochs if list(e.header) == header)
     spec = columns_of(alias)
@@ -931,7 +902,7 @@ def test_columns_have_the_spec_names_types_and_nullability(alias: str) -> None:
 def test_residential_and_resource_adequacy_columns_have_the_spec_shape(alias: str) -> None:
     """Detects the residential and Resource Adequacy columns off spec (same checks as above for
     the remaining year-long and already-long bodies)."""
-    record = _record(CAPTURES[alias].family)
+    record = record_of(CAPTURES[alias].family)
     header, _ = table(alias)
     epoch = next(e for e in record.epochs if list(e.header) == header)
     spec = columns_of(alias)
@@ -945,10 +916,10 @@ def test_the_silver_names_follow_the_rule_and_the_reserved_names_are_avoided() -
     ``year_vendor``, a technology label mangled or ``CODE_x`` normalised: B2 ``month`` lands as
     ``month_vendor``, LA ``Year`` as ``projection_year`` (a column, not a date), and a sample of
     the stock / stock_proportion names are the proposal's."""
-    b2 = {c.name for e in _record(B2).epochs for c in e.columns}
+    b2 = {c.name for e in record_of(B2).epochs for c in e.columns}
     assert "month_vendor" in b2 and "month" not in b2 and "avg_cop_dhw" in b2
-    dom = {c.name for e in _record(DOM).epochs for c in e.columns}
-    res = {c.name for e in _record(RES).epochs for c in e.columns}
+    dom = {c.name for e in record_of(DOM).epochs for c in e.columns}
+    res = {c.name for e in record_of(RES).epochs for c in e.columns}
     for names in (dom, res):
         assert "projection_year" in names and "year_vendor" not in names and "year" not in names
     for name in (
@@ -970,7 +941,7 @@ def test_scenario_and_pathway_are_two_nullable_columns_never_merged() -> None:
     epoch declares only the one its header has, both are nullable strings (domestic and
     residential: required strings of their own family) and in the key."""
     for family in (WS1, WS2):
-        record = _record(family)
+        record = record_of(family)
         assert {"scenario", "pathway"} <= set(record.entity_key)
         for epoch in record.epochs:
             declared = {c.name for c in epoch.columns} & {"scenario", "pathway"}
@@ -978,10 +949,10 @@ def test_scenario_and_pathway_are_two_nullable_columns_never_merged() -> None:
             for column in epoch.columns:
                 if column.name in {"scenario", "pathway"}:
                     assert column.nullable is True and column.dtype == "string"
-    assert [e.header[1] for e in _record(WS1).epochs] == ["Scenario", "Pathway"]
-    assert [e.header[0] for e in _record(WS2).epochs] == ["Scenario", "Pathway", "Scenario"]
-    dom = {c.name for e in _record(DOM).epochs for c in e.columns}
-    res = {c.name for e in _record(RES).epochs for c in e.columns}
+    assert [e.header[1] for e in record_of(WS1).epochs] == ["Scenario", "Pathway"]
+    assert [e.header[0] for e in record_of(WS2).epochs] == ["Scenario", "Pathway", "Scenario"]
+    dom = {c.name for e in record_of(DOM).epochs for c in e.columns}
+    res = {c.name for e in record_of(RES).epochs for c in e.columns}
     assert "scenario" in dom and "pathway" not in dom and "code_x" in dom and "la_code" not in dom
     assert "pathway" in res and "scenario" not in res and "la_code" in res and "code_x" not in res
 
@@ -991,7 +962,7 @@ def test_residential_technology_columns_are_never_aliased() -> None:
     the 2025 ``Fossil fuel communal heating`` / ``Low carbon district heating`` / ``BioLPG``
     ones (NESO does not establish an alias): each edition declares only its own names, the
     other edition's names are absent from its epoch, and all eight are nullable."""
-    record = _record(RES)
+    record = record_of(RES)
     r24, r25 = record.epochs
     only24 = {snake(c) for c in R24_ONLY}
     only25 = {snake(c) for c in R25_ONLY}
@@ -1026,7 +997,7 @@ def test_held_and_eligible_exactly_as_ruled() -> None:
         package, entry = registry.families[family]
         assert effective_eligibility(package, entry).status == "eligible", family
         assert package.eligibility.status == "eligible"
-        assert _record(family).eligibility is None
+        assert record_of(family).eligibility is None
 
 
 @pytest.mark.parametrize("family", RECORDED)
@@ -1177,8 +1148,8 @@ def test_unpivot_fixture_types_with_no_exclusion(data: Path, alias: str) -> None
     assert completion["row_count"] == written
     assert completion["rows_excluded"] == 0
 
-    frame = _silver(data, family)
-    expected_columns = [name for name, _type in generic.output_columns(_record(family))]
+    frame = silver_frame(data, family)
+    expected_columns = [name for name, _type in generic.output_columns(record_of(family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected_columns if c not in ("year", "month")
     ]
@@ -1206,8 +1177,8 @@ def test_wide_fixture_types_with_no_exclusion(data: Path, alias: str) -> None:
     completion = read_completion(data, family, capture_id)
     assert completion is not None
     assert completion["outcome"] == "populated" and completion["rows_excluded"] == 0
-    frame = _silver(data, family)
-    expected_columns = [name for name, _type in generic.output_columns(_record(family))]
+    frame = silver_frame(data, family)
+    expected_columns = [name for name, _type in generic.output_columns(record_of(family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected_columns if c not in ("year", "month")
     ]
@@ -1230,7 +1201,7 @@ def test_b2_keeps_the_clock_a_string_and_the_period_an_integer(data: Path) -> No
     stamps, ``timestamp_utc`` the capture time, the archetype's trailing space and mojibake
     kept."""
     _run(data, "b2")
-    frame = _silver(data, B2)
+    frame = silver_frame(data, B2)
     assert frame.schema["start_of_hh_period"] == pl.String
     assert frame.schema["hh_period"] == pl.Int64
     assert sorted(frame["start_of_hh_period"].unique().to_list()) == sorted(
@@ -1257,7 +1228,7 @@ def test_b2_blank_cells_are_null_never_zero(data: Path) -> None:
     genuine zero turned null (a blank is not zero, FACTS g5): every blank is a null, every
     ``0`` stays ``0.0``, the five never-blank measures have no null."""
     _run(data, "b2")
-    frame = _silver(data, B2)
+    frame = silver_frame(data, B2)
     for vendor in (
         "gas_space_heat",
         "avg_COP_space_heat",
@@ -1294,7 +1265,7 @@ def test_year_headers_land_as_integers_blank_cells_as_null_rows_zeros_kept(data:
         aliases = [a for a in TYPED_UNPIVOT if CAPTURES[a].family == family]
         for alias in aliases:
             _run(data, alias)
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         cells = [v for a in aliases for r in rows(a) for k, v in r.items() if k.isdigit()]
         blanks = sum(v == "" for v in cells)
         zeros = sum(v != "" and float(v) == 0 for v in cells)
@@ -1315,7 +1286,7 @@ def test_the_2026_blank_tails_stay_as_null_valued_rows(data: Path) -> None:
         _, written = _run(data, alias)
         n = len(rows(alias))
         assert written == n * labels
-        tail = _silver(data, family).filter(pl.col("projection_year") >= 2037)
+        tail = silver_frame(data, family).filter(pl.col("projection_year") >= 2037)
         assert tail.height == n * 14, family
         assert tail["value"].null_count() == tail.height, family
 
@@ -1325,7 +1296,7 @@ def test_blank_ws1_dimensions_are_null_and_keep_their_rows(data: Path) -> None:
     excluded or the blank kept as text (FACTS g5: 26 / 177 / 291 / 321 blanks in WS1 2023): the
     rows are written, the dimension is null and the three always-populated ones never are."""
     _run(data, "w1")
-    frame = _silver(data, WS1)
+    frame = silver_frame(data, WS1)
     for vendor, name in (
         ("Sector", "sector"),
         ("Fuel", "fuel"),
@@ -1351,7 +1322,7 @@ def test_scenario_and_pathway_land_in_separate_columns(data: Path) -> None:
     only_third = body("w3").split(b"\r\n")
     raw = b"\r\n".join([only_third[0], only_third[3], b""])
     _run(data, "w3", raw=raw)
-    ws1 = _silver(data, WS1)
+    ws1 = silver_frame(data, WS1)
     for edition in (2023, 2026):
         part = ws1.filter(pl.col("edition") == edition)
         assert part["scenario"].null_count() == 0 and part["pathway"].null_count() == part.height
@@ -1359,7 +1330,7 @@ def test_scenario_and_pathway_land_in_separate_columns(data: Path) -> None:
     assert part.height == 31
     assert part["pathway"].null_count() == 0 and part["scenario"].null_count() == part.height
     assert set(ws1.filter(pl.col("edition") == 2026)["scenario"].to_list()) == {"Ten Year Outlook"}
-    ws2 = _silver(data, WS2)
+    ws2 = silver_frame(data, WS2)
     for edition in (2023, 2026):
         part = ws2.filter(pl.col("edition") == edition)
         assert part["scenario"].null_count() == 0 and part["pathway"].null_count() == part.height
@@ -1374,7 +1345,7 @@ def test_scenario_and_pathway_land_in_separate_columns(data: Path) -> None:
         "Emissions (MtCO2e)"
     }
     for family in UNPIVOT_FAMILIES:
-        assert _silver(data, family).select(list(KEYS[family])).is_duplicated().sum() == 0
+        assert silver_frame(data, family).select(list(KEYS[family])).is_duplicated().sum() == 0
 
 
 def test_units_stay_verbatim_and_no_unit_is_invented(data: Path) -> None:
@@ -1385,15 +1356,15 @@ def test_units_stay_verbatim_and_no_unit_is_invented(data: Path) -> None:
     the Resource Adequacy units live in the vendor column names."""
     for alias in ("w1", "w4", "e1", "e4", "d3", "r1"):
         _run(data, alias)
-    ws1 = _silver(data, WS1)
+    ws1 = silver_frame(data, WS1)
     assert set(ws1["units"].to_list()) == {"TWh", "GW", "bcm/yr"}
     assert sorted(ws1["units"].to_list()) == sorted(
         r["Units"] for a in ("w1", "w4") for r in rows(a) for _ in label_columns(table(a)[0])
     )
     for family in (WS2, DOM, RES):
-        columns = _silver(data, family).columns
+        columns = silver_frame(data, family).columns
         assert not [c for c in columns if re.search(r"(^|_)units?(_|$)", c)], family
-    assert "MTCO2e" not in " ".join(_silver(data, WS2).columns)
+    assert "MTCO2e" not in " ".join(silver_frame(data, WS2).columns)
     assert {name for name, _d, _n in A1_COLUMNS.values()} >= {
         "installed_capacity_mw",
         "stored_energy_mwh",
@@ -1417,12 +1388,12 @@ def test_la_projection_year_is_the_body_year_and_scilly_rows_are_kept_as_capture
     for alias in ("d1", "d2", "d3", "r1", "r8"):
         _run(data, alias)
     for family, aliases in ((DOM, ("d1", "d2", "d3")), (RES, ("r1", "r8"))):
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         for alias in aliases:
             part = frame.filter(pl.col("resource_id") == CAPTURES[alias].resource_id)
             assert set(part["projection_year"].to_list()) == {int(r["Year"]) for r in rows(alias)}
             assert part.height == len(rows(alias))
-    dom = _silver(data, DOM)
+    dom = silver_frame(data, DOM)
     scilly = dom.filter(pl.col("code_x") == "E06000053")
     expected = [
         (r["Scenario"], int(r["Year"]))
@@ -1434,7 +1405,7 @@ def test_la_projection_year_is_the_body_year_and_scilly_rows_are_kept_as_capture
         zip(scilly["scenario"].to_list(), scilly["projection_year"].to_list(), strict=True)
     ) == sorted(expected)
     assert {s for s, _y in expected} <= {"CT", "LW"} and expected
-    assert _silver(data, RES).filter(pl.col("la_code") == "E06000053").height == sum(
+    assert silver_frame(data, RES).filter(pl.col("la_code") == "E06000053").height == sum(
         r["la_code"] == "E06000053" for a in ("r1", "r8") for r in rows(a)
     )
 
@@ -1445,7 +1416,7 @@ def test_blank_domestic_hydrogen_cells_are_null_and_zeros_stay_zero(data: Path) 
     zero rows each in R24 / R25 2020-2030) read as null: the domestic blanks are null, the
     nonblank hydrogen cells equal the vendor's, the residential zeros are kept values."""
     _run(data, "d3")
-    dom = _silver(data, DOM)
+    dom = silver_frame(data, DOM)
     for vendor in (
         "stock Hydrogen boiler",
         "stock Hybrid (ASHP + Hydrogen boiler)",
@@ -1457,7 +1428,7 @@ def test_blank_domestic_hydrogen_cells_are_null_and_zeros_stay_zero(data: Path) 
     assert dom["stock_hydrogen_boiler"].null_count() > 0
     assert dom["stock_ashp"].null_count() == 0
     _run(data, "r1")
-    res = _silver(data, RES)
+    res = silver_frame(data, RES)
     assert res["stock_hydrogen_boiler"].null_count() == 0
     assert (res["stock_hydrogen_boiler"] == 0.0).all()
     assert (res["stock_hybrid_ashp_hydrogen_boiler"] == 0.0).all()
@@ -1468,7 +1439,7 @@ def test_domestic_proportions_stay_in_vendor_scale(data: Path) -> None:
     scale) and the oil-boiler contradiction silently corrected: every ``stock_proportion`` value
     equals its cell and stays within 0..1 here, ``stock_oil_boiler`` equals its stock cell."""
     _run(data, "d1")
-    frame = _silver(data, DOM)
+    frame = silver_frame(data, DOM)
     for name in (c for c in frame.columns if c.startswith("stock_proportion_")):
         values = frame[name].drop_nulls()
         if values.len():
@@ -1486,7 +1457,7 @@ def test_ra_labels_stay_strings_and_a_trailing_space_is_kept(data: Path) -> None
     an attribute outside the key."""
     for alias in ("a1", "a2", "a3"):
         _run(data, alias)
-    a1, a2, a3 = (_silver(data, f) for f in (A1F, A2F, A3F))
+    a1, a2, a3 = (silver_frame(data, f) for f in (A1F, A2F, A3F))
     for frame in (a1, a2, a3):
         for column in ("future_year", "spotlight_year", "historical_weather_year"):
             if column in frame.columns:
@@ -1509,7 +1480,7 @@ def test_ra_zero_measures_are_values(data: Path) -> None:
     no measure has a null."""
     for alias in ("a1", "a3"):
         _run(data, alias)
-    a1, a3 = _silver(data, A1F), _silver(data, A3F)
+    a1, a3 = silver_frame(data, A1F), silver_frame(data, A3F)
     assert (a1["stored_energy_mwh"] == 0.0).sum() == sum(
         r["Stored energy (MWh)"] == "0" for r in rows("a1")
     )
@@ -1546,7 +1517,7 @@ def test_an_uncastable_cell_fails_the_capture(
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 def test_the_ws1_2024_n_a_cell_fails_the_strict_cast_which_proves_the_resource_hold(
@@ -1570,8 +1541,8 @@ def test_the_ws1_2024_n_a_cell_fails_the_strict_cast_which_proves_the_resource_h
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, WS1, data).run(DAY, run_id="r")
     assert read_completion(data, WS1, capture_id) is None
-    assert _no_silver(data, WS1)
-    assert all(e.unpivot.value.null_tokens == () for e in _record(WS1).epochs)  # type: ignore[union-attr]
+    assert no_silver(data, WS1)
+    assert all(e.unpivot.value.null_tokens == () for e in record_of(WS1).epochs)  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize(
@@ -1601,7 +1572,7 @@ def test_a_blank_identifier_is_excluded_and_counted(data: Path, alias: str, colu
     assert transformer.last_excluded_row_count == per_row
     completion = read_completion(data, family, capture_id)
     assert completion is not None and completion["rows_excluded"] == per_row
-    assert _silver(data, family)[columns_of(alias)[column][0]].null_count() == 0
+    assert silver_frame(data, family)[columns_of(alias)[column][0]].null_count() == 0
 
 
 @pytest.mark.parametrize("alias", ["w1", "e1", "d1", "r1", "a1", "a2", "a3", "b2"])
@@ -1634,7 +1605,7 @@ def test_a_repeated_key_fails_the_capture(data: Path, alias: str) -> None:
     shared = 2 * (len(label_columns(header)) or 1)
     assert f"{shared} row(s) sharing an entity key" in info.value.failures[0][2]
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 def test_the_ws1_2025_pair_fails_the_capture_and_only_the_pair_does(data: Path) -> None:
@@ -1652,7 +1623,7 @@ def test_the_ws1_2025_pair_fails_the_capture_and_only_the_pair_does(data: Path) 
     ]
     assert "62 row(s) sharing an entity key" in info.value.failures[0][2]
     assert read_completion(data, WS1, capture_id) is None
-    assert _no_silver(data, WS1)
+    assert no_silver(data, WS1)
 
 
 def test_removing_the_repeated_row_makes_the_ws1_2025_capture_type(data: Path) -> None:
@@ -1678,7 +1649,7 @@ def test_a_header_outside_the_epochs_fails_loud(data: Path, family: str) -> None
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 def test_a_residential_2025_body_under_the_2024_header_fails_loud(data: Path) -> None:
@@ -1705,7 +1676,7 @@ def test_editions_are_stamped_from_the_filename_and_all_are_served(data: Path) -
     domestic slices (one resource each, all 2022 although published 2022-08) are each served by
     ``_latest``."""
     ids = {a: _run(data, a)[0] for a in ("e1", "e2", "e3", "e4")}
-    frame = _silver(data, WS2)
+    frame = silver_frame(data, WS2)
     by_capture = {
         cid: set(editions)
         for cid, editions in frame.group_by("bronze_capture_id")
@@ -1723,15 +1694,15 @@ def test_editions_are_stamped_from_the_filename_and_all_are_served(data: Path) -
     init_catalogue(db, data)
     assert set(both_as_of(db, data, WS2, None)) == set(ids.values())
     assert set(both_as_of(db, data, DOM, None)) == set(dom_ids.values())
-    assert set(_silver(data, DOM)["edition"].to_list()) == {2022}
+    assert set(silver_frame(data, DOM)["edition"].to_list()) == {2022}
 
 
 def test_the_last_year_in_a_filename_is_never_the_edition() -> None:
     """Detects an edition parsed from the filename's last year: ``fes24_..._2050_...`` is 2024,
     ``fes25_..._2050_...`` 2025 and ``fes22_..._2050_...`` 2022, never 2050 (NESO's FES 2024
     resources carry projection years 2020-2050)."""
-    pairs_res = dict(_record(RES).edition_by_filename or ())
-    pairs_dom = dict(_record(DOM).edition_by_filename or ())
+    pairs_res = dict(record_of(RES).edition_by_filename or ())
+    pairs_dom = dict(record_of(DOM).edition_by_filename or ())
     assert pairs_res["fes24_la_level_outputs_2050_residential_all_scenarios.csv"] == 2024
     assert pairs_res["fes25_la_level_outputs_2050_residential_all_scenarios.csv"] == 2025
     assert pairs_dom["fes22_la_level_outputs_2050_domestic_all_scenarios.csv"] == 2022
@@ -1746,7 +1717,7 @@ def test_a_2050_slice_is_stamped_with_its_edition_not_its_last_year(data: Path) 
         data, "r1", filename="fes24_la_level_outputs_2050_residential_all_scenarios.csv"
     )
     get_transformer(SOURCE, RES, data).run(DAY, run_id="r")
-    frame = _silver(data, RES)
+    frame = silver_frame(data, RES)
     assert set(frame["edition"].to_list()) == {2024}
     assert set(frame["bronze_capture_id"].to_list()) == {capture_id}
 
@@ -1773,7 +1744,7 @@ def test_an_unmapped_filename_fails_loud(data: Path, alias: str, wrong: str) -> 
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 # --------------------------------------------------------------------------- #
@@ -1793,7 +1764,7 @@ def test_the_ws1_2024_resource_is_held_with_its_reason() -> None:
     assert held.disposition.unit == "E-SEM"
     for needle in W2_HOLD_NEEDLES:
         assert needle in held.disposition.reason, needle
-    mapped = {fn for fn, _edition in _record(WS1).edition_by_filename or ()}
+    mapped = {fn for fn, _edition in record_of(WS1).edition_by_filename or ()}
     assert CAPTURES[HELD_RESOURCE].filename not in mapped
     slug, _id = PACKAGES[WS1]
     package = next(p for p in registry.packages if p.package == slug)
@@ -1856,7 +1827,7 @@ def test_the_held_ws1_capture_is_never_transformed_and_only_the_2025_one_fails(
     assert read_completion(data, WS1, ids["w2"]) is None
     assert read_failure(data, WS1, ids["w2"]) is None
     assert read_failure(data, WS1, ids["w3"]) is not None
-    assert set(_silver(data, WS1)["resource_id"].to_list()) == {
+    assert set(silver_frame(data, WS1)["resource_id"].to_list()) == {
         CAPTURES["w1"].resource_id,
         CAPTURES["w4"].resource_id,
     }
@@ -1926,7 +1897,7 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(data: 
     for alias, family in (("a2", A2F), ("e1", WS2)):
         meta = CAPTURES[alias]
         capture_id, _ = _run(data, alias)
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
         assert set(frame["available_at"].to_list()) == {vintage}
         assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}
