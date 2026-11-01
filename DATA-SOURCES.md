@@ -21,7 +21,7 @@ gridflow's Apache-2.0 licence covers its code only; the data stays under each ve
 | ENTSO-G | none | [ENTSOG Transparency Platform terms][entsog-terms] | none (synthetic) | no real responses |
 | GIE AGSI+ and ALSI | `GIE_API_KEY` | [AGSI][gie-agsi] and [ALSI][gie-alsi] data-use rules | 1 of 8 files may be real | allowed |
 | NESO Carbon Intensity | none | [CC BY 4.0][neso-ci-home] plus [terms of use][neso-ci-terms] | 2 of 3 files | unclear |
-| NESO Data Portal | none | [NESO Open Data Licence v1.0][neso-dp-terms] | most of 458 data files | allowed |
+| NESO Data Portal | none | [NESO Open Data Licence v1.0][neso-dp-terms] | most of 458 data files | allowed, except one Nord Pool file: unverified |
 | Open-Meteo | none | [CC BY 4.0 data][om-licence], [free API for non-commercial use][om-terms] | none (synthetic) | no real responses |
 
 "Allowed", "unclear" and "not allowed" are used only where the vendor's terms say so;
@@ -139,7 +139,8 @@ gridflow's Apache-2.0 licence covers its code only; the data stays under each ve
   file, `h/base_pin.json` at 2.2 MB, plus `gen2h/reconcile_base_pin.json` and
   `as5c/container_pin.json`) and hand-built files such as the two
   `embedded_forecast_dst_*.csv`. **Sharing:** allowed under the licence, with the
-  attribution above.
+  attribution above, except `ic2/nordpool.csv`: unverified until the Nord Pool question is
+  settled.
 
 ## Open-Meteo (`open_meteo`)
 

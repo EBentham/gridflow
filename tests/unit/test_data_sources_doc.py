@@ -20,5 +20,7 @@ def test_every_source_has_a_data_sources_section() -> None:
         line for line in PAGE.read_text(encoding="utf-8").splitlines() if line.startswith("## ")
     ]
     named = {key for line in headings for key in re.findall(r"`([a-z0-9_]+)`", line)}
-    missing = sorted(set(load_settings().sources) - named)
+    sources = set(load_settings().sources)
+    assert sources, "load_settings() found no sources, so there is nothing to check"
+    missing = sorted(sources - named)
     assert not missing, f"{PAGE.name} has no section heading naming: {missing}"
