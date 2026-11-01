@@ -8,6 +8,19 @@ expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
 
+### Added
+- **`gridflow.contract`**: the list of every gridflow name gridflow-models imports, the
+  `GridflowClient` methods it calls, the schema-manifest fields it reads and the source each
+  client handle is bound to. It installs with the package, so models can check its own usage
+  against it. gridflow's contract test now reads its lists from this module. While gridflow is
+  on 0.x, any change to it is a minor version bump.
+- **`GridflowClient.require_con()`**: the connection accessor models already uses, now public
+  and listed in `gridflow.contract`.
+
+### Deprecated
+- **`GridflowClient._require_con()`**: kept as an alias of `require_con()` until gridflow-models
+  stops calling it; removed in 0.24.
+
 ## [v0.22] - 2026-10-16 — NESO Data Portal: full catalogue
 
 Every dataset on the NESO Data Portal is now in gridflow. All 131 packages and their 1,385
