@@ -279,10 +279,6 @@ class TestHalfOpenIntervalUnconditionalExclusion:
         transformer = DayAheadPricesTransformer(tmp_path)
         rows = transformer.run(target_date, run_id="half-open-no-neighbours")
         assert rows == 24, "both out-of-scope rows must be excluded without any neighbour proof"
-        assert transformer.last_partition_filter_dropped_count == 2
-        assert transformer.last_partition_filter_boundary_retained_count == 0, (
-            "HALF_OPEN semantics never retains an out-of-scope row"
-        )
 
     def test_out_of_window_exclusion_is_counted_and_logged_never_silent(
         self, tmp_path: Path, caplog: pytest.LogCaptureFixture
@@ -301,8 +297,7 @@ class TestHalfOpenIntervalUnconditionalExclusion:
             rows = transformer.run(target_date, run_id="half-open-logged")
 
         assert rows == 24
-        assert transformer.last_partition_filter_dropped_count == 4
-        assert any("out-of-scope" in message for message in caplog.messages)
+        assert any("excluded 4 out-of-scope" in message for message in caplog.messages)
 
     def test_in_window_rows_are_unaffected(self, tmp_path: Path) -> None:
         """A request whose response does not over-span at all is a no-op."""
@@ -317,4 +312,3 @@ class TestHalfOpenIntervalUnconditionalExclusion:
         transformer = DayAheadPricesTransformer(tmp_path)
         rows = transformer.run(target_date, run_id="half-open-noop")
         assert rows == 24
-        assert transformer.last_partition_filter_dropped_count == 0

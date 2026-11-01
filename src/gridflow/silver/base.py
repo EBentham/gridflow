@@ -522,24 +522,6 @@ class BaseSilverTransformer(ABC):
     number is the point: the operator's question is "did this run produce
     anything the contract calls wrong", and that question has one answer.
     """
-    last_partition_filter_dropped_count: int = 0
-    """Rows dropped by the request-window filter in the most recent ``run()``
-    (R2-A / F-04, F-10). Reset to 0 at the start of every ``run()``. Nonzero
-    for sources in ``_PUBLICATION_WINDOW_FILTER_SOURCES`` with an in-scope,
-    resolvable dataset (Elexon, CLOSED interval semantics —
-    ``_apply_publication_window_filter``, a proven-durable boundary row) OR
-    a transformer with ``EVENT_WINDOW_FILTER = True`` (ENTSO-E, HALF_OPEN
-    interval semantics — ``_apply_event_window_filter``, an unconditionally
-    out-of-scope row, no proof needed) — the two filters share this counter
-    since they are the same underlying primitive family
-    (``partition_window.py``) applied under two different vendor interval
-    semantics (Sol ruling 2026-07-26; see ``IntervalSemantics``).
-    """
-    last_partition_filter_unclassified_count: int = 0
-    """Rows whose filter-dimension value was null (unclassifiable) in the most
-    recent ``run()`` — always KEPT, never dropped (D-7d). Reset to 0 at the
-    start of every ``run()``.
-    """
     last_partition_filter_unresolved_count: int = 0
     """Count of source-window evaluations that could not resolve (D-7e).
 
@@ -547,15 +529,6 @@ class BaseSilverTransformer(ABC):
     Declaring transformers evaluate each prepared covering-set source: adjacent
     destinations may count the same defective partition again. This is not a
     distinct-partition count. Reset to 0 at every ``run()`` entry.
-    """
-    last_partition_filter_boundary_retained_count: int = 0
-    """Rows retained at a window boundary because neighbour ownership was
-    attempted but could not be proven (D-3b/D-3e) — the failing
-    ``WindowReason`` is always logged alongside this count, never just the
-    number (A-3/A-12). Reset to 0 at the start of every ``run()``. Only ever
-    incremented on the CLOSED-interval (Elexon) path — HALF_OPEN (ENTSO-E)
-    never retains an out-of-scope row, so this stays 0 for
-    ``EVENT_WINDOW_FILTER`` transformers (Sol ruling 2026-07-26).
     """
     last_partition_filter_all_dropped_count: int = 0
     """Rows excluded by a 100%-out-of-window event-window filter drop in the
@@ -1045,10 +1018,7 @@ class BaseSilverTransformer(ABC):
         self.last_validation_failure_count = 0
         # D-40: the SINGLE reset the transformer's `+=` accumulates against.
         self.last_excluded_row_count = 0
-        self.last_partition_filter_dropped_count = 0
-        self.last_partition_filter_unclassified_count = 0
         self.last_partition_filter_unresolved_count = 0
-        self.last_partition_filter_boundary_retained_count = 0
         self.last_partition_filter_all_dropped_count = 0
         # Not optional: run_transform reads these PER DATE inside its loop, so
         # a run() returning early without resetting would charge this date the
@@ -1910,10 +1880,6 @@ class BaseSilverTransformer(ABC):
             lower_bound_ownership=None,
         )
 
-        self.last_partition_filter_dropped_count += result.dropped
-        self.last_partition_filter_unclassified_count += result.unclassified
-        self.last_partition_filter_boundary_retained_count += result.boundary_retained
-
         if result.refused:
             logger.error(
                 "Partition-window filter would drop the entire %s/%s frame for "
@@ -2057,9 +2023,6 @@ class BaseSilverTransformer(ABC):
             )
 
         result = exclude_out_of_window(df, plan.column, plan.window)
-
-        self.last_partition_filter_dropped_count += result.dropped
-        self.last_partition_filter_unclassified_count += result.unclassified
 
         if result.all_dropped:
             # 100% of a non-empty frame fell outside this partition's own

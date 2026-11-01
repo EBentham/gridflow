@@ -24,8 +24,8 @@ name) would write the raw body to a DIFFERENT bronze partition than the one
 the transformer under test reads from (``BronzeWriter`` derives its write
 path from ``response.source``/``response.dataset``, not the caller's
 intent), silently producing an empty read or an unresolved window (M-4) --
-not a filter-mechanics failure at all. If a test unexpectedly shows
-``dropped_count == 0``, ``last_partition_filter_unresolved_count`` is
+not a filter-mechanics failure at all. If a test unexpectedly drops no
+rows, ``last_partition_filter_unresolved_count`` is
 checked FIRST in every scenario below for exactly this reason.
 
 **Partition isolation (Sec 9 step 0).** ``partition_request_window`` unions
@@ -230,9 +230,8 @@ def _learn_instants(
 class TestEventWindowFamilyMechanics:
     """I-7: each newly-classified family (Sec 5) drops the rows at/after
     ``window.end`` and below ``window.start``, keeps the rows at
-    ``window.end - resolution`` and at ``window.start``, and reports the
-    drop through ``last_partition_filter_dropped_count`` (HALF_OPEN,
-    Sec 9)."""
+    ``window.end - resolution`` and at ``window.start``, and logs the
+    drop (HALF_OPEN, Sec 9)."""
 
     @pytest.mark.parametrize(
         ("family_id", "cls", "source", "dataset", "fixture_name"), FAMILY_CASES
@@ -272,7 +271,6 @@ class TestEventWindowFamilyMechanics:
             f"{family_id}: window unresolved (M-4) -- check the sidecar identity first"
         )
         assert rows == total_rows
-        assert transformer.last_partition_filter_dropped_count == 0
 
     @pytest.mark.parametrize(
         ("family_id", "cls", "source", "dataset", "fixture_name"), FAMILY_CASES
@@ -312,7 +310,6 @@ class TestEventWindowFamilyMechanics:
             f"{family_id}: window unresolved (M-4) -- check the sidecar identity first"
         )
         assert rows == total_rows - last_count
-        assert transformer.last_partition_filter_dropped_count == last_count
 
     @pytest.mark.parametrize(
         ("family_id", "cls", "source", "dataset", "fixture_name"), FAMILY_CASES
@@ -327,7 +324,7 @@ class TestEventWindowFamilyMechanics:
         fixture_name: str,
     ) -> None:
         """Sec 9 step 4: ``window.end`` one resolution step later -> the
-        same last-instant rows are kept, dropped_count == 0."""
+        same last-instant rows are kept."""
         instants = _learn_instants(tmp_path, cls, source, dataset, fixture_name)
         total_rows = sum(count for _, count in instants)
         first_ts = instants[0][0]
@@ -352,7 +349,6 @@ class TestEventWindowFamilyMechanics:
             f"{family_id}: window unresolved (M-4) -- check the sidecar identity first"
         )
         assert rows == total_rows
-        assert transformer.last_partition_filter_dropped_count == 0
 
     @pytest.mark.parametrize(
         ("family_id", "cls", "source", "dataset", "fixture_name"), FAMILY_CASES
@@ -393,7 +389,6 @@ class TestEventWindowFamilyMechanics:
             f"{family_id}: window unresolved (M-4) -- check the sidecar identity first"
         )
         assert rows == total_rows - first_count
-        assert transformer.last_partition_filter_dropped_count == first_count
 
     @pytest.mark.parametrize(
         ("family_id", "cls", "source", "dataset", "fixture_name"), FAMILY_CASES
@@ -431,7 +426,6 @@ class TestEventWindowFamilyMechanics:
         transformer = cls(root)
         with caplog.at_level("WARNING"):
             transformer.run(TARGET_DATE, run_id=f"{family_id}-warning")
-        assert transformer.last_partition_filter_dropped_count == last_count
         assert any(
             "out-of-scope" in message and str(last_count) in message for message in caplog.messages
         ), (
