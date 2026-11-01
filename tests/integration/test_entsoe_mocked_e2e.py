@@ -5,12 +5,13 @@ from __future__ import annotations
 import io
 import zipfile
 from datetime import UTC, date, datetime
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
 import polars as pl
 import pytest
 import respx
+from _bronze_fixtures import write_entsoe_fixture_bronze
 
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.config.settings import SourceConfig, load_settings
@@ -68,7 +69,9 @@ from gridflow.silver.entsoe.outages_h7 import (
 from gridflow.silver.entsoe.water_reservoirs import WaterReservoirsTransformer
 from gridflow.silver.entsoe.wind_solar_forecast import WindSolarForecastTransformer
 
-FIXTURES = Path(__file__).parent.parent / "fixtures" / "entsoe"
+if TYPE_CHECKING:
+    from pathlib import Path
+
 ENTSOE_BASE = "https://web-api.tp.entsoe.eu"
 TARGET_DATE = date(2024, 1, 15)
 START = datetime(2024, 1, 15, tzinfo=UTC)
@@ -137,23 +140,6 @@ def _silver_path(data_dir: Path, dataset: str, target_date: date) -> Path:
     name = f"{dataset}_{target_date:%Y%m%d}"
     matches = [*partition.glob(f"{name}.parquet"), *partition.glob(f"{name}_run*.parquet")]
     return matches[0] if len(matches) == 1 else partition / f"{name}.parquet"
-
-
-def _write_fixture_to_bronze(tmp_data_dir: Path, dataset: str, fixture_name: str) -> Path:
-    body = (FIXTURES / fixture_name).read_bytes()
-    response = RawResponse(
-        body=body,
-        content_type="text/xml",
-        source="entsoe",
-        dataset=dataset,
-        fetched_at=datetime(2024, 1, 15, 12, 0, tzinfo=UTC),
-        request_url=f"{ENTSOE_BASE}/api",
-        request_params={"documentType": DOC_TYPES[dataset].document_type},
-        api_version="v1",
-        http_status=200,
-        data_date=TARGET_DATE,
-    )
-    return BronzeWriter(tmp_data_dir).write(response)
 
 
 class TestEntsoeUrlConstructionAllDatasets:
@@ -802,7 +788,7 @@ class TestEntsoeBronzeToSilverPipeline:
         transformer_cls: type,
         required_columns: set[str],
     ) -> None:
-        bronze_path = _write_fixture_to_bronze(tmp_data_dir, dataset, fixture_name)
+        bronze_path = write_entsoe_fixture_bronze(tmp_data_dir, dataset, fixture_name)
         meta_path = bronze_path.with_suffix("").with_suffix(".meta.json")
 
         assert bronze_path.exists()
@@ -857,7 +843,7 @@ def test_forecast_published_at_survives_bronze_to_silver(
     as `published_at`, equal to the vintage and distinct from the delivery time
     and ingest clock — the value-level assertion absent from the shape-only
     e2e suite."""
-    _write_fixture_to_bronze(tmp_data_dir, dataset, fixture_name)
+    write_entsoe_fixture_bronze(tmp_data_dir, dataset, fixture_name)
     transformer = transformer_cls(tmp_data_dir)
     rows = transformer.run(TARGET_DATE)
     assert rows > 0
@@ -882,7 +868,7 @@ def test_forecast_available_at_carries_publication_vintage(
     fixture) fall back to the ingest scalar — covered at unit level in
     tests/unit/test_bitemporal_columns.py::test_available_at_coalesces_published_at_rowwise.
     """
-    _write_fixture_to_bronze(tmp_data_dir, "generation_forecast", "generation_forecast_gb.xml")
+    write_entsoe_fixture_bronze(tmp_data_dir, "generation_forecast", "generation_forecast_gb.xml")
     GenerationForecastTransformer(tmp_data_dir).run(TARGET_DATE)
 
     df = pl.read_parquet(_silver_path(tmp_data_dir, "generation_forecast", TARGET_DATE))

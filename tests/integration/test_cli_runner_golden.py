@@ -16,14 +16,14 @@ line it locks so a future drift is traceable.
 
 from __future__ import annotations
 
-import json
 import re
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
 import pytest
+from _bronze_fixtures import write_fuelhh_bronze
 from typer.testing import CliRunner
 
 from gridflow.cli import app
@@ -50,43 +50,6 @@ def _plain(text: str) -> str:
     asserting on message text.
     """
     return _ANSI_RE.sub("", text)
-
-
-def _write_fuelhh_bronze(
-    data_dir: Path,
-    target: date = date(2024, 1, 15),
-    *,
-    include_start_time: bool = True,
-) -> None:
-    """Drop one real fuelhh response into the bronze partition for ``target``."""
-    from pathlib import Path as _Path
-
-    from gridflow.storage.paths import PathBuilder
-
-    fixtures = _Path(__file__).parent.parent / "fixtures" / "elexon"
-    bronze_dir = PathBuilder(data_dir).bronze_date_dir("elexon", "fuelhh", target)
-    bronze_dir.mkdir(parents=True, exist_ok=True)
-    payload = json.loads((fixtures / "fuelhh_response.json").read_text())
-    if not include_start_time:
-        for row in payload["data"]:
-            row.pop("startTime", None)
-    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
-    (bronze_dir / "raw_test.meta.json").write_text(
-        json.dumps(
-            {
-                "source": "elexon",
-                "dataset": "fuelhh",
-                "written_at": "2024-01-15T12:00:00+00:00",
-                "data_date": target.isoformat(),
-                "request_params": {
-                    "publishDateTimeFrom": f"{target.isoformat()}T00:00:00Z",
-                    "publishDateTimeTo": (f"{(target + timedelta(days=1)).isoformat()}T00:00:00Z"),
-                },
-                "page": 1,
-                "total_pages": 1,
-            }
-        )
-    )
 
 
 @pytest.fixture(autouse=True)
@@ -223,7 +186,7 @@ def test_transform_success(isolated_env: IsolatedPaths, tmp_path: Path) -> None:
     """transform of real bronze exits 0, prints the rows line + ``Transform
     complete`` (cli.transform:303,319)."""
     data_dir = tmp_path / "data"
-    _write_fuelhh_bronze(data_dir)
+    write_fuelhh_bronze(data_dir)
     result = runner.invoke(
         app, ["transform", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"]
     )
@@ -239,7 +202,7 @@ def test_transform_fuelhh_fallback_variant_is_counted_and_rendered(
     """The explicit no-start fixture remains retained, warned, and visible."""
     data_dir = tmp_path / "data"
     db_path = isolated_env.duckdb_path
-    _write_fuelhh_bronze(data_dir, include_start_time=False)
+    write_fuelhh_bronze(data_dir, include_start_time=False)
 
     result = runner.invoke(
         app,
@@ -366,7 +329,7 @@ def test_pipeline_bronze_silver(
     """pipeline (no --gold) runs bronze then silver and prints both section
     headers, the nested per-stage completion lines, and the final marker."""
     data_dir = tmp_path / "data"
-    _write_fuelhh_bronze(data_dir)
+    write_fuelhh_bronze(data_dir)
     result = runner.invoke(
         app, ["pipeline", "elexon", "fuelhh", "--start", "2024-01-15", "--end", "2024-01-15"]
     )
@@ -388,7 +351,7 @@ def test_pipeline_with_gold(
     """pipeline --gold runs bronze, silver, and the gold build, printing the gold
     section + ``Build complete`` before the final marker."""
     data_dir = tmp_path / "data"
-    _write_fuelhh_bronze(data_dir)
+    write_fuelhh_bronze(data_dir)
 
     class _FakeBuilder:
         def __init__(self, data_dir: Path) -> None:
@@ -436,7 +399,7 @@ def test_pipeline_gold_failure_exits_1(
     from gridflow.pipeline import runner as pipeline_runner
 
     data_dir = tmp_path / "data"
-    _write_fuelhh_bronze(data_dir)
+    write_fuelhh_bronze(data_dir)
     monkeypatch.setattr(
         "gridflow.gold.system_marginal_price.SystemMarginalPriceBuilder", _BoomBuilder
     )
