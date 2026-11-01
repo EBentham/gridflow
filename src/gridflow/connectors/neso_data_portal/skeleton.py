@@ -110,7 +110,7 @@ def _front_matter(package: PackageEntry) -> list[str]:
         lines.append(f"dataset_key: {_q(keys[0])}")
     else:
         lines.append("dataset_keys: [" + ", ".join(_q(key) for key in keys) + "]")
-    silver = any(f.legacy or f.record is not None for f in package.families)
+    silver = any(f.record is not None for f in package.families)
     lines += [
         f"vendor: {_q(VENDOR)}",
         SKELETON_MARKER,
@@ -182,7 +182,10 @@ def _files(package: PackageEntry) -> list[str]:
 
 
 def _format_cell(column: ColumnSpec) -> str:
-    """A column's format and alternatives (ADR-043), per-filename formats (ADR-039), or a dash."""
+    """A column's format and alternatives (ADR-043), per-filename formats (ADR-039), per-file
+    candidates (one per body), or a dash."""
+    if column.file_formats is not None:
+        return "one of " + " or ".join(f"`{fmt}`" for fmt in column.file_formats) + " per file"
     if column.formats_by_filename is not None:
         return "; ".join(f"`{name}` → `{fmt}`" for name, fmt in column.formats_by_filename)
     if column.alt_formats is not None:
@@ -268,9 +271,7 @@ def _families(
             f"- Kind: {family.kind} · archetype: {family.archetype} · refresh: {family.refresh}"
             f" · empty allowed: {'yes' if family.empty_allowed else 'no'}",
         ]
-        if family.legacy:
-            lines += ["- bespoke transformer: see the existing page", ""]
-        elif family.record is not None:
+        if family.record is not None:
             document = dict(field_info.get(family.key, {})) if field_info else None
             lines += ["", *_schema(family.record, field_entries(document))]
         elif family.kind == "tabular":
@@ -309,7 +310,7 @@ def _holds(package: PackageEntry, observed: frozenset[str]) -> list[str]:
     if isinstance(package.eligibility, Held):
         held.append(f"- package: {_cell(describe_eligibility(package.eligibility))}")
     for family in sorted(package.families, key=lambda f: f.key):
-        if not (family.legacy or family.record is not None):
+        if family.record is None:
             continue
         eligibility = effective_eligibility(package, family)
         if isinstance(eligibility, Held):

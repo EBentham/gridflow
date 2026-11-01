@@ -63,6 +63,9 @@ DATE_COL_SQL_TYPES: dict[str, DateColSqlType] = {
     # `settlement_date` (label anchors, not window starts).
     "delivery_date": "DATE",
     "notification_issued_date": "DATE",
+    # GIE AGSI unavailability: the calendar day an outage notice overlaps (its
+    # silver partition day), a DATE because the vendor bounds are naive.
+    "outage_date": "DATE",
     "timestamp_utc": "TIMESTAMPTZ",
     "implementation_datetime_utc": "TIMESTAMPTZ",
     "ingested_at": "TIMESTAMPTZ",

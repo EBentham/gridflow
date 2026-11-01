@@ -4,8 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 import polars as pl
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 @dataclass
@@ -70,6 +74,7 @@ def check_time_series_gaps(
     expected_freq_minutes: int = 30,
     source: str = "",
     dataset: str = "",
+    group_by: Sequence[str] = (),
 ) -> QualityResult:
     """Detect cadence anomalies in a time series against an expected frequency.
 
@@ -83,6 +88,10 @@ def check_time_series_gaps(
     The frame is sorted first, so negative intervals cannot occur and are not
     checked. (Duplicate-key detection beyond the time column is the job of
     :func:`check_duplicates`.)
+
+    ``group_by`` names the entity columns of a frame holding several series
+    (one per fuel type, BM unit, ...): intervals are measured within each
+    series, since across them every shared timestamp is a zero interval.
     """
     if time_col not in df.columns or len(df) < 2:
         return QualityResult(
@@ -94,8 +103,10 @@ def check_time_series_gaps(
             detail="Insufficient data for gap detection",
         )
 
-    sorted_df = df.sort(time_col)
-    diffs = sorted_df[time_col].diff().drop_nulls()
+    interval = pl.col(time_col).diff()
+    if group_by:
+        interval = interval.over(group_by)
+    diffs = df.sort(time_col).select(interval).to_series().drop_nulls()
 
     # Use stdlib timedelta values so the comparison stays in Series space.
     # pl.duration(...) returns an Expr, which Series.filter cannot consume

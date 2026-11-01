@@ -206,7 +206,7 @@ src/gridflow/
 
 Connectors and transformers self-register on import — adding a new source means
 adding files under `connectors/<source>/` and `silver/<source>/`, then wiring
-the import in `cli._import_connectors()`. See
+the import in `runner.import_connectors()`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the pattern.
 
 ---
@@ -247,7 +247,7 @@ against Pydantic schemas, and property-based checks.
 - [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) — architecture deep-dive
 - [docs/CLI_CHEAT_SHEET.md](docs/CLI_CHEAT_SHEET.md) — every CLI command
 - [docs/ENDPOINT_REFERENCE.md](docs/ENDPOINT_REFERENCE.md) — API endpoint catalogue
-- [docs/CANONICAL_SCHEMA.yaml](docs/CANONICAL_SCHEMA.yaml) — silver-layer schema contracts
+- [src/gridflow/silver/schema_manifest.py](src/gridflow/silver/schema_manifest.py) — silver-layer schema contracts
 - [docs/DECISION_LOG/](docs/DECISION_LOG/) — ADRs for non-obvious design choices
 - [CONTRIBUTING.md](CONTRIBUTING.md) — connector / transformer pattern reference
 

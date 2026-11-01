@@ -48,21 +48,29 @@ import contextlib
 import csv
 import io
 import json
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    tree_bytes,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     RECONCILE_ADJUDICATIONS_FILE,
@@ -74,11 +82,9 @@ from gridflow.connectors.neso_data_portal.registry import (
     load_registry,
 )
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -86,11 +92,6 @@ from gridflow.silver.neso_data_portal.reconcile import reconcile
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 from gridflow.utils.time import settlement_period_to_utc
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "sys1"
@@ -457,23 +458,11 @@ PACKAGE_FILES = {
 FAMILIES = tuple(PACKAGE_FILES)
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="sy1", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -506,38 +495,15 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=meta.day,
-        package_slug=meta.package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=meta.day,
+        package=meta.package,
         package_id=meta.package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
 
 
 def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
@@ -548,19 +514,6 @@ def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
     return capture_id, written
 
 
-def _package_doc(filename: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
-
-
 def _assert_clean_load(data: Path, alias: str, expected_rows: int) -> pl.DataFrame:
     """Capture + run ``alias``: every row written, none excluded, the generic output columns."""
     meta = CAPTURES[alias]
@@ -569,8 +522,8 @@ def _assert_clean_load(data: Path, alias: str, expected_rows: int) -> pl.DataFra
     completion = read_completion(data, meta.family, capture_id)
     assert completion is not None
     assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
-    frame = _silver(data, meta.family)
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(meta.family)
+    frame = silver_frame(data, meta.family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(meta.family)
     return frame
 
 
@@ -663,7 +616,7 @@ def test_every_record_is_csv_utf8_version_1_with_ckan_last_modified_and_no_issue
     version 1, utf-8 CSV, ``ckan_last_modified`` vintage (all captures are uploads), whole-capture
     selection, per-resource selection exactly for the five multi-resource families, and no epoch
     declares an issue recipe (``issue_time`` is never emitted)."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     assert (record.vintage, record.vintage_evidence) == ("ckan_last_modified", None)
     assert record.latest == "whole_capture"
@@ -671,7 +624,7 @@ def test_every_record_is_csv_utf8_version_1_with_ckan_last_modified_and_no_issue
     assert ("resource_id" in record.entity_key) == (key in PARTITIONED)
     assert all(epoch.issue.kind == "none" for epoch in record.epochs)
     assert has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
     assert record.siblings == () and record.xlsx is None
 
 
@@ -680,7 +633,7 @@ def test_voltage_utilisation_record() -> None:
     typed as an integer or forced non-negative, or a month key invented: ``Aug-26`` reads
     ``%b-%y`` into a non-nullable date that is the ``month`` recipe's input, the three MVAr
     columns are nullable float64, BMU and month are the key."""
-    record = _record("voltage_units_utilisation")
+    record = record_of("voltage_units_utilisation")
     (epoch,) = record.epochs
     assert list(epoch.header) == V_HEADER
     assert [(c.name, c.dtype, c.format, c.nullable) for c in epoch.columns] == [
@@ -701,7 +654,7 @@ def test_midterm_record_types_the_gmt_boundaries_and_keeps_the_duration_text() -
     month forced to the start month: start and end are non-nullable UTC datetimes in
     ``%d/%m/%Y %H:%M``, ``Month & Year`` a ``%b-%y`` date column of its own, ``Hours Utilised`` a
     string, the temporal recipe the start instant, the key BMU + start + end."""
-    record = _record("stability_midterm_y1")
+    record = record_of("stability_midterm_y1")
     (epoch,) = record.epochs
     assert list(epoch.header) == M_HEADER
     by_name = {c.name: c for c in epoch.columns}
@@ -740,7 +693,7 @@ def test_pathfinder_records_keep_the_time_columns_raw_and_key_on_every_column() 
     the documented local clock) or a derived key: the four utilisation time columns and the two
     availability ones are strings, the utilisation ``Inertia`` is a nullable int64, temporal is
     ``none``, and each key is ``resource_id`` plus every vendor column, in header order."""
-    util, avail = _record(U), _record(A)
+    util, avail = record_of(U), record_of(A)
     (util_epoch,) = util.epochs
     (avail_epoch,) = avail.epochs
     assert list(util_epoch.header) == U_HEADER and list(avail_epoch.header) == A_HEADER
@@ -774,7 +727,7 @@ def test_inertia_record_bounds_the_period_and_keys_on_the_settlement_pair() -> N
     50), the pair recipe lost, or a quantity typed as a float: ``Settlement Period`` is a
     non-nullable int64 in 1..50, the date ``%Y-%m-%d``, both inertia quantities nullable int64,
     temporal ``sp_pair`` and the key (resource, date, period)."""
-    record = _record(INERTIA_KEY)
+    record = record_of(INERTIA_KEY)
     (epoch,) = record.epochs
     assert list(epoch.header) == I_HEADER
     assert [(c.name, c.dtype, c.format, c.nullable, c.min, c.max) for c in epoch.columns] == [
@@ -797,7 +750,7 @@ def test_inertia_cost_record_has_two_epochs_and_one_cost_column() -> None:
     ``Cost_per_GVAs``) both yield the int64 ``cost_gbp_per_gvas`` and a non-nullable
     ``settlement_date`` whose formats are exactly the six filenames (the DMY ones are the 2017-2020
     resources), ``date_sp1`` anchor, key (resource, date)."""
-    record = _record(C)
+    record = record_of(C)
     old, new = record.epochs
     assert list(old.header) == C_OLD_HEADER and list(new.header) == C_NEW_HEADER
     for epoch, value_source in ((old, "Cost"), (new, "Cost_per_GVAs")):
@@ -828,7 +781,7 @@ def test_voltage_cost_records_share_one_header_and_differ_in_the_date_spelling()
     nullable float64; the historical month uses exactly the eleven-filename map, the main month the
     scalar ``%d/%m/%Y``; ``month`` recipe over ``settlement_month``; keys with and without the
     resource."""
-    hist, main = _record(H), _record("outturn_voltage_costs_main")
+    hist, main = record_of(H), record_of("outturn_voltage_costs_main")
     for record in (hist, main):
         (epoch,) = record.epochs
         assert list(epoch.header) == H_HEADER
@@ -861,7 +814,7 @@ def test_pathfinder_reports_are_held_exactly_as_ruled_and_the_package_stays_elig
     Pathfinder reports carry the spec's verbatim E-SEM question, are effectively held, and the
     package itself stays eligible."""
     package, family = registry_module.load_registry().families[key]
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert (record.eligibility.unit, record.eligibility.question) == ("E-SEM", HELD[key])
     assert effective_eligibility(package, family) == record.eligibility
@@ -873,7 +826,7 @@ def test_the_six_other_families_are_eligible(key: str) -> None:
     """Detects a hold wrongly put on an eligible family: none carries a record-level eligibility, so
     each is effectively eligible (the 2026 inertia cost HOLD is resource-level)."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
 
 
@@ -888,7 +841,7 @@ def test_each_family_is_in_the_package_file_the_spec_names() -> None:
     for key, filename in PACKAGE_FILES.items():
         by_file.setdefault(filename, set()).add(key)
     for filename, keys in by_file.items():
-        document = _package_doc(filename)
+        document = package_doc(filename)
         assert {f["key"] for f in document["families"] if "record" in f} == keys, filename
         for resource in document["resources"]:
             family = resource["family"]
@@ -1037,7 +990,7 @@ def test_utilisation_fixtures_keep_every_time_string_raw_and_blanks_null(
     ]
     assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}
     assert set(frame["resource_id"].to_list()) == {meta.resource_id}
-    assert frame.select(["resource_id", *_columns(U)[:7]]).is_duplicated().sum() == 0
+    assert frame.select(["resource_id", *output_names(U)[:7]]).is_duplicated().sum() == 0
     if alias == "u23":
         assert frame["inertia"].null_count() > 0
         assert frame["instruction_issue_time"].null_count() > 0
@@ -1063,7 +1016,7 @@ def test_identical_pathfinder_rows_fail_the_capture_and_are_never_deduplicated(
     failure = read_failure(data, family, capture_id)
     assert failure is not None and failure["error_class"] == DuplicateEntityKeyError.__name__
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 def test_availability_fixture_keeps_every_string_including_the_unvailable_flag(data: Path) -> None:
@@ -1140,7 +1093,7 @@ def test_an_impossible_settlement_period_is_excluded_and_surfaced_not_loaded(
     completion = read_completion(data, INERTIA_KEY, capture_id)
     assert completion is not None and completion["rows_excluded"] == 1
     assert any(rule in r.getMessage() for r in caplog.records)
-    assert 51 not in _silver(data, INERTIA_KEY)["settlement_period"].to_list()
+    assert 51 not in silver_frame(data, INERTIA_KEY)["settlement_period"].to_list()
 
 
 def test_both_inertia_cost_header_epochs_land_in_one_cost_column(data: Path) -> None:
@@ -1152,8 +1105,8 @@ def test_both_inertia_cost_header_epochs_land_in_one_cost_column(data: Path) -> 
     ``date_sp1`` anchor of each date is its London midnight."""
     for alias in ("c17", "c22", "c24"):
         _run(data, alias)
-    frame = _silver(data, C)
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(C)
+    frame = silver_frame(data, C)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(C)
     assert "cost" not in frame.columns and "cost_per_gvas" not in frame.columns
     assert frame.schema["cost_gbp_per_gvas"] == pl.Int64
     for alias, fmt in (("c17", "%d/%m/%Y"), ("c22", "%Y-%m-%d"), ("c24", "%Y-%m-%d")):
@@ -1182,7 +1135,7 @@ def test_an_unlisted_cost_filename_fails_the_capture_with_no_fallback(data: Path
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, C, data).run(DAY, run_id="r")
     assert read_completion(data, C, capture_id) is None
-    assert _no_silver(data, C)
+    assert no_silver(data, C)
 
 
 def test_the_2026_inertia_cost_resource_is_never_transformed_or_cast(data: Path) -> None:
@@ -1192,7 +1145,7 @@ def test_the_2026_inertia_cost_resource_is_never_transformed_or_cast(data: Path)
     resource captured beside it the clean one alone completes, C26 has no completion or failure,
     nothing of it is in silver and reconcile reports no gap."""
     registry = load_registry()
-    assert header("c26") == list(_record(C).epochs[1].header)
+    assert header("c26") == list(record_of(C).epochs[1].header)
     with pytest.raises(pl.exceptions.InvalidOperationError):
         pl.Series(["01/04/2026"]).str.strptime(pl.Date, "%Y-%m-%d", strict=True)
 
@@ -1203,7 +1156,7 @@ def test_the_2026_inertia_cost_resource_is_never_transformed_or_cast(data: Path)
     assert read_completion(data, C, c26_id) is None and read_failure(data, C, c26_id) is None
     completion = read_completion(data, C, c24_id)
     assert completion is not None and completion["rows_excluded"] == 0
-    frame = _silver(data, C)
+    frame = silver_frame(data, C)
     assert set(frame["resource_id"].to_list()) == {CAPTURES["c24"].resource_id}
     report = reconcile(data, registry, [C], DAY)
     assert report.gaps == (), report.lines()
@@ -1253,7 +1206,7 @@ def test_a_historical_body_under_the_other_filename_fails_loud(data: Path) -> No
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, H, data).run(DAY, run_id="r")
     assert read_completion(data, H, capture_id) is None
-    assert _no_silver(data, H)
+    assert no_silver(data, H)
 
 
 def test_main_voltage_costs_load_whole_and_do_not_overlap_the_historical_months(
@@ -1303,7 +1256,7 @@ def test_an_undocumented_token_is_never_read_as_null_or_repaired(
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, meta.family, data).run(meta.day, run_id="r")
     assert read_completion(data, meta.family, capture_id) is None
-    assert _no_silver(data, meta.family)
+    assert no_silver(data, meta.family)
 
 
 # --------------------------------------------------------------------------- #
@@ -1351,7 +1304,7 @@ def test_the_committed_ledger_adjudicates_exactly_the_six_pathfinder_captures() 
             assert "never deduplicated" in entry["reason"]
             assert "v0.22-K-SYS-1" in entry["evidence"] and "ADR-040" in entry["evidence"]
         assert resources == expected, family
-    assert [e.family for e in entries[-18:-12]] == [U, U, A, A, A, A]
+    assert [e.family for e in entries[-17:-11]] == [U, U, A, A, A, A]
     reasons = " ".join(e["reason"] for e in util + avail)
     for excess in ("3,964", "306", "1,003", "46,921", "7,679"):
         assert excess in reasons, excess
@@ -1369,13 +1322,13 @@ def test_pathfinder_failures_are_adjudicated_not_open_and_not_stale(
     install_generated(
         monkeypatch,
         data / "_registry",
-        [_package_doc("stability-pathfinder-service-information.json")],
+        [package_doc("stability-pathfinder-service-information.json")],
     )
     ids = {family: capture(data, alias) for alias, family in (("u25", U), ("a23", A))}
     for family in (U, A):
         with contextlib.suppress(NesoCaptureFailedError):
             get_transformer(SOURCE, family, data).run(DAY, run_id="r")
-    before = (_tree_bytes(data, "silver"), _tree_bytes(data, "state"))
+    before = (tree_bytes(data, "silver"), tree_bytes(data, "state"))
     for family in (U, A):
         code, lines = run_cli(family, "--cutoff", DAY.isoformat())
         assert code == 1, lines
@@ -1394,15 +1347,7 @@ def test_pathfinder_failures_are_adjudicated_not_open_and_not_stale(
         (adjudicated,) = [line for line in lines if ids[family] in line]
         assert adjudicated.startswith(f"ADJUDICATED failed {family}")
         assert "DuplicateEntityKeyError" in adjudicated and "ruling 642" in adjudicated
-    assert (_tree_bytes(data, "silver"), _tree_bytes(data, "state")) == before
-
-
-def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
-    return {
-        p.relative_to(data / top).as_posix(): p.read_bytes()
-        for p in sorted((data / top).rglob("*"))
-        if p.is_file()
-    }
+    assert (tree_bytes(data, "silver"), tree_bytes(data, "state")) == before
 
 
 def test_no_other_system_family_has_a_ledger_entry() -> None:
@@ -1429,10 +1374,10 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     one after serves it, in the DuckDB view and in Polars."""
     meta = CAPTURES[alias]
     capture_id, _ = _run(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
-    recipe = _record(meta.family).temporal
+    recipe = record_of(meta.family).temporal
     london = ZoneInfo("Europe/London")
     if recipe.kind == "none":
         assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}
@@ -1458,26 +1403,3 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     assert both_as_of(db, data, meta.family, before) == []
     assert set(both_as_of(db, data, meta.family, after)) == {capture_id}
     assert set(both_as_of(db, data, meta.family, None)) == {capture_id}
-
-
-def test_the_skeleton_pages_render_the_new_records() -> None:
-    """Detects a record the docs generator cannot render (the held Pathfinder questions, the
-    resource-level HOLD, the two cost epochs, the per-filename date maps)."""
-    registry = load_registry()
-    seen = set()
-    for key, filename in PACKAGE_FILES.items():
-        slug = filename.removesuffix(".json")
-        page = skeleton.render_package(
-            registry,
-            {
-                "name": slug,
-                "title": slug,
-                "organization": {"title": "NESO"},
-                "license_title": "NESO Open Data Licence",
-                "extras": [],
-            },
-            None,
-        )
-        assert f"`{key}`" in page, key
-        seen.add(key)
-    assert seen == set(FAMILIES)

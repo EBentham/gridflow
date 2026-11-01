@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 import os
-import re
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -18,6 +17,7 @@ from gridflow.storage.paths import PathBuilder
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    from gridflow.silver.latest_views import LatestViewSpec
     from gridflow.silver.owned_relations import RegisteredRelationsTransformer
 
 logger = logging.getLogger(__name__)
@@ -177,9 +177,7 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
     # sources sharing a dataset directory name (e.g. a future bare ``forecast``)
     # would otherwise collapse to one view under CREATE OR REPLACE in
     # nondeterministic iterdir() order, silently shadowing one source's data.
-    # Track which source(s) own each dataset NAME so the alias pass can tell
-    # single-source names (safe to alias) from collision names (must NOT).
-    dataset_sources: dict[str, set[str]] = {}
+    latest_bases: list[tuple[str, LatestViewSpec | None]] = []
     if silver_root.exists():
         for source_dir in silver_root.iterdir():
             if not source_dir.is_dir():
@@ -187,36 +185,28 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
             for dataset_dir in source_dir.iterdir():
                 if not dataset_dir.is_dir():
                     continue
-                dataset_sources.setdefault(dataset_dir.name, set()).add(source_dir.name)
                 if (source_dir.name, dataset_dir.name) in owners:
                     # The owned-relations pass below registers this dataset.
                     continue
                 view_name = f"silver_{source_dir.name}_{dataset_dir.name}"
                 pattern = str(dataset_dir / _SAFE_PARQUET_GLOB).replace("\\", "/")
-                _try_create_view(con, view_name, pattern)
                 spec = LATEST_VIEW_SPECS.get((source_dir.name, dataset_dir.name))
-                if spec is not None and _view_exists(con, view_name):
-                    # Order/rank terms adapt to the view's actual columns (live-feed
-                    # system_prices has no run_type; legacy files lack available_at).
-                    latest_name = f"{view_name}_latest"
-                    sql = latest_view_sql(
-                        view_name,
-                        latest_name,
-                        spec,
-                        available_columns=_view_columns(con, view_name),
-                    )
-                    if sql is not None:
-                        con.execute(sql)
-                    else:
-                        # A previously-registered projection that can no longer be
-                        # built must not linger as a binder-error trap.
-                        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
+                if not _try_create_view(con, view_name, pattern):
+                    # The failed CREATE OR REPLACE leaves an earlier init's view in
+                    # place, bound to a glob that no longer matches (a pruned
+                    # dataset keeps its directory); its _latest would then abort
+                    # init on the dead glob.
+                    for name in (f"{view_name}_latest", view_name):
+                        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(name)}")
+                elif spec is not None:
+                    latest_bases.append((view_name, spec))
 
     if owners:
-        _register_owned_relations(con, silver_root.parent, owners)
+        latest_bases += _register_owned_relations(con, silver_root.parent, owners)
 
-    if silver_root.exists():
-        _register_silver_aliases(con, dataset_sources)
+    _register_latest_views(con, latest_bases)
+
+    _drop_retired_silver_aliases(con, silver_root)
 
     # Gold views
     if gold_root.exists():
@@ -281,15 +271,20 @@ def _register_owned_relations(
     con: duckdb.DuckDBPyConnection,
     data_dir: Path,
     owners: dict[tuple[str, str], type[RegisteredRelationsTransformer]],
-) -> None:
+) -> list[tuple[str, LatestViewSpec | None]]:
     """Register every owner's relations, unconditionally (ADR-034 I-1).
 
     Support relations first (a ``_latest`` may read them), once per name; then
-    per owner its base view and its ``_latest``. Each base or support view is
+    per owner its base view; :func:`_register_latest_views` adds the ``_latest``
+    views afterwards. Each base or support view is
     over its Parquet when any exists, else typed-empty. Relation EXISTENCE has
     one input, registration; what the relations return is the selection over
     whatever silver and the ledger hold, and any disagreement between the two
     is reconcile's to report, never the catalogue's.
+
+    Returns:
+        Each owner's base view name with its ``_latest`` spec, ``None`` when it
+        has none, in registration order.
     """
     paths = PathBuilder(data_dir)
     seen: set[str] = set()
@@ -299,96 +294,75 @@ def _register_owned_relations(
                 seen.add(support.name)
                 _register_view_or_empty(con, support.name, support.directory, support.columns)
 
+    bases: list[tuple[str, LatestViewSpec | None]] = []
     for source, dataset in sorted(owners):
         cls = owners[(source, dataset)]
         view_name = f"silver_{source}_{dataset}"
         _register_view_or_empty(
             con, view_name, paths.silver_dir(source, dataset), cls.output_columns()
         )
+        bases.append((view_name, LATEST_VIEW_SPECS.get((source, dataset))))
+    return bases
+
+
+def _register_latest_views(
+    con: duckdb.DuckDBPyConnection, bases: Sequence[tuple[str, LatestViewSpec | None]]
+) -> None:
+    """Create or drop each base view's ``_latest``, in order, from one column snapshot.
+
+    One unfiltered ``information_schema.columns`` read replaces a filtered read
+    per view: each filtered read enumerated the whole catalogue, so init time
+    grew with the view count. Every base and support view a ``_latest`` reads
+    is registered before this runs. A base view that is absent, or has no spec,
+    gets no ``_latest``.
+    """
+    columns: dict[str, set[str]] = {}
+    for table_name, column_name in con.execute(
+        "SELECT c.table_name, c.column_name FROM information_schema.columns c "
+        "JOIN information_schema.views v "
+        "ON v.table_schema = c.table_schema AND v.table_name = c.table_name "
+        "WHERE c.table_schema = 'main'"
+    ).fetchall():
+        columns.setdefault(table_name, set()).add(column_name)
+    for view_name, spec in bases:
         latest_name = f"{view_name}_latest"
-        spec = LATEST_VIEW_SPECS.get((source, dataset))
+        available = columns.get(view_name)
         sql = None
-        if spec is not None and _view_exists(con, view_name):
-            sql = latest_view_sql(
-                view_name, latest_name, spec, available_columns=_view_columns(con, view_name)
-            )
+        if spec is not None and available is not None:
+            # Order/rank terms adapt to the view's actual columns (live-feed
+            # system_prices has no run_type; legacy files lack available_at).
+            sql = latest_view_sql(view_name, latest_name, spec, available_columns=available)
         if sql is not None:
             con.execute(sql)
         else:
+            # A previously-registered projection that can no longer be built
+            # must not linger as a binder-error trap.
             con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(latest_name)}")
 
 
-def _register_silver_aliases(
-    con: duckdb.DuckDBPyConnection, dataset_sources: dict[str, set[str]]
-) -> None:
-    """Register DEPRECATED backward-compat aliases for renamed silver views (C1-4).
+def _drop_retired_silver_aliases(con: duckdb.DuckDBPyConnection, silver_root: Path) -> None:
+    """Drop the single-token ``silver_{dataset}`` views earlier inits registered.
 
-    The silver views were renamed to the source-qualified scheme
-    ``silver_{source}_{dataset}`` (C1-4 / CH-ARCH-03). Each alias registered here
-    is a deprecation shim ``silver_{dataset} -> silver_{source}_{dataset}`` so an
-    out-of-repo caller (e.g. ``gridflow_models``) querying the OLD single-token
-    name survives the rename. These shims are DEPRECATED: new code must use the
-    qualified name, and the aliases may be dropped in a future cleanup.
-
-    An alias is auto-generated for every dataset NAME owned by exactly ONE source
-    (looked up in ``dataset_sources``). A name owned by MORE than one source is a
-    collision case — exactly what the source-qualified scheme exists to
-    disambiguate — so it is SKIPPED (logged at DEBUG): a single-token alias would
-    arbitrarily shadow one source's data and reintroduce the foot-gun the rename
-    removed.
-
-    An alias is only created when its qualified target view actually exists in
-    the live catalogue: tests (and partial pipelines) init over a tmpdir holding
-    only a subset of datasets, so a dataset dir whose parquet has not been
-    written yet has no qualified view, and aliasing an absent target raises a
-    DuckDB binder error — which under pytest / GRIDFLOW_ENV strict mode (F15-D)
-    would propagate and break catalogue init. Gating on the live catalogue keeps
-    the shim loud-failure-free.
-
-    Args:
-        con: Open DuckDB connection whose silver views have already been
-            registered by the caller.
-        dataset_sources: Map of each silver dataset NAME to the set of source
-            names that own a ``silver/<source>/<dataset>`` directory, built by
-            :func:`_register_views` while registering the qualified views.
+    They were deprecation shims for the source-qualified rename (C1-4) and are
+    retired. ``CREATE OR REPLACE`` never removes a view, so a catalogue built
+    before the retirement keeps them until this drops them. They were made from
+    the silver dirs, so a dir with no registered transformer counts too. A name
+    that is also a qualified view is never dropped.
     """
-    existing = {
-        row[0]
-        for row in con.execute(
-            "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
-        ).fetchall()
-    }
-    for dataset, sources in dataset_sources.items():
-        if len(sources) > 1:
-            # Collision name: a single-token alias would silently shadow one
-            # source. The qualified ``silver_{source}_{dataset}`` views remain
-            # the only way to reach these — by design (C1-4).
-            logger.debug(
-                "Skipping ambiguous silver alias silver_%s: owned by %d sources (%s)",
-                dataset,
-                len(sources),
-                ", ".join(sorted(sources)),
-            )
-            continue
-        (source,) = tuple(sources)
-        alias = f"silver_{dataset}"
-        target = f"silver_{source}_{dataset}"
-        if target not in existing:
-            continue
-        if alias in existing:
-            # The single-token alias collides with an already-registered
-            # qualified view (only possible if a future dataset name equals
-            # ``{source}_{dataset2}``). Never CREATE OR REPLACE over it — that is
-            # the silent-shadow this whole mechanism exists to prevent (C1-4).
-            logger.debug("Skipping silver alias %s: name already taken by a qualified view", alias)
-            continue
-        con.execute(
-            f"CREATE OR REPLACE VIEW {_quote_identifier(alias)} "
-            f"AS SELECT * FROM {_quote_identifier(target)}"
-        )
-        # WHY logged: these single-token aliases are deprecation shims; a future
-        # cleanup can drop them once downstream migrates to the qualified name.
-        logger.info("Registered DEPRECATED backward-compat silver alias: %s -> %s", alias, target)
+    from gridflow.silver.registry import list_transformers
+
+    pairs = set(list_transformers())
+    if silver_root.exists():
+        pairs |= {
+            (source_dir.name, dataset_dir.name)
+            for source_dir in silver_root.iterdir()
+            if source_dir.is_dir()
+            for dataset_dir in source_dir.iterdir()
+            if dataset_dir.is_dir()
+        }
+    qualified = {f"silver_{source}_{dataset}" for source, dataset in pairs}
+    for name in sorted({f"silver_{dataset}" for _source, dataset in pairs} - qualified):
+        con.execute(f"DROP VIEW IF EXISTS {_quote_identifier(name)}")
 
 
 def _quote_identifier(name: str) -> str:
@@ -400,25 +374,6 @@ def _quote_identifier(name: str) -> str:
     name safe and closes the local injection surface.
     """
     return '"' + name.replace('"', '""') + '"'
-
-
-def _view_exists(con: duckdb.DuckDBPyConnection, view_name: str) -> bool:
-    """Return whether a view is registered in DuckDB's main schema."""
-    row = con.execute(
-        "SELECT 1 FROM information_schema.views WHERE table_schema = ? AND table_name = ?",
-        ["main", view_name],
-    ).fetchone()
-    return row is not None
-
-
-def _view_columns(con: duckdb.DuckDBPyConnection, view_name: str) -> set[str]:
-    """Return the column names of a registered view."""
-    rows = con.execute(
-        "SELECT column_name FROM information_schema.columns "
-        "WHERE table_schema = ? AND table_name = ?",
-        ["main", view_name],
-    ).fetchall()
-    return {row[0] for row in rows}
 
 
 def _quote_string_literal(value: str) -> str:
@@ -445,102 +400,7 @@ def _is_benign_absent_parquet(exc: Exception) -> bool:
     return "no files found" in msg or "no files that match" in msg
 
 
-_MISSING_CATALOG_NAME_RE = re.compile(
-    r'with name "?([A-Za-z0-9_]+)"?\s+does not exist', re.IGNORECASE
-)
-
-
-def _extract_missing_catalog_name(exc: Exception) -> str | None:
-    """Extract the missing table/view/function name DuckDB names in a CatalogException.
-
-    DuckDB's CatalogException states the offending object name in a
-    consistent shape (``... with name <name> does not exist!``) regardless of
-    whether the missing object is a table, view, or scalar function — see
-    the three probed message shapes in the Sol diff pass 1 major finding.
-    Returns ``None`` if the message doesn't match (defensive: a future DuckDB
-    version could reword this), which callers must treat as "cannot
-    classify" rather than "benign".
-    """
-    match = _MISSING_CATALOG_NAME_RE.search(str(exc))
-    return match.group(1) if match else None
-
-
-def _expected_silver_relation_names() -> frozenset[str]:
-    """Relation names gridflow itself expects to exist once transform/rebuild runs.
-
-    Sourced from the two places the repo already owns this list, never
-    hardcoded here: the silver schema manifest (``relation_name`` and
-    ``qualified_view`` for every registered dataset) and
-    ``LATEST_VIEW_SPECS``' base/``_latest`` view-name pair. A gold view
-    referencing one of these names that isn't materialized YET is a benign,
-    expected absence during partial pipeline runs. Anything else a
-    CatalogException names — a misspelled relation, a missing scalar
-    function, or any other object gridflow does not itself register — falls
-    outside this set and is a genuine defect.
-
-    Filtered to SILVER-layer relations only (manifest ``relation_kind`` of
-    ``"silver"`` or ``"serving_alias"``, both of which point at
-    ``silver_*`` views). Rows with ``relation_kind == "gold"``
-    (``gold_eu_gas_storage``, ``gold_uk_imbalance_context``) are deliberately
-    excluded: a missing GOLD relation is never a benign "upstream silver not
-    yet written" case, and including gold names here would re-open the
-    silent-swallow this membership test exists to close (Sol diff pass 2
-    major finding 1).
-    """
-    from gridflow.silver.schema_manifest import get_silver_schema_manifest
-
-    names: set[str] = set()
-    for entry in get_silver_schema_manifest():
-        if entry.relation_kind == "gold":
-            continue
-        names.add(entry.relation_name)
-        if entry.qualified_view is not None:
-            names.add(entry.qualified_view)
-    for source, dataset in LATEST_VIEW_SPECS:
-        base_view = f"silver_{source}_{dataset}"
-        names.add(base_view)
-        names.add(f"{base_view}_latest")
-    return frozenset(names)
-
-
-def _is_benign_absent_gold_view(exc: Exception) -> bool:
-    """True when a gold view fails because a KNOWN silver relation is absent.
-
-    Mirrors _is_benign_absent_parquet's DEBUG/WARNING split one layer up:
-    DuckDB raises a CatalogException citing a missing table/view/function.
-    Message-shape alone ("does not exist") is not enough to call this
-    benign — a misspelled relation name or a missing scalar function raises
-    the identical shape (Sol diff pass 1 major finding) and must NOT be
-    classified as benign-absent. Classification is therefore a MEMBERSHIP
-    test: DEBUG only when the missing object is one gridflow itself expects
-    to exist eventually (:func:`_expected_silver_relation_names`); if the
-    name cannot be extracted from the message, or isn't in that set, this
-    falls to WARNING — ambiguity always resolves to the loud, safe branch.
-    The expected-set build itself fails closed: a manifest-build failure
-    (e.g. ``get_silver_schema_manifest``'s documented ``ValueError`` paths)
-    is caught, logged once at WARNING, and treated as non-benign rather than
-    escaping this classification path and turning production's
-    logging-only posture into an init/refresh hard failure (Sol diff pass 2
-    major finding 2).
-    """
-    if not isinstance(exc, duckdb.CatalogException):
-        return False
-    missing_name = _extract_missing_catalog_name(exc)
-    if missing_name is None:
-        return False
-    try:
-        expected_names = _expected_silver_relation_names()
-    except Exception as build_exc:
-        logger.warning(
-            "Could not build expected silver relation names for gold-view "
-            "absence classification; treating as non-benign: %s",
-            build_exc,
-        )
-        return False
-    return missing_name in expected_names
-
-
-def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> None:
+def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: str) -> bool:
     """Create a view over the Parquet files, if any have been written.
 
     The view name is quoted as an identifier and the glob is escaped as a
@@ -548,6 +408,9 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
     binder failure is surfaced loudly (raise under strict mode, WARNING+ in
     production); only the benign "parquet not yet written" case is swallowed at
     DEBUG, preserving the F15-D / PBI-05 production-swallow contract.
+
+    Returns:
+        Whether the view was created; ``False`` only for a swallowed failure.
     """
     try:
         con.execute(
@@ -569,6 +432,8 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
                 view_name,
                 e,
             )
+        return False
+    return True
 
 
 def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
@@ -585,20 +450,9 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
         except Exception as exc:
             if _is_strict_mode():
                 raise
-            if _is_benign_absent_gold_view(exc):
-                logger.debug(
-                    "Could not register gold view %s (upstream relation not yet present): %s",
-                    sql_file.name,
-                    exc,
-                )
-            else:
-                # Deterministic DDL/binder error — make the silent-corruption case
-                # visible rather than letting a later SELECT fail opaquely.
-                logger.warning(
-                    "Gold view registration failed for %s (not absent-data): %s",
-                    sql_file.name,
-                    exc,
-                )
+            # DuckDB's message says what is missing or broken; an absent upstream
+            # relation and a misspelt one raise the same CatalogException.
+            logger.warning("Gold view registration failed for %s: %s", sql_file.name, exc)
 
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:

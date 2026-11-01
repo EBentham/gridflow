@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from datetime import date
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,14 +9,8 @@ if TYPE_CHECKING:
 
     from gridflow.silver.base import BaseSilverTransformer
 
-PostRunHook = Callable[["BaseSilverTransformer", date], None]
-"""``fn(transformer, target_date)``, called by ``run_transform`` after ``run()``."""
-
 # Registry of (source, dataset) -> transformer class
 _REGISTRY: dict[tuple[str, str], type[BaseSilverTransformer]] = {}
-
-# (source, dataset) -> post-run hooks, in registration order (ADR-034 P-8).
-_POST_RUN_HOOKS: dict[tuple[str, str], list[PostRunHook]] = {}
 
 # (source, dataset) -> (reason, warn) for a dataset transform skips (ADR-034 P-13).
 _INGEST_ONLY: dict[tuple[str, str], tuple[str, bool]] = {}
@@ -59,23 +51,6 @@ def list_transformers(source: str | None = None) -> list[tuple[str, str]]:
     if source:
         return [(s, d) for s, d in _REGISTRY if s == source]
     return list(_REGISTRY.keys())
-
-
-def register_post_run_hook(source: str, dataset: str, fn: PostRunHook) -> None:
-    """Run ``fn(transformer, target_date)`` after each ``run()`` of ``source/dataset``.
-
-    ``run_transform`` calls it inside the same ``try`` as ``run()``, so a
-    raising hook fails the dataset (ADR-034 P-8: the bespoke NESO transformers
-    gain completion records without their modules changing).
-    """
-    hooks = _POST_RUN_HOOKS.setdefault((source, dataset), [])
-    if fn not in hooks:
-        hooks.append(fn)
-
-
-def post_run_hooks(source: str, dataset: str) -> tuple[PostRunHook, ...]:
-    """Return the post-run hooks registered for ``source/dataset``."""
-    return tuple(_POST_RUN_HOOKS.get((source, dataset), ()))
 
 
 def register_ingest_only(source: str, dataset: str, reason: str, *, warn: bool = True) -> None:

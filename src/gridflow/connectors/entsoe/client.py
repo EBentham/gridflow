@@ -2,19 +2,17 @@
 
 from __future__ import annotations
 
-import asyncio
 import dataclasses
 import io
 import logging
 import zipfile
 from datetime import datetime
-from time import monotonic
 from typing import TYPE_CHECKING, Any
 
 import httpx
 
 from gridflow.bronze.sanitize import sanitize_url
-from gridflow.connectors.base import BaseConnector, RawResponse, _make_ssl_context
+from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.entsoe.endpoints import (
     BIDDING_ZONES,
     DEFAULT_CONTROL_AREAS,
@@ -25,7 +23,6 @@ from gridflow.connectors.entsoe.endpoints import (
 )
 from gridflow.connectors.entsoe.parsers import _hardened_parser
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
 from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
@@ -53,14 +50,29 @@ _ACK_REASON_NS = {
     "ack": "urn:iec62325.351:tc57wg16:451-1:acknowledgementdocument:7:0",
 }
 
-# G9 ENTSOE-01: ENTSO-E caps high-cardinality endpoints (A37 balancing
-# energy bids, A15 procured balancing capacity, A38 cross-zonal capacity,
-# etc.) at 4800 TimeSeries elements per response and requires the caller
-# to page through results via the `offset` query parameter (0, 4800,
-# 9600, ...). Doc types that support pagination declare `"offset"` in
-# their optional_params. Below this constant the connector terminates
-# the paging loop.
-_ENTSOE_PAGE_SIZE = 4800
+# G9 ENTSOE-01: ENTSO-E pages high-cardinality endpoints (A37 balancing
+# energy bids, A15 procured balancing capacity) through the `offset` query
+# parameter. A reply carries at most 100 series and `offset=n` returns series
+# n+1..n+100 (live probe 2026-10-24, FR A37 and A15 for 2026-08-01: 100 series
+# at offsets 0, 100, 200 and 4800, with no overlap between pages, and the
+# A37 day only ran out past offset 30000). 4800 is the API guide's offset
+# ceiling, not the page size, and the vendor does not enforce it for A37.
+# Doc types that support pagination declare `"offset"` in their
+# optional_params; a page with fewer than _ENTSOE_PAGE_SIZE series ends the
+# loop.
+_ENTSOE_PAGE_SIZE = 100
+
+# Runaway guard: fail the fetch after this many pages (1,000,000 series)
+# rather than loop forever if the vendor ever keeps returning full pages.
+_ENTSOE_MAX_PAGES = 10_000
+
+# A37 replies (ReserveBid_MarketDocument) name their series Bid_TimeSeries;
+# every other document type uses TimeSeries.
+_SERIES_ELEMENT_NAMES = frozenset({"TimeSeries", "Bid_TimeSeries"})
+
+
+class EntsoePagingLimitError(RuntimeError):
+    """Raised when a paged ENTSO-E request still returns full pages at the page cap."""
 
 
 class EntsoeConnector(BaseConnector):
@@ -72,6 +84,7 @@ class EntsoeConnector(BaseConnector):
     """
 
     source_name = "entsoe"
+    PACED_SENDS = True
 
     def __init__(self, config: SourceConfig) -> None:
         super().__init__(config)
@@ -82,20 +95,6 @@ class EntsoeConnector(BaseConnector):
 
     def _auth_headers(self) -> dict[str, str]:
         return {}
-
-    async def __aenter__(self) -> EntsoeConnector:
-        import asyncio
-
-        self._semaphore = asyncio.Semaphore(self.config.rate_limit_per_second)
-        self._rate_limit_lock = asyncio.Lock()
-        self._last_request_at = 0.0
-        self._client = httpx.AsyncClient(
-            base_url=self.config.base_url,
-            timeout=self.config.timeout,
-            verify=_make_ssl_context(),
-            # No auth headers — token goes in query params
-        )
-        return self
 
     # ------------------------------------------------------------------
     # Public interface
@@ -109,17 +108,11 @@ class EntsoeConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch XML data for a date range from ENTSO-E.
 
         Dispatches per-zone (or per-zone-pair for cross-border flows).
         """
-        # Reset the partial-fetch counter at the top of the public entry point so
-        # a reused connector never inherits a prior call's count (CC-4 / matches
-        # GIE). ENTSO-E is raise-on-any, so it stays 0 — the explicit reset
-        # documents that invariant rather than relying on it.
-        self.last_skipped_units = 0
         if dataset not in DOC_TYPES:
             raise ValueError(
                 f"Unknown ENTSO-E dataset: {dataset!r}. Available: {list(DOC_TYPES.keys())}"
@@ -142,19 +135,15 @@ class EntsoeConnector(BaseConnector):
         # would be an incoherent N-times-identical-snapshot request.
         #
         # Units are independent, so they fetch concurrently (CH3-03 / C2-7); the
-        # ``rate_limit_per_second`` semaphore plus the ENTSO-E request throttle
-        # inside ``_request`` keep in-flight HTTP bounded. ``gather`` preserves
-        # input order, so the flattened result list is identical to the
-        # sequential version. Paging *within* a unit stays sequential in
+        # ``rate_limit_per_second`` semaphore plus the paced sends keep in-flight
+        # HTTP bounded. Paging *within* a unit stays sequential in
         # ``_fetch_document``; only the across-unit loop is parallel.
         tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
 
         if doc_type.date_param:
             period_start = start.strftime(ENTSOE_DT_FORMAT)
             period_end = end.strftime(ENTSOE_DT_FORMAT)
-            tasks.extend(
-                self._build_unit_tasks(dataset, doc_type, period_start, period_end, params)
-            )
+            tasks.extend(self._build_unit_tasks(dataset, doc_type, period_start, period_end))
         else:
             # Degenerate guard: start == end collapses to no sub-windows —
             # fall back to a single legacy-shape request, preserving today's
@@ -163,20 +152,10 @@ class EntsoeConnector(BaseConnector):
             for sub_start, sub_end in windows:
                 period_start = sub_start.strftime(ENTSOE_DT_FORMAT)
                 period_end = sub_end.strftime(ENTSOE_DT_FORMAT)
-                tasks.extend(
-                    self._build_unit_tasks(dataset, doc_type, period_start, period_end, params)
-                )
+                tasks.extend(self._build_unit_tasks(dataset, doc_type, period_start, period_end))
 
-        # ENTSO-E has no per-unit tolerance: a failing zone fails the whole run
-        # (raise-on-any). ``return_exceptions=True`` collects every result, then
-        # the first exception is re-raised in input order — matching the
-        # sequential loop's first-in-iteration failure.
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        responses: list[RawResponse] = []
-        for result in results:
-            if isinstance(result, BaseException):
-                raise result
-            responses.extend(result)
+        # A failing zone fails the whole run (raise-on-any).
+        responses = await self._gather_units(tasks)
 
         logger.info(
             "Fetched %d responses for entsoe/%s from %s to %s",
@@ -197,7 +176,6 @@ class EntsoeConnector(BaseConnector):
         doc_type: EntsoeDocType,
         period_start: str,
         period_end: str,
-        fetch_params: dict[str, Any],
     ) -> list[Coroutine[Any, Any, list[RawResponse]]]:
         """Build one ``_fetch_document`` task per unit for one request window.
 
@@ -223,7 +201,6 @@ class EntsoeConnector(BaseConnector):
                         out_domain=out_mrid,
                         period_start=period_start,
                         period_end=period_end,
-                        fetch_params=fetch_params,
                     )
                 )
         elif doc_type.domain_style == "control_area":
@@ -240,7 +217,6 @@ class EntsoeConnector(BaseConnector):
                         out_domain=None,
                         period_start=period_start,
                         period_end=period_end,
-                        fetch_params=fetch_params,
                     )
                 )
         else:
@@ -258,7 +234,6 @@ class EntsoeConnector(BaseConnector):
                         out_domain=mrid if doc_type.domain_style == "zone" else None,
                         period_start=period_start,
                         period_end=period_end,
-                        fetch_params=fetch_params,
                     )
                 )
         return tasks
@@ -272,16 +247,15 @@ class EntsoeConnector(BaseConnector):
         out_domain: str | None,
         period_start: str,
         period_end: str,
-        fetch_params: dict[str, Any] | None = None,
     ) -> list[RawResponse]:
         """Fetch a single ENTSO-E document using the dataset's request style.
 
         For doc types that declare ``"offset"`` in ``optional_params``
         (G9 ENTSOE-01 — A37 balancing energy bids, A15 procured balancing
         capacity, etc.), the function pages through results: starting at
-        the doc type's default offset and incrementing by
-        ``_ENTSOE_PAGE_SIZE`` (4800) until a page returns fewer
-        TimeSeries elements than the page size.
+        offset 0 and incrementing by
+        ``_ENTSOE_PAGE_SIZE`` (100) until a page returns fewer
+        series elements than the page size.
         """
         query_params: dict[str, str] = {"documentType": doc_type.document_type}
         if doc_type.date_param:
@@ -303,7 +277,6 @@ class EntsoeConnector(BaseConnector):
             )
         )
         query_params.update(doc_type.extra_params)
-        query_params.update(_optional_filter_params(doc_type, fetch_params or {}))
         if doc_type.process_type:
             query_params["processType"] = doc_type.process_type
         if self.config.api_key:
@@ -313,18 +286,16 @@ class EntsoeConnector(BaseConnector):
         supports_pagination = "offset" in doc_type.optional_params
 
         if not supports_pagination:
-            raw = await self._request(_ENTSOE_API_PATH, query_params)
+            raw = await self._get(_ENTSOE_API_PATH, query_params)
             return self._raw_response_to_records(raw, dataset, query_params, data_date)
 
-        # G9 ENTSOE-01: page until a response carries < page-size TimeSeries.
+        # G9 ENTSOE-01: page until a response carries < page-size series.
         all_responses: list[RawResponse] = []
-        try:
-            offset = int(query_params.get("offset", "0"))
-        except ValueError:
-            offset = 0
+        offset = 0
+        pages_fetched = 0
         while True:
             query_params["offset"] = str(offset)
-            raw = await self._request(_ENTSOE_API_PATH, query_params)
+            raw = await self._get(_ENTSOE_API_PATH, query_params)
             page_responses = self._raw_response_to_records(raw, dataset, query_params, data_date)
 
             # D-18/D-25: parse ONCE per body (net 1 -> 1), and stamp BEFORE the
@@ -346,6 +317,15 @@ class EntsoeConnector(BaseConnector):
             ts_count = sum(count if count is not None else 0 for count in counts)
             if ts_count < _ENTSOE_PAGE_SIZE:
                 break
+            pages_fetched += 1
+            if pages_fetched >= _ENTSOE_MAX_PAGES:
+                # Fail the fetch rather than return a short one: a partial
+                # result would count as a successful ingest and move the
+                # watermark past series that were never fetched.
+                raise EntsoePagingLimitError(
+                    f"ENTSO-E {dataset} paging stopped after {_ENTSOE_MAX_PAGES} pages at "
+                    f"offset {offset} with full pages still arriving"
+                )
             offset += _ENTSOE_PAGE_SIZE
         return all_responses
 
@@ -366,64 +346,28 @@ class EntsoeConnector(BaseConnector):
         content_type = raw.headers.get("content-type", "text/xml")
         if _is_zip_response(content_type, raw.content):
             return [
-                RawResponse(
-                    body=entry_body,
-                    content_type="text/xml",
+                RawResponse.from_httpx(
+                    raw,
                     source="entsoe",
                     dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params={**query_params, "zip_entry": entry_name},
-                    api_version="v1",
-                    http_status=raw.status_code,
+                    params={**query_params, "zip_entry": entry_name},
+                    body=entry_body,
+                    content_type="text/xml",
                     data_date=data_date,
                 )
                 for entry_name, entry_body in _iter_zip_xml(raw.content)
             ]
 
         return [
-            RawResponse(
-                body=raw.content,
-                content_type=content_type,
+            RawResponse.from_httpx(
+                raw,
                 source="entsoe",
                 dataset=dataset,
-                request_url=str(raw.url),
-                request_params=dict(query_params),
-                api_version="v1",
-                http_status=raw.status_code,
+                params=query_params,
+                content_type=content_type,
                 data_date=data_date,
             )
         ]
-
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Make a rate-limited, retried HTTP GET request."""
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            await self._throttle_request()
-            resp = await self._client.get(path, params=params)
-            self._raise_for_status(resp)
-            return resp
-
-    async def _throttle_request(self) -> None:
-        """Pace requests; ENTSO-E rejects bursts even when calls are sequential."""
-        import asyncio
-
-        if self.config.rate_limit_per_second <= 0:
-            return
-        lock = getattr(self, "_rate_limit_lock", None)
-        if lock is None:
-            return
-
-        min_interval = 1.0 / self.config.rate_limit_per_second
-        async with lock:
-            elapsed = monotonic() - getattr(self, "_last_request_at", 0.0)
-            if elapsed < min_interval:
-                await asyncio.sleep(min_interval - elapsed)
-            self._last_request_at = monotonic()
 
     def _raise_for_status(self, response: httpx.Response) -> None:
         """Raise an ENTSO-E-aware HTTP error with acknowledgement details."""
@@ -435,11 +379,13 @@ class EntsoeConnector(BaseConnector):
             message = f"ENTSO-E API error {response.status_code} for url '{url}'"
             if reason:
                 message = f"{message}: {reason}"
+            # `from None`: the chained httpx error's message is the raw URL,
+            # securityToken included, and any rendered traceback would print it.
             raise httpx.HTTPStatusError(
                 message,
                 request=exc.request,
                 response=exc.response,
-            ) from exc
+            ) from None
 
 
 def _extract_acknowledgement_reason(content: bytes) -> str:
@@ -481,14 +427,18 @@ def _extract_acknowledgement_reason(content: bytes) -> str:
 
 
 def count_timeseries_or_none(xml_bytes: bytes) -> int | None:
-    """Count `<TimeSeries>` elements in an ENTSO-E XML response, or None.
+    """Count series elements in an ENTSO-E XML response, or None.
+
+    Counts both ``<TimeSeries>`` and ``<Bid_TimeSeries>`` (the A37
+    ReserveBid_MarketDocument series name); counting only the former left
+    every A37 page at 0, so the pager never asked for page two.
 
     C-8/D-8/D-18: the primitive parse. Namespace-agnostic — checks the
     local-name part of each tag. Returns ``None`` (not ``0``) on an empty
     body, a missing lxml dependency, or a malformed document — a parse
     FAILURE must never be conflated with "zero records" (D-8): that would
     turn every malformed page into a permanent frontier freeze. A
-    well-formed document carrying no ``<TimeSeries>`` elements at all
+    well-formed document carrying no series elements at all
     correctly yields ``0``.
     """
     if not xml_bytes:
@@ -507,7 +457,7 @@ def count_timeseries_or_none(xml_bytes: bytes) -> int | None:
         tag = el.tag
         if isinstance(tag, str):
             local = tag.split("}", 1)[1] if "}" in tag else tag
-            if local == "TimeSeries":
+            if local in _SERIES_ELEMENT_NAMES:
                 count += 1
     return count
 
@@ -562,18 +512,6 @@ def _domain_params(
     if domain_style == "control_area":
         return {"controlArea_Domain": in_domain}
     raise ValueError(f"Unsupported ENTSO-E domain style: {domain_style!r}")
-
-
-def _optional_filter_params(
-    doc_type: EntsoeDocType,
-    fetch_params: dict[str, Any],
-) -> dict[str, str]:
-    """Forward documented optional filters while preserving ENTSO-E casing."""
-    query_params: dict[str, str] = {}
-    for param_name in doc_type.optional_params:
-        if param_name in fetch_params and fetch_params[param_name] is not None:
-            query_params[param_name] = str(fetch_params[param_name])
-    return query_params
 
 
 def _redact_security_token(url: str) -> str:

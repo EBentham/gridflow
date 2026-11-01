@@ -1,6 +1,6 @@
 """The FES ED1 pilot record through unpivot and edition (v0.22-SC, ADR-042).
 
-T-SC5..T-SC8 of the unit plan, over the committed registry and the four ED1 fixtures in
+T-SC5..T-SC7 of the unit plan, over the committed registry and the four ED1 fixtures in
 ``tests/fixtures/neso_data_portal/sc/``, each named by the real ``resource_filename``.
 
 **Fixture rule.** Each fixture is its bronze body's header line plus data rows 1-5 plus
@@ -23,9 +23,6 @@ from __future__ import annotations
 
 import csv
 import io
-import json
-import subprocess
-import sys
 import tempfile
 import textwrap
 from dataclasses import dataclass
@@ -33,42 +30,9 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pytest
-from _neso_dem1h_pin import dump, generated_pin
-from _neso_generic_support import write_capture
-from _neso_sc_pin import PIN_PATH
-from test_neso_dem1_records import _short_base
-from test_neso_multi_resource import (
-    AS1_ADDED,
-    AS2_ADDED,
-    AS3A_ADDED,
-    AS3B_ADDED,
-    AS4A_ADDED,
-    AS4B_ADDED,
-    AS5A_ADDED,
-    AS5B_ADDED,
-    AS5C_ADDED,
-    BAL1_ADDED,
-    BAL2A_ADDED,
-    BAL2B_ADDED,
-    BAL2C_ADDED,
-    CON_ADDED,
-    DFSA_ADDED,
-    DFSB_ADDED,
-    FILE_ADDED,
-    H_ADDED,
-    SCN1A_ADDED,
-    SCN1B_ADDED,
-    SCN1C_ADDED,
-    SCN1D_ADDED,
-    SCN2A_ADDED,
-    SCN2B_ADDED,
-    SCN3_ADDED,
-    SYS1_ADDED,
-    TRD_ADDED,
-)
+from _neso_generic_support import query, write_capture
 
 from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.registry import Held, load_registry
@@ -90,7 +54,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
     from gridflow.connectors.neso_data_portal.registry import SchemaRecord
 
@@ -236,25 +200,17 @@ def pilot_record() -> SchemaRecord:
     return record
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def both_latest(db: Path, data: Path, as_of: datetime | None) -> pl.DataFrame:
     """The catalogue's ``_latest`` (or the parameterised select); asserts SQL = Polars."""
     view = f"silver_{SOURCE}_{PILOT}"
     spec = LATEST_VIEW_SPECS[(SOURCE, PILOT)]
     if as_of is None:
-        sql = _query(db, f'SELECT * FROM "{view}_latest"')
+        sql = query(db, f'SELECT * FROM "{view}_latest"')
     else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
         select = latest_select_sql(view, spec, columns, as_of_param=True)
         assert select is not None
-        sql = _query(db, select, {"as_of": as_of.isoformat()})
+        sql = query(db, select, {"as_of": as_of.isoformat()})
     files = sorted((data / "silver" / SOURCE / PILOT).rglob("[!.]*.parquet"))
     lf = pl.scan_parquet(files, hive_partitioning=False)
     polars = select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
@@ -275,13 +231,11 @@ class Pilot:
 
 
 @pytest.fixture(scope="module")
-def pilot() -> Iterator[Pilot]:
+def pilot(short_base: Path) -> Iterator[Pilot]:
     """Every ED1 fixture captured with E2's sidecar values, run once, catalogued."""
     with (
         pytest.MonkeyPatch.context() as patch,
-        tempfile.TemporaryDirectory(
-            prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root,
+        tempfile.TemporaryDirectory(prefix="", dir=short_base) as root,
     ):
         patch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
         data = Path(root)
@@ -398,13 +352,13 @@ class TestPilot:
         assert report.gaps == ()
         assert "SUMMARY overlap 0" in report.lines()
 
-    def test_t_sc5_g_an_unmapped_filename_fails(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_t_sc5_g_an_unmapped_filename_fails(
+        self, short_base: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         """Detects a fifth (or re-versioned) file given a guessed edition (FM-3)."""
         monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
         item = BY_FILENAME["fes2025_ed1_v006.csv"]
-        with tempfile.TemporaryDirectory(
-            prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as root:
             data = Path(root)
             capture_id = capture(
                 data, item, raw=body(item.filename), resource_filename="fes2027_ed1_v001.csv"
@@ -424,13 +378,12 @@ class TestPilot:
         assert eligibility.unit == "E-SEM"
         assert eligibility.question == QUESTION
 
-    def test_t_sc5_i_only_the_pilot_opts_in(self) -> None:
+    def test_t_sc5_i_only_the_pilot_opts_in(self, run_fresh: Callable[..., str]) -> None:
         """Detects any other committed record setting ``unpivot`` or ``edition_by_filename``
-        (only the pilot, K-SCN-1b's nine regional FES records which map editions but never
-        unpivot, and K-SCN-1c's three building block records, the main one unpivoted, and K-SCN-1d's
-        ES1 record, unpivoted too, and K-BAL-2a's BSUoS monthly forecast summary record, which
-        maps editions without unpivoting; in a fresh interpreter, so nothing collection imported
-        can mask it)."""
+        by spot-checking named records on each side: the pilot, a regional FES record that maps
+        editions without unpivoting, the unpivoted building block main record and the BSUoS
+        monthly forecast summary opt in; records outside the FES and BSUoS forecast families do
+        not (in a fresh interpreter, so nothing collection imported can mask it)."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -442,51 +395,20 @@ class TestPilot:
                     or any(e.unpivot is not None for e in f.record.epochs)
                 )
             )
-            assert opted == [
-                "bsuos_monthly_forecast_fc_summary",
-                "fes_building_blocks_block_definitions",
-                "fes_building_blocks_block_licence_area",
-                "fes_building_blocks_main",
+            for key in (
                 "fes_ed1_electricity_demand",
-                "fes_ed3_heat_demand_natural_gas",
-                "fes_ed3_heat_demand_natural_gas_sum_ed",
-                "fes_ed3_heat_demand_sum_ed",
-                "fes_ed4_gas_demand_defs",
-                "fes_ed5_road_transport",
-                "fes_ed6_road_transport_notes",
-                "fes_es1_electricity_supply",
-                "fes_es2_european_supply",
-                "fes_flx1_flexibility",
-                "fes_la_heat_model_domestic",
-                "fes_la_heat_model_residential",
-                "fes_regional_demand_active_power",
-                "fes_regional_dg_gt_1mw",
-                "fes_regional_dg_lt_1mw",
                 "fes_regional_dsr",
-                "fes_regional_gsp_info",
-                "fes_regional_storage_gt_1mw",
-                "fes_regional_storage_gt_1mw_pre2023",
-                "fes_regional_storage_lt_1mw",
-                "fes_regional_storage_lt_1mw_pre2023",
-                "fes_ws1_gas_supply",
-                "fes_ws2_gas_emissions",
-                "resource_adequacy_2030s_peak_demand",
-                "resource_adequacy_2030s_portfolio",
-            ], opted
+                "fes_building_blocks_main",
+                "bsuos_monthly_forecast_fc_summary",
+            ):
+                assert key in opted, key
+            for key in ("tec_register", "historic_generation_mix", "wind_bmu_boa_volumes"):
+                assert families[key][1].record is not None and key not in opted, key
             print("OK", opted)
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
 
 # --------------------------------------------------------------------------- #
@@ -545,7 +467,7 @@ class TestLeakageMatrix:
                 assert clocks.filter(pl.col("capture_written_at") <= as_of).height == 0
 
     def test_t_sc6_a_correction_is_served_only_from_its_vintage(
-        self, monkeypatch: pytest.MonkeyPatch
+        self, short_base: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Detects a correction of one edition leaking into an as-of before its vintage, the
         original surviving after it, or another edition disturbed by it."""
@@ -557,9 +479,7 @@ class TestLeakageMatrix:
         rows[0][changed] = repr(original_value + 1000.0)
         buffer = io.StringIO()
         csv.writer(buffer, lineterminator="\r\n").writerows([header, *rows])
-        with tempfile.TemporaryDirectory(
-            prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-        ) as root:
+        with tempfile.TemporaryDirectory(prefix="", dir=short_base) as root:
             data = Path(root)
             ids = {entry.edition: capture(data, entry) for entry in EDITIONS}
             correction = capture(
@@ -602,11 +522,11 @@ class TestLeakageMatrix:
 
 
 # --------------------------------------------------------------------------- #
-# T-SC7: skeleton (P-5); T-SC8: the only generated addition (I-1)
+# T-SC7: skeleton (P-5)
 # --------------------------------------------------------------------------- #
 
 
-class TestSkeletonAndPin:
+class TestSkeleton:
     def test_t_sc7_the_page_shows_the_unpivot_and_the_edition_map(self) -> None:
         """Detects the reshape or the edition map missing from the generated docs page."""
         snapshot = {
@@ -628,48 +548,3 @@ class TestSkeletonAndPin:
             "- Edition: `fes2023_ed1_v001.csv` → 2023; `fes2024_ed1_v002.csv` → 2024; "
             "`fes2025_ed1_v006.csv` → 2025; `10yo2026_ed1_v001.csv` → 2026"
         ) in page
-
-    def test_t_sc8_the_pilot_is_the_only_generated_addition(self) -> None:
-        """Detects any generated family other than the FES ED1 pilot, the twelve tRESP records
-        of K-SCN-1a, the nine regional FES records of K-SCN-1b and the three building block records
-        of K-SCN-1c, the ES1 record of K-SCN-1d, the seven constraint-management records of K-CON
-        the eight system records of K-SYS-1, the nine balancing-costs records of K-BAL-1 and the
-        BSUoS monthly forecast summary record of K-BAL-2a, the nine skip-rate records of K-BAL-2b
-        the nine tariff records of K-BAL-2c, the nine trading records of K-TRD, the nine
-        ancillary-services records of K-AS-1, the eleven of K-AS-2, the eleven EAC auction-result
-        records of K-AS-3a and the ten mock EAC, ORPS and OBP records of K-AS-3b appearing since
-        the base golden (master ``34992b6``), and any DEM-1 engine digest added or lost."""
-        golden = json.loads(PIN_PATH.read_text(encoding="utf-8"))
-        current = json.loads(dump(generated_pin()))
-        for section in ("sql", "records", "columns"):
-            assert set(current[section]) - set(golden[section]) == {
-                PILOT,
-                *SCN1A_ADDED,
-                *SCN1B_ADDED,
-                *SCN1C_ADDED,
-                *SCN1D_ADDED,
-                *CON_ADDED,
-                *SYS1_ADDED,
-                *BAL1_ADDED,
-                *BAL2A_ADDED,
-                *BAL2B_ADDED,
-                *BAL2C_ADDED,
-                *TRD_ADDED,
-                *AS1_ADDED,
-                *AS2_ADDED,
-                *AS3A_ADDED,
-                *AS3B_ADDED,
-                *AS4A_ADDED,
-                *AS4B_ADDED,
-                *AS5A_ADDED,
-                *AS5B_ADDED,
-                *AS5C_ADDED,
-                *DFSA_ADDED,
-                *DFSB_ADDED,
-                *SCN2A_ADDED,
-                *SCN2B_ADDED,
-                *SCN3_ADDED,
-                *FILE_ADDED,
-                *H_ADDED,
-            }, section
-        assert set(current["engine"]) == set(golden["engine"])

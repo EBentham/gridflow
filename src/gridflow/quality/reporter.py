@@ -23,18 +23,13 @@ logger = logging.getLogger(__name__)
 class QualityReporter:
     """Collects quality check results and writes them to storage."""
 
-    def __init__(self, data_dir: Path, duckdb_path: Path):
-        self.data_dir = data_dir
+    def __init__(self, duckdb_path: Path):
         self.duckdb_path = duckdb_path
         self._results: list[QualityResult] = []
 
     def add_result(self, result: QualityResult) -> None:
         """Add a quality check result."""
         self._results.append(result)
-
-    def add_results(self, results: list[QualityResult]) -> None:
-        """Add multiple quality check results."""
-        self._results.extend(results)
 
     @property
     def results(self) -> list[QualityResult]:

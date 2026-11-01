@@ -358,7 +358,9 @@ class TestSiblingRead:
 
 
 def _stub_reader(tables: dict[str, list[ChildTable]]) -> Any:
-    def _read(path: Path, rec: Any, children: tuple[str, ...]) -> Iterator[ChildTable]:
+    def _read(
+        path: Path, rec: Any, children: tuple[str, ...], *, resource: Any = None
+    ) -> Iterator[ChildTable]:
         for table in tables[path.name]:
             if table.child_id in children:
                 if table.frame.width == 0:

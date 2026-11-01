@@ -1,9 +1,8 @@
 """The NESO eligibility report is generated from the registry (v0.22-E P-8).
 
-T-EL1..T-EL3. The committed report is checked out of process, the way
-``registry yaml --check`` is (``TestAgreement``): pytest collection has
-already imported the registry, so only a fresh interpreter proves the module's
-own CLI agrees with the committed file.
+T-EL1..T-EL3. The committed report is checked out of process: pytest
+collection has already imported the registry, so only a fresh interpreter
+proves the module's own CLI agrees with the committed file.
 """
 
 from __future__ import annotations

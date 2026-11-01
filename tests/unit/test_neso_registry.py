@@ -14,11 +14,7 @@ tests read the committed, trimmed fixture derived from it.
 
 from __future__ import annotations
 
-import builtins
-import errno
-import io
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -121,13 +117,10 @@ def _synthetic_package(**overrides: object) -> dict[str, object]:
             {
                 "key": "synthetic_family",
                 "kind": "tabular",
-                "legacy": False,
                 "archetype": "SER",
                 "refresh": "daily",
                 "empty_allowed": False,
                 "max_download_bytes": 1024,
-                "name_regex": None,
-                "transformer": None,
             }
         ],
         "resources": [
@@ -386,7 +379,7 @@ class TestOwnerFacts:
                         if r.family == 'embedded_wind_solar_forecast']
                 assert [r.name for r in live] == ['Embedded Solar and Wind Forecast'], live
                 _p, family = registry.families['embedded_wind_solar_forecast_archive']
-                assert family.transformer is None and not family.legacy
+                assert not family.legacy
 
                 # Unit X (ADR-037 P-8) dispositioned every X-R hold and committed
                 # the containers' child inventories; no X-R unit survives.
@@ -546,10 +539,28 @@ class TestValidation:
         package["resources"] = [package["resources"][0], pdf]  # type: ignore[index]
         assert self._load(tmp_path, package).startswith("OK")
 
-    def test_bad_regex(self, tmp_path: Path) -> None:
-        package = _synthetic_package()
-        package["families"][0]["name_regex"] = "([unclosed"  # type: ignore[index]
-        assert "REFUSED" in self._load(tmp_path, package)
+    def test_a_compact_family_and_epoch_load_with_their_defaults(self, tmp_path: Path) -> None:
+        """The compacted file form: a family without ``archetype``/``refresh`` takes
+        its package's, ``empty_allowed``/``max_download_bytes`` and an epoch's
+        ``issue`` have defaults, and a wide epoch's ``header`` is its columns' sources."""
+        from _neso_registry_support import record, sp_columns, write_registry
+
+        from gridflow.connectors.neso_data_portal.registry import load_registry
+
+        document = _synthetic_package(archetype="FC", refresh="weekly")
+        (family,) = document["families"]  # type: ignore[misc]
+        for name in ("archetype", "refresh", "empty_allowed", "max_download_bytes"):
+            del family[name]
+        family["record"] = record(epochs=[{"columns": sp_columns()}])
+        registry = load_registry(write_registry(tmp_path / "registry", [document]))
+
+        _package, loaded = registry.families["synthetic_family"]
+        assert (loaded.archetype, loaded.refresh) == ("FC", "weekly")
+        assert (loaded.empty_allowed, loaded.max_download_bytes) == (False, 512 * 1024 * 1024)
+        assert loaded.record is not None
+        (epoch,) = loaded.record.epochs
+        assert epoch.header == ("SettlementDate", "SettlementPeriod", "Unit", "Value")
+        assert epoch.issue.kind == "none"
 
     def test_invalid_key(self, tmp_path: Path) -> None:
         package = _synthetic_package()
@@ -653,175 +664,56 @@ class TestGeneratedDatasets:
             )
         )
 
-    def test_negative_control_a_legacy_family_with_two_members_is_refused(self) -> None:
+    def test_negative_control_a_legacy_family_with_two_members_is_refused(
+        self, tmp_path: Path
+    ) -> None:
+        directory = _copy_registry(tmp_path)
+        document = json.loads(
+            (directory / "daily-wind-availability.json").read_text(encoding="utf-8")
+        )
+        (member,) = [r for r in document["resources"] if r["family"] == "daily_wind_availability"]
+        twin = dict(member, id="00000000-0000-4000-8000-0000000000aa")
+        document["resources"].append(dict(twin, name="Daily Wind Availability 2"))
+        _write_package(directory, document)
         _assert_ok(
             _run(
                 """
-                import dataclasses
+                import sys
+                from pathlib import Path
                 from gridflow.connectors.neso_data_portal import endpoints
-                families = dict(endpoints.FAMILIES)
-                dwa = families["daily_wind_availability"]
-                families["daily_wind_availability"] = dataclasses.replace(
-                    dwa, names=dwa.names | {("Daily Wind Availability 2", "CSV")}
-                )
+                from gridflow.connectors.neso_data_portal.registry import load_registry
                 try:
-                    endpoints.build_datasets(families)
+                    endpoints.build_datasets(load_registry(Path(sys.argv[1])))
                 except RuntimeError:
                     print('OK')
                 else:
                     raise AssertionError('a two-member legacy family generated a CkanDataset')
-                """
+                """,
+                str(directory),
             )
         )
 
 
-# Master's three entries, byte-for-byte (P-3): the generated block opens with them.
-_LEGACY_YAML_LINES = [
-    "      daily_wind_availability:",
-    '        endpoint: "/api/3/action/package_show"',
-    '        schedule: "daily"',
-    "        max_query_days: 1",
-    "      historic_generation_mix:",
-    '        endpoint: "/api/3/action/package_show"',
-    '        schedule: "daily"',
-    "        max_query_days: 1",
-    "      embedded_wind_solar_forecast:",
-    '        endpoint: "/api/3/action/package_show"',
-    '        schedule: "daily"',
-    "        max_query_days: 1",
-]
-_GENERATED_SUFFIX = (
-    ': {endpoint: "/api/3/action/package_show", schedule: "daily", max_query_days: 1}'
-)
-
-
-def _yaml_check(*extra: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "gridflow.connectors.neso_data_portal.registry",
-            "yaml",
-            "--check",
-            *extra,
-        ],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=False,
-    )
-
-
 class TestAgreement:
-    """R-9: sources.yaml, FAMILIES and list_datasets() agree with the registry."""
+    """R-9: load_settings() configures exactly the registry families (no YAML copy)."""
 
-    _SOURCES = PROJECT_ROOT / "config" / "sources.yaml"
-
-    def test_yaml_check_is_clean_on_the_committed_file(self) -> None:
-        result = _yaml_check()
-        assert result.returncode == 0, result.stdout + result.stderr
-
-    def test_negative_control_a_dropped_generated_line_is_drift(self, tmp_path: Path) -> None:
-        text = self._SOURCES.read_bytes().decode("utf-8")
-        dropped = "      aahedc_tariffs" + _GENERATED_SUFFIX
-        assert dropped in text
-        copy = tmp_path / "sources.yaml"
-        copy.write_bytes(text.replace(dropped, "", 1).encode("utf-8"))
-        result = _yaml_check("--path", str(copy))
-        assert result.returncode == 1, result.stdout + result.stderr
-
-    def _drifted_copy(self, tmp_path: Path) -> tuple[Path, bytes]:
-        text = self._SOURCES.read_bytes().decode("utf-8")
-        dropped = "      aahedc_tariffs" + _GENERATED_SUFFIX
-        assert dropped in text
-        copy = tmp_path / "sources.yaml"
-        drifted = text.replace(dropped, "", 1).encode("utf-8")
-        copy.write_bytes(drifted)
-        return copy, drifted
-
-    def test_write_regenerates_a_drifted_copy_and_leaves_no_temp(self, tmp_path: Path) -> None:
-        from gridflow.connectors.neso_data_portal.registry.__main__ import main
-
-        copy, _drifted = self._drifted_copy(tmp_path)
-        assert main(["yaml", "--write", "--path", str(copy)]) == 0
-        assert copy.read_bytes() == self._SOURCES.read_bytes()
-        assert [p.name for p in tmp_path.iterdir()] == ["sources.yaml"]
-
-    def test_a_failed_write_leaves_the_original_intact(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """A disk-full write must not truncate the file that configures every source."""
-        from gridflow.connectors.neso_data_portal.registry.__main__ import main
-
-        copy, drifted = self._drifted_copy(tmp_path)
-        real_open = io.open
-
-        class _DiskFull:
-            """Writes a short prefix, then fails as a full disk would."""
-
-            def __init__(self, handle: Any) -> None:
-                self._handle = handle
-
-            def __enter__(self) -> _DiskFull:
-                return self
-
-            def __exit__(self, *exc: object) -> None:
-                self._handle.close()
-
-            def close(self) -> None:
-                self._handle.close()
-
-            def write(self, data: bytes) -> int:
-                self._handle.write(data[:64])
-                self._handle.flush()
-                raise OSError(errno.ENOSPC, "No space left on device")
-
-        def failing_open(file: Any, mode: str = "r", *args: Any, **kwargs: Any) -> Any:
-            handle = real_open(file, mode, *args, **kwargs)
-            if (
-                "w" in mode
-                and isinstance(file, (str, os.PathLike))
-                and Path(file).resolve().parent == tmp_path.resolve()
-            ):
-                return _DiskFull(handle)
-            return handle
-
-        monkeypatch.setattr(io, "open", failing_open)
-        monkeypatch.setattr(builtins, "open", failing_open)
-
-        with pytest.raises(OSError, match="No space left"):
-            main(["yaml", "--write", "--path", str(copy)])
-
-        monkeypatch.undo()
-        assert copy.read_bytes() == drifted, (
-            f"sources.yaml truncated to {len(copy.read_bytes())} of {len(drifted)} bytes"
-        )
-        assert [p.name for p in tmp_path.iterdir()] == ["sources.yaml"]
-
-    def test_keys_agree_and_legacy_lines_are_byte_identical(self) -> None:
-        lines = self._SOURCES.read_bytes().decode("utf-8").replace("\r\n", "\n").split("\n")
-        begin = lines.index("      # >>> generated: neso_data_portal datasets")
-        end = lines.index("      # <<< generated")
-        # Only the two marker lines are new around master's entries.
-        assert lines[begin - 1] == "    datasets:", lines[begin - 1]
-        assert lines[begin + 1 : begin + 13] == _LEGACY_YAML_LINES
-        generated = lines[begin + 13 : end]
-        assert all(line.endswith(_GENERATED_SUFFIX) for line in generated)
-        assert generated == sorted(generated)
-        assert all(not line.strip() for line in lines[end + 1 :]), lines[end + 1 :]
+    def test_the_configured_datasets_are_the_registry_families_in_ingest_order(self) -> None:
         _assert_ok(
             _run(
                 """
                 from gridflow.config.settings import load_settings
-                from gridflow.connectors.neso_data_portal.endpoints import FAMILIES
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+                from gridflow.connectors.neso_data_portal.registry import LEGACY_KEYS, load_registry
+                families = load_registry().families
                 config = load_settings().get_source_config('neso_data_portal')
-                configured = set(config.datasets)
-                assert len(FAMILIES) == 326, len(FAMILIES)
-                assert configured == set(FAMILIES), sorted(configured ^ set(FAMILIES))[:5]
+                assert len(families) == 326, len(families)
+                expected = [*LEGACY_KEYS, *sorted(set(families) - set(LEGACY_KEYS))]
+                assert list(config.datasets) == expected, list(config.datasets)[:5]
+                for key, dataset in config.datasets.items():
+                    shape = (dataset.endpoint, dataset.schedule, dataset.max_query_days)
+                    assert shape == ('/api/3/action/package_show', 'daily', 0), (key, shape)
                 listed = NesoDataPortalConnector(config).list_datasets()
-                assert listed == list(FAMILIES)
+                assert sorted(listed) == sorted(families)
                 print('OK')
                 """
             )
@@ -829,9 +721,9 @@ class TestAgreement:
 
 
 class TestRegistrations:
-    """R-10: bespoke families are exactly the registered transformers; data ships."""
+    """R-10: recorded families are exactly the registered transformers; data ships."""
 
-    def test_registered_transformers_equal_bespoke_families(self) -> None:
+    def test_registered_transformers_equal_recorded_families(self) -> None:
         _assert_ok(
             _run(
                 """
@@ -841,11 +733,11 @@ class TestRegistrations:
                 import_transformers()
                 registered = {d for _s, d in list_transformers('neso_data_portal')}
                 families = load_registry().families
-                bespoke = {k for k, (_p, f) in families.items() if f.transformer == 'bespoke'}
+                legacy = {k for k, (_p, f) in families.items() if f.legacy}
                 recorded = {k for k, (_p, f) in families.items() if f.record is not None}
-                assert registered == bespoke | recorded, (registered, bespoke, recorded)
-                assert bespoke == {'daily_wind_availability', 'historic_generation_mix',
-                                   'embedded_wind_solar_forecast'}
+                assert registered == recorded, sorted(registered ^ recorded)
+                assert legacy == {'daily_wind_availability', 'historic_generation_mix',
+                                  'embedded_wind_solar_forecast'} and legacy <= recorded
                 print('OK')
                 """
             )

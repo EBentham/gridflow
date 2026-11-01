@@ -47,6 +47,36 @@ class GasStorage(BaseSchema):
         return v
 
 
+class GasStorageUnavailability(BaseSchema):
+    """Silver-layer schema for GIE AGSI storage unavailability notices.
+
+    One row per vendor notice per calendar day it overlaps (``outage_date``).
+    ``published``, ``start`` and ``end`` are naive: AGSI states no timezone and
+    its reporters mix UTC and local wall clock. ``volume``, ``injection`` and
+    ``withdrawal`` carry the vendor's figures; the payload does not label
+    their units.
+    """
+
+    outage_date: date
+    country_code: str | None = None
+    country_name: str | None = None
+    company_eic: str | None = None
+    company_name: str | None = None
+    facility_eic: str | None = None
+    facility_name: str | None = None
+    published: datetime | None = None
+    start: datetime | None = None
+    end: datetime | None = None
+    type: str | None = None
+    end_flag: str | None = None
+    volume: float | None = None
+    injection: float | None = None
+    withdrawal: float | None = None
+    description: str | None = None
+    data_provider: str = Field(default="gie_agsi")
+    ingested_at: datetime
+
+
 class LNGTerminal(BaseSchema):
     """Silver-layer schema for GIE ALSI LNG terminal data (country level)."""
 

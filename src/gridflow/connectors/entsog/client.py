@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime, time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import httpx
@@ -16,7 +16,7 @@ from gridflow.connectors.entsog.endpoints import (
     build_params,
 )
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.retry import retry_policy
 from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,6 @@ class EntsogConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch ENTSO-G JSON data for a date range or reference endpoint.
 
@@ -73,23 +72,19 @@ class EntsogConnector(BaseConnector):
         endpoint = ENDPOINTS[dataset]
 
         if not endpoint.requires_dates:
-            return [await self._fetch_one(dataset, endpoint.path, start, end, None, **params)]
+            return [await self._fetch_one(dataset, endpoint.path, start, end, None)]
 
         windows = day_subwindows(start, end)
         if not windows:
             # Degenerate guard: start == end -> single legacy-shape request,
             # preserving today's behaviour for a zero-width window.
-            return [
-                await self._fetch_one(dataset, endpoint.path, start, end, start.date(), **params)
-            ]
+            return [await self._fetch_one(dataset, endpoint.path, start, end, start.date())]
 
         covered_days = sorted({sub_start.date() for sub_start, _ in windows})
         responses: list[RawResponse] = []
         for day in covered_days:
             day_dt = datetime.combine(day, time.min, tzinfo=UTC)
-            responses.append(
-                await self._fetch_one(dataset, endpoint.path, day_dt, day_dt, day, **params)
-            )
+            responses.append(await self._fetch_one(dataset, endpoint.path, day_dt, day_dt, day))
 
         logger.info(
             "Fetched ENTSO-G %s for %d covered day(s) (%s..%s) via %s",
@@ -108,7 +103,6 @@ class EntsogConnector(BaseConnector):
         start: datetime,
         end: datetime,
         data_date: date | None,
-        **params: Any,
     ) -> RawResponse:
         """Issue one ENTSO-G request and wrap it into a ``RawResponse``.
 
@@ -118,48 +112,30 @@ class EntsogConnector(BaseConnector):
         per-day chunking loop in ``fetch()`` stays the single source of truth.
         """
         endpoint = ENDPOINTS[dataset]
-        query_params = build_params(endpoint, start=start, end=end, **params)
-        raw = await self._request(path, query_params)
-        return RawResponse(
-            body=raw.content,
-            content_type=raw.headers.get("content-type", "application/json"),
-            source="entsog",
-            dataset=dataset,
-            request_url=str(raw.url),
-            request_params=dict(query_params),
-            api_version="v1",
-            http_status=raw.status_code,
-            data_date=data_date,
+        query_params = build_params(endpoint, start=start, end=end)
+        raw = await self._get(path, query_params)
+        return RawResponse.from_httpx(
+            raw, source="entsog", dataset=dataset, params=query_params, data_date=data_date
         )
 
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET request.
+    # A 404 with any body but the empty marker is retried, like a 408, 429 or
+    # 5xx; any other 4xx fails on the first attempt.
+    _get = retry_policy(404)(BaseConnector._get_once)
 
-        ENTSO-G empty convention is HTTP 404 + body
-        ``{"message": "No result found"}``. That case short-circuits
-        to an empty-bronze response so RETRY_POLICY does not waste
-        budget on an expected vendor outcome (V2-FIX-07). Any other
-        4xx/5xx (including a 404 with a different body) falls through
-        to the standard `raise_for_status()` path and is retried per
-        the surrounding RETRY_POLICY.
+    def _raise_for_status(self, resp: httpx.Response) -> None:
+        """Pass the documented empty result through instead of raising (V2-FIX-07).
+
+        ENTSO-G answers an empty query with HTTP 404 and the body
+        ``{"message": "No result found"}``; it is kept as an empty bronze
+        response so the retry policy does not spend its budget on it.
         """
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            resp = await self._client.get(path, params=params)
-            if resp.status_code == 404 and _is_empty_no_result_body(resp):
-                logger.info(
-                    "ENTSO-G empty result (404 'No result found') for %s — "
-                    "short-circuit, no retry.",
-                    path,
-                )
-                return resp
-            resp.raise_for_status()
-            return resp
+        if resp.status_code == 404 and _is_empty_no_result_body(resp):
+            logger.info(
+                "ENTSO-G empty result (404 'No result found') for %s — short-circuit, no retry.",
+                resp.url.path,
+            )
+            return
+        resp.raise_for_status()
 
 
 def _is_empty_no_result_body(resp: httpx.Response) -> bool:

@@ -11,44 +11,12 @@
     {
       "key": "otf_network_congestion",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Min of B4 B5 - Actual",
-              "B6 - Actual",
-              "B6a - Actual",
-              "B7 - Actual",
-              "GMSNOW - Actual",
-              "LE1 - Actual",
-              "B9 - Actual",
-              "DRESHEX - Actual",
-              "EC5 - Actual",
-              "B15 - Actual",
-              "SC - Actual",
-              "Min of B4 B5 - Forecast",
-              "B6 - Forecast",
-              "B6a - Forecast",
-              "B7 - Forecast",
-              "GMSNOW - Forecast",
-              "LE1 - Forecast",
-              "B9 - Forecast",
-              "DRESHEX - Forecast",
-              "EC5 - Forecast",
-              "B15 - Forecast",
-              "SC - Forecast"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -189,10 +157,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

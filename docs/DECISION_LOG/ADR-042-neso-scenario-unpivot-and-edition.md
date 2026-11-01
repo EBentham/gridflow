@@ -119,6 +119,9 @@ Duplicate dimension tuples in one body fail with `DuplicateEntityKeyError`.
 `34992b6`; T-SC2 record rules; T-SC3 unpivot typing; T-SC4 edition) and
 `tests/unit/test_neso_sc_pilot.py` (T-SC5 pilot over four cut fixtures; T-SC6 leakage matrix across
 the four vintages plus a correction row; T-SC7 skeleton; T-SC8 the only generated addition).
+On 2026-10-31 the SC golden, T-SC1 and T-SC8 were deleted: the v0.22-H golden
+(`tests/fixtures/neso_data_portal/h/base_pin.json`, `test_neso_h_mechanism.py` T-F1) holds every
+family of the SC golden with equal values.
 
 ## Consequences and residuals
 

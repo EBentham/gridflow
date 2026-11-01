@@ -16,10 +16,10 @@ from gridflow.bronze.writer import BronzeWriter
 from gridflow.config.settings import SourceConfig, load_settings
 from gridflow.connectors.gie.client import GieConnector
 from gridflow.connectors.gie.endpoints import (
+    AGSI_COUNTRIES,
     DEFAULT_PAGE_SIZE,
     QueryScope,
     build_storage_query_plan,
-    expected_records_for_plan,
 )
 
 BASE_URL = "https://agsi.gie.eu"
@@ -97,8 +97,6 @@ async def test_aggregate_scope_uses_documented_request_params() -> None:
             "storage_reports",
             START,
             END,
-            scope=QueryScope.AGGREGATE_TYPE,
-            aggregate_types=("EU",),
         )
 
     assert route.called
@@ -113,7 +111,50 @@ async def test_aggregate_scope_uses_documented_request_params() -> None:
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_country_scope_fetches_selected_countries_only() -> None:
+@pytest.mark.parametrize("rows", [0, 3])
+async def test_storage_responses_carry_their_record_count(rows: int) -> None:
+    """An HTTP 200 ``{"data": []}`` for an unpublished gas day is a confirmed
+    zero (C-8), so the ingest boundary does not count it as evidence that
+    advances the watermark."""
+    _mock_storage(
+        lambda request: httpx.Response(
+            200,
+            content=_storage_body(TARGET_DATE, rows=rows),
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    async with GieConnector(_gie_config()) as connector:
+        responses = await connector.fetch(
+            "storage_reports",
+            START,
+            END,
+        )
+
+    assert [response.record_count for response in responses] == [rows]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_an_empty_unavailability_response_is_a_confirmed_zero() -> None:
+    """Not only storage: an empty non-storage AGSI listing is no evidence either."""
+    _mock_storage(
+        lambda request: httpx.Response(
+            200,
+            content=json.dumps({"last_page": 1, "data": []}).encode(),
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    async with GieConnector(_gie_config()) as connector:
+        responses = await connector.fetch("unavailability", START, END)
+
+    assert [response.record_count for response in responses] == [0]
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_storage_fetches_every_agsi_country() -> None:
     requests: list[httpx.Request] = []
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -128,114 +169,13 @@ async def test_country_scope_fetches_selected_countries_only() -> None:
     _mock_storage(handler)
 
     async with GieConnector(_gie_config()) as connector:
-        responses = await connector.fetch(
-            "storage_reports",
-            START,
-            END,
-            scope=QueryScope.COUNTRY,
-            countries=("DE", "FR"),
-        )
+        responses = await connector.fetch("storage", START, END)
 
-    assert len(responses) == 2
+    assert len(responses) == len(AGSI_COUNTRIES)
     assert _request_params(requests) == [
-        {"country": "DE", "date": "2026-05-01", "page": "1", "size": "300"},
-        {"country": "FR", "date": "2026-05-01", "page": "1", "size": "300"},
+        {"country": country, "date": "2026-05-01", "page": "1", "size": "300"}
+        for country in AGSI_COUNTRIES
     ]
-
-
-@respx.mock
-@pytest.mark.asyncio
-async def test_company_scope_uses_listing_country_and_company() -> None:
-    requests: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        requests.append(request)
-        params = dict(request.url.params)
-        return httpx.Response(
-            200,
-            content=_storage_body(TARGET_DATE, entity=params["company"]),
-            headers={"content-type": "application/json"},
-        )
-
-    _mock_storage(handler)
-
-    async with GieConnector(_gie_config()) as connector:
-        responses = await connector.fetch(
-            "storage_reports",
-            START,
-            END,
-            scope=QueryScope.COMPANY,
-            listing_payload=_load_listing_fixture(),
-        )
-
-    assert len(responses) == 3
-    assert _request_params(requests) == [
-        {
-            "country": "DE",
-            "company": "21X-DEMO-ALPHA",
-            "date": "2026-05-01",
-            "page": "1",
-            "size": "300",
-        },
-        {
-            "country": "FR",
-            "company": "21X-DEMO-BETA",
-            "date": "2026-05-01",
-            "page": "1",
-            "size": "300",
-        },
-        {
-            "country": "GB",
-            "company": "21X-DEMO-GAMMA",
-            "date": "2026-05-01",
-            "page": "1",
-            "size": "300",
-        },
-    ]
-
-
-@respx.mock
-@pytest.mark.asyncio
-async def test_facility_scope_uses_listing_country_company_and_facility() -> None:
-    requests: list[httpx.Request] = []
-
-    def handler(request: httpx.Request) -> httpx.Response:
-        requests.append(request)
-        params = dict(request.url.params)
-        return httpx.Response(
-            200,
-            content=_storage_body(TARGET_DATE, entity=params["facility"]),
-            headers={"content-type": "application/json"},
-        )
-
-    _mock_storage(handler)
-
-    async with GieConnector(_gie_config()) as connector:
-        responses = await connector.fetch(
-            "storage_reports",
-            START,
-            END,
-            scope=QueryScope.FACILITY,
-            listing_payload=_load_listing_fixture(),
-        )
-
-    assert len(responses) == 4
-    assert _request_params(requests)[0] == {
-        "country": "DE",
-        "company": "21X-DEMO-ALPHA",
-        "facility": "21W-DEMO-ALPHA-1",
-        "date": "2026-05-01",
-        "page": "1",
-        "size": "300",
-    }
-    assert _request_params(requests)[-1] == {
-        "country": "GB",
-        "company": "21X-DEMO-GAMMA",
-        "facility": "21W-DEMO-GAMMA-1",
-        "date": "2026-05-01",
-        "page": "1",
-        "size": "300",
-    }
 
 
 @respx.mock
@@ -264,8 +204,6 @@ async def test_storage_paginates_with_last_page_not_total() -> None:
             "storage_reports",
             START,
             END,
-            scope=QueryScope.AGGREGATE_TYPE,
-            aggregate_types=("EU",),
         )
 
     assert len(responses) == 2
@@ -284,13 +222,7 @@ async def test_bronze_completeness_matches_expected_query_plan(
     def handler(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         params = dict(request.url.params)
-        entity = (
-            params.get("type")
-            or params.get("country")
-            or params.get("facility")
-            or params.get("company")
-            or "unknown"
-        )
+        entity = params.get("type") or params.get("country") or "unknown"
         return httpx.Response(
             200,
             content=_storage_body(TARGET_DATE, entity=f"{entity}-{len(requests)}"),
@@ -299,74 +231,18 @@ async def test_bronze_completeness_matches_expected_query_plan(
 
     _mock_storage(handler)
 
-    listing = _load_listing_fixture()
-    expected_plan = (
-        build_storage_query_plan(
-            scope=QueryScope.AGGREGATE_TYPE,
-            start=TARGET_DATE,
-            aggregate_types=("EU",),
-        )
-        + build_storage_query_plan(
-            scope=QueryScope.COUNTRY,
-            start=TARGET_DATE,
-            countries=("DE", "FR"),
-        )
-        + build_storage_query_plan(
-            scope=QueryScope.COMPANY,
-            start=TARGET_DATE,
-            listing_payload=listing,
-        )
-        + build_storage_query_plan(
-            scope=QueryScope.FACILITY,
-            start=TARGET_DATE,
-            listing_payload=listing,
-        )
-    )
+    expected_plan = build_storage_query_plan(
+        scope=QueryScope.AGGREGATE_TYPE, start=TARGET_DATE
+    ) + build_storage_query_plan(scope=QueryScope.COUNTRY, start=TARGET_DATE)
 
     async with GieConnector(_gie_config()) as connector:
-        responses = []
-        responses.extend(
-            await connector.fetch(
-                "storage_reports",
-                START,
-                END,
-                scope=QueryScope.AGGREGATE_TYPE,
-                aggregate_types=("EU",),
-            )
-        )
-        responses.extend(
-            await connector.fetch(
-                "storage_reports",
-                START,
-                END,
-                scope=QueryScope.COUNTRY,
-                countries=("DE", "FR"),
-            )
-        )
-        responses.extend(
-            await connector.fetch(
-                "storage_reports",
-                START,
-                END,
-                scope=QueryScope.COMPANY,
-                listing_payload=listing,
-            )
-        )
-        responses.extend(
-            await connector.fetch(
-                "storage_reports",
-                START,
-                END,
-                scope=QueryScope.FACILITY,
-                listing_payload=listing,
-            )
-        )
+        responses = await connector.fetch("storage_reports", START, END)
+        responses.extend(await connector.fetch("storage", START, END))
 
     writer = BronzeWriter(tmp_data_dir)
     paths = [writer.write(response) for response in responses]
 
     assert len(paths) == len(expected_plan)
-    assert len(paths) == expected_records_for_plan(expected_plan)
     assert all(path.exists() for path in paths)
     assert all("2026" in path.parts and "05" in path.parts and "01" in path.parts for path in paths)
 
@@ -375,7 +251,7 @@ async def test_bronze_completeness_matches_expected_query_plan(
     for sidecar in sidecars:
         metadata = json.loads(sidecar.read_text())
         assert metadata["source"] == "gie_agsi"
-        assert metadata["dataset"] == "storage_reports"
+        assert metadata["dataset"] in {"storage_reports", "storage"}
         assert metadata["page"] == 1
         assert metadata["total_pages"] == 1
         assert metadata["request_params"]["date"] == TARGET_DATE.isoformat()
@@ -395,13 +271,7 @@ async def test_exact_day_rejects_out_of_window_storage_rows() -> None:
 
     async with GieConnector(_gie_config()) as connector:
         with pytest.raises(ValueError, match="expected 2026-05-01"):
-            await connector.fetch(
-                "storage_reports",
-                START,
-                END,
-                scope=QueryScope.AGGREGATE_TYPE,
-                aggregate_types=("EU",),
-            )
+            await connector.fetch("storage_reports", START, END)
 
 
 def test_default_page_size_matches_documented_fetch_cap() -> None:

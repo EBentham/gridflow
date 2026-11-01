@@ -13,14 +13,9 @@ to accept the null-degradation cleanly.
 
 from __future__ import annotations
 
-from typing import ClassVar
-
 from gridflow.connectors.openmeteo.endpoints import (
     DATASET_SPECS,
-    DEMAND_LOCATIONS,
-    SOLAR_LOCATIONS,
     WIND_FORECAST_VARS,
-    WIND_LOCATIONS,
 )
 from gridflow.silver.openmeteo.historical import (
     HistoricalDemandWeather,
@@ -36,9 +31,6 @@ class ForecastDemandWeather(HistoricalDemandWeather):
     dataset = "forecast_demand"
     VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_demand"
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
-        f"forecast_demand__{loc.name}" for loc in DEMAND_LOCATIONS
-    )
 
 
 class ForecastWindWeather(HistoricalWindWeather):
@@ -53,9 +45,6 @@ class ForecastWindWeather(HistoricalWindWeather):
     VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_wind"
     HOURLY_VARS = WIND_FORECAST_VARS
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
-        f"forecast_wind__{loc.name}" for loc in WIND_LOCATIONS
-    )
 
 
 class ForecastSolarWeather(HistoricalSolarWeather):
@@ -64,9 +53,6 @@ class ForecastSolarWeather(HistoricalSolarWeather):
     dataset = "forecast_solar"
     VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_solar"
-    BRONZE_SIBLING_DATASETS: ClassVar[tuple[str, ...]] = tuple(
-        f"forecast_solar__{loc.name}" for loc in SOLAR_LOCATIONS
-    )
 
 
 # Sanity-check the variable list / dataset spec wiring at import time.

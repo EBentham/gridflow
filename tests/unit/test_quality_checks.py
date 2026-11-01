@@ -175,7 +175,7 @@ def test_write_report_uses_shared_writable_connection(
     duckdb_path = tmp_path / "q.duckdb"
     data_dir = tmp_path / "data"
     data_dir.mkdir()
-    reporter = QualityReporter(data_dir, duckdb_path)
+    reporter = QualityReporter(duckdb_path)
     reporter.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
 
     calls: list[tuple[Path | str, bool]] = []
@@ -201,12 +201,12 @@ def test_quality_report_ids_unique_across_runs(tmp_path: Path) -> None:
     data_dir = tmp_path / "data"
     data_dir.mkdir()
 
-    r1 = QualityReporter(data_dir, duckdb_path)
+    r1 = QualityReporter(duckdb_path)
     r1.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
     r1.add_result(QualityResult("c2", "ds", "src", True, 0.0, "ok"))
     assert r1.write_report() == 2
 
-    r2 = QualityReporter(data_dir, duckdb_path)
+    r2 = QualityReporter(duckdb_path)
     r2.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
     r2.add_result(QualityResult("c2", "ds", "src", True, 0.0, "ok"))
     assert r2.write_report() == 2
@@ -269,7 +269,7 @@ def test_write_report_reconciles_legacy_quality_reports_schema(
     # init_catalogue must migrate the legacy table (add run_id).
     init_catalogue(duckdb_path, data_dir)
 
-    reporter = QualityReporter(data_dir, duckdb_path)
+    reporter = QualityReporter(duckdb_path)
     reporter.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
     written = reporter.write_report()
 
