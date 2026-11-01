@@ -1,6 +1,7 @@
 """Write committed response fixtures into a bronze tree, as an ingest leaves them.
 
-Not a test module: transformer tests share these to seed bronze.
+Not a test module. Transformer tests seed bronze with these, and
+``tests/notebooks/conftest.py`` chains them into the notebooks' sample store.
 Every response fixture used here covers 2024-01-15 (GIE's span 13 to 15 January).
 """
 
@@ -9,11 +10,15 @@ from __future__ import annotations
 import json
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from gridflow.bronze.writer import BronzeWriter
 from gridflow.connectors.base import RawResponse
 from gridflow.connectors.entsoe.endpoints import DOC_TYPES
+from gridflow.connectors.entsog.endpoints import ENDPOINTS as ENTSOG_ENDPOINTS
+from gridflow.connectors.entsog.endpoints import build_params as build_entsog_params
+from gridflow.connectors.neso.endpoints import ENDPOINTS as NESO_ENDPOINTS
+from gridflow.connectors.neso.endpoints import build_path as build_neso_path
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
@@ -21,6 +26,8 @@ if TYPE_CHECKING:
 
 FIXTURES = Path(__file__).parent / "fixtures"
 FIXTURE_DATE = date(2024, 1, 15)
+_DAY_START = datetime(2024, 1, 15, tzinfo=UTC)
+_DAY_END = _DAY_START + timedelta(days=1)
 ENTSOE_BASE = "https://web-api.tp.entsoe.eu"
 
 
@@ -96,6 +103,68 @@ def write_openmeteo_historical_bronze(
                 }
             )
         )
+
+
+def _write_json_capture(
+    data_dir: Path,
+    source: str,
+    dataset: str,
+    fixture: str,
+    request_url: str,
+    request_params: dict[str, Any],
+) -> Path:
+    """Write a JSON response fixture through ``BronzeWriter``, sidecar and all."""
+    response = RawResponse(
+        body=(FIXTURES / fixture).read_bytes(),
+        content_type="application/json",
+        source=source,
+        dataset=dataset,
+        fetched_at=datetime(2024, 1, 15, 12, 0, tzinfo=UTC),
+        request_url=request_url,
+        request_params=request_params,
+        api_version="v1",
+        http_status=200,
+        data_date=FIXTURE_DATE,
+    )
+    return BronzeWriter(data_dir).write(response)
+
+
+def write_system_prices_bronze(data_dir: Path) -> Path:
+    # The settlement date goes in the path, so the request has no parameters.
+    return _write_json_capture(
+        data_dir,
+        "elexon",
+        "system_prices",
+        "elexon/system_prices_response.json",
+        f"https://data.elexon.co.uk/bmrs/api/v1/balancing/settlement/system-prices/{FIXTURE_DATE}",
+        {},
+    )
+
+
+def write_carbon_intensity_bronze(data_dir: Path) -> Path:
+    path, path_values = build_neso_path(
+        NESO_ENDPOINTS["carbon_intensity"], start=_DAY_START, end=_DAY_END
+    )
+    return _write_json_capture(
+        data_dir,
+        "neso",
+        "carbon_intensity",
+        "neso/carbon_intensity_response.json",
+        f"https://api.carbonintensity.org.uk{path}",
+        path_values,
+    )
+
+
+def write_entsog_flows_bronze(data_dir: Path) -> Path:
+    params = build_entsog_params(ENTSOG_ENDPOINTS["physical_flows"], start=_DAY_START, end=_DAY_END)
+    return _write_json_capture(
+        data_dir,
+        "entsog",
+        "physical_flows",
+        "entsog/physical_flows_response.json",
+        "https://transparency.entsog.eu/api/v1/operationaldatas",
+        params,
+    )
 
 
 def write_bronze_payload(
