@@ -1,18 +1,25 @@
 """Manifest-side invariants I-1..I-7 for N-5 (APPEND_ONLY preferred relation).
 
 Registry population is mandatory and comes first (Sol pass-2 finding 4): the
-transformer registry is lazy, populated only by importing the six silver
+transformer registry is lazy, populated only by importing the silver
 subpackages. Mirrors tests/silver/test_schema_manifest_contract.py's top-level
 imports, plus a session-scoped autouse fixture explicitly calling
-``_ensure_silver_transformers_registered()`` so every test here -- in
-particular I-6 -- is correct even when run alone (belt and braces,
-deliberately).
+``_ensure_silver_transformers_registered()`` so every test here is correct
+even when run alone (belt and braces, deliberately).
+
+The APPEND_ONLY census is read from the registry, not typed out by hand: each
+invariant is asserted for every registered dataset, and a few named datasets
+are spot-checked so a derivation that comes back empty or short cannot pass.
+This reverses D-21 / PHASE.md ruling 12's hand-kept change detector; a new
+family is reviewed in its own registry diff.
 
 This suite must not read the DuckDB catalogue (ADR-024): the manifest is a
 registry-derived, import-time-only Python API surface.
 """
 
 from __future__ import annotations
+
+from collections import Counter
 
 import pytest
 
@@ -25,337 +32,18 @@ import gridflow.silver.neso  # noqa: F401
 import gridflow.silver.openmeteo  # noqa: F401
 from gridflow.silver import schema_manifest
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS
-from gridflow.silver.registry import get_transformer, list_transformers
+from gridflow.silver.registry import get_transformer_class, list_transformers
 from gridflow.silver.schema_manifest import (
     SilverSchemaEntry,
     get_silver_schema_manifest,
 )
 
-# A HARDCODED census, deliberately: this module is a change-detector, and a
-# census derived from the registry would agree with the registry by
-# construction and detect nothing. Maintaining it by hand is the designed
-# cost. Grew to four when the neso-data-portal phase registered the first
-# non-elexon APPEND_ONLY dataset (D-21; PHASE.md ruling 12), then to five with
-# that phase's `historic_generation_mix` (B3a/T-16) and to six with its
-# `embedded_wind_solar_forecast` (B3a/T-17), then to twelve with v0.22-E's six
-# pilot frozen records (ADR-036), each a generated APPEND_ONLY transformer, then
-# to fourteen with v0.22-X's two activation families (ADR-037 P-12), then to
-# sixteen with v0.22-EF's two archive owners (ADR-038), then to twenty-nine with
-# v0.22-K-CI's thirteen carbon-intensity and capacity-market records, then to
-# thirty-nine with v0.22-K-DEM-1's ten demand-forecast records, then to
-# forty with v0.22-DEM-1H's `historic_demand`, then to forty-four with v0.22-K-DEM-2's
-# four demand-reference records, then to fifty-eight with v0.22-K-GEN-1's fourteen wind and
-# margin forecast records, then to fifty-nine with v0.22-K-GEN-2's weekly wind availability
-# record, then to sixty-one with v0.22-GEN-2H's metered wind output and wind BOA volume
-# records, then to seventy-two with v0.22-K-IC-1's eleven interconnector limit records, then to
-# seventy-five with v0.22-K-IC-2's BritNed, Nord Pool price and SOP records, then to
-# seventy-six with v0.22-SC's FES ED1 record, then to eighty-eight with v0.22-K-SCN-1a's ten tRESP
-# pathway records and two workbook reference records, then to ninety-seven with v0.22-K-SCN-1b's
-# nine regional FES records, then to one hundred with v0.22-K-SCN-1c's three building block records,
-# then to one hundred and one with v0.22-K-SCN-1d's ES1 electricity supply record, then to one
-# hundred and eight with v0.22-K-CON's seven constraint-management records, then to one hundred
-# and sixteen with v0.22-K-SYS-1's eight system records, then to one hundred and twenty-five with
-# v0.22-K-BAL-1's nine balancing-costs records, then to one hundred and twenty-six with
-# v0.22-K-BAL-2a's BSUoS monthly forecast summary record, then to one hundred and thirty-five with
-# v0.22-K-BAL-2b's nine skip-rate records, then to one hundred and forty-four with
-# v0.22-K-BAL-2c's nine tariff records, then to one hundred and fifty-three with
-# v0.22-K-TRD's nine trading records, then to one hundred and sixty-two with
-# v0.22-K-AS-1's nine ancillary-services records, then to one hundred and seventy-three with
-# v0.22-K-AS-2's eleven ancillary-services records, then to one hundred and eighty-four with
-# v0.22-K-AS-3a's eleven EAC auction-result records, then to one hundred and ninety-four with
-# v0.22-K-AS-3b's ten mock EAC, ORPS and OBP records, then to two hundred and one with
-# v0.22-K-AS-4a's seven BSAD and legacy Dynamic Containment records, then to two hundred and nine
-# with v0.22-K-AS-4b's eight EAC-BR archive and mock records, then to two hundred and sixteen
-# with v0.22-K-AS-5a's seven FFR post-tender and Phase-2 FFR auction records, then to two hundred
-# and twenty-one with v0.22-K-AS-5b's five ASDP, ODFM and STOR day-ahead records, then to two
-# hundred and thirty with v0.22-K-DFS-a's four DFS records and the STOR day-ahead buy curve, then to
-# two hundred and forty-two with v0.22-K-DFS-b's twelve frozen DFS records (2023/24 service,
-# 2022/23 live events, 2022/23 test events), then to two hundred and forty-six with
-# v0.22-K-SCN-2a's ES2, FLX1, ED5 and ED6 records, then to two hundred and fifty with
-# v0.22-K-SCN-2b's ED3 combined, ED3 gas summary, ED7 and ED4 records, then to two hundred and
-# fifty-eight with v0.22-K-SCN-3's Building Heat Model example output, WS1, WS2, local-authority
-# heat model and Resource Adequacy 2030s records, then to two hundred and fifty-nine with
-# v0.22-K-FILE's GSP / Gnode / Direct Connect / Region lookup record, then to two hundred and
-# sixty-four with v0.22-H's five system frequency rendering records, then to two hundred and
-# seventy-eight with the eight Elexon and six ENTSO-E forecasts that keep every vintage.
-_APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
+# Named datasets every derived census must contain: an Elexon, a NESO portal
+# and an ENTSO-E family, so an empty or truncated derivation fails loudly.
+_SPOT_APPEND_ONLY: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
-    ("elexon", "remit"),
     ("elexon", "fou2t14d"),
-    ("neso_data_portal", "daily_wind_availability"),
     ("neso_data_portal", "historic_generation_mix"),
-    ("neso_data_portal", "embedded_wind_solar_forecast"),
-    ("neso_data_portal", "tec_register"),
-    ("neso_data_portal", "interconnector_register"),
-    ("neso_data_portal", "embedded_register"),
-    ("neso_data_portal", "demand_forecast_2_52w"),
-    ("neso_data_portal", "da_demand_fc_performance"),
-    ("neso_data_portal", "constraint_cost_fc_24m"),
-    ("neso_data_portal", "current_bsuos_cap_adjustments"),
-    ("neso_data_portal", "ffr_phase2_result_summary_archive"),
-    ("neso_data_portal", "embedded_forecast_archive_upload"),
-    ("neso_data_portal", "embedded_forecast_archive_dump"),
-    ("neso_data_portal", "national_ci_forecast"),
-    ("neso_data_portal", "regional_ci_forecast"),
-    ("neso_data_portal", "country_ci_forecast"),
-    ("neso_data_portal", "ci_balancing_actions"),
-    ("neso_data_portal", "portal_known_issues"),
-    ("neso_data_portal", "capacity_market_auction_cost"),
-    ("neso_data_portal", "capacity_market_auction_static"),
-    ("neso_data_portal", "capacity_market_de_rating_factors"),
-    ("neso_data_portal", "capacity_market_unit_cmu"),
-    ("neso_data_portal", "capacity_market_unit_cmu_history"),
-    ("neso_data_portal", "capacity_market_component_history"),
-    ("neso_data_portal", "capacity_market_component_history_pre"),
-    ("neso_data_portal", "capacity_market_components"),
-    ("neso_data_portal", "demand_forecast_1d_day_ahead_national"),
-    ("neso_data_portal", "demand_forecast_1d_historic_day_ahead"),
-    ("neso_data_portal", "demand_forecast_2d_day_ahead"),
-    ("neso_data_portal", "demand_forecast_2d_historic_day_ahead"),
-    ("neso_data_portal", "national_forecast_7d_day_ahead_demand"),
-    ("neso_data_portal", "national_forecast_7d_historic_day_ahead"),
-    ("neso_data_portal", "national_demand_fc_2_14d_days_ahead"),
-    ("neso_data_portal", "national_demand_fc_2_14d_days_ahead_half"),
-    ("neso_data_portal", "national_demand_fc_2_14d_historic_day"),
-    ("neso_data_portal", "daily_demand_update"),
-    ("neso_data_portal", "historic_demand"),
-    ("neso_data_portal", "national_demand_bmus"),
-    ("neso_data_portal", "school_holiday_percentages"),
-    ("neso_data_portal", "transmission_losses_main"),
-    ("neso_data_portal", "transmission_losses_financial_year"),
-    ("neso_data_portal", "metered_wind_forecast_14d"),
-    ("neso_data_portal", "metered_wind_forecast_14d_windfarm"),
-    ("neso_data_portal", "wind_forecast_14d_days_ahead"),
-    ("neso_data_portal", "wind_forecast_14d_day_ahead_bmu"),
-    ("neso_data_portal", "da_wind_forecast_day_ahead"),
-    ("neso_data_portal", "da_wind_forecast_day_ahead_bmu"),
-    ("neso_data_portal", "da_wind_forecast_historic_day_ahead"),
-    ("neso_data_portal", "da_wind_forecast_historic_day_ahead_bmu"),
-    ("neso_data_portal", "nrapm_forecast_national_daily_days"),
-    ("neso_data_portal", "nrapm_forecast_scotland_daily_days"),
-    ("neso_data_portal", "nrapm_forecast_weekly_week_national"),
-    ("neso_data_portal", "nrapm_forecast_weekly_week_scotland"),
-    ("neso_data_portal", "daily_opmr"),
-    ("neso_data_portal", "weekly_opmr"),
-    ("neso_data_portal", "weekly_wind_availability"),
-    ("neso_data_portal", "metered_wind_output_monthly"),
-    ("neso_data_portal", "wind_bmu_boa_volumes"),
-    ("neso_data_portal", "eleclink"),
-    ("neso_data_portal", "ifa_itl"),
-    ("neso_data_portal", "ifa_da_id_weekly_itls"),
-    ("neso_data_portal", "ifa2_ifa_itl"),
-    ("neso_data_portal", "ifa2_ifa_da_id_weekly_itls"),
-    ("neso_data_portal", "nemolink_ntc"),
-    ("neso_data_portal", "nemolink_intraday"),
-    ("neso_data_portal", "nemolink_nemo_da_id_weekly_ntcs"),
-    ("neso_data_portal", "nsl"),
-    ("neso_data_portal", "viking_ntc"),
-    ("neso_data_portal", "viking_link_ntc"),
-    ("neso_data_portal", "brit_ned"),
-    ("neso_data_portal", "nordpool_da_prices"),
-    ("neso_data_portal", "system_operating_plan"),
-    ("neso_data_portal", "fes_ed1_electricity_demand"),
-    ("neso_data_portal", "tresp_building_block_definitions"),
-    ("neso_data_portal", "tresp_gsp_area_names"),
-    ("neso_data_portal", "tresp_demand_pathways_gsp"),
-    ("neso_data_portal", "tresp_demand_pathways_la_england"),
-    ("neso_data_portal", "tresp_demand_pathways_la_scotland"),
-    ("neso_data_portal", "tresp_demand_pathways_la_wales"),
-    ("neso_data_portal", "tresp_demand_pathways_resp_region"),
-    ("neso_data_portal", "tresp_generation_pathways_gsp"),
-    ("neso_data_portal", "tresp_generation_pathways_la_england"),
-    ("neso_data_portal", "tresp_generation_pathways_la_scotland"),
-    ("neso_data_portal", "tresp_generation_pathways_la_wales"),
-    ("neso_data_portal", "tresp_generation_pathways_resp_region"),
-    ("neso_data_portal", "fes_regional_demand_active_power"),
-    ("neso_data_portal", "fes_regional_dg_gt_1mw"),
-    ("neso_data_portal", "fes_regional_dg_lt_1mw"),
-    ("neso_data_portal", "fes_regional_dsr"),
-    ("neso_data_portal", "fes_regional_gsp_info"),
-    ("neso_data_portal", "fes_regional_storage_gt_1mw"),
-    ("neso_data_portal", "fes_regional_storage_gt_1mw_pre2023"),
-    ("neso_data_portal", "fes_regional_storage_lt_1mw"),
-    ("neso_data_portal", "fes_regional_storage_lt_1mw_pre2023"),
-    ("neso_data_portal", "fes_building_blocks_main"),
-    ("neso_data_portal", "fes_building_blocks_block_definitions"),
-    ("neso_data_portal", "fes_building_blocks_block_licence_area"),
-    ("neso_data_portal", "fes_es1_electricity_supply"),
-    ("neso_data_portal", "constraint_limits_24m"),
-    ("neso_data_portal", "cmis_intertrip"),
-    ("neso_data_portal", "da_constraint_flows_limits"),
-    ("neso_data_portal", "otf_network_congestion"),
-    ("neso_data_portal", "thermal_constraint_costs"),
-    ("neso_data_portal", "thermal_constraint_costs_xlsx"),
-    ("neso_data_portal", "voltage_requirement"),
-    ("neso_data_portal", "voltage_units_utilisation"),
-    ("neso_data_portal", "stability_midterm_y1"),
-    ("neso_data_portal", "stability_pathfinder_utilisation_report"),
-    ("neso_data_portal", "stability_pathfinder_availability_report"),
-    ("neso_data_portal", "system_inertia"),
-    ("neso_data_portal", "system_inertia_cost"),
-    ("neso_data_portal", "outturn_voltage_costs_historical"),
-    ("neso_data_portal", "outturn_voltage_costs_main"),
-    ("neso_data_portal", "current_bsuos_ii"),
-    ("neso_data_portal", "current_bsuos_sf"),
-    ("neso_data_portal", "current_bsuos_rf"),
-    ("neso_data_portal", "current_bsuos_historic_ii"),
-    ("neso_data_portal", "current_bsuos_historic_sf"),
-    ("neso_data_portal", "current_bsuos_historic_rf"),
-    ("neso_data_portal", "constraint_breakdown"),
-    ("neso_data_portal", "bsuos_fixed_tariffs"),
-    ("neso_data_portal", "inertia_bid_offer_costs"),
-    ("neso_data_portal", "bsuos_monthly_forecast_fc_summary"),
-    ("neso_data_portal", "skip_rates_summary"),
-    ("neso_data_portal", "skip_rates_stage5_psa_technology"),
-    ("neso_data_portal", "skip_rates_behind_constraints_bmu"),
-    ("neso_data_portal", "skip_rates_behind_constraints_cons"),
-    ("neso_data_portal", "skip_rates_in_merit_all_bm"),
-    ("neso_data_portal", "skip_rates_in_merit_psa"),
-    ("neso_data_portal", "skip_rates_exclusion_reasons"),
-    ("neso_data_portal", "skip_rates_stage6_acceptance"),
-    ("neso_data_portal", "skip_rates_stage6_psa"),
-    ("neso_data_portal", "aahedc_tariffs"),
-    ("neso_data_portal", "tnuos_tariffs_embedded_export"),
-    ("neso_data_portal", "tnuos_tariffs_half_hourly_hh_demand"),
-    ("neso_data_portal", "tnuos_tariffs_non_half_hourly_nhh_demand"),
-    ("neso_data_portal", "tnuos_tariffs_onshore_generator"),
-    ("neso_data_portal", "tnuos_tariffs_local_offshore_generator"),
-    ("neso_data_portal", "tnuos_tariffs_local_substation_tariff"),
-    ("neso_data_portal", "tnuos_tariffs_transmission_demand"),
-    ("neso_data_portal", "tnuos_tariffs_onshore_local_circuit"),
-    ("neso_data_portal", "bs_contract_enactment_balancing"),
-    ("neso_data_portal", "bs_contract_enactment_balancing_service"),
-    ("neso_data_portal", "gtma_trades_data"),
-    ("neso_data_portal", "gtma_trades_data_pre"),
-    ("neso_data_portal", "gtma_trades_fy"),
-    ("neso_data_portal", "index_linked_contract_volume"),
-    ("neso_data_portal", "ic_requirement_auction"),
-    ("neso_data_portal", "ssel_contract_enactment"),
-    ("neso_data_portal", "upcoming_trades"),
-    ("neso_data_portal", "br_auction_requirement_fc_da"),
-    ("neso_data_portal", "br_auction_requirement_fc_da_archive"),
-    ("neso_data_portal", "br_auction_requirement_fc_medium_term"),
-    ("neso_data_portal", "dc_forecast_4d"),
-    ("neso_data_portal", "dc_forecast_4d_history"),
-    ("neso_data_portal", "dm_requirements"),
-    ("neso_data_portal", "dr_requirements"),
-    ("neso_data_portal", "dc_dm_dr_long_term_fc"),
-    ("neso_data_portal", "qr_auction_requirement_fc"),
-    ("neso_data_portal", "as_industry_notifications_balancing"),
-    ("neso_data_portal", "as_industry_notifications_dc_dm_dr"),
-    ("neso_data_portal", "as_industry_notifications_quick_reserve"),
-    ("neso_data_portal", "as_industry_notifications_sffr_important"),
-    ("neso_data_portal", "as_industry_notifications_slow_reserve"),
-    ("neso_data_portal", "as_industry_notifications_stor_important"),
-    ("neso_data_portal", "slow_reserve_requirement_fc"),
-    ("neso_data_portal", "sffr_auction_results_main"),
-    ("neso_data_portal", "sffr_auction_results_buy_orders"),
-    ("neso_data_portal", "sffr_requirement"),
-    ("neso_data_portal", "stor_windows"),
-    ("neso_data_portal", "eac_results_by_unit"),
-    ("neso_data_portal", "eac_results_by_unit_fy"),
-    ("neso_data_portal", "eac_results_daily_by_unit"),
-    ("neso_data_portal", "eac_results_buy_orders"),
-    ("neso_data_portal", "eac_results_buy_orders_fy"),
-    ("neso_data_portal", "eac_results_daily_buy_orders"),
-    ("neso_data_portal", "eac_results_summary"),
-    ("neso_data_portal", "eac_results_summary_fy"),
-    ("neso_data_portal", "eac_results_daily_summary"),
-    ("neso_data_portal", "eac_results_sell_orders"),
-    ("neso_data_portal", "eac_results_daily_sell_orders"),
-    ("neso_data_portal", "eac_mock_results_by_unit"),
-    ("neso_data_portal", "eac_mock_results_buy_orders"),
-    ("neso_data_portal", "eac_mock_results_summary"),
-    ("neso_data_portal", "eac_mock_results_sell_orders"),
-    ("neso_data_portal", "orps_utilisation_historic_reactive"),
-    ("neso_data_portal", "orps_utilisation_reactive"),
-    ("neso_data_portal", "orps_utilisation_reactive_default"),
-    ("neso_data_portal", "obp_physical_notifications"),
-    ("neso_data_portal", "obp_reserve_instructions"),
-    ("neso_data_portal", "obp_reserve_avail_price"),
-    ("neso_data_portal", "aggregated_bsad"),
-    ("neso_data_portal", "bsad_forward_contracts"),
-    ("neso_data_portal", "dynamic_containment_masterdata"),
-    ("neso_data_portal", "dynamic_containment_dc_dr_dm_results_sum"),
-    ("neso_data_portal", "dynamic_containment_dc_dr_dm_results"),
-    ("neso_data_portal", "dynamic_containment_dc_dr_dm_linear"),
-    ("neso_data_portal", "dynamic_containment_dc_dr_dm_block"),
-    ("neso_data_portal", "eac_br_results_by_unit"),
-    ("neso_data_portal", "eac_br_results_buy_orders"),
-    ("neso_data_portal", "eac_br_results_summary"),
-    ("neso_data_portal", "eac_br_results_sell_orders"),
-    ("neso_data_portal", "eac_br_mock_results_by_unit"),
-    ("neso_data_portal", "eac_br_mock_results_buy_orders"),
-    ("neso_data_portal", "eac_br_mock_results_sell_orders"),
-    ("neso_data_portal", "eac_br_mock_results_summary"),
-    ("neso_data_portal", "ffr_post_tender_reports_csv_ext"),
-    ("neso_data_portal", "ffr_phase2_auction_phase_block_order"),
-    ("neso_data_portal", "ffr_phase2_auction_phase_blockorders"),
-    ("neso_data_portal", "ffr_phase2_auction_phase_linear_orders"),
-    ("neso_data_portal", "ffr_phase2_auction_phase_linearorders"),
-    ("neso_data_portal", "ffr_phase2_auction_phase_resultsbyunit"),
-    ("neso_data_portal", "ffr_phase2_auction_phase_resultsum"),
-    ("neso_data_portal", "asdp_instructions"),
-    ("neso_data_portal", "asdp_window_prices"),
-    ("neso_data_portal", "odfm_market_information_instructed"),
-    ("neso_data_portal", "odfm_market_information_load_factors"),
-    ("neso_data_portal", "stor_da_auction_results"),
-    ("neso_data_portal", "ffr_post_tender_reports_workbook"),
-    ("neso_data_portal", "ffr_phase2_blockorders_archive"),
-    ("neso_data_portal", "ffr_phase2_linearorders_archive"),
-    ("neso_data_portal", "ffr_phase2_results_by_unit_archive"),
-    ("neso_data_portal", "demand_flexibility_service_requirement"),
-    ("neso_data_portal", "demand_flexibility_industry_notification"),
-    ("neso_data_portal", "demand_flexibility_utilisation_report"),
-    ("neso_data_portal", "demand_flexibility_utilisation_summary"),
-    ("neso_data_portal", "stor_da_buy_curve"),
-    ("neso_data_portal", "dfs_industry_notification"),
-    ("neso_data_portal", "dfs_service_requirements"),
-    ("neso_data_portal", "dfs_utilisation_report"),
-    ("neso_data_portal", "dfs_utilisation_report_sum"),
-    ("neso_data_portal", "dfs_live_events_service_requirement"),
-    ("neso_data_portal", "dfs_live_events_service_update_industry"),
-    ("neso_data_portal", "dfs_live_events_utilisation_report"),
-    ("neso_data_portal", "dfs_live_events_utilisation_report_sum"),
-    ("neso_data_portal", "dfs_test_events_service_requirement"),
-    ("neso_data_portal", "dfs_test_events_service_update_industry"),
-    ("neso_data_portal", "dfs_test_events_utilisation_report"),
-    ("neso_data_portal", "dfs_test_events_utilisation_report_sum"),
-    ("neso_data_portal", "fes_es2_european_supply"),
-    ("neso_data_portal", "fes_flx1_flexibility"),
-    ("neso_data_portal", "fes_ed5_road_transport"),
-    ("neso_data_portal", "fes_ed6_road_transport_notes"),
-    ("neso_data_portal", "fes_ed3_heat_demand_natural_gas"),
-    ("neso_data_portal", "fes_ed3_heat_demand_natural_gas_sum_ed"),
-    ("neso_data_portal", "fes_ed3_heat_demand_sum_ed"),
-    ("neso_data_portal", "fes_ed4_gas_demand_defs"),
-    ("neso_data_portal", "building_heat_model_example_output_half"),
-    ("neso_data_portal", "fes_ws1_gas_supply"),
-    ("neso_data_portal", "fes_ws2_gas_emissions"),
-    ("neso_data_portal", "fes_la_heat_model_domestic"),
-    ("neso_data_portal", "fes_la_heat_model_residential"),
-    ("neso_data_portal", "resource_adequacy_2030s_portfolio"),
-    ("neso_data_portal", "resource_adequacy_2030s_peak_demand"),
-    ("neso_data_portal", "resource_adequacy_2030s_results"),
-    ("neso_data_portal", "gis_grid_supply_points"),
-    ("neso_data_portal", "system_frequency_dmy_csv"),
-    ("neso_data_portal", "system_frequency_offset_csv"),
-    ("neso_data_portal", "system_frequency_offset_zip"),
-    ("neso_data_portal", "system_frequency_gmt_zip"),
-    ("neso_data_portal", "system_frequency_gmt_csv"),
-    ("elexon", "uou2t14d"),
-    ("elexon", "inddem"),
-    ("elexon", "indgen"),
-    ("elexon", "tsdf"),
-    ("elexon", "tsdfd"),
-    ("elexon", "lolpdrm"),
-    ("elexon", "imbalngc"),
-    ("elexon", "melngc"),
-    ("entsoe", "load_forecast"),
-    ("entsoe", "load_forecast_weekly"),
-    ("entsoe", "load_forecast_monthly"),
-    ("entsoe", "load_forecast_yearly"),
-    ("entsoe", "generation_forecast"),
     ("entsoe", "wind_solar_forecast"),
 )
 
@@ -370,6 +58,17 @@ def _registered_transformers() -> None:
     manifest-build time (``_ensure_silver_transformers_registered``).
     """
     schema_manifest._ensure_silver_transformers_registered()
+
+
+def _append_only_datasets() -> set[tuple[str, str]]:
+    """Every registered APPEND_ONLY dataset, read from the transformer registry."""
+    append_only: set[tuple[str, str]] = set()
+    for source, dataset in list_transformers():
+        transformer_cls = get_transformer_class(source, dataset)
+        assert transformer_cls is not None
+        if transformer_cls.APPEND_ONLY:
+            append_only.add((source, dataset))
+    return append_only
 
 
 def _silver_entries() -> tuple[SilverSchemaEntry, ...]:
@@ -389,10 +88,16 @@ def _entry(source: str, dataset: str) -> SilverSchemaEntry:
 
 
 def test_append_only_datasets_advertise_latest() -> None:
-    """I-1: an APPEND_ONLY dataset with a _latest spec advertises the _latest name."""
-    for source, dataset in _APPEND_ONLY_DATASETS:
-        entry = _entry(source, dataset)
-        assert entry.relation_name == f"silver_{source}_{dataset}_latest"
+    """I-1: every APPEND_ONLY dataset advertises its _latest relation name."""
+    append_only = _append_only_datasets()
+    assert set(_SPOT_APPEND_ONLY) <= append_only
+    entries = {(entry.source, entry.dataset): entry for entry in _silver_entries()}
+    wrong = sorted(
+        (source, dataset, entries[(source, dataset)].relation_name)
+        for source, dataset in append_only
+        if entries[(source, dataset)].relation_name != f"silver_{source}_{dataset}_latest"
+    )
+    assert not wrong, wrong
 
 
 @pytest.mark.parametrize(
@@ -480,10 +185,11 @@ def test_non_append_only_relations_unchanged() -> None:
     `.planning/phases/R2-partition-integrity/N-5-VERIFICATION.md`.
     """
     entries = _silver_entries()
+    append_only = _append_only_datasets()
     non_append_only = [
-        entry for entry in entries if (entry.source, entry.dataset) not in _APPEND_ONLY_DATASETS
+        entry for entry in entries if (entry.source, entry.dataset) not in append_only
     ]
-    assert len(non_append_only) == len(entries) - len(_APPEND_ONLY_DATASETS)
+    assert len(non_append_only) == len(entries) - len(append_only)
     for entry in non_append_only:
         base = f"silver_{entry.source}_{entry.dataset}"
         assert entry.relation_name == base
@@ -493,7 +199,7 @@ def test_non_append_only_relations_unchanged() -> None:
     # rebuild): APPEND_ONLY rows differ from it ONLY by the `_latest` suffix
     # on relation_name -- qualified_view still names the all-vintage base.
     for entry in entries:
-        if (entry.source, entry.dataset) not in _APPEND_ONLY_DATASETS:
+        if (entry.source, entry.dataset) not in append_only:
             continue
         base = f"silver_{entry.source}_{entry.dataset}"
         assert entry.qualified_view == base
@@ -541,18 +247,12 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     ``pytest ...::test_append_only_set_equals_latest_spec_set`` as the
     order-independence proof.
     """
-    registered = sorted(list_transformers())
-    append_only = {
-        (source, dataset)
-        for source, dataset in registered
-        if get_transformer(source, dataset, __import__("pathlib").Path("__test__")).APPEND_ONLY
-    }
+    append_only = _append_only_datasets()
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and seventy-eight APPEND_ONLY datasets are registered today.
-    assert len(append_only) > 0
-    assert len(append_only) == 278
+    # empty or short (F16).
+    assert set(_SPOT_APPEND_ONLY) <= append_only
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -562,640 +262,33 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     )
 
 
-# Keyed by _APPEND_ONLY_DATASETS above, so this table is part of the SAME
-# hand-maintained census and grows with it (PHASE.md ruling 12, extended). Each
-# value is `_deprecated_aliases`'s documented rule -- `silver_{dataset}` when
-# the dataset name is unique across sources, else None -- and is verified
-# against the live manifest at edit time rather than copied from a failure
-# message.
-_EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
-    ("elexon", "system_prices"): "silver_system_prices",
-    ("elexon", "remit"): "silver_remit",
-    ("elexon", "fou2t14d"): "silver_fou2t14d",
-    ("neso_data_portal", "daily_wind_availability"): "silver_daily_wind_availability",
-    ("neso_data_portal", "historic_generation_mix"): "silver_historic_generation_mix",
-    (
-        "neso_data_portal",
-        "embedded_wind_solar_forecast",
-    ): "silver_embedded_wind_solar_forecast",
-    ("neso_data_portal", "tec_register"): "silver_tec_register",
-    ("neso_data_portal", "interconnector_register"): "silver_interconnector_register",
-    ("neso_data_portal", "embedded_register"): "silver_embedded_register",
-    ("neso_data_portal", "demand_forecast_2_52w"): "silver_demand_forecast_2_52w",
-    ("neso_data_portal", "da_demand_fc_performance"): "silver_da_demand_fc_performance",
-    ("neso_data_portal", "constraint_cost_fc_24m"): "silver_constraint_cost_fc_24m",
-    (
-        "neso_data_portal",
-        "current_bsuos_cap_adjustments",
-    ): "silver_current_bsuos_cap_adjustments",
-    (
-        "neso_data_portal",
-        "ffr_phase2_result_summary_archive",
-    ): "silver_ffr_phase2_result_summary_archive",
-    (
-        "neso_data_portal",
-        "embedded_forecast_archive_upload",
-    ): "silver_embedded_forecast_archive_upload",
-    (
-        "neso_data_portal",
-        "embedded_forecast_archive_dump",
-    ): "silver_embedded_forecast_archive_dump",
-    ("neso_data_portal", "national_ci_forecast"): "silver_national_ci_forecast",
-    ("neso_data_portal", "regional_ci_forecast"): "silver_regional_ci_forecast",
-    ("neso_data_portal", "country_ci_forecast"): "silver_country_ci_forecast",
-    ("neso_data_portal", "ci_balancing_actions"): "silver_ci_balancing_actions",
-    ("neso_data_portal", "portal_known_issues"): "silver_portal_known_issues",
-    ("neso_data_portal", "capacity_market_auction_cost"): "silver_capacity_market_auction_cost",
-    ("neso_data_portal", "capacity_market_auction_static"): "silver_capacity_market_auction_static",
-    (
-        "neso_data_portal",
-        "capacity_market_de_rating_factors",
-    ): "silver_capacity_market_de_rating_factors",
-    ("neso_data_portal", "capacity_market_unit_cmu"): "silver_capacity_market_unit_cmu",
-    (
-        "neso_data_portal",
-        "capacity_market_unit_cmu_history",
-    ): "silver_capacity_market_unit_cmu_history",
-    (
-        "neso_data_portal",
-        "capacity_market_component_history",
-    ): "silver_capacity_market_component_history",
-    (
-        "neso_data_portal",
-        "capacity_market_component_history_pre",
-    ): "silver_capacity_market_component_history_pre",
-    ("neso_data_portal", "capacity_market_components"): "silver_capacity_market_components",
-    (
-        "neso_data_portal",
-        "demand_forecast_1d_day_ahead_national",
-    ): "silver_demand_forecast_1d_day_ahead_national",
-    (
-        "neso_data_portal",
-        "demand_forecast_1d_historic_day_ahead",
-    ): "silver_demand_forecast_1d_historic_day_ahead",
-    ("neso_data_portal", "demand_forecast_2d_day_ahead"): "silver_demand_forecast_2d_day_ahead",
-    (
-        "neso_data_portal",
-        "demand_forecast_2d_historic_day_ahead",
-    ): "silver_demand_forecast_2d_historic_day_ahead",
-    (
-        "neso_data_portal",
-        "national_forecast_7d_day_ahead_demand",
-    ): "silver_national_forecast_7d_day_ahead_demand",
-    (
-        "neso_data_portal",
-        "national_forecast_7d_historic_day_ahead",
-    ): "silver_national_forecast_7d_historic_day_ahead",
-    (
-        "neso_data_portal",
-        "national_demand_fc_2_14d_days_ahead",
-    ): "silver_national_demand_fc_2_14d_days_ahead",
-    (
-        "neso_data_portal",
-        "national_demand_fc_2_14d_days_ahead_half",
-    ): "silver_national_demand_fc_2_14d_days_ahead_half",
-    (
-        "neso_data_portal",
-        "national_demand_fc_2_14d_historic_day",
-    ): "silver_national_demand_fc_2_14d_historic_day",
-    ("neso_data_portal", "daily_demand_update"): "silver_daily_demand_update",
-    ("neso_data_portal", "historic_demand"): "silver_historic_demand",
-    ("neso_data_portal", "national_demand_bmus"): "silver_national_demand_bmus",
-    ("neso_data_portal", "school_holiday_percentages"): "silver_school_holiday_percentages",
-    ("neso_data_portal", "transmission_losses_main"): "silver_transmission_losses_main",
-    (
-        "neso_data_portal",
-        "transmission_losses_financial_year",
-    ): "silver_transmission_losses_financial_year",
-    ("neso_data_portal", "metered_wind_forecast_14d"): "silver_metered_wind_forecast_14d",
-    (
-        "neso_data_portal",
-        "metered_wind_forecast_14d_windfarm",
-    ): "silver_metered_wind_forecast_14d_windfarm",
-    ("neso_data_portal", "wind_forecast_14d_days_ahead"): "silver_wind_forecast_14d_days_ahead",
-    (
-        "neso_data_portal",
-        "wind_forecast_14d_day_ahead_bmu",
-    ): "silver_wind_forecast_14d_day_ahead_bmu",
-    ("neso_data_portal", "da_wind_forecast_day_ahead"): "silver_da_wind_forecast_day_ahead",
-    ("neso_data_portal", "da_wind_forecast_day_ahead_bmu"): "silver_da_wind_forecast_day_ahead_bmu",
-    (
-        "neso_data_portal",
-        "da_wind_forecast_historic_day_ahead",
-    ): "silver_da_wind_forecast_historic_day_ahead",
-    (
-        "neso_data_portal",
-        "da_wind_forecast_historic_day_ahead_bmu",
-    ): "silver_da_wind_forecast_historic_day_ahead_bmu",
-    (
-        "neso_data_portal",
-        "nrapm_forecast_national_daily_days",
-    ): "silver_nrapm_forecast_national_daily_days",
-    (
-        "neso_data_portal",
-        "nrapm_forecast_scotland_daily_days",
-    ): "silver_nrapm_forecast_scotland_daily_days",
-    (
-        "neso_data_portal",
-        "nrapm_forecast_weekly_week_national",
-    ): "silver_nrapm_forecast_weekly_week_national",
-    (
-        "neso_data_portal",
-        "nrapm_forecast_weekly_week_scotland",
-    ): "silver_nrapm_forecast_weekly_week_scotland",
-    ("neso_data_portal", "daily_opmr"): "silver_daily_opmr",
-    ("neso_data_portal", "weekly_opmr"): "silver_weekly_opmr",
-    ("neso_data_portal", "weekly_wind_availability"): "silver_weekly_wind_availability",
-    ("neso_data_portal", "metered_wind_output_monthly"): "silver_metered_wind_output_monthly",
-    ("neso_data_portal", "wind_bmu_boa_volumes"): "silver_wind_bmu_boa_volumes",
-    ("neso_data_portal", "eleclink"): "silver_eleclink",
-    ("neso_data_portal", "ifa_itl"): "silver_ifa_itl",
-    ("neso_data_portal", "ifa_da_id_weekly_itls"): "silver_ifa_da_id_weekly_itls",
-    ("neso_data_portal", "ifa2_ifa_itl"): "silver_ifa2_ifa_itl",
-    ("neso_data_portal", "ifa2_ifa_da_id_weekly_itls"): "silver_ifa2_ifa_da_id_weekly_itls",
-    ("neso_data_portal", "nemolink_ntc"): "silver_nemolink_ntc",
-    ("neso_data_portal", "nemolink_intraday"): "silver_nemolink_intraday",
-    (
-        "neso_data_portal",
-        "nemolink_nemo_da_id_weekly_ntcs",
-    ): "silver_nemolink_nemo_da_id_weekly_ntcs",
-    ("neso_data_portal", "nsl"): "silver_nsl",
-    ("neso_data_portal", "viking_ntc"): "silver_viking_ntc",
-    ("neso_data_portal", "viking_link_ntc"): "silver_viking_link_ntc",
-    ("neso_data_portal", "brit_ned"): "silver_brit_ned",
-    ("neso_data_portal", "nordpool_da_prices"): "silver_nordpool_da_prices",
-    ("neso_data_portal", "system_operating_plan"): "silver_system_operating_plan",
-    ("neso_data_portal", "fes_ed1_electricity_demand"): "silver_fes_ed1_electricity_demand",
-    (
-        "neso_data_portal",
-        "tresp_building_block_definitions",
-    ): "silver_tresp_building_block_definitions",
-    ("neso_data_portal", "tresp_gsp_area_names"): "silver_tresp_gsp_area_names",
-    ("neso_data_portal", "tresp_demand_pathways_gsp"): "silver_tresp_demand_pathways_gsp",
-    (
-        "neso_data_portal",
-        "tresp_demand_pathways_la_england",
-    ): "silver_tresp_demand_pathways_la_england",
-    (
-        "neso_data_portal",
-        "tresp_demand_pathways_la_scotland",
-    ): "silver_tresp_demand_pathways_la_scotland",
-    ("neso_data_portal", "tresp_demand_pathways_la_wales"): "silver_tresp_demand_pathways_la_wales",
-    (
-        "neso_data_portal",
-        "tresp_demand_pathways_resp_region",
-    ): "silver_tresp_demand_pathways_resp_region",
-    ("neso_data_portal", "tresp_generation_pathways_gsp"): "silver_tresp_generation_pathways_gsp",
-    (
-        "neso_data_portal",
-        "tresp_generation_pathways_la_england",
-    ): "silver_tresp_generation_pathways_la_england",
-    (
-        "neso_data_portal",
-        "tresp_generation_pathways_la_scotland",
-    ): "silver_tresp_generation_pathways_la_scotland",
-    (
-        "neso_data_portal",
-        "tresp_generation_pathways_la_wales",
-    ): "silver_tresp_generation_pathways_la_wales",
-    (
-        "neso_data_portal",
-        "tresp_generation_pathways_resp_region",
-    ): "silver_tresp_generation_pathways_resp_region",
-    (
-        "neso_data_portal",
-        "fes_regional_demand_active_power",
-    ): "silver_fes_regional_demand_active_power",
-    (
-        "neso_data_portal",
-        "fes_regional_dg_gt_1mw",
-    ): "silver_fes_regional_dg_gt_1mw",
-    (
-        "neso_data_portal",
-        "fes_regional_dg_lt_1mw",
-    ): "silver_fes_regional_dg_lt_1mw",
-    (
-        "neso_data_portal",
-        "fes_regional_dsr",
-    ): "silver_fes_regional_dsr",
-    (
-        "neso_data_portal",
-        "fes_regional_gsp_info",
-    ): "silver_fes_regional_gsp_info",
-    (
-        "neso_data_portal",
-        "fes_regional_storage_gt_1mw",
-    ): "silver_fes_regional_storage_gt_1mw",
-    (
-        "neso_data_portal",
-        "fes_regional_storage_gt_1mw_pre2023",
-    ): "silver_fes_regional_storage_gt_1mw_pre2023",
-    (
-        "neso_data_portal",
-        "fes_regional_storage_lt_1mw",
-    ): "silver_fes_regional_storage_lt_1mw",
-    (
-        "neso_data_portal",
-        "fes_regional_storage_lt_1mw_pre2023",
-    ): "silver_fes_regional_storage_lt_1mw_pre2023",
-    (
-        "neso_data_portal",
-        "fes_building_blocks_main",
-    ): "silver_fes_building_blocks_main",
-    (
-        "neso_data_portal",
-        "fes_building_blocks_block_definitions",
-    ): "silver_fes_building_blocks_block_definitions",
-    (
-        "neso_data_portal",
-        "fes_building_blocks_block_licence_area",
-    ): "silver_fes_building_blocks_block_licence_area",
-    (
-        "neso_data_portal",
-        "fes_es1_electricity_supply",
-    ): "silver_fes_es1_electricity_supply",
-    ("neso_data_portal", "constraint_limits_24m"): "silver_constraint_limits_24m",
-    ("neso_data_portal", "cmis_intertrip"): "silver_cmis_intertrip",
-    ("neso_data_portal", "da_constraint_flows_limits"): "silver_da_constraint_flows_limits",
-    ("neso_data_portal", "otf_network_congestion"): "silver_otf_network_congestion",
-    ("neso_data_portal", "thermal_constraint_costs"): "silver_thermal_constraint_costs",
-    ("neso_data_portal", "thermal_constraint_costs_xlsx"): "silver_thermal_constraint_costs_xlsx",
-    ("neso_data_portal", "voltage_requirement"): "silver_voltage_requirement",
-    ("neso_data_portal", "voltage_units_utilisation"): "silver_voltage_units_utilisation",
-    ("neso_data_portal", "stability_midterm_y1"): "silver_stability_midterm_y1",
-    (
-        "neso_data_portal",
-        "stability_pathfinder_utilisation_report",
-    ): "silver_stability_pathfinder_utilisation_report",
-    (
-        "neso_data_portal",
-        "stability_pathfinder_availability_report",
-    ): "silver_stability_pathfinder_availability_report",
-    ("neso_data_portal", "system_inertia"): "silver_system_inertia",
-    ("neso_data_portal", "system_inertia_cost"): "silver_system_inertia_cost",
-    (
-        "neso_data_portal",
-        "outturn_voltage_costs_historical",
-    ): "silver_outturn_voltage_costs_historical",
-    ("neso_data_portal", "outturn_voltage_costs_main"): "silver_outturn_voltage_costs_main",
-    ("neso_data_portal", "current_bsuos_ii"): "silver_current_bsuos_ii",
-    ("neso_data_portal", "current_bsuos_sf"): "silver_current_bsuos_sf",
-    ("neso_data_portal", "current_bsuos_rf"): "silver_current_bsuos_rf",
-    ("neso_data_portal", "current_bsuos_historic_ii"): "silver_current_bsuos_historic_ii",
-    ("neso_data_portal", "current_bsuos_historic_sf"): "silver_current_bsuos_historic_sf",
-    ("neso_data_portal", "current_bsuos_historic_rf"): "silver_current_bsuos_historic_rf",
-    ("neso_data_portal", "constraint_breakdown"): "silver_constraint_breakdown",
-    ("neso_data_portal", "bsuos_fixed_tariffs"): "silver_bsuos_fixed_tariffs",
-    ("neso_data_portal", "inertia_bid_offer_costs"): "silver_inertia_bid_offer_costs",
-    (
-        "neso_data_portal",
-        "bsuos_monthly_forecast_fc_summary",
-    ): "silver_bsuos_monthly_forecast_fc_summary",
-    ("neso_data_portal", "skip_rates_summary"): "silver_skip_rates_summary",
-    (
-        "neso_data_portal",
-        "skip_rates_stage5_psa_technology",
-    ): "silver_skip_rates_stage5_psa_technology",
-    (
-        "neso_data_portal",
-        "skip_rates_behind_constraints_bmu",
-    ): "silver_skip_rates_behind_constraints_bmu",
-    (
-        "neso_data_portal",
-        "skip_rates_behind_constraints_cons",
-    ): "silver_skip_rates_behind_constraints_cons",
-    ("neso_data_portal", "skip_rates_in_merit_all_bm"): "silver_skip_rates_in_merit_all_bm",
-    ("neso_data_portal", "skip_rates_in_merit_psa"): "silver_skip_rates_in_merit_psa",
-    ("neso_data_portal", "skip_rates_exclusion_reasons"): "silver_skip_rates_exclusion_reasons",
-    ("neso_data_portal", "skip_rates_stage6_acceptance"): "silver_skip_rates_stage6_acceptance",
-    ("neso_data_portal", "skip_rates_stage6_psa"): "silver_skip_rates_stage6_psa",
-    ("neso_data_portal", "aahedc_tariffs"): "silver_aahedc_tariffs",
-    ("neso_data_portal", "tnuos_tariffs_embedded_export"): "silver_tnuos_tariffs_embedded_export",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_half_hourly_hh_demand",
-    ): "silver_tnuos_tariffs_half_hourly_hh_demand",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_non_half_hourly_nhh_demand",
-    ): "silver_tnuos_tariffs_non_half_hourly_nhh_demand",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_onshore_generator",
-    ): "silver_tnuos_tariffs_onshore_generator",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_local_offshore_generator",
-    ): "silver_tnuos_tariffs_local_offshore_generator",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_local_substation_tariff",
-    ): "silver_tnuos_tariffs_local_substation_tariff",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_transmission_demand",
-    ): "silver_tnuos_tariffs_transmission_demand",
-    (
-        "neso_data_portal",
-        "tnuos_tariffs_onshore_local_circuit",
-    ): "silver_tnuos_tariffs_onshore_local_circuit",
-    (
-        "neso_data_portal",
-        "bs_contract_enactment_balancing",
-    ): "silver_bs_contract_enactment_balancing",
-    (
-        "neso_data_portal",
-        "bs_contract_enactment_balancing_service",
-    ): "silver_bs_contract_enactment_balancing_service",
-    ("neso_data_portal", "gtma_trades_data"): "silver_gtma_trades_data",
-    ("neso_data_portal", "gtma_trades_data_pre"): "silver_gtma_trades_data_pre",
-    ("neso_data_portal", "gtma_trades_fy"): "silver_gtma_trades_fy",
-    ("neso_data_portal", "index_linked_contract_volume"): "silver_index_linked_contract_volume",
-    ("neso_data_portal", "ic_requirement_auction"): "silver_ic_requirement_auction",
-    ("neso_data_portal", "ssel_contract_enactment"): "silver_ssel_contract_enactment",
-    ("neso_data_portal", "upcoming_trades"): "silver_upcoming_trades",
-    ("neso_data_portal", "br_auction_requirement_fc_da"): "silver_br_auction_requirement_fc_da",
-    (
-        "neso_data_portal",
-        "br_auction_requirement_fc_da_archive",
-    ): "silver_br_auction_requirement_fc_da_archive",
-    (
-        "neso_data_portal",
-        "br_auction_requirement_fc_medium_term",
-    ): "silver_br_auction_requirement_fc_medium_term",
-    ("neso_data_portal", "dc_forecast_4d"): "silver_dc_forecast_4d",
-    ("neso_data_portal", "dc_forecast_4d_history"): "silver_dc_forecast_4d_history",
-    ("neso_data_portal", "dm_requirements"): "silver_dm_requirements",
-    ("neso_data_portal", "dr_requirements"): "silver_dr_requirements",
-    ("neso_data_portal", "dc_dm_dr_long_term_fc"): "silver_dc_dm_dr_long_term_fc",
-    ("neso_data_portal", "qr_auction_requirement_fc"): "silver_qr_auction_requirement_fc",
-    (
-        "neso_data_portal",
-        "as_industry_notifications_balancing",
-    ): "silver_as_industry_notifications_balancing",
-    (
-        "neso_data_portal",
-        "as_industry_notifications_dc_dm_dr",
-    ): "silver_as_industry_notifications_dc_dm_dr",
-    (
-        "neso_data_portal",
-        "as_industry_notifications_quick_reserve",
-    ): "silver_as_industry_notifications_quick_reserve",
-    (
-        "neso_data_portal",
-        "as_industry_notifications_sffr_important",
-    ): "silver_as_industry_notifications_sffr_important",
-    (
-        "neso_data_portal",
-        "as_industry_notifications_slow_reserve",
-    ): "silver_as_industry_notifications_slow_reserve",
-    (
-        "neso_data_portal",
-        "as_industry_notifications_stor_important",
-    ): "silver_as_industry_notifications_stor_important",
-    ("neso_data_portal", "slow_reserve_requirement_fc"): "silver_slow_reserve_requirement_fc",
-    ("neso_data_portal", "sffr_auction_results_main"): "silver_sffr_auction_results_main",
-    (
-        "neso_data_portal",
-        "sffr_auction_results_buy_orders",
-    ): "silver_sffr_auction_results_buy_orders",
-    ("neso_data_portal", "sffr_requirement"): "silver_sffr_requirement",
-    ("neso_data_portal", "stor_windows"): "silver_stor_windows",
-    ("neso_data_portal", "eac_results_by_unit"): "silver_eac_results_by_unit",
-    ("neso_data_portal", "eac_results_by_unit_fy"): "silver_eac_results_by_unit_fy",
-    ("neso_data_portal", "eac_results_daily_by_unit"): "silver_eac_results_daily_by_unit",
-    ("neso_data_portal", "eac_results_buy_orders"): "silver_eac_results_buy_orders",
-    ("neso_data_portal", "eac_results_buy_orders_fy"): "silver_eac_results_buy_orders_fy",
-    ("neso_data_portal", "eac_results_daily_buy_orders"): "silver_eac_results_daily_buy_orders",
-    ("neso_data_portal", "eac_results_summary"): "silver_eac_results_summary",
-    ("neso_data_portal", "eac_results_summary_fy"): "silver_eac_results_summary_fy",
-    ("neso_data_portal", "eac_results_daily_summary"): "silver_eac_results_daily_summary",
-    ("neso_data_portal", "eac_results_sell_orders"): "silver_eac_results_sell_orders",
-    ("neso_data_portal", "eac_results_daily_sell_orders"): "silver_eac_results_daily_sell_orders",
-    ("neso_data_portal", "eac_mock_results_by_unit"): "silver_eac_mock_results_by_unit",
-    ("neso_data_portal", "eac_mock_results_buy_orders"): "silver_eac_mock_results_buy_orders",
-    ("neso_data_portal", "eac_mock_results_summary"): "silver_eac_mock_results_summary",
-    ("neso_data_portal", "eac_mock_results_sell_orders"): "silver_eac_mock_results_sell_orders",
-    (
-        "neso_data_portal",
-        "orps_utilisation_historic_reactive",
-    ): "silver_orps_utilisation_historic_reactive",
-    ("neso_data_portal", "orps_utilisation_reactive"): "silver_orps_utilisation_reactive",
-    (
-        "neso_data_portal",
-        "orps_utilisation_reactive_default",
-    ): "silver_orps_utilisation_reactive_default",
-    ("neso_data_portal", "obp_physical_notifications"): "silver_obp_physical_notifications",
-    ("neso_data_portal", "obp_reserve_instructions"): "silver_obp_reserve_instructions",
-    ("neso_data_portal", "obp_reserve_avail_price"): "silver_obp_reserve_avail_price",
-    ("neso_data_portal", "aggregated_bsad"): "silver_aggregated_bsad",
-    ("neso_data_portal", "bsad_forward_contracts"): "silver_bsad_forward_contracts",
-    ("neso_data_portal", "dynamic_containment_masterdata"): "silver_dynamic_containment_masterdata",
-    (
-        "neso_data_portal",
-        "dynamic_containment_dc_dr_dm_results_sum",
-    ): "silver_dynamic_containment_dc_dr_dm_results_sum",
-    (
-        "neso_data_portal",
-        "dynamic_containment_dc_dr_dm_results",
-    ): "silver_dynamic_containment_dc_dr_dm_results",
-    (
-        "neso_data_portal",
-        "dynamic_containment_dc_dr_dm_linear",
-    ): "silver_dynamic_containment_dc_dr_dm_linear",
-    (
-        "neso_data_portal",
-        "dynamic_containment_dc_dr_dm_block",
-    ): "silver_dynamic_containment_dc_dr_dm_block",
-    ("neso_data_portal", "eac_br_results_by_unit"): "silver_eac_br_results_by_unit",
-    ("neso_data_portal", "eac_br_results_buy_orders"): "silver_eac_br_results_buy_orders",
-    ("neso_data_portal", "eac_br_results_summary"): "silver_eac_br_results_summary",
-    ("neso_data_portal", "eac_br_results_sell_orders"): "silver_eac_br_results_sell_orders",
-    ("neso_data_portal", "eac_br_mock_results_by_unit"): "silver_eac_br_mock_results_by_unit",
-    (
-        "neso_data_portal",
-        "eac_br_mock_results_buy_orders",
-    ): "silver_eac_br_mock_results_buy_orders",
-    (
-        "neso_data_portal",
-        "eac_br_mock_results_sell_orders",
-    ): "silver_eac_br_mock_results_sell_orders",
-    ("neso_data_portal", "eac_br_mock_results_summary"): "silver_eac_br_mock_results_summary",
-    (
-        "neso_data_portal",
-        "ffr_post_tender_reports_csv_ext",
-    ): "silver_ffr_post_tender_reports_csv_ext",
-    (
-        "neso_data_portal",
-        "ffr_phase2_auction_phase_block_order",
-    ): "silver_ffr_phase2_auction_phase_block_order",
-    (
-        "neso_data_portal",
-        "ffr_phase2_auction_phase_blockorders",
-    ): "silver_ffr_phase2_auction_phase_blockorders",
-    (
-        "neso_data_portal",
-        "ffr_phase2_auction_phase_linear_orders",
-    ): "silver_ffr_phase2_auction_phase_linear_orders",
-    (
-        "neso_data_portal",
-        "ffr_phase2_auction_phase_linearorders",
-    ): "silver_ffr_phase2_auction_phase_linearorders",
-    (
-        "neso_data_portal",
-        "ffr_phase2_auction_phase_resultsbyunit",
-    ): "silver_ffr_phase2_auction_phase_resultsbyunit",
-    (
-        "neso_data_portal",
-        "ffr_phase2_auction_phase_resultsum",
-    ): "silver_ffr_phase2_auction_phase_resultsum",
-    ("neso_data_portal", "asdp_instructions"): "silver_asdp_instructions",
-    ("neso_data_portal", "asdp_window_prices"): "silver_asdp_window_prices",
-    (
-        "neso_data_portal",
-        "odfm_market_information_instructed",
-    ): "silver_odfm_market_information_instructed",
-    (
-        "neso_data_portal",
-        "odfm_market_information_load_factors",
-    ): "silver_odfm_market_information_load_factors",
-    ("neso_data_portal", "stor_da_auction_results"): "silver_stor_da_auction_results",
-    (
-        "neso_data_portal",
-        "ffr_post_tender_reports_workbook",
-    ): "silver_ffr_post_tender_reports_workbook",
-    (
-        "neso_data_portal",
-        "ffr_phase2_blockorders_archive",
-    ): "silver_ffr_phase2_blockorders_archive",
-    (
-        "neso_data_portal",
-        "ffr_phase2_linearorders_archive",
-    ): "silver_ffr_phase2_linearorders_archive",
-    (
-        "neso_data_portal",
-        "ffr_phase2_results_by_unit_archive",
-    ): "silver_ffr_phase2_results_by_unit_archive",
-    (
-        "neso_data_portal",
-        "demand_flexibility_service_requirement",
-    ): "silver_demand_flexibility_service_requirement",
-    (
-        "neso_data_portal",
-        "demand_flexibility_industry_notification",
-    ): "silver_demand_flexibility_industry_notification",
-    (
-        "neso_data_portal",
-        "demand_flexibility_utilisation_report",
-    ): "silver_demand_flexibility_utilisation_report",
-    (
-        "neso_data_portal",
-        "demand_flexibility_utilisation_summary",
-    ): "silver_demand_flexibility_utilisation_summary",
-    ("neso_data_portal", "stor_da_buy_curve"): "silver_stor_da_buy_curve",
-    ("neso_data_portal", "dfs_industry_notification"): "silver_dfs_industry_notification",
-    ("neso_data_portal", "dfs_service_requirements"): "silver_dfs_service_requirements",
-    ("neso_data_portal", "dfs_utilisation_report"): "silver_dfs_utilisation_report",
-    ("neso_data_portal", "dfs_utilisation_report_sum"): "silver_dfs_utilisation_report_sum",
-    (
-        "neso_data_portal",
-        "dfs_live_events_service_requirement",
-    ): "silver_dfs_live_events_service_requirement",
-    (
-        "neso_data_portal",
-        "dfs_live_events_service_update_industry",
-    ): "silver_dfs_live_events_service_update_industry",
-    (
-        "neso_data_portal",
-        "dfs_live_events_utilisation_report",
-    ): "silver_dfs_live_events_utilisation_report",
-    (
-        "neso_data_portal",
-        "dfs_live_events_utilisation_report_sum",
-    ): "silver_dfs_live_events_utilisation_report_sum",
-    (
-        "neso_data_portal",
-        "dfs_test_events_service_requirement",
-    ): "silver_dfs_test_events_service_requirement",
-    (
-        "neso_data_portal",
-        "dfs_test_events_service_update_industry",
-    ): "silver_dfs_test_events_service_update_industry",
-    (
-        "neso_data_portal",
-        "dfs_test_events_utilisation_report",
-    ): "silver_dfs_test_events_utilisation_report",
-    (
-        "neso_data_portal",
-        "dfs_test_events_utilisation_report_sum",
-    ): "silver_dfs_test_events_utilisation_report_sum",
-    ("neso_data_portal", "fes_es2_european_supply"): "silver_fes_es2_european_supply",
-    ("neso_data_portal", "fes_flx1_flexibility"): "silver_fes_flx1_flexibility",
-    ("neso_data_portal", "fes_ed5_road_transport"): "silver_fes_ed5_road_transport",
-    ("neso_data_portal", "fes_ed6_road_transport_notes"): "silver_fes_ed6_road_transport_notes",
-    (
-        "neso_data_portal",
-        "fes_ed3_heat_demand_natural_gas",
-    ): "silver_fes_ed3_heat_demand_natural_gas",
-    (
-        "neso_data_portal",
-        "fes_ed3_heat_demand_natural_gas_sum_ed",
-    ): "silver_fes_ed3_heat_demand_natural_gas_sum_ed",
-    ("neso_data_portal", "fes_ed3_heat_demand_sum_ed"): "silver_fes_ed3_heat_demand_sum_ed",
-    ("neso_data_portal", "fes_ed4_gas_demand_defs"): "silver_fes_ed4_gas_demand_defs",
-    (
-        "neso_data_portal",
-        "building_heat_model_example_output_half",
-    ): "silver_building_heat_model_example_output_half",
-    ("neso_data_portal", "fes_ws1_gas_supply"): "silver_fes_ws1_gas_supply",
-    ("neso_data_portal", "fes_ws2_gas_emissions"): "silver_fes_ws2_gas_emissions",
-    ("neso_data_portal", "fes_la_heat_model_domestic"): "silver_fes_la_heat_model_domestic",
-    ("neso_data_portal", "fes_la_heat_model_residential"): "silver_fes_la_heat_model_residential",
-    (
-        "neso_data_portal",
-        "resource_adequacy_2030s_portfolio",
-    ): "silver_resource_adequacy_2030s_portfolio",
-    (
-        "neso_data_portal",
-        "resource_adequacy_2030s_peak_demand",
-    ): "silver_resource_adequacy_2030s_peak_demand",
-    (
-        "neso_data_portal",
-        "resource_adequacy_2030s_results",
-    ): "silver_resource_adequacy_2030s_results",
-    ("neso_data_portal", "gis_grid_supply_points"): "silver_gis_grid_supply_points",
-    ("neso_data_portal", "system_frequency_dmy_csv"): "silver_system_frequency_dmy_csv",
-    ("neso_data_portal", "system_frequency_offset_csv"): "silver_system_frequency_offset_csv",
-    ("neso_data_portal", "system_frequency_offset_zip"): "silver_system_frequency_offset_zip",
-    ("neso_data_portal", "system_frequency_gmt_zip"): "silver_system_frequency_gmt_zip",
-    ("neso_data_portal", "system_frequency_gmt_csv"): "silver_system_frequency_gmt_csv",
-    ("elexon", "uou2t14d"): "silver_uou2t14d",
-    ("elexon", "inddem"): "silver_inddem",
-    ("elexon", "indgen"): "silver_indgen",
-    ("elexon", "tsdf"): "silver_tsdf",
-    ("elexon", "tsdfd"): "silver_tsdfd",
-    ("elexon", "lolpdrm"): "silver_lolpdrm",
-    ("elexon", "imbalngc"): "silver_imbalngc",
-    ("elexon", "melngc"): "silver_melngc",
-    ("entsoe", "load_forecast"): "silver_load_forecast",
-    ("entsoe", "load_forecast_weekly"): "silver_load_forecast_weekly",
-    ("entsoe", "load_forecast_monthly"): "silver_load_forecast_monthly",
-    ("entsoe", "load_forecast_yearly"): "silver_load_forecast_yearly",
-    ("entsoe", "generation_forecast"): "silver_generation_forecast",
-    ("entsoe", "wind_solar_forecast"): "silver_wind_solar_forecast",
-}
-
-
 def test_deprecated_alias_still_all_vintage() -> None:
     """I-7: deprecated_alias continues to name the base (all-vintage) view.
 
-    Pinned against an explicit expected mapping rather than a conditional
-    skip (Sol diff-review finding, 2026-08-03): a regression that made all
-    three APPEND_ONLY entries return `deprecated_alias=None` -- silently
-    dropping the promised all-vintage legacy names -- passed a
-    ``if entry.deprecated_alias is not None`` guard silently. It fails here.
+    Checked against `_deprecated_aliases`'s documented rule -- `silver_{dataset}`
+    when the dataset name is unique across sources, else None -- counted here
+    independently of the manifest. A regression returning None for every
+    APPEND_ONLY entry (Sol diff-review finding, 2026-08-03) fails it.
     """
-    for source, dataset in _APPEND_ONLY_DATASETS:
-        entry = _entry(source, dataset)
-        expected = _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES[(source, dataset)]
-        assert entry.deprecated_alias == expected
+    names = Counter(dataset for _source, dataset in list_transformers())
+    entries = {(entry.source, entry.dataset): entry for entry in _silver_entries()}
+    wrong = []
+    for source, dataset in sorted(_append_only_datasets()):
+        expected = f"silver_{dataset}" if names[dataset] == 1 else None
+        if entries[(source, dataset)].deprecated_alias != expected:
+            wrong.append((source, dataset, entries[(source, dataset)].deprecated_alias))
+    assert not wrong, wrong
+    assert _entry("elexon", "system_prices").deprecated_alias == "silver_system_prices"
+
+
+def test_a_shared_dataset_name_has_no_deprecated_alias() -> None:
+    """I-7's collision arm: no registered name is shared today, so the rule's None
+    branch is spot-checked on the rule itself."""
+    aliases = schema_manifest._deprecated_aliases(
+        [("elexon", "shared"), ("entsoe", "shared"), ("elexon", "unique")]
+    )
+    assert aliases == {
+        ("elexon", "shared"): None,
+        ("entsoe", "shared"): None,
+        ("elexon", "unique"): "silver_unique",
+    }
