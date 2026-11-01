@@ -4,7 +4,7 @@ P0-a-1 (v0.19 "Silver Truth"): the measured 5x / 80.0% NESO silver duplication
 is caused by the covering-partition fallback re-reading one batched bronze
 body under every target date in its window
 (``_find_covering_bronze_partition``, ``silver/base.py``). This module pins
-the fix -- ``GenericNesoJsonTransformer._bronze_files`` reads the EXACT date
+the fix -- ``GenericNesoJsonTransformer._bronze_candidates`` reads the EXACT date
 partition only, never falls back -- and the accompanying D-6 signal: a target
 date covered by, but not owning, a batched partition must warn loudly and
 name its owner, never masquerade as "no bronze at all".
@@ -104,7 +104,7 @@ def test_exact_partition_used_when_present(tmp_data_dir: Path) -> None:
         request_params=_window_params(d0, d0 + timedelta(days=1)),
     )
 
-    assert transformer._bronze_files(d0) == [body]
+    assert transformer._bronze_candidates(d0) == [body]
 
 
 def test_no_covering_fallback_for_neso(tmp_data_dir: Path) -> None:
@@ -124,7 +124,7 @@ def test_no_covering_fallback_for_neso(tmp_data_dir: Path) -> None:
         request_params=_window_params(d0, d1),
     )
 
-    assert transformer._bronze_files(d1) == []
+    assert transformer._bronze_candidates(d1) == []
     assert transformer.run(d1) == 0
     silver_file = PathBuilder(tmp_data_dir).silver_file(_SOURCE, _DATASET, d1)
     assert not silver_file.exists()
@@ -198,29 +198,26 @@ def test_reference_dataset_reads_newest_body_regardless_of_date(tmp_data_dir: Pa
         dataset=dataset,
     )
 
-    assert transformer._bronze_files(date(2020, 1, 1)) == [newer]
+    assert transformer._bronze_candidates(date(2020, 1, 1)) == [newer]
 
 
-def test_neso_data_portal_uses_vintage_per_bronze_file() -> None:
-    """D-4's structural pin: NDP's immunity depends on this staying ``True``.
+def test_neso_data_portal_reads_capture_by_capture() -> None:
+    """D-4's structural pin: NDP's immunity depends on the engine's exact-partition scan.
 
-    A future refactor that drops ``VINTAGE_PER_BRONZE_FILE`` from any of the
-    three NDP transformers re-opens the covering-fallback exposure this
-    ticket exists to close -- this must fail loudly, not silently.
+    The generic engine reads each capture of the target partition only
+    (``run_captures``), never a covering partition; a former bespoke key routed
+    anywhere else re-opens the covering-fallback exposure this ticket closed.
     """
-    from gridflow.silver.neso_data_portal.daily_wind_availability import (
-        DailyWindAvailabilityTransformer,
-    )
-    from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
-        EmbeddedWindSolarForecastTransformer,
-    )
-    from gridflow.silver.neso_data_portal.historic_generation_mix import (
-        HistoricGenerationMixTransformer,
-    )
+    from gridflow.silver.neso_data_portal.generic import GenericNesoTransformer
+    from gridflow.silver.registry import get_transformer_class
 
-    assert DailyWindAvailabilityTransformer.VINTAGE_PER_BRONZE_FILE is True
-    assert EmbeddedWindSolarForecastTransformer.VINTAGE_PER_BRONZE_FILE is True
-    assert HistoricGenerationMixTransformer.VINTAGE_PER_BRONZE_FILE is True
+    for key in (
+        "daily_wind_availability",
+        "embedded_wind_solar_forecast",
+        "historic_generation_mix",
+    ):
+        cls = get_transformer_class("neso_data_portal", key)
+        assert cls is not None and issubclass(cls, GenericNesoTransformer), key
 
 
 def test_covered_but_not_owned_date_warns_and_names_the_owner(
@@ -373,7 +370,7 @@ def test_covering_lookup_is_absent_from_the_success_path(
 
     monkeypatch.setattr(transformer, "_find_covering_bronze_partition", _boom)
 
-    assert transformer._bronze_files(d0) == [body]
+    assert transformer._bronze_candidates(d0) == [body]
 
 
 def test_disjoint_windows_bridging_a_gap_is_hedged(

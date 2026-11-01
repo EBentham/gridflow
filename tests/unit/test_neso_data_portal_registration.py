@@ -114,17 +114,17 @@ else:
 """
 
 
-# T-29 (D-37, D-38). The proof above establishes that the PACKAGE is imported;
-# it says nothing about whether each transformer MODULE inside it added its own
-# `__init__.py` import line, which is the thing that fires
-# `register_transformer`. A missed line leaves that dataset silently
-# unregistered -- `get_transformer` raises in production, and no test in the
-# pytest process can see it because collection imports the modules directly.
+# T-29 (D-37). The proof above establishes that the PACKAGE is imported; it
+# says nothing about whether importing it registers every dataset. The three
+# original keys now register like every recorded family, generated from their
+# registry records (ADR-034 P-15), so a key whose record is missing or skipped
+# is silently unregistered -- `get_transformer` raises in production, and no
+# test in the pytest process can see it because collection imports the package.
 #
-# The COUNT assertion is the half that catches the omission a per-key
-# resolution loop would miss on its own: a fourth dataset registered without a
-# manifest/latest-view entry, or a stale module left importing itself after its
-# dataset was retired, both show up here as a number that is not three.
+# The SET assertion is the half that catches what a per-key resolution loop
+# would miss on its own: a dataset registered without a record, or a recorded
+# family that failed to generate, both show up as a set that is not the
+# recorded families.
 _D02_DATASETS = (
     "daily_wind_availability",
     "historic_generation_mix",

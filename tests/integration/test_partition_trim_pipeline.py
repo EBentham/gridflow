@@ -64,7 +64,8 @@ def _run(
             "elexon",
             [dataset],
             datetime.combine(start, datetime.min.time(), tzinfo=UTC),
-            datetime.combine(end, datetime.min.time(), tzinfo=UTC),
+            # ``end`` is the last date to transform; the runner's window is half-open.
+            datetime.combine(end + timedelta(days=1), datetime.min.time(), tzinfo=UTC),
         )[0]
         persisted = con.execute(
             "SELECT status, rows_skipped FROM pipeline_runs ORDER BY started_at DESC LIMIT 1"

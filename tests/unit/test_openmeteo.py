@@ -204,7 +204,7 @@ class TestOpenMeteoLocationRetry:
 
         location = DATASET_SPECS["historical_demand"].locations[0]
         async with OpenMeteoConnector(self._config()) as connector:
-            resp = await connector._fetch_location(
+            [resp] = await connector._fetch_location(
                 "historical_demand",
                 location,
                 datetime(2024, 1, 15, tzinfo=UTC),

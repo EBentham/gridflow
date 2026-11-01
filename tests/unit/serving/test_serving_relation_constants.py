@@ -256,7 +256,7 @@ def test_get_weather_reads_via_its_constant_from_site(
     try:
         _seed(
             con,
-            "silver_elexon_itsdo",
+            "silver_open_meteo_historical_demand",
             [("timestamp_utc", "TIMESTAMP"), ("location", "VARCHAR"), ("marker", "VARCHAR")],
             [("2024-01-15 00:00:00", "GB", "real")],
         )
@@ -411,7 +411,7 @@ def test_weather_exclude_site_uses_its_constant(
     try:
         _seed(
             con,
-            "silver_elexon_itsdo",
+            "silver_open_meteo_historical_demand",
             [
                 ("timestamp_utc", "TIMESTAMP"),
                 ("location", "VARCHAR"),

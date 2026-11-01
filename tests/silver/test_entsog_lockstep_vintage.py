@@ -28,7 +28,7 @@ import polars as pl
 import pytest
 
 import gridflow.silver.entsog  # noqa: F401 -- registers the generic entsog family
-from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN
+from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN, UnparseableBronzeError
 from gridflow.silver.entsog.generic import (
     _DATETIME_COLUMNS,
     _TIMESTAMP_PRIORITY,
@@ -343,18 +343,22 @@ class TestPerRowVintageAttribution:
         assert written["point_key"].to_list() == ["A"]
         assert set(written["available_at"].to_list()) == {STAMP_A}
 
-    def test_a_malformed_body_vouches_but_contributes_no_stamp(self, tmp_path: Path) -> None:
-        """T2-o, second shape: the reader's own JSONDecodeError handler skips B."""
+    def test_a_malformed_body_refuses_the_date(self, tmp_path: Path) -> None:
+        """T2-o, second shape: a vouched but unparseable B refuses the date.
+
+        Skipping B would write A's rows over the partition as if complete.
+        """
         partition = _partition(tmp_path, "physical_flows", TARGET)
         a = _write_body(partition, "raw_0900_a.json", {"operationalData": [_flow("A", TARGET)]})
         _write_sidecar(a, STAMP_A)
         b = _write_body(partition, "raw_1000_b.json", "{not json")
         _write_sidecar(b, STAMP_B)
 
-        _flows_transformer(tmp_path).run(TARGET, reingest=True)
+        with pytest.raises(UnparseableBronzeError) as refused:
+            _flows_transformer(tmp_path).run(TARGET, reingest=True)
 
-        written = _silver(tmp_path, "physical_flows", TARGET)
-        assert set(written["available_at"].to_list()) == {STAMP_A}
+        assert refused.value.paths == (b,)
+        assert not list((tmp_path / "silver").rglob("*.parquet"))
 
     def test_rows_dropped_inside_transform_take_their_stamp_with_them(self, tmp_path: Path) -> None:
         """TV-2: B's rows pass the read filter and are dropped by transform()."""
@@ -681,19 +685,20 @@ class TestCommonTailPreserved:
         )
         assert "No bronze data" in caplog.text
 
-    def test_a_malformed_only_partition_does_not_raise_or_flag_exclusion(
+    def test_a_malformed_only_partition_is_refused_not_flagged_unvouched(
         self, tmp_path: Path
     ) -> None:
-        """T2-q, malformed-body shape, for both run modes."""
+        """T2-q, malformed-body shape, for both run modes: the body vouched, so
+        it is refused as unparseable rather than counted as an exclusion."""
         partition = _partition(tmp_path, GENERIC_DATASET, TARGET)
         body = _write_body(partition, "raw_0900_a.json", "{not json")
         _write_sidecar(body, STAMP_A)
 
         transformer = _generic(tmp_path)
-        assert transformer.run(TARGET, reingest=True) == 0
-        assert transformer.last_unvouched_total_exclusion is False
-        assert transformer.run(TARGET, reingest=False) == 0
-        assert transformer.last_unvouched_total_exclusion is False
+        for reingest in (True, False):
+            with pytest.raises(UnparseableBronzeError):
+                transformer.run(TARGET, reingest=reingest)
+            assert transformer.last_unvouched_total_exclusion is False
 
     def test_date_window_filter_emptying_the_frame_is_not_a_vouching_failure(
         self, tmp_path: Path

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,7 +13,6 @@ from gridflow.silver.schema_manifest import BITEMPORAL_EXCLUDE
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from datetime import date
 
     import polars as pl
 
@@ -53,9 +53,15 @@ _VINTAGE_VISIBLE: tuple[str, ...] = ("available_at", "vintage_policy")
 _REL_SYSTEM_PRICES = "silver_elexon_system_prices_latest"  # _SERVING_ALIASES["system_prices"]
 _REL_FUEL_GENERATION = "silver_elexon_fuelhh"  # _SERVING_ALIASES["fuel_generation"]
 _REL_GAS_STORAGE = "gold_eu_gas_storage"  # _SERVING_ALIASES["gas_storage"]
-_REL_WEATHER = "silver_elexon_itsdo"  # _SERVING_ALIASES["weather"]
+_REL_WEATHER = "silver_open_meteo_historical_demand"  # _SERVING_ALIASES["weather"]
 _REL_IMBALANCE_CONTEXT = "gold_uk_imbalance_context"  # _SERVING_ALIASES["imbalance_context"]
 _REL_GB_DAY_AHEAD_BENCHMARK = "gold_gb_day_ahead_benchmark"
+
+
+def _utc_midnight(day: str | date) -> datetime:
+    """The UTC instant a calendar day starts, from a date or an ISO date string."""
+    as_date = day if isinstance(day, date) else date.fromisoformat(day)
+    return datetime.combine(as_date, time.min, tzinfo=UTC)
 
 
 class GridflowClient:
@@ -149,6 +155,25 @@ class GridflowClient:
         quoted = ", ".join('"' + col.replace('"', '""') + '"' for col in to_exclude)
         return " EXCLUDE (" + quoted + ")"
 
+    def _read(
+        self,
+        relation: str,
+        where: str,
+        params: Sequence[object],
+        order_by: str,
+        *,
+        retain: Sequence[str] = (),
+    ) -> pl.DataFrame:
+        """``SELECT *`` from ``relation`` minus its present bitemporal columns.
+
+        ``relation``, ``where`` and ``order_by`` are module constants and
+        literals from the methods below; every caller value binds through
+        ``params``.
+        """
+        exclude = self._present_bitemporal_exclude_clause(relation, retain=retain)
+        sql = f"SELECT *{exclude} FROM {relation} WHERE {where} ORDER BY {order_by}"
+        return self._require_con().execute(sql, list(params)).pl()
+
     def get_system_prices(
         self,
         start: str | date,
@@ -166,10 +191,9 @@ class GridflowClient:
         cutoff, not historical point-in-time selection**: an ``as_of`` that
         falls between vintages returns nothing for that key rather than the
         value that was current then (ADR-025:117-120). A consumer needing
-        genuine historical PIT must query the **all-vintage** surface —
-        ``silver_elexon_system_prices``, or the deprecated
-        ``silver_system_prices`` alias, both of which still return every
-        vintage by design — and apply ``available_at <= as_of`` **then
+        genuine historical PIT must query the **all-vintage** surface,
+        ``silver_elexon_system_prices``, which returns every vintage by
+        design, and apply ``available_at <= as_of`` **then
         latest-of-survivors**. That primitive is consumer-side
         (gridflow_models) and is not built here.
 
@@ -179,15 +203,13 @@ class GridflowClient:
         back to the all-vintage base view and serving stacked vintages. Run
         ``gridflow init`` / refresh the catalogue if this occurs.
         """
-        relation = _REL_SYSTEM_PRICES
-        exclude = self._present_bitemporal_exclude_clause(relation, retain=_VINTAGE_VISIBLE)
-        sql = (
-            "SELECT *" + exclude + " "
-            f"FROM {relation} "
-            "WHERE settlement_date BETWEEN ? AND ? "
-            "ORDER BY timestamp_utc"
+        return self._read(
+            _REL_SYSTEM_PRICES,
+            "settlement_date BETWEEN ? AND ?",
+            [str(start), str(end)],
+            "timestamp_utc",
+            retain=_VINTAGE_VISIBLE,
         )
-        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_gb_day_ahead_benchmark(
         self,
@@ -207,14 +229,13 @@ class GridflowClient:
             label as a public column. MID availability is ingest-time; the
             leakage barrier lives in gridflow_models.
         """
-        relation = _REL_GB_DAY_AHEAD_BENCHMARK
-        exclude = self._present_bitemporal_exclude_clause(relation, retain=_VINTAGE_VISIBLE)
-        sql = (
-            "SELECT *" + exclude + " FROM " + relation + " "
-            "WHERE settlement_date BETWEEN ? AND ? "
-            "ORDER BY timestamp_utc"
+        return self._read(
+            _REL_GB_DAY_AHEAD_BENCHMARK,
+            "settlement_date BETWEEN ? AND ?",
+            [str(start), str(end)],
+            "timestamp_utc",
+            retain=_VINTAGE_VISIBLE,
         )
-        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_generation_by_fuel(
         self,
@@ -258,14 +279,12 @@ class GridflowClient:
         Returns a Polars DataFrame with the live silver_elexon_fuelhh public
         schema (bitemporal / partitioning columns excluded).
         """
-        exclude = self._present_bitemporal_exclude_clause(_REL_FUEL_GENERATION)
-        sql = (
-            "SELECT *" + exclude + " "
-            f"FROM {_REL_FUEL_GENERATION} "
-            "WHERE settlement_date BETWEEN ? AND ? "
-            "ORDER BY timestamp_utc, fuel_type"
+        return self._read(
+            _REL_FUEL_GENERATION,
+            "settlement_date BETWEEN ? AND ?",
+            [str(start), str(end)],
+            "timestamp_utc, fuel_type",
         )
-        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_gas_storage(
         self,
@@ -279,19 +298,10 @@ class GridflowClient:
         That gold view is an explicit-column cross-source SQL view carrying no
         bitemporal / partitioning columns, so none are excluded here.
         """
-        params: list[str] = [str(start), str(end)]
-        country_filter = ""
+        where, params = "gas_day BETWEEN ? AND ?", [str(start), str(end)]
         if country_code:
-            country_filter = " AND country_code = ?"
-            params.append(country_code)
-        exclude = self._present_bitemporal_exclude_clause(_REL_GAS_STORAGE)
-        sql = (
-            "SELECT *" + exclude + " "
-            f"FROM {_REL_GAS_STORAGE} "
-            "WHERE gas_day BETWEEN ? AND ?" + country_filter + " "
-            "ORDER BY gas_day DESC, country_code"
-        )
-        return self._require_con().execute(sql, params).pl()
+            where, params = where + " AND country_code = ?", [*params, country_code]
+        return self._read(_REL_GAS_STORAGE, where, params, "gas_day DESC, country_code")
 
     def get_weather(
         self,
@@ -299,30 +309,28 @@ class GridflowClient:
         end: str | date,
         location: str | None = None,
     ) -> pl.DataFrame:
-        """Get Elexon ITSDO (Initial Transmission System Demand Outturn).
+        """Get hourly Open-Meteo weather at the GB population centres.
 
-        Despite the method name, this reads ``silver_elexon_itsdo`` — the GB
-        transmission-system DEMAND outturn (MW), not weather. The name is a
-        pre-existing misnomer kept for SDK compatibility.
+        Reads ``silver_open_meteo_historical_demand``: ERA5 archive temperature,
+        wind, humidity, precipitation, radiation, pressure and snow, with the
+        derived degree days and air density, one row per hour and location.
 
-        Returns a Polars DataFrame with the live ``silver_elexon_itsdo`` public
-        schema (bitemporal / partitioning columns excluded). The ``location``
-        filter and ordering are retained for backward compatibility; new columns
-        added to the silver layer surface here automatically.
+        Args:
+            start: First UTC day, inclusive.
+            end: Last UTC day, inclusive.
+            location: Optional centre name, e.g. ``"london"``.
+
+        Returns:
+            The relation's public columns (bitemporal and partitioning columns
+            excluded), ordered by ``timestamp_utc`` then ``location``.
         """
-        params: list[str] = [str(start), str(end)]
-        location_filter = ""
+        # Whole UTC days: casting timestamp_utc to DATE would use the session's
+        # local time zone and move the late-evening hours in BST.
+        where = "timestamp_utc >= ? AND timestamp_utc < ?"
+        params: list[object] = [_utc_midnight(start), _utc_midnight(end) + timedelta(days=1)]
         if location:
-            location_filter = " AND location = ?"
-            params.append(location)
-        exclude = self._present_bitemporal_exclude_clause(_REL_WEATHER)
-        sql = (
-            "SELECT *" + exclude + " "
-            f"FROM {_REL_WEATHER} "
-            "WHERE timestamp_utc::DATE BETWEEN ? AND ?" + location_filter + " "
-            "ORDER BY timestamp_utc, location"
-        )
-        return self._require_con().execute(sql, params).pl()
+            where, params = where + " AND location = ?", [*params, location]
+        return self._read(_REL_WEATHER, where, params, "timestamp_utc, location")
 
     def get_imbalance_context(
         self,
@@ -349,16 +357,13 @@ class GridflowClient:
         silver surfaces followed by ``available_at <= as_of`` then
         latest-of-survivors — consumer-side, not built here.
         """
-        exclude = self._present_bitemporal_exclude_clause(
-            _REL_IMBALANCE_CONTEXT, retain=_VINTAGE_VISIBLE
+        return self._read(
+            _REL_IMBALANCE_CONTEXT,
+            "settlement_date BETWEEN ? AND ?",
+            [str(start), str(end)],
+            "timestamp_utc",
+            retain=_VINTAGE_VISIBLE,
         )
-        sql = (
-            "SELECT *" + exclude + " "
-            f"FROM {_REL_IMBALANCE_CONTEXT} "
-            "WHERE settlement_date BETWEEN ? AND ? "
-            "ORDER BY timestamp_utc"
-        )
-        return self._require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_tables(self) -> list[str]:
         """List all available tables and views."""

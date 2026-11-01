@@ -14,7 +14,11 @@ if TYPE_CHECKING:
 import polars as pl
 
 from gridflow.schemas.entsog import EntsogPhysicalFlow
-from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN, BaseSilverTransformer
+from gridflow.silver.base import (
+    _BRONZE_VINTAGE_COLUMN,
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+)
 from gridflow.silver.entsog.datetime import (
     log_undated_records,
     parse_entsog_datetime_expr,
@@ -58,7 +62,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
     dataset = "physical_flows"
     schema_cls = EntsogPhysicalFlow
     LOCKSTEP_BRONZE_READ: ClassVar[bool] = True
-    # BRONZE_READ_SELECTION stays ALL: every raw_*.json in the resolved
+    # The lockstep selection stays ALL: every raw_*.json in the resolved
     # partition is read, so every vouched body's rows enter the frame.
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
@@ -104,18 +108,22 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         """
         pairs: list[tuple[Path, list[dict[str, Any]]]] = []
         undated_total = 0
+        unparseable: list[Path] = []
         for f in paths:
             rows: list[dict[str, Any]] = []
             try:
                 payload = json.loads(f.read_text())
                 records = payload.get("operationalData", []) if isinstance(payload, dict) else []
                 rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
+                unparseable.append(f)
                 continue
             kept, undated = partition_records_to_target_date(rows, target_date, ("periodFrom",))
             undated_total += undated
             pairs.append((f, kept))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         log_undated_records(undated_total, target_date, source=self.source, dataset=self.dataset)
         return tuple(pairs)
 

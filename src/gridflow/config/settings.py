@@ -249,10 +249,34 @@ def _load_yaml(path: Path) -> dict[str, Any]:
         return yaml.safe_load(f) or {}
 
 
+def _neso_portal_datasets() -> dict[str, DatasetConfig]:
+    """One dataset per NESO portal registry family, for a sources.yaml that lists none.
+
+    The legacy keys come first, in their historical order, then the rest
+    sorted: the order ``ingest --all`` has always walked. ``max_query_days`` is
+    0 because a window never selects anything for this source (one whole-file
+    capture per run), so the client's span notice stays quiet.
+    """
+    # Imported here: the connector package is heavy and imports nothing from settings.
+    from gridflow.connectors.neso_data_portal import registry
+
+    families = registry.load_registry().families
+    legacy = [key for key in registry.LEGACY_KEYS if key in families]
+    rest = sorted(key for key in families if key not in registry.LEGACY_KEYS)
+    return {
+        key: DatasetConfig(
+            endpoint="/api/3/action/package_show", schedule="daily", max_query_days=0
+        )
+        for key in (*legacy, *rest)
+    }
+
+
 def load_settings() -> GridflowConfig:
     """Load the complete gridflow configuration.
 
     Merges settings.yaml, sources.yaml, environment variables, and .env file.
+    The ``neso_data_portal`` datasets come from its registry unless
+    sources.yaml lists some.
     """
     config_dir = _find_config_dir()
     load_dotenv(config_dir.parent / ".env", override=False)
@@ -278,6 +302,8 @@ def load_settings() -> GridflowConfig:
     # Build source configs
     sources: dict[str, SourceConfig] = {}
     for name, src_data in sources_data.get("sources", {}).items():
+        if name == "neso_data_portal" and not src_data.get("datasets"):
+            src_data = {**src_data, "datasets": _neso_portal_datasets()}
         sources[name] = SourceConfig(**src_data)
 
     return GridflowConfig(pipeline=pipeline, quality=quality, sources=sources)

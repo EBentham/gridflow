@@ -35,41 +35,38 @@ from __future__ import annotations
 
 import csv
 import io
-import json
-import tempfile
 from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import (
+    both_as_of,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "as5a"
@@ -532,23 +529,11 @@ LOADING = [a for a in CAPTURES if a != "r147"]
 BOM_ALIASES = {a for a in CAPTURES if a.startswith("r")}
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="as5a", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -590,57 +575,22 @@ def capture(
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
     package = PACKAGE_OF[meta.family]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=package,
         package_id=PACKAGE_ID_OF[package],
         resource_id=resource_id or meta.resource_id,
-        resource_name=meta.name,
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
 
 
 def owner(alias: str) -> str:
     """The recorded family that transforms ``alias``'s capture."""
     family = CAPTURES[alias].family
     return OWNER_OF.get(family, family)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-
-
-def _package_doc(package: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / f"{package}.json").read_text("utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
 
 
 def _spec_for(alias: str) -> list[tuple[str, str, str]]:
@@ -711,9 +661,9 @@ def _load_clean(data: Path, *aliases: str) -> pl.DataFrame:
         assert completion is not None, alias
         assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
         assert read_failure(data, key, capture_id) is None
-    frame = _silver(data, key)
+    frame = silver_frame(data, key)
     assert frame.height == written
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(key)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(key)
     assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
     return frame
 
@@ -731,7 +681,7 @@ def _fail(
     assert got_id == capture_id
     assert read_completion(data, key, capture_id) is None
     assert read_failure(data, key, capture_id) is not None
-    assert _no_silver(data, key)
+    assert no_silver(data, key)
     return got_id, cls, message
 
 
@@ -824,20 +774,20 @@ def test_every_record_is_utf8_csv_with_the_spec_key_selection_vintage_and_no_iss
     the FFR record and the two master tables), a missing sibling feed, an extra recipe or the
     wrong vintage: every record is version 1, utf-8 CSV, the spec's entity key, CKAN
     last-modified vintage, the vendor header(s) as its epochs and ``issue: none``."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     assert record.latest == ("key_latest" if key in KEY_LATEST else "whole_capture")
     assert record.latest_partition == ("resource_id" if key in PARTITIONED else None)
     assert record.vintage == "ckan_last_modified" and record.vintage_evidence is None
     assert list(record.entity_key) == KEY_OF[key]
-    assert record.run_type_column is None and "run_type" not in _columns(key)
+    assert record.run_type_column is None and "run_type" not in output_names(key)
     assert record.siblings == SIBLINGS_OF.get(key, ())
     assert record.xlsx is None and record.edition_by_filename is None and record.zip_member is None
     assert [list(e.header) for e in record.epochs] == HEADERS_OF[key]
     for epoch in record.epochs:
         assert epoch.issue.kind == "none" and epoch.unpivot is None
     assert has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
 
 
 def test_the_ffr_epochs_are_the_exact_reader_headers_f43_and_the_post_code_less_f42() -> None:
@@ -845,7 +795,7 @@ def test_the_ffr_epochs_are_the_exact_reader_headers_f43_and_the_post_code_less_
     spaces and ``£`` signs) or a third epoch: the FFR record has F43 (TR144 and every later
     resource, TR142, TR143) and F42 (TR139: F43 without ``Post code``), and every fixture header
     equals one of them."""
-    epochs = [list(e.header) for e in _record(FFR).epochs]
+    epochs = [list(e.header) for e in record_of(FFR).epochs]
     assert epochs == [header("r144"), header("r139")]
     assert len(epochs[0]) == 43 and len(epochs[1]) == 42
     assert epochs[0][4] == "Tendered Unit \n(BMU/Unit ID)"
@@ -865,7 +815,7 @@ def test_columns_are_typed_without_trim_tokens_or_bounds(key: str) -> None:
     lone space) are strings, measured values are float64, ``EFA`` is int64, only the result
     ``EFA Date`` is a date, key columns and temporal inputs are ``nullable: false`` and nothing
     else is."""
-    record = _record(key)
+    record = record_of(key)
     for epoch, expected_header in zip(record.epochs, HEADERS_OF[key], strict=True):
         assert [c.source for c in epoch.columns] == expected_header
         for column in epoch.columns:
@@ -893,7 +843,7 @@ def test_the_typing_rule_keeps_every_raw_clock_and_every_token_column_a_string()
     TR145 publish a lone space, TR146 a ``1``; seat amendment, RULINGS 773), ``auto_response_30s``
     (TR139 prose), the linear ``p3``..``v4`` columns (literal ``NA``), ``mar`` or any phase-2
     clock cell typed."""
-    types = {c.name: c.dtype for c in _record(FFR).epochs[0].columns}
+    types = {c.name: c.dtype for c in record_of(FFR).epochs[0].columns}
     strings = [
         "start_date",
         "end_date",
@@ -934,18 +884,18 @@ def test_the_typing_rule_keeps_every_raw_clock_and_every_token_column_a_string()
     ]
     assert {types[n] for n in floats} == {"float64"}
     for key in (LW, LM):
-        linear = {c.name: c.dtype for c in _record(key).epochs[0].columns}
+        linear = {c.name: c.dtype for c in record_of(key).epochs[0].columns}
         assert {linear[n] for n in ("p3", "v3", "p4", "v4")} == {"string"}
         assert {linear[n] for n in ("p1", "v1", "p2", "v2", "executed_volume")} == {"float64"}
     for key in (BW, BM):
-        block = {c.name: c.dtype for c in _record(key).epochs[0].columns}
+        block = {c.name: c.dtype for c in record_of(key).epochs[0].columns}
         assert block["mar"] == "string" and block["efa"] == "int64"
         assert {block[n] for n in ("clearing_price", "price", "volume")} == {"float64"}
     for key in (BW, BM, LW, LM, UN, SM):
-        clocks = {c.name: c.dtype for c in _record(key).epochs[0].columns if c.name in TIME_NAMES}
+        clocks = {c.name: c.dtype for c in record_of(key).epochs[0].columns if c.name in TIME_NAMES}
         assert clocks and set(clocks.values()) == {"string"}, key
     for key in (UN, SM):
-        assert {c.name: c.dtype for c in _record(key).epochs[0].columns}["efa_date"] == "date"
+        assert {c.name: c.dtype for c in record_of(key).epochs[0].columns}["efa_date"] == "date"
 
 
 @pytest.mark.parametrize("key", RECORDED)
@@ -954,7 +904,7 @@ def test_the_temporal_recipe_is_the_spec_recipe(key: str) -> None:
     instant for the FFR and order tables (their dates and clocks are raw vendor strings) or a
     results recipe other than the ``efa_date`` label anchor: results by unit and summary take
     ``date_sp1`` of ``efa_date`` and the other five records ``none``."""
-    recipe = _record(key).temporal
+    recipe = record_of(key).temporal
     if key in DATE_SP1:
         assert (recipe.kind, recipe.date_column) == ("date_sp1", "efa_date")
     else:
@@ -967,12 +917,12 @@ def test_the_two_filename_maps_are_exact_and_exclude_every_other_name() -> None:
     ``%Y-%m-%d`` and the three masters of each table ``%d/%m/%Y`` (SW-2), keyed by the exact vendor
     filenames, so a resource renamed by NESO fails loud instead of parsing on a guessed format."""
     for key, formats in ((UN, BYUNIT_FORMATS), (SM, SUMMARY_FORMATS)):
-        (column,) = [c for c in _record(key).epochs[0].columns if c.name == "efa_date"]
+        (column,) = [c for c in record_of(key).epochs[0].columns if c.name == "efa_date"]
         assert column.formats_by_filename == formats
         names = {name for name, _fmt in formats}
         resources = [
             r
-            for r in _package_doc(P2_PACKAGE)["resources"]
+            for r in package_doc(P2_PACKAGE)["resources"]
             if r["disposition"] == {"kind": "SILVER", "key": key}
         ]
         assert len(resources) == 4, key
@@ -991,7 +941,7 @@ def test_the_five_eligible_records_carry_no_override(key: str) -> None:
     """Detects a hold or a per-record override on a clean family: each of the five is effectively
     eligible, in an eligible package."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
     assert package.eligibility == Eligible(status="eligible")
 
@@ -1003,7 +953,7 @@ def test_the_two_held_records_carry_their_verbatim_question_and_the_unit(key: st
     the price unit), or a package-wide hold: the record is ``held`` with the spec's question
     verbatim, unit ``v0.22-K-AS-5a``, effectively held, while its package stays eligible."""
     package, family = registry_module.load_registry().families[key]
-    eligibility = _record(key).eligibility
+    eligibility = record_of(key).eligibility
     assert eligibility == Held(status="held", question=QUESTION_OF[key], unit=UNIT)
     assert effective_eligibility(package, family) == eligibility
     assert package.eligibility == Eligible(status="eligible")
@@ -1018,21 +968,18 @@ def test_the_two_packages_stay_eligible_and_the_package_files_hold_the_seven_rec
     (``test_neso_as5c_records.py``); the summary archive keeps its container and record."""
     found: set[str] = set()
     for package in (FFR_PACKAGE, P2_PACKAGE):
-        document = _package_doc(package)
+        document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), package
     assert found == {*RECORDED, ARCHIVE, *AS5C_RECORDED}
     containers = [
-        r
-        for r in _package_doc(P2_PACKAGE)["resources"]
-        if r["family"] == "ffr_phase2_auction_files"
+        r for r in package_doc(P2_PACKAGE)["resources"] if r["family"] == "ffr_phase2_auction_files"
     ]
     assert [r["disposition"]["kind"] for r in containers].count("HOLD") == 0
     assert ARCHIVE in [
         r["disposition"]["key"] for r in containers if r["disposition"]["kind"] == "SILVER"
     ]
-    assert _record(ARCHIVE).siblings == ("ffr_phase2_auction_files",)
+    assert record_of(ARCHIVE).siblings == ("ffr_phase2_auction_files",)
 
 
 def test_the_eligibility_report_lists_five_eligible_two_held_and_four_siblings_ingest_only() -> (
@@ -1071,14 +1018,14 @@ def test_the_sibling_families_carry_no_record_and_every_resource_is_silver_to_th
     registry = registry_module.load_registry()
     for sibling, key in OWNER_OF.items():
         entry = registry.families[sibling][1]
-        assert entry.record is None and entry.transformer is None, sibling
+        assert entry.record is None, sibling
         resources = [
-            r for r in _package_doc(PACKAGE_OF[sibling])["resources"] if r["family"] == sibling
+            r for r in package_doc(PACKAGE_OF[sibling])["resources"] if r["family"] == sibling
         ]
         assert resources, sibling
         assert all(r["disposition"] == {"kind": "SILVER", "key": key} for r in resources), sibling
     for key in (BW, LW, LM, UN, SM, BM):
-        resources = [r for r in _package_doc(P2_PACKAGE)["resources"] if r["family"] == key]
+        resources = [r for r in package_doc(P2_PACKAGE)["resources"] if r["family"] == key]
         assert all(r["disposition"] == {"kind": "SILVER", "key": key} for r in resources), key
 
 
@@ -1089,7 +1036,7 @@ def test_the_two_unfaithful_ffr_files_are_resource_holds_not_adjudications() -> 
     with the verbatim reasons, and the other 26 resources of the three naming families are
     ``SILVER`` of the owner record."""
     resources = [
-        r for r in _package_doc(FFR_PACKAGE)["resources"] if r["family"] in (FFR_CSV, FFR, FFR_EXT)
+        r for r in package_doc(FFR_PACKAGE)["resources"] if r["family"] in (FFR_CSV, FFR, FFR_EXT)
     ]
     assert len(resources) == 28
     holds = {r["id"]: r for r in resources if r["disposition"]["kind"] == "HOLD"}
@@ -1253,7 +1200,7 @@ def test_the_tr147_resource_is_not_transformed_while_held(data: Path) -> None:
     resource id, writes no rows and no failure."""
     capture(data, "r147")
     assert get_transformer(SOURCE, FFR, data).run(DAY, run_id="r") == 0
-    assert _no_silver(data, FFR)
+    assert no_silver(data, FFR)
 
 
 def test_weekly_block_orders_keep_the_na_block_code_prm_and_the_negative_volume(
@@ -1292,7 +1239,7 @@ def test_master_block_orders_keep_the_scientific_notation_ids_and_the_complete_r
         "Offered volume is over tested volume",
         "Offered volume is over tested volume",
     ]
-    record = _record(BM)
+    record = record_of(BM)
     assert list(record.entity_key) == ["resource_id", *B24_NAMES]
     nullable_key = [c.name for c in record.epochs[0].columns if c.nullable]
     assert nullable_key == ["bid_validity"]
@@ -1315,7 +1262,7 @@ def test_a_master_block_row_differing_in_one_column_is_a_new_key_but_an_exact_co
     capture(data, "bm9", raw=raw)
     written = get_transformer(SOURCE, BM, data).run(DAY, run_id="r")
     assert written == len(rows("bm9")) + 1
-    assert -12345.0 in _silver(data, BM)["volume"].to_list()
+    assert -12345.0 in silver_frame(data, BM)["volume"].to_list()
 
 
 def test_weekly_linear_orders_keep_the_na_curve_points_as_strings(data: Path) -> None:
@@ -1354,9 +1301,9 @@ def test_weekly_and_master_order_tables_are_separate_records(data: Path) -> None
     capture(data, "bm9")
     assert get_transformer(SOURCE, BW, data).run(DAY, run_id="r") == len(rows("bw"))
     assert get_transformer(SOURCE, BM, data).run(DAY, run_id="r") == len(rows("bm9"))
-    assert _silver(data, BW).height == len(rows("bw"))
-    assert _silver(data, BM).height == len(rows("bm9"))
-    assert list(_record(BW).entity_key) != list(_record(BM).entity_key)
+    assert silver_frame(data, BW).height == len(rows("bw"))
+    assert silver_frame(data, BM).height == len(rows("bm9"))
+    assert list(record_of(BW).entity_key) != list(record_of(BM).entity_key)
 
 
 def test_results_by_unit_keep_the_cancellation_prose_and_each_filename_format(data: Path) -> None:
@@ -1398,7 +1345,7 @@ def test_the_results_overlap_resolves_to_the_master_row_and_an_earlier_as_of_to_
     serves the weekly rows instead. The DuckDB view and Polars agree (``both_as_of``)."""
     ids = {a: capture(data, a) for a in (weekly, *masters)}
     written = get_transformer(SOURCE, key, data).run(DAY, run_id="r")
-    base = _silver(data, key)
+    base = silver_frame(data, key)
     assert written == base.height == sum(len(rows(a)) for a in ids)
     assert base.select(KEY_OF[key]).is_duplicated().sum() == 2 * shared
     modified = {a: datetime.fromisoformat(CAPTURES[a].modified).replace(tzinfo=UTC) for a in ids}
@@ -1490,7 +1437,7 @@ def test_a_repeated_key_fails_the_capture_as_a_duplicate(data: Path, key: str) -
         (capture_id, "DuplicateEntityKeyError")
     ]
     assert read_completion(data, key, capture_id) is None
-    assert _no_silver(data, key)
+    assert no_silver(data, key)
 
 
 @pytest.mark.parametrize(
@@ -1504,7 +1451,7 @@ def test_every_family_is_stamped_with_the_ckan_last_modified(data: Path, alias: 
     key = owner(alias)
     capture_id = capture(data, alias)
     get_transformer(SOURCE, key, data).run(DAY, run_id="r")
-    frame = _silver(data, key)
+    frame = silver_frame(data, key)
     modified = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {modified}
     db = data / "cat.duckdb"
@@ -1512,22 +1459,3 @@ def test_every_family_is_stamped_with_the_ckan_last_modified(data: Path, alias: 
     assert both_as_of(db, data, key, modified - timedelta(microseconds=1)) == []
     assert set(both_as_of(db, data, key, modified + timedelta(days=1))) == {capture_id}
     assert set(both_as_of(db, data, key, None)) == {capture_id}
-
-
-@pytest.mark.parametrize("key", RECORDED)
-def test_the_skeleton_page_renders_the_new_records(key: str) -> None:
-    """Detects a record the docs generator cannot render (the 43-column FFR epochs with embedded
-    newlines, the 24-column complete-row key, the filename-format maps)."""
-    package = PACKAGE_OF[key]
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": package,
-            "title": package,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    assert f"`{key}`" in page

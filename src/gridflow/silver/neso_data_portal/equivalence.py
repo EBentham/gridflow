@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from gridflow.connectors.neso_data_portal.captures import Capture
-    from gridflow.connectors.neso_data_portal.registry import Registry
+    from gridflow.connectors.neso_data_portal.registry import Registry, ResourceEntry
 
 __all__ = [
     "COMPONENTS",
@@ -92,7 +92,7 @@ __all__ = [
 
 SOURCE = "neso_data_portal"
 
-HARNESS_VERSION = "1"
+HARNESS_VERSION = "2"
 """Bumped on any change to how the harness reads, projects or compares; a bump
 voids every grant (field ``harness``)."""
 
@@ -128,11 +128,14 @@ class ScopeEntry:
         capture: The capture (for reading).
         data_dir: The data root its capture id is relative to (not digested).
         identity: ``{body_sha256, metadata}``: what the fingerprint digests.
+        resource: The resource :func:`resource_of` resolved it to (for a
+            container reader; not digested).
     """
 
     capture: Capture
     data_dir: Path
     identity: dict[str, Any]
+    resource: ResourceEntry
 
 
 @dataclass(frozen=True)
@@ -222,8 +225,8 @@ def _identity(capture: Capture, record: SchemaRecord) -> dict[str, Any]:
     return {"body_sha256": capture.body_sha256, "metadata": metadata}
 
 
-ScopeIndex = tuple[tuple["Capture", str], ...]
-"""Every usable capture of every registry family directory, with its resource id."""
+ScopeIndex = tuple[tuple["Capture", "ResourceEntry"], ...]
+"""Every usable capture of every registry family directory, with its resource."""
 
 
 def scope_index(registry: Registry, data_dir: Path) -> ScopeIndex:
@@ -234,17 +237,17 @@ def scope_index(registry: Registry, data_dir: Path) -> ScopeIndex:
         data_dir: The data root.
 
     Returns:
-        ``(capture, resource id)`` for every usable capture that
+        ``(capture, resource)`` for every usable capture that
         :func:`resource_of` resolves.
     """
     paths = PathBuilder(data_dir)
-    out: list[tuple[Capture, str]] = []
+    out: list[tuple[Capture, ResourceEntry]] = []
     for dir_key in sorted(registry.families):
         scan = scan_dataset(paths.bronze_dir(SOURCE, dir_key), registry, require_provenance=False)
         for capture in scan.captures:
             resource = resource_of(capture, dir_key, registry)
             if resource is not None:
-                out.append((capture, resource.id))
+                out.append((capture, resource))
     return tuple(out)
 
 
@@ -316,9 +319,9 @@ def gather_inputs(
 
     def scope(resource_id: str, record: SchemaRecord) -> tuple[ScopeEntry, ...]:
         return tuple(
-            ScopeEntry(capture, data_dir, _identity(capture, record))
+            ScopeEntry(capture, data_dir, _identity(capture, record), owner)
             for capture, owner in captures
-            if owner == resource_id and partition_date_of(capture.body) <= cutoff
+            if owner.id == resource_id and partition_date_of(capture.body) <= cutoff
         )
 
     return ProofInputs(
@@ -385,9 +388,13 @@ def _read(entry: ScopeEntry, record: SchemaRecord, children: tuple[str, ...], ke
     capture_id = capture_id_for(capture.body, entry.data_dir)
     try:
         ctx = capture_context(capture, record, entry.data_dir)
-        tables = list(read_children(ctx.body, record, children))
+        tables = list(read_children(ctx.body, record, children, resource=entry.resource))
         if all(table.frame.height == 0 for table in tables):
             return _Read(capture_id, capture.body_sha256, None, "empty capture")
+        if ctx.empty_capture:
+            return _Read(
+                capture_id, capture.body_sha256, None, "empty_capture marker on a body with rows"
+            )
         typed = [type_child(table, record, ctx) for table in tables]
         tally = ExclusionTally()
         for child in typed:

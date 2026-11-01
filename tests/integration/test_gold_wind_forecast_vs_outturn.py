@@ -32,7 +32,6 @@ from _gold_support import (
     query,
     register_held,
     run_family,
-    short_root,
     utc,
     view_columns,
 )
@@ -48,7 +47,7 @@ from gridflow.silver.neso_data_portal.completion import (
 from gridflow.silver.schema_manifest import select_list_columns
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Iterator
+    from collections.abc import Callable
     from datetime import datetime
     from pathlib import Path
 
@@ -160,17 +159,15 @@ def _build(data: Path, seed: Callable[[Path], None], *, tie: bool = False) -> Wi
 
 
 @pytest.fixture
-def world(seed_silver: Callable[..., None]) -> Iterator[WindWorld]:
+def world(short_root: Path, seed_silver: Callable[..., None]) -> WindWorld:
     """The G-2 world, built once per test; the held view is NOT registered yet."""
-    with short_root() as data:
-        yield _build(data, seed_silver)
+    return _build(short_root, seed_silver)
 
 
 @pytest.fixture
-def tie_world(seed_silver: Callable[..., None]) -> Iterator[WindWorld]:
+def tie_world(short_root: Path, seed_silver: Callable[..., None]) -> WindWorld:
     """The G-2 world with O and C sharing one CKAN last_modified (FM-9)."""
-    with short_root() as data:
-        yield _build(data, seed_silver, tie=True)
+    return _build(short_root, seed_silver, tie=True)
 
 
 CONTRACT = contract_for(RELATION)

@@ -78,10 +78,13 @@ def _skip_if_no_data(exc: httpx.HTTPStatusError, *, dataset: str) -> None:
 async def test_live_entsog_endpoint_fetches_and_transforms_or_classifies_empty(
     tmp_data_dir: Path,
     dataset: str,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # One record per live call is enough to prove the endpoint and transform.
+    monkeypatch.setattr("gridflow.connectors.entsog.endpoints.ENTSOG_ALL_RECORDS_LIMIT", 1)
     try:
         async with EntsogConnector(_entsog_config()) as connector:
-            responses = await connector.fetch(dataset, LIVE_START, LIVE_END, limit=1)
+            responses = await connector.fetch(dataset, LIVE_START, LIVE_END)
     except httpx.HTTPStatusError as exc:
         _skip_if_no_data(exc, dataset=dataset)
 

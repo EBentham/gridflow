@@ -65,6 +65,9 @@ so the existing cross-repo sync test remains valid.
 The `weather` serving alias is documented as a pre-existing SDK
 compatibility misnomer. It maps to `silver_elexon_itsdo`, which is GB
 Initial Transmission System Demand Outturn, not meteorological weather.
+(2026-11-01: `weather` now maps to `silver_open_meteo_historical_demand`,
+the Open-Meteo population-centre weather the method was named for. Against
+ITSDO, which has no `location` column, every call raised.)
 
 The decommissioned Elexon `bod` transformer remains excluded. It is not
 registered by `src/gridflow/silver/elexon/__init__.py`, but the retained
@@ -82,7 +85,10 @@ stable query date for downstream consumers is still the ingestion
 timestamp until a reviewed event-date contract is added.
 
 `CANONICAL_SCHEMA.yaml` remains subordinate documentation and test
-input. It is not the source for the runtime manifest.
+input. It is not the source for the runtime manifest. (2026-11-01: the
+YAML, 155 of whose 161 entries were never curated, and its seed script were
+deleted. Its six Open-Meteo column sets are now checked against this
+manifest, which is the only schema authority.)
 
 **Amended 2026-08-03 (v0.18 N-5).** `relation_name` for an APPEND_ONLY
 dataset with a registered `LATEST_VIEW_SPECS` entry (see

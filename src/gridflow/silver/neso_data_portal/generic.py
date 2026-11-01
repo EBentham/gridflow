@@ -2,9 +2,8 @@
 
 A registry family with a frozen schema record (``registry/record.py``) is
 transformed here, capture by capture, into one append-only output per
-(capture, family) plus one completion record (P-6, P-7). A non-legacy family
-without a record is registered ingest-only and skipped loudly by transform
-(P-13). The three legacy keys keep their bespoke transformers.
+(capture, family) plus one completion record (P-6, P-7). A family without a
+record is registered ingest-only and skipped loudly by transform (P-13).
 
 **Generation (P-15).** :func:`register_generated` runs at import, looks the
 registry up through ``registry.load_registry`` at call time (unit A's test
@@ -31,10 +30,7 @@ import polars as pl
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
-from gridflow.connectors.neso_data_portal.registry import (
-    LEGACY_KEYS,
-    SilverDisposition,
-)
+from gridflow.connectors.neso_data_portal.registry import SilverDisposition
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
 from gridflow.silver import registry as silver_registry
 from gridflow.silver.base import BronzeVouchReason, append_only_run_stamp
@@ -206,7 +202,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
     @classmethod
     def versions(cls) -> Versions:
         """The versions this family's completion records must carry."""
-        return Versions(cls.RECORD.version, ENGINE_VERSION, cls.DATASET_VERSION, generic=True)
+        return Versions(cls.RECORD.version, ENGINE_VERSION, cls.DATASET_VERSION)
 
     @classmethod
     def output_columns(cls) -> list[tuple[str, str]]:
@@ -290,7 +286,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
         _package, family = registry.families[self.dataset]
         record = self.RECORD
         paths = PathBuilder(self.data_dir)
-        candidates: list[tuple[Capture, str, tuple[str, ...]]] = []
+        candidates: list[tuple[Capture, str, tuple[str, ...], ResourceEntry | None]] = []
         unvouched: list[tuple[Path, BronzeVouchReason]] = []
         failures: list[tuple[str, str, str]] = []
         released_rows = 0
@@ -316,17 +312,18 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
                         continue
                     if only is not None and capture_id_for(capture.body, self.data_dir) not in only:
                         continue
-                    candidates.append((capture, dir_key, children))
+                    resource = resource_of(capture, dir_key, registry)
+                    candidates.append((capture, dir_key, children, resource))
 
             versions = self.versions()
-            for capture, dir_key, children in candidates:
+            for capture, dir_key, children, resource in candidates:
                 capture_id = capture_id_for(capture.body, self.data_dir)
                 existing = read_completion(self.data_dir, self.dataset, capture_id)
                 if existing is not None and is_valid(existing, self.data_dir, versions):
                     continue
                 try:
                     released_rows += self._run_capture(
-                        capture, dir_key, children, target_date, run_id, family, versions
+                        capture, dir_key, children, resource, target_date, run_id, family, versions
                     )
                 except Exception as exc:  # noqa: BLE001 - one capture never stops the next
                     from gridflow.pipeline.runner import describe_exception
@@ -373,6 +370,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
         capture: Capture,
         dir_key: str,
         children: tuple[str, ...],
+        resource: ResourceEntry | None,
         target_date: date,
         run_id: str,
         family: FamilyEntry,
@@ -380,7 +378,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
     ) -> int:
         record = self.RECORD
         ctx = capture_context(capture, record, self.data_dir)
-        tables = list(read_children(ctx.body, record, children))
+        tables = list(read_children(ctx.body, record, children, resource=resource))
         common: dict[str, Any] = {
             "family": self.dataset,
             "capture_id": ctx.capture_id,
@@ -579,12 +577,10 @@ def generated_registrations(registry: Registry) -> GeneratedSet:
 
     Returns:
         The transformer classes and specs of every recorded family, and the
-        ingest-only reason of every other non-legacy family.
+        ingest-only reason of every other family.
     """
     generated = GeneratedSet()
     for key in sorted(registry.families):
-        if key in LEGACY_KEYS:
-            continue
         _package, family = registry.families[key]
         if family.record is not None:
             generated.transformers[key] = make_generic_transformer(key, family.record)

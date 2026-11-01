@@ -100,10 +100,7 @@ DB_PATH = Path(r"C:\gridflow-data\gridflow.duckdb")
 STATE = OUT_ROOT / "_run_state.jsonl"
 
 WINDOW_START = date(2026, 8, 1)
-WINDOW_END = date(2026, 8, 5)
-# Half-open vendors (ENTSO-E `[periodStart, periodEnd)`) drop the final day
-# unless the request end is exclusive. Verified empirically for entsoe/entsog.
-TOPUP_END = date(2026, 8, 6)
+WINDOW_END = date(2026, 8, 5)  # a bare --end date is inclusive on every command
 
 INGEST_TIMEOUT = 420
 TRANSFORM_TIMEOUT = 420
@@ -136,9 +133,6 @@ N17_UNCHARTABLE = {
     ("entsog", "balancing_zones"),
     ("entsog", "aggregate_interconnections"),
 }
-
-# N-22: absent from both DOC_TYPES and sources.yaml, so no fetch path exists.
-UNWIRED = {("entsoe", "activated_balancing_qty")}
 
 
 def log(msg: str) -> None:
@@ -234,17 +228,6 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
                     }
                 )
                 continue
-            if (s, ds) in UNWIRED:
-                checkpoint(
-                    {
-                        "phase": "fetch",
-                        "source": s,
-                        "dataset": ds,
-                        "status": "UNWIRED",
-                        "detail": "N-22: no fetch path in DOC_TYPES or sources.yaml",
-                    }
-                )
-                continue
             if cfg.max_query_days == 0:
                 checkpoint(
                     {
@@ -265,7 +248,7 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
                     "--start",
                     WINDOW_START.isoformat(),
                     "--end",
-                    TOPUP_END.isoformat(),
+                    WINDOW_END.isoformat(),
                 ],
                 INGEST_TIMEOUT,
             )

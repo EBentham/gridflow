@@ -3,9 +3,10 @@
 A reader turns one bronze body into :class:`ChildTable` s: one for a plain CSV
 body, one per requested child for a container (an Excel workbook's sheets, a
 ZIP's members). Unit X registers the container readers ``xlsx`` and
-``zip_member`` (ADR-037): each resolves its body's registry resource from the
-sidecar and requires the body's children (:func:`containers.list_children`)
-to be exactly the resource's inventory (P-5), reads every ZIP entry through
+``zip_member`` (ADR-037): each takes its body's registry resource as the caller
+resolved it (``generic.resource_of``: the sidecar UUID, else name and format)
+and requires the body's children (:func:`containers.list_children`) to be
+exactly the resource's inventory (P-5), reads every ZIP entry through
 the verified :func:`containers.read_entry` (P-4), and stamps each table with
 the CRC-32 of the entry it came from (P-11). A record naming a reader no
 module registered fails each capture with :class:`ReaderUnavailableError`.
@@ -21,16 +22,13 @@ from __future__ import annotations
 
 import codecs
 import io
-import json
 import re
 import xml.etree.ElementTree as ET
-from collections.abc import Callable, Iterator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Protocol
 
 import polars as pl
 
-from gridflow.connectors.neso_data_portal.captures import SIDECAR_SUFFIX
 from gridflow.connectors.neso_data_portal.registry.record import column_index
 from gridflow.silver.csv_bronze import read_csv_bronze_body
 from gridflow.silver.neso_data_portal.containers import (
@@ -48,6 +46,7 @@ from gridflow.silver.neso_data_portal.containers import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from pathlib import Path
 
     from gridflow.connectors.neso_data_portal.registry import ResourceEntry
@@ -108,8 +107,21 @@ class ChildTable:
     crc32: int | None = None
 
 
-BodyReader = Callable[["Path", "SchemaRecord", tuple[str, ...]], Iterator[ChildTable]]
-"""``(body path, record, requested child ids) -> tables``; ``()`` for a plain body."""
+class BodyReader(Protocol):
+    """``(body path, record, requested child ids) -> tables``; ``()`` for a plain body.
+
+    ``resource`` is the body's registry resource as the caller resolved it; a
+    container reader needs it for its inventory and fails without it.
+    """
+
+    def __call__(
+        self,
+        path: Path,
+        record: SchemaRecord,
+        children: tuple[str, ...],
+        *,
+        resource: ResourceEntry | None = None,
+    ) -> Iterator[ChildTable]: ...
 
 
 def _validate_utf8(raw: bytes) -> None:
@@ -166,7 +178,11 @@ def _utf8_body(raw: bytes, record: SchemaRecord) -> bytes:
 
 
 def read_csv_body(
-    path: Path, record: SchemaRecord, children: tuple[str, ...]
+    path: Path,
+    record: SchemaRecord,
+    children: tuple[str, ...],
+    *,
+    resource: ResourceEntry | None = None,
 ) -> Iterator[ChildTable]:
     """Read one CSV body with the record's encoding through unit A's reader.
 
@@ -182,6 +198,7 @@ def read_csv_body(
         path: The bronze body.
         record: The family's record.
         children: Must be empty: a CSV body has no children.
+        resource: Unused: a CSV body has no inventory.
 
     Yields:
         Exactly one :class:`ChildTable` with ``child_id == ""``.
@@ -211,38 +228,18 @@ def read_csv_body(
 # ---------------------------------------------------------------------------
 
 
-def _resource_for(path: Path) -> ResourceEntry:
-    """The registry resource of a body, from its sidecar ``resource_id`` (P-5).
-
-    The registry is looked up through ``registry.load_registry`` at call time
-    (unit A's test seam).
+def _check_inventory(path: Path, data: bytes, resource: ResourceEntry | None) -> ResourceEntry:
+    """P-5: the body's children are exactly the resource's registry inventory.
 
     Raises:
-        ContainerInventoryError: The sidecar is unreadable or names no
-            registry resource.
+        ContainerInventoryError: No resource was resolved for the body, or its
+            children differ from the inventory.
     """
-    from gridflow.connectors.neso_data_portal import registry as registry_module
-
-    sidecar = path.with_suffix(SIDECAR_SUFFIX)
-    try:
-        meta: Any = json.loads(sidecar.read_text(encoding="utf-8"))
-    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+    if resource is None:
         raise ContainerInventoryError(
-            f"{path}: sidecar {sidecar.name} is unreadable ({exc})"
-        ) from exc
-    params = meta.get("request_params") if isinstance(meta, dict) else None
-    resource_id = params.get("resource_id") if isinstance(params, dict) else None
-    entry = registry_module.load_registry().resources.get(str(resource_id))
-    if entry is None:
-        raise ContainerInventoryError(
-            f"{path}: sidecar resource_id {resource_id!r} is not a registry resource; its "
-            "child inventory cannot be checked"
+            f"{path}: no registry resource resolved for the body; its child inventory "
+            "cannot be checked"
         )
-    return entry[1]
-
-
-def _check_inventory(path: Path, data: bytes, resource: ResourceEntry) -> None:
-    """P-5: the body's children are exactly the resource's registry inventory."""
     found = set(list_children(data, str(path)))
     declared = {child.child for child in resource.children}
     if found != declared:
@@ -250,6 +247,7 @@ def _check_inventory(path: Path, data: bytes, resource: ResourceEntry) -> None:
             f"{path}: resource {resource.id} body children differ from the registry "
             f"inventory: unlisted {sorted(found - declared)}, missing {sorted(declared - found)}"
         )
+    return resource
 
 
 class XlsxBlockError(Exception):
@@ -709,12 +707,14 @@ def read_block(
 
 
 def _read_blocks(
-    path: Path, blocks: tuple[XlsxBlock, ...], children: tuple[str, ...]
+    path: Path,
+    blocks: tuple[XlsxBlock, ...],
+    children: tuple[str, ...],
+    resource: ResourceEntry | None,
 ) -> Iterator[ChildTable]:
     """The declared block of the body's resource, for each requested child (AS-5c P-2)."""
     data = path.read_bytes()
-    resource = _resource_for(path)
-    _check_inventory(path, data, resource)
+    resource = _check_inventory(path, data, resource)
     block = next((item for item in blocks if item.resource_id == resource.id), None)
     if block is None:
         raise XlsxBlockError(
@@ -732,7 +732,11 @@ def _read_blocks(
 
 
 def read_xlsx_body(
-    path: Path, record: SchemaRecord, children: tuple[str, ...]
+    path: Path,
+    record: SchemaRecord,
+    children: tuple[str, ...],
+    *,
+    resource: ResourceEntry | None = None,
 ) -> Iterator[ChildTable]:
     """Read the requested sheets of one workbook body (P-5, P-6).
 
@@ -747,12 +751,12 @@ def read_xlsx_body(
             (h)-(n), has no declaration, or is asked for another sheet.
     """
     if record.xlsx_blocks is not None:
-        yield from _read_blocks(path, record.xlsx_blocks, children)
+        yield from _read_blocks(path, record.xlsx_blocks, children, resource)
         return
     if record.xlsx is None:
         raise ContainerInventoryError(f"{path}: an xlsx record needs an xlsx spec (V-14)")
     data = path.read_bytes()
-    _check_inventory(path, data, _resource_for(path))
+    _check_inventory(path, data, resource)
     container = open_container(data, str(path))
     for child in children:
         if CHILD_SEPARATOR in child:
@@ -782,7 +786,11 @@ def _csv_member_table(
 
 
 def read_zip_member_body(
-    path: Path, record: SchemaRecord, children: tuple[str, ...]
+    path: Path,
+    record: SchemaRecord,
+    children: tuple[str, ...],
+    *,
+    resource: ResourceEntry | None = None,
 ) -> Iterator[ChildTable]:
     """Read the requested members of one ZIP body (P-5, P-7).
 
@@ -798,7 +806,7 @@ def read_zip_member_body(
     if spec is None:
         raise ContainerInventoryError(f"{path}: a zip_member record needs its spec (V-14)")
     data = path.read_bytes()
-    _check_inventory(path, data, _resource_for(path))
+    _check_inventory(path, data, resource)
     container = open_container(data, str(path))
     for child in children:
         member, separator, sheet = child.partition(CHILD_SEPARATOR)
@@ -836,7 +844,11 @@ CONTAINER_READERS: frozenset[str] = frozenset({"xlsx", "zip_member"})
 
 
 def read_children(
-    path: Path, record: SchemaRecord, children: tuple[str, ...]
+    path: Path,
+    record: SchemaRecord,
+    children: tuple[str, ...],
+    *,
+    resource: ResourceEntry | None = None,
 ) -> Iterator[ChildTable]:
     """Read a body through its record's reader, enforcing the child contract.
 
@@ -845,6 +857,8 @@ def read_children(
         record: The family's record.
         children: The child ids the inventory maps to this family (``()``
             for a plain body).
+        resource: The body's registry resource (``generic.resource_of``);
+            required by a container reader.
 
     Yields:
         Each table the reader yields, in its order.
@@ -860,7 +874,7 @@ def read_children(
             f"no reader is registered for {record.reader!r} (unit X); {path} cannot be read"
         )
     seen: list[str] = []
-    for table in reader(path, record, children):
+    for table in reader(path, record, children, resource=resource):
         if record.reader in CONTAINER_READERS and (
             table.child_id not in children or table.child_id in seen
         ):

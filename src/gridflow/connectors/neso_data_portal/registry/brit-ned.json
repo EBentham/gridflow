@@ -11,25 +11,12 @@
     {
       "key": "brit_ned",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
-              "Flow (MW) From GB",
-              "Flow (MW) To GB",
-              "Reason For Restiction"
-            ],
             "columns": [
               {
                 "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
@@ -55,18 +42,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
-              "Flow (MW) to GB",
-              "Flow (MW) from GB",
-              "Reason For Restriction"
-            ],
             "columns": [
               {
                 "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
@@ -92,18 +70,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
-              "Flow (MW) To GB",
-              "Flow (MW) From GB",
-              "Reason For Restriction"
-            ],
             "columns": [
               {
                 "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
@@ -129,18 +98,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
-              "Flow (MW) to GB",
-              "Flow (MW) from GB",
-              "Reason for restriction"
-            ],
             "columns": [
               {
                 "source": "Operational Date (YYYY-MM-DD) & Time GMT/BST (HH:MM - HH:MM)",
@@ -166,18 +126,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Operational Period Start Date and Time GMT",
-              "Flow in MW To GB",
-              "Flow in MW From GB",
-              "Reason for restriction"
-            ],
             "columns": [
               {
                 "source": "Operational Period Start Date and Time GMT",
@@ -203,10 +154,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

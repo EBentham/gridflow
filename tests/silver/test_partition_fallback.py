@@ -27,9 +27,8 @@ class _EntsogStubTransformer(BaseSilverTransformer):
     """R2-g / F-05: pins the exact-partition-only policy for source == 'entsog'.
 
     Deliberately a bare stub, NOT a real ENTSO-G transformer: this exercises
-    the two source-scoped predicates directly, independently of the lockstep
-    read path that (post-R2-g) keeps the real families away from
-    ``_bronze_date_dirs`` altogether.
+    the source-scoped predicate directly, independently of the lockstep read
+    path.
     """
 
     source = "entsog"
@@ -99,22 +98,19 @@ class TestBronzePathForDate:
         result = t._bronze_path_for_date(date(2026, 5, 11))
         assert result == exact
 
-
-class TestBronzeDateDirsFallback:
-    def test_fallback_included_when_exact_missing(self, tmp_path: Path) -> None:
+    def test_bronze_dir_keyword_resolves_within_that_directory(self, tmp_path: Path) -> None:
+        """Open-Meteo resolves each location's own directory, exact then covering."""
         t = _StubTransformer(tmp_path)
-        prior = tmp_path / "bronze" / "test_source" / "test_dataset" / "2026" / "05" / "10"
-        _make_raw_file(prior)
-        dirs = t._bronze_date_dirs(date(2026, 5, 11))
-        assert prior in dirs
-
-    def test_exact_returned_when_present(self, tmp_path: Path) -> None:
-        t = _StubTransformer(tmp_path)
-        exact = tmp_path / "bronze" / "test_source" / "test_dataset" / "2026" / "05" / "11"
-        _make_raw_file(exact)
-        dirs = t._bronze_date_dirs(date(2026, 5, 11))
-        assert exact in dirs
-        assert len(dirs) == 1
+        other = tmp_path / "bronze" / "test_source" / "test_dataset__london"
+        _make_raw_file(other / "2026" / "05" / "10")
+        assert t._bronze_path_for_date(date(2026, 5, 11), bronze_dir=other) == (
+            other / "2026" / "05" / "10"
+        )
+        _make_raw_file(other / "2026" / "05" / "11")
+        assert t._bronze_path_for_date(date(2026, 5, 11), bronze_dir=other) == (
+            other / "2026" / "05" / "11"
+        )
+        assert t._bronze_path_for_date(date(2026, 5, 11)) is None
 
 
 class TestEntsoeExactPartitionOnlyPolicy:
@@ -135,13 +131,6 @@ class TestEntsoeExactPartitionOnlyPolicy:
         result = t._bronze_path_for_date(date(2026, 5, 11))
         assert result is None
 
-    def test_bronze_date_dirs_empty_when_only_prior_partition_exists(self, tmp_path: Path) -> None:
-        t = _EntsoeStubTransformer(tmp_path)
-        prior = PathBuilder(tmp_path).bronze_date_dir("entsoe", "test_dataset", date(2026, 5, 10))
-        _make_raw_file(prior)
-        dirs = t._bronze_date_dirs(date(2026, 5, 11))
-        assert dirs == []
-
     def test_non_entsoe_source_fallback_unaffected(self, tmp_path: Path) -> None:
         """Pins that test_source's fallback stays intact (decision 3 evidence)."""
         t = _StubTransformer(tmp_path)
@@ -154,7 +143,7 @@ class TestEntsoeExactPartitionOnlyPolicy:
 
 
 class TestEntsogExactPartitionOnlyPolicy:
-    """R2-g / F-05: entsog joins the exact-only set, on BOTH gated callers."""
+    """R2-g / F-05: entsog joins the exact-only set."""
 
     def test_read_caller_returns_none_when_only_a_prior_partition_exists(
         self, tmp_path: Path
@@ -164,25 +153,16 @@ class TestEntsogExactPartitionOnlyPolicy:
         _make_raw_file(prior)
         assert t._bronze_path_for_date(date(2026, 5, 11)) is None
 
-    def test_vintage_caller_is_empty_when_only_a_prior_partition_exists(
-        self, tmp_path: Path
-    ) -> None:
-        t = _EntsogStubTransformer(tmp_path)
-        prior = PathBuilder(tmp_path).bronze_date_dir("entsog", "test_dataset", date(2026, 5, 10))
-        _make_raw_file(prior)
-        assert t._bronze_date_dirs(date(2026, 5, 11)) == []
-
     def test_exact_partition_still_used_when_present(self, tmp_path: Path) -> None:
         t = _EntsogStubTransformer(tmp_path)
         exact = PathBuilder(tmp_path).bronze_date_dir("entsog", "test_dataset", date(2026, 5, 10))
         _make_raw_file(exact)
         assert t._bronze_path_for_date(date(2026, 5, 10)) == exact
-        assert t._bronze_date_dirs(date(2026, 5, 10)) == [exact]
 
 
 class TestNonExactOnlySourcesKeepTheirFallback:
-    """T3-d: the control. A source NOT in the frozenset must be byte-identical
-    to master on BOTH callers -- the flip must not leak beyond entsoe/entsog."""
+    """T3-d: the control. A source NOT in the frozenset keeps its covering
+    fallback -- the flip must not leak beyond entsoe/entsog."""
 
     def test_read_caller_still_falls_back(self, tmp_path: Path) -> None:
         t = _StubTransformer(tmp_path)
@@ -191,11 +171,3 @@ class TestNonExactOnlySourcesKeepTheirFallback:
         )
         _make_raw_file(prior)
         assert t._bronze_path_for_date(date(2026, 5, 11)) == prior
-
-    def test_vintage_caller_still_falls_back(self, tmp_path: Path) -> None:
-        t = _StubTransformer(tmp_path)
-        prior = PathBuilder(tmp_path).bronze_date_dir(
-            "test_source", "test_dataset", date(2026, 5, 10)
-        )
-        _make_raw_file(prior)
-        assert t._bronze_date_dirs(date(2026, 5, 11)) == [prior]
