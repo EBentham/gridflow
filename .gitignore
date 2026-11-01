@@ -41,6 +41,10 @@ env/
 .DS_Store
 Thumbs.db
 
+# Notebooks: the jupytext .py files are the source; .ipynb renders stay local
+notebooks/**/*.ipynb
+.ipynb_checkpoints/
+
 # Testing
 .pytest_cache/
 .pytest_artifacts/
