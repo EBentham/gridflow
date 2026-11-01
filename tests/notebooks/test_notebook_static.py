@@ -70,18 +70,22 @@ def test_notebook_compiles_on_gridflow_and_polars_alone(path: Path) -> None:
     assert not forbidden, f"{path.name} imports {sorted(forbidden)}"
 
 
+def _unregistered_views(text: str) -> set[str]:
+    return set(_VIEW_NAME.findall(text)) - _registered_views()
+
+
 @pytest.mark.parametrize("path", NOTEBOOKS, ids=lambda p: p.name)
 def test_notebook_names_only_registered_views(path: Path) -> None:
-    used = set(_VIEW_NAME.findall(path.read_text(encoding="utf-8")))
-    unknown = used - _registered_views()
+    unknown = _unregistered_views(path.read_text(encoding="utf-8"))
     assert not unknown, f"{path.name} names views the catalogue never registers: {sorted(unknown)}"
 
 
 def test_view_check_rejects_an_unregistered_name() -> None:
-    # Guards the check itself: a misspelt view must not pass as registered.
-    assert "silver_elexon_system_price" not in _registered_views()
-    assert {
-        "silver_elexon_fuelhh",
-        "silver_elexon_system_prices_latest",
-        "gold_eu_gas_storage",
-    } <= _registered_views()
+    # The check itself: a misspelt view fails it, registered silver, _latest and gold views pass.
+    text = """
+show("silver_elexon_system_price", "SELECT 1")
+show("silver_elexon_fuelhh", "SELECT 1")
+show("silver_elexon_system_prices_latest", "SELECT 1")
+show("gold_eu_gas_storage", "SELECT 1")
+"""
+    assert _unregistered_views(text) == {"silver_elexon_system_price"}

@@ -69,7 +69,7 @@ def show(view: str, query: str | Callable[[], pl.DataFrame]) -> pl.DataFrame | N
         return frame
     if view not in _skipped:
         _skipped.add(view)
-        source, dataset = _GOLD_INPUTS.get(view) or _source_dataset(view)
+        source, dataset = _GOLD_INPUTS.get(view) or source_dataset(view)
         key = settings.sources[source].api_key_env
         needs = f"; needs {key}" if key else ""
         command = f"gridflow backfill {source} {dataset} --start {START} --end {END}"
@@ -77,7 +77,7 @@ def show(view: str, query: str | Callable[[], pl.DataFrame]) -> pl.DataFrame | N
     return None
 
 
-def _source_dataset(view: str) -> tuple[str, str]:
+def source_dataset(view: str) -> tuple[str, str]:
     """Split a silver view name on the longest configured source name it starts with."""
     name = view.removeprefix("silver_").removesuffix("_latest")
     source = max((s for s in settings.sources if name.startswith(f"{s}_")), key=len)
