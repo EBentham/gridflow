@@ -2,11 +2,23 @@
 
 All notable changes to **gridflow** — a local-first Python data pipeline for UK/EU power and gas
 market data — are documented in this file. The format follows
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Version numbers correspond to project
-milestones (not SemVer), dated by milestone completion. v0.13 (a planned dataset-coverage
-expansion) was paused before release and is intentionally absent.
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/). From v0.23.0, gridflow follows
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html): the version in `pyproject.toml`
+equals the release tag, and while gridflow is on 0.x, any change to `gridflow.contract` (the
+surface gridflow-models uses) is a minor version bump. Earlier version numbers, v0.2 to v0.22,
+correspond to project milestones (not SemVer), dated by milestone completion. v0.13 (a planned
+dataset-coverage expansion) was paused before release and is intentionally absent.
 
 ## [Unreleased]
+
+## [v0.23.0] - 2026-11-01
+
+gridflow installs as a normal package, and this is its first release under SemVer. A wheel or
+git-tag install works from any folder: it finds its gold views and sources, keeps its data under
+one root (`~/gridflow-data` unless `GRIDFLOW_DATA_DIR` says otherwise), and ships the surface
+gridflow-models depends on as `gridflow.contract`. A newcomer can go from a clone to notebooks
+with data in them on Windows, macOS or Linux. The release also carries the fixes from the
+October 2026 code review of the connectors, the silver layer and the CLI.
 
 ### Added
 - **`gridflow.contract`**: the list of every gridflow name gridflow-models imports, the
@@ -21,6 +33,94 @@ expansion) was paused before release and is intentionally absent.
   `tour`, the datasets the data-layer notebooks read over the last 7 complete days; a path loads
   your own preset file. The README quickstart and `docs/QUICKSTART.md` go from a clone to
   notebooks with data.
+- **Data-layer notebooks** in `notebooks/`: `00_overview` and `01_sources`, moved over from
+  gridflow-models and rewritten on `GridflowClient` and Polars. A view the catalogue lacks is
+  skipped with a line giving the backfill command, and the API key, that would fill it.
+  JupyterLab, jupytext and plotly sit in a `notebooks` dependency group
+  (`uv sync --group notebooks`), outside the core dependencies.
+- **A notebook smoke test on a sample store.** The test suite builds a small store from the
+  committed fixtures (15 January 2024) and runs each notebook against it, on Linux, Windows and
+  macOS.
+- **`DATA-SOURCES.md`**: for each configured source, what gridflow fetches, the key it needs,
+  the vendor's terms and attribution, and whether the files under `tests/fixtures/` are real
+  responses. A test fails when a source in `sources.yaml` has no section.
+- **Vendor TLS checks use the operating system's trust store** (through `truststore`), so a
+  corporate proxy whose root certificate only the OS trusts works from the CLI. Without
+  `truststore`, connectors fall back to the `certifi` bundle as before.
+- **A release workflow.** Pushing a `v*` tag checks that the tag equals the `pyproject.toml`
+  version, builds the wheel and sdist, installs the wheel into a clean environment and runs it
+  outside the checkout, then publishes a GitHub release with this file's section as its notes.
+- **New CI jobs**: `package-smoke` installs the built wheel into a clean venv and runs it outside
+  the checkout; `cross-platform` runs the settings, data-root, trust-store and notebook tests and
+  the package smoke on Windows and macOS; a weekly job runs the slow memory tests.
+- **`quality.duckdb_memory_limit`** in `config/settings.yaml` (default `2GB`): the memory cap
+  for `gridflow quality`'s checks, past which they spill to a temporary folder.
+
+### Changed
+- **One data root.** gridflow keeps its data in `~/gridflow-data` on every OS unless
+  `GRIDFLOW_DATA_DIR` names another folder. The catalogue and logs default to
+  `<root>/gridflow.duckdb` and `<root>/logs`; `GRIDFLOW_DUCKDB_PATH` and `GRIDFLOW_LOG_DIR` are
+  optional overrides. Relative paths resolve against the current folder, not the git checkout.
+  `config/settings.yaml` loses its three path keys and is an optional override read from the
+  current folder, and `.env` is the nearest one at or above it. **To keep an existing data
+  root, set `GRIDFLOW_DATA_DIR` to it before upgrading**; otherwise gridflow looks in
+  `~/gridflow-data`, and the missing-catalogue message names the path it tried and the variable.
+- **`sources.yaml` ships inside the package** (`gridflow/config/sources.yaml`), so an installed
+  gridflow loads its sources from any folder.
+- **One window convention.** Every window is `[start, end)` in UTC. A bare `--end D` still means
+  through day D on every command, and an `--end` with a time is an exclusive instant. An
+  explicit `--end` now wins over `--incremental`, and an `--end` without `--start` ends the
+  lookback instead of being replaced by now. Connectors request exactly the days in the window:
+  Elexon, GIE and Open-Meteo stop asking for an extra day, and NESO Carbon Intensity's daily
+  endpoints step by UTC day. NESO Data Portal captures are filed under the window's last day.
+  NESO Carbon Intensity's 24- and 48-hour forecasts are fetched for every day of a window, not
+  one per 14 days.
+- **Backfill.** `gridflow backfill` uses the pipeline runner's `run_backfill` instead of its own
+  chunk loop, refuses `--chunk-days` below 1, and does not transform a chunk whose ingest failed
+  or skipped units, so a failed chunk is retried rather than marked done by partial silver.
+- **Silver keeps every forecast vintage.** Each Elexon and ENTSO-E transform deduplicates to its
+  declared grain, and rows that share a grain but differ in value are counted and reported.
+  UOU2T14D, TSDFD, INDDEM, INDGEN, TSDF, LOLPDRM, IMBALNGC, MELNGC and the ENTSO-E load,
+  generation and wind and solar forecasts keep every publication, read through their `_latest`
+  views. PN and BOAL keep each segment's `time_from`/`time_to`, IMBALNGC and MELNGC their
+  `boundary`, SOSO its `trader_unit`, and PN units known only by their National Grid id. The
+  five ENTSO-E datasets that map vendor codes key on the raw codes, so two unknown codes stay
+  two rows.
+- **Elexon date-only datasets are stamped at the start of the UK settlement day.** TSDFD,
+  FOU2T14D and UOU2T14D stamp a forecast date at local midnight, as INDOD and NDFD already did,
+  so in summer a day's row sits at 23:00 UTC the day before. SOSO keeps the vendor's
+  `endTime` text in a new `end_time_raw` column instead of nulling it.
+- **A bronze body that cannot be parsed refuses its date.** Every transformer used to skip it
+  with a warning and write the rest, so a run could report success with fewer rows. Now nothing
+  is written for that date, the old file stays, the rest of the range still transforms, and the
+  dataset ends `failed` naming the file.
+- **A reingest stamps `available_at` from the bronze bodies it actually read**, so a past date
+  no longer gets an older or newer file's availability time.
+- **NESO daily wind availability, historic generation mix and the embedded wind and solar
+  forecast** run through the generic NESO engine like every other recorded family. Their outputs
+  gain `bronze_capture_id` and `capture_written_at` and lose `data_provider`, and a duplicate
+  key now fails the capture instead of keeping one row silently.
+- **The NESO Data Portal's datasets are filled from its registry when settings load**, instead
+  of a generated block in `sources.yaml`, and incremental runs no longer log a span warning for
+  every portal dataset.
+- **`gridflow quality` runs each check as DuckDB SQL** over the dataset's silver files, capped at
+  `quality.duckdb_memory_limit`. The gap check measures each entity series separately, treats a
+  revised forecast as one series, and runs only on datasets with a settlement period.
+- **API keys come only from each source's `api_key_env`** in `sources.yaml` (`ENTSOE_API_KEY`,
+  `GIE_API_KEY`).
+- **Retries and pacing.** Connectors retry only 408, 429 and 5xx responses, so other 4xx errors
+  fail at once; the NESO portal retries a temporary DNS failure. GIE requests are paced to its
+  60 calls a minute, shared across every connector in the process.
+- **Catalogue setup is faster**: every `_latest` view is built from one column query (about 8 s
+  less per init on a large catalogue, 3.5 s to 0.6 s on an empty one). Each gold view that fails
+  to register logs one WARNING with DuckDB's message.
+- **CI** runs on pushes to master and on pull requests, skips master pushes that change only
+  prose, and type-checks at Python 3.11, the lowest supported version.
+- **Line endings** are normalised by a root `.gitattributes`; test fixtures stay byte for byte.
+- **Internal tidy-up**: 23 Elexon and 13 ENTSO-E transformers became declarative specs,
+  connectors share one request, paging and pacing path, settlement periods are stamped with one
+  vector expression, and Elexon and ENTSO-E share one `published_at` parser. Elexon now counts
+  and logs a `publishTime` it cannot parse instead of nulling it silently.
 
 ### Deprecated
 - **`GridflowClient._require_con()`**: kept as an alias of `require_con()` until gridflow-models
@@ -28,6 +128,58 @@ expansion) was paused before release and is intentionally absent.
 
 ### Removed
 - **`scripts/extract_all.py`**: the front-end chart extract, which hard-coded the owner's paths.
+- **The single-token silver alias views** (`silver_<dataset>`, without the source). `init` and
+  refresh drop any an older catalogue still holds; query `silver_<source>_<dataset>` instead.
+- **Scripts the CLI already covers or that had finished their job**: `scripts/backfill.py`,
+  `run_pipeline.py`, `init_duckdb.py`, `run_all_sources.py`, `normalize_published_at.py`,
+  `elexon_audit.py`, `seed_neso_registry.py` and `seed_canonical_schema.py`, with the
+  `Makefile`, the committed NESO profiler per-family output and `docs/CANONICAL_SCHEMA.yaml`.
+- **The `GRIDFLOW_<SOURCE>_API_KEY` settings**, which could override a source's documented key
+  variable.
+- **The pre-commit configuration** and its dependency.
+- **Unused code**: the decommissioned Elexon BOD transformer and its schema, the unwired ENTSO-E
+  `activated_balancing_qty` transformer, connectors' `fetch(**params)` keyword surface, GIE's
+  company, facility and range query modes, the NESO portal's `fetch()`, the hidden
+  `--write-watermark` flag, `CircuitBreaker` and other dead helpers.
+
+### Fixed
+- **An installed gridflow works.** The wheel now carries the gold view SQL (`init` used to
+  register no gold views and report success), and sources load outside a checkout.
+- **`gridflow quality --all` no longer runs out of memory** on NESO portal families of tens of
+  millions of rows.
+- **`gridflow build` and `gridflow pipeline --gold` exit 1 when a gold build fails.**
+- **`GridflowClient.get_weather()`** reads the Open-Meteo demand weather; it used to raise on
+  every call.
+- **A dataset whose parquet was pruned** no longer aborts `init` or refresh.
+- **A drive-relative Windows path** (`C:gridflow.duckdb`, as an unquoted `C:\...` arrives
+  through a POSIX shell) is refused for the data, catalogue and log paths instead of landing in
+  the checkout.
+- **Elexon**: NONBM is fetched with the window parameters the endpoint honours, and bronze
+  fetched the old way is excluded from silver; PN and BOAL bodies whose segment times are all
+  null transform again.
+- **ENTSO-E**: balancing bids and procured capacity page 100 series at a time instead of
+  stopping at the first page, and a fetch that hits the page cap fails. One-minute (PT1M)
+  curves are stamped by the minute, and a period with an unknown resolution is skipped with a
+  warning instead of stamped hourly. Outage tables keep each document's identity, latest
+  revision and status, and clip each outage to the day it is filed under instead of repeating it
+  whole in every daily file it overlaps. Balancing tables keep their area, direction, product,
+  price and every offer. A null code next to an unknown one no longer fails the outages
+  transform.
+- **ENTSO-G**: capacity and CMP records are kept on every gas day they are in force, not only
+  the day they start; `timestamp_utc` is taken per row; the two registers are dated by
+  `ingested_at`, so a date-range query returns their rows; flow rows with a missing or unknown
+  unit are dropped with a warning.
+- **GIE**: AGSI unavailability is typed, keyed and filed under the days each outage overlaps;
+  an empty AGSI response no longer advances the watermark; the fallback partition is chosen by
+  date, not file time.
+- **NESO**: the current BSUoS files are read in whichever date order each file uses; October
+  2014's repeated system frequency hour is keyed by its occurrence; a rotated resource no longer
+  fails the Excel and ZIP readers; the embedded forecast's settlement period is bounded to
+  1–50; an upload's unchanged skip re-checks the capture's hash, and its sidecar no longer
+  stores the text "None".
+
+### Security
+- **The ENTSO-E API token no longer leaks through chained tracebacks** of a failed request.
 
 ## [v0.22] - 2026-10-16 — NESO Data Portal: full catalogue
 
