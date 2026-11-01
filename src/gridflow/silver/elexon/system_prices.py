@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonSystemPrice
-from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
+from gridflow.silver.base import VintagePolicy
+from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
-from gridflow.storage.paths import PathBuilder
 from gridflow.utils.time import settlement_period_to_utc
 
 if TYPE_CHECKING:
@@ -36,7 +35,7 @@ def _parse_publication_timestamp(value: object) -> datetime | None:
     return parsed.astimezone(UTC)
 
 
-class SystemPriceTransformer(BaseSilverTransformer):
+class SystemPriceTransformer(ElexonTransformer):
     """Transform Elexon system price data from bronze to silver."""
 
     source = "elexon"
@@ -70,39 +69,17 @@ class SystemPriceTransformer(BaseSilverTransformer):
     # business key the latest-vintage projection groups by.
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")
 
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        """Read all bronze JSON files for a given date."""
-        bronze_path = PathBuilder(self.data_dir).bronze_date_dir(
-            self.source, self.dataset, target_date, dataset_dir=self.bronze_dir
-        )
-        if not bronze_path.exists():
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                data = json.loads(f.read_text())
-                # Elexon Insights API returns {"data": [...]}
-                records = data.get("data", []) if isinstance(data, dict) else data
-                rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as e:
-                logger.warning(f"Failed to parse bronze file {f}: {e}")
-                continue
-
-        if not rows:
-            return pl.DataFrame()
-
-        return pl.DataFrame(rows)
-
     def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
-        """Read one Elexon system-price bronze response."""
+        """Read one Elexon system-price bronze response.
+
+        Catches the parse error rather than refusing the date: each body is its
+        own vintage file, so the per-file branch records an empty read as
+        ``UNUSABLE_PROVENANCE`` and skipping one body cannot shrink another.
+        """
         try:
-            data = json.loads(raw_path.read_text())
-            records = data.get("data", []) if isinstance(data, dict) else data
-        except (OSError, json.JSONDecodeError, AttributeError) as exc:
-            logger.warning(f"Failed to parse bronze file {raw_path}: {exc}")
+            records = self._parse_bronze_body(raw_path)
+        except (OSError, ValueError) as exc:
+            logger.warning("Failed to parse bronze file %s: %s", raw_path, exc)
             return pl.DataFrame()
 
         return pl.DataFrame(records) if records else pl.DataFrame()

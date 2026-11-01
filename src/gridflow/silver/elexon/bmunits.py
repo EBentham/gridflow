@@ -2,22 +2,24 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonBMUnit
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 
-class BMUnitsTransformer(BaseSilverTransformer):
+class BMUnitsTransformer(ElexonTransformer):
     """Transform Elexon BM Unit reference data from bronze to silver.
 
     This is reference data (no date dimension), so it writes a single
@@ -63,28 +65,23 @@ class BMUnitsTransformer(BaseSilverTransformer):
     DATASET_VERSION: ClassVar[str] = "1.1.0"
     ENTITY_KEY_COLUMNS = ("bm_unit_id",)  # D-8: verbatim from unique() below
 
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        """The newest body anywhere in the tree: reference data has no date partition.
+
+        Only that one body is read. If it cannot be parsed the run is refused
+        rather than stepping back to an older snapshot, which would hide the
+        corrupt capture behind stale reference data.
+        """
+        bodies = sorted(
+            (p for p in self.bronze_dir.rglob("raw_*.json") if not p.name.endswith(".meta.json")),
+            reverse=True,
+        )
+        return bodies[:1]
+
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        # Reference data has no date partitioning; read latest file from any date dir
-        if not self.bronze_dir.exists():
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        # Search all date directories for the most recent file
-        for f in sorted(self.bronze_dir.rglob("raw_*.json"), reverse=True):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                data = json.loads(f.read_text())
-                records = data.get("data", []) if isinstance(data, dict) else data
-                rows.extend(records)
-                break  # Use only the most recent file
-            except (json.JSONDecodeError, AttributeError) as e:
-                logger.warning(f"Failed to parse bronze file {f}: {e}")
-                continue
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows, infer_schema_length=None)
+        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        rows = [record for _, records in pairs for record in records]
+        return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

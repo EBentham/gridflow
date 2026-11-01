@@ -2,22 +2,20 @@
 
 from __future__ import annotations
 
-import json
 import logging
-from datetime import UTC, date, datetime
-from typing import Any
+from datetime import UTC, datetime
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonNETBSAD
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc
 
 logger = logging.getLogger(__name__)
 
 
-class NETBSADTransformer(BaseSilverTransformer):
+class NETBSADTransformer(ElexonTransformer):
     """Transform Elexon NETBSAD data from bronze to silver."""
 
     source = "elexon"
@@ -27,32 +25,6 @@ class NETBSADTransformer(BaseSilverTransformer):
         "settlement_date",
         "settlement_period",
     )  # D-8: verbatim from unique() below
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                data = json.loads(f.read_text())
-                records = data.get("data", []) if isinstance(data, dict) else data
-                rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as e:
-                logger.warning(f"Failed to parse bronze file {f}: {e}")
-                continue
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
