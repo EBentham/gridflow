@@ -5,13 +5,20 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import polars as pl
 
 from gridflow.schemas.gie import LNGTerminal
-from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
+from gridflow.silver.base import (
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+    gas_day_event_time_expr,
+)
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +40,7 @@ class LNGTerminalTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         rows: list[dict[str, Any]] = []
+        unparseable: list[Path] = []
         for f in sorted(bronze_path.glob("raw_*.json")):
             if f.name.endswith(".meta.json"):
                 continue
@@ -42,6 +50,9 @@ class LNGTerminalTransformer(BaseSilverTransformer):
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse GIE ALSI bronze file %s: %s", f, exc)
+                unparseable.append(f)
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         rows = _filter_records_to_gas_day(rows, target_date)
 

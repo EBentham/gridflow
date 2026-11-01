@@ -14,7 +14,11 @@ if TYPE_CHECKING:
 import polars as pl
 
 from gridflow.schemas.entsog import EntsogPhysicalFlow
-from gridflow.silver.base import _BRONZE_VINTAGE_COLUMN, BaseSilverTransformer
+from gridflow.silver.base import (
+    _BRONZE_VINTAGE_COLUMN,
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+)
 from gridflow.silver.entsog.datetime import (
     log_undated_records,
     parse_entsog_datetime_expr,
@@ -104,6 +108,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
         """
         pairs: list[tuple[Path, list[dict[str, Any]]]] = []
         undated_total = 0
+        unparseable: list[Path] = []
         for f in paths:
             rows: list[dict[str, Any]] = []
             try:
@@ -112,10 +117,13 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
                 rows.extend(records)
             except (json.JSONDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
+                unparseable.append(f)
                 continue
             kept, undated = partition_records_to_target_date(rows, target_date, ("periodFrom",))
             undated_total += undated
             pairs.append((f, kept))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         log_undated_records(undated_total, target_date, source=self.source, dataset=self.dataset)
         return tuple(pairs)
 

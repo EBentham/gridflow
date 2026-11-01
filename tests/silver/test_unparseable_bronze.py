@@ -17,10 +17,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import polars as pl
+import pytest
 
 if TYPE_CHECKING:
-    import pytest
-
     from gridflow.pipeline.runner import DatasetResult
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
@@ -274,3 +273,43 @@ def test_reservebid_refusals_refuse_the_date(
     assert "UNPARSEABLE_BODY=1" in (result.error or "")
     assert "raw_b.xml" in (result.error or "")
     assert pl.read_parquet(destination).height == rows
+
+
+@pytest.mark.parametrize(
+    ("source", "dataset"),
+    [
+        ("gie_agsi", "storage"),
+        ("gie_agsi", "news"),
+        ("gie_agsi", "unavailability"),
+        ("gie_alsi", "lng"),
+        ("neso", "carbon_intensity"),
+        ("open_meteo", "historical_demand"),
+    ],
+)
+def test_other_vendors_refuse_an_unparseable_body(
+    tmp_path: Path, source: str, dataset: str
+) -> None:
+    """GIE, NESO carbon intensity and Open-Meteo refuse the same way.
+
+    ENTSO-G is covered in ``test_entsog_lockstep_vintage.py``.
+    """
+    from gridflow.pipeline.runner import import_transformers
+    from gridflow.silver.base import UnparseableBronzeError
+    from gridflow.silver.registry import get_transformer
+
+    import_transformers()
+    transformer = get_transformer(source, dataset, tmp_path)
+    bronze_dir = transformer.bronze_dir
+    if source == "open_meteo":  # one bronze directory per location
+        location = transformer.LOCATIONS[0].name  # type: ignore[attr-defined]
+        prefix = transformer.BRONZE_DATASET_PREFIX  # type: ignore[attr-defined]
+        bronze_dir = bronze_dir.parent / f"{prefix}__{location}"
+    partition = bronze_dir / f"{DAY:%Y}" / f"{DAY:%m}" / f"{DAY:%d}"
+    partition.mkdir(parents=True)
+    body = partition / "raw_a.json"
+    body.write_text('{"data": [')
+
+    with pytest.raises(UnparseableBronzeError) as refused:
+        transformer.read_bronze(DAY)
+
+    assert refused.value.paths == (body,)

@@ -16,7 +16,11 @@ import polars as pl
 from gridflow.connectors.gie.client import classify_news_record_for_window
 from gridflow.connectors.gie.endpoints import parse_listing_inventory
 from gridflow.schemas.gie import GasStorage, GasStorageUnavailability
-from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
+from gridflow.silver.base import (
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+    gas_day_event_time_expr,
+)
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -127,11 +131,13 @@ class GasStorageTransformer(BaseSilverTransformer):
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
+        unparseable: list[Path] = []
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
             except json.JSONDecodeError as exc:
                 logger.warning("Failed to parse GIE AGSI bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
 
             request_params = _metadata_request_params(path)
@@ -142,6 +148,8 @@ class GasStorageTransformer(BaseSilverTransformer):
                 enriched["__request_company"] = request_params.get("company")
                 enriched["__request_facility"] = request_params.get("facility")
                 rows.append(enriched)
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         if not rows:
             return pl.DataFrame()
@@ -332,13 +340,17 @@ class AgsiJsonTransformer(BaseSilverTransformer):
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
+        unparseable: list[Path] = []
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
             except json.JSONDecodeError as exc:
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
             rows.extend(self._records_from_payload(payload))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         # P0.8: accumulate rows across ALL raw files first (unfiltered), THEN
         # apply the filter hook exactly once — news is paginated (multiple
         # raw_*.json per partition), so a per-payload call would warn once per
@@ -569,11 +581,13 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         undated_count = 0
+        unparseable: list[Path] = []
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
             except json.JSONDecodeError as exc:
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
             for record in self._records_from_payload(payload):
                 classification = _classify_unavailability_record(record, target_date)
@@ -582,6 +596,8 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
                 if classification == "undated":
                     undated_count += 1
                 rows.append(_flatten_unavailability_record(record, target_date))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         if undated_count:
             logger.warning(
                 "%s/%s: %d record(s) had no parseable start/end for target_date %s; "

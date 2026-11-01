@@ -37,7 +37,7 @@ from gridflow.connectors.openmeteo.endpoints import (
     WeatherLocation,
 )
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
-from gridflow.silver.base import BaseSilverTransformer, VintagePolicy
+from gridflow.silver.base import BaseSilverTransformer, UnparseableBronzeError, VintagePolicy
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -179,6 +179,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         # Bronze lives under: bronze/open_meteo/{prefix}__{loc}/YYYY/MM/DD/
         parent_dir = self.bronze_dir.parent  # bronze/open_meteo/
         rows: list[dict[str, Any]] = []
+        unparseable: list[Path] = []
 
         for loc in self.LOCATIONS:
             loc_dir = parent_dir / f"{self.BRONZE_DATASET_PREFIX}__{loc.name}"
@@ -204,6 +205,9 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
                     rows.extend(_pivot_openmeteo_json(data, loc.name, self.HOURLY_VARS))
                 except (json.JSONDecodeError, AttributeError, KeyError) as exc:
                     logger.warning("Failed to parse weather bronze file %s: %s", f, exc)
+                    unparseable.append(f)
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         rows = _filter_rows_to_target_date(rows, target_date)
 

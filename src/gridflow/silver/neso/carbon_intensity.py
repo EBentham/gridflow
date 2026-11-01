@@ -24,7 +24,7 @@ from gridflow.schemas.neso import (
     GenerationMix,
     RegionalIntensity,
 )
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.base import BaseSilverTransformer, UnparseableBronzeError
 from gridflow.silver.partition_window import request_window_from_sidecar
 from gridflow.silver.registry import register_transformer
 from gridflow.storage.parquet import write_parquet
@@ -56,13 +56,17 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
+        unparseable: list[Path] = []
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
             except json.JSONDecodeError as exc:
                 logger.warning("Failed to parse NESO bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
             rows.extend(_extract_rows(payload, self.parser_family))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         if not rows:
             return pl.DataFrame()
