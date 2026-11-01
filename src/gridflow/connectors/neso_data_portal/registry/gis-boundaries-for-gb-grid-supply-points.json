@@ -12,36 +12,13 @@
       "key": "gis_grid_supply_points",
       "kind": "tabular",
       "archetype": "REG",
-      "refresh": "adhoc",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "ng_id",
-              "ggd_id",
-              "gnode_id",
-              "gnode_name",
-              "gnode_lat",
-              "gnode_lon",
-              "gsp_id",
-              "gsp_name",
-              "gsp_lat",
-              "gsp_lon",
-              "dc_id",
-              "dc_name",
-              "dc_lat",
-              "dc_lon",
-              "region_id",
-              "region_name",
-              "has_pv",
-              "pes_id",
-              "pes_name"
-            ],
             "columns": [
               {
                 "source": "ng_id",
@@ -157,10 +134,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -175,11 +149,7 @@
     },
     {
       "key": "gis_grid_supply_points_files",
-      "kind": "files",
-      "archetype": "FILE",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

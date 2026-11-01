@@ -11,20 +11,12 @@
     {
       "key": "constraint_cost_fc_24m",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Month",
-              "Constraint Cost"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -39,10 +31,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

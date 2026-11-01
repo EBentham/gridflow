@@ -11,26 +11,12 @@
     {
       "key": "asdp_window_prices",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "EntryID",
-              "ServiceType",
-              "SPStartDateTime",
-              "SPEndDateTime",
-              "WindowPrice",
-              "CreatedTime",
-              "PartyID",
-              "AssetID"
-            ],
             "columns": [
               {
                 "source": "EntryID",
@@ -80,10 +66,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

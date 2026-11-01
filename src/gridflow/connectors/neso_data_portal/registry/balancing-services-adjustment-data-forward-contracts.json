@@ -11,26 +11,12 @@
     {
       "key": "bsad_forward_contracts",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Settlement Period",
-              "BCA (£)",
-              "BSA (MWh)",
-              "BVA (MWh)",
-              "SCA (£)",
-              "SSA (MWh)",
-              "SVA (MWh)"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -83,22 +69,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Date",
-              "SettlementPeriod",
-              "BCA",
-              "BSA",
-              "BVA",
-              "SCA",
-              "SSA",
-              "SVA"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -151,10 +124,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

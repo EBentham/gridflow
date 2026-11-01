@@ -11,26 +11,12 @@
     {
       "key": "fes_building_blocks_block_definitions",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Template",
-              "Technology",
-              "Building Block ID Number",
-              "Technology Detail",
-              "Units",
-              "Detail",
-              "Comments",
-              "ESO Additional Notes"
-            ],
             "columns": [
               {
                 "source": "Template",
@@ -80,23 +66,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Template",
-              "Technology",
-              "Building Block ID Number",
-              "Technology Detail",
-              "Units",
-              "Detail",
-              "Comments",
-              "Alignment with Ofgem Core Scenario Key Drivers",
-              "ESO Comments"
-            ],
             "columns": [
               {
                 "source": "Template",
@@ -152,26 +124,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Template",
-              "Technology",
-              "Building Block ID Number",
-              "Technology Detail",
-              "Units",
-              "Detail",
-              "Comments",
-              "",
-              "Alignment with Ofgem Core Scenario Key Drivers",
-              "_duplicated_0",
-              "Included in ESO Data",
-              "ESO Comments"
-            ],
             "columns": [
               {
                 "source": "Template",
@@ -245,24 +200,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Template",
-              "Technology",
-              "Building Block ID Number",
-              "Technology Detail",
-              "Units",
-              "Detail",
-              "Comments",
-              "Alignment with Ofgem Core Scenario Key Drivers",
-              "Included in ESO Data",
-              "ESO Comments"
-            ],
             "columns": [
               {
                 "source": "Template",
@@ -324,22 +264,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Template",
-              "Technology",
-              "Building Block ID Number",
-              "Technology Detail",
-              "Units",
-              "Detail",
-              "Comments",
-              "Alignment with Ofgem Core Scenario Key Drivers"
-            ],
             "columns": [
               {
                 "source": "Template",
@@ -389,10 +316,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -437,25 +361,12 @@
     {
       "key": "fes_building_blocks_block_licence_area",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Area Type",
-              "FES23 BB Area Name",
-              "Full Licence Name",
-              "Elexon GSP Group",
-              "Elexon GSP Group Name",
-              "FES2024 Area Name",
-              "Comments"
-            ],
             "columns": [
               {
                 "source": "Area Type",
@@ -499,10 +410,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -527,10 +435,6 @@
     {
       "key": "fes_building_blocks_main",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -615,9 +519,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -840,9 +741,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -1060,9 +958,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -1275,9 +1170,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -1485,9 +1377,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -1690,9 +1579,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [

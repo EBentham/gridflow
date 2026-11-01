@@ -11,22 +11,13 @@
     {
       "key": "capacity_market_auction_cost",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Delivery Year",
-              "Capacity Awarded",
-              "Forecast Cost_GBP"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -52,10 +43,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -72,34 +60,13 @@
     {
       "key": "capacity_market_auction_static",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Clearing Price_GBP per kW per year",
-              "Base Period for the Agreement",
-              "Auction Target Capacity_MW",
-              "Total Volume of Agreements Awarded",
-              "Termination Fee 1 Rate",
-              "Termination Fee 2 Rate",
-              "Termination Fee 3 Rate",
-              "Termination Fee 4 Rate",
-              "Termination Fee 5 Rate",
-              "Termination Fee 6 Rate",
-              "Termination Fee 7 Rate",
-              "Termination Fee 8 Rate",
-              "Termination Fee 9 Rate",
-              "Annual Penalty Cap",
-              "Monthly Penalty Cap"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -197,10 +164,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -216,22 +180,13 @@
     {
       "key": "capacity_market_de_rating_factors",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Primary Fuel Type",
-              "Generating Technology Class",
-              "De Rating Factor"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -257,10 +212,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -277,96 +229,13 @@
     {
       "key": "capacity_market_unit_cmu",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Application ID",
-              "CMU ID",
-              "Type",
-              "Auction",
-              "Delivery Year",
-              "Name of Applicant",
-              "Agent Name",
-              "CM Unit Name",
-              "Parent Company",
-              "Secondary Trading Contact_Telephone",
-              "Secondary Trading Contact_Email",
-              "Transmission or Distribution",
-              "CM Unit Type",
-              "CM Unit Category",
-              "Primary Fuel Type",
-              "CMU Technology",
-              "Storage Facility",
-              "Pre Qualification Decision",
-              "Opt Out Status",
-              "Opt Out Reason",
-              "Maximum Obligation Period",
-              "Unproven DSR",
-              "New Build Yet to Satisfy FCM",
-              "Connection Agreement Deferral Declaration",
-              "TEC Deferral",
-              "Amount of Credit Cover",
-              "Planning Consents Conditions",
-              "Connection or DSR Capacity",
-              "Proven DSR Capacity",
-              "DSR Bidding Capacity",
-              "De Rated Capacity",
-              "Pre Refurbishing De Rated Capacity",
-              "Post Refurbishing De Rated Capacity",
-              "Pre Refurbishing CMU Status",
-              "Anticipated De Rated Capacity",
-              "Anticipated Pre Refurbishing De Rated Capacity",
-              "Anticipated Post Refurbishing De Rated Capacity",
-              "Date of Issue of DSR Test Certificate",
-              "DSR Test Method",
-              "CMU confirmed entry into Auction",
-              "Duration of Capacity Agreement in First Bidding Round",
-              "Pre Refurbishment Bidding Status",
-              "Capacity Agreement Awarded",
-              "Duration of Capacity Agreement Awarded",
-              "Unique Agreement Identifier",
-              "Registered Holder",
-              "Date of Issue of Capacity Agreement",
-              "Term of the Capacity Agreement",
-              "Delivery Years for which Agreement Valid",
-              "Auction Acquired Capacity Obligation",
-              "Is FCM required",
-              "Date for Financial Commitment Milestone",
-              "Is Connection Agreement required",
-              "Date for provision of deferred Connection Agreement",
-              "Subject to a Minimum Completion Requirement",
-              "Subject to Substantial Completion Milestone",
-              "Long Stop Date for the Minimum Completion Requirement",
-              "Earliest Date SCM is expected to be achieved",
-              "Latest Date SCM is expected to be achieved",
-              "Is copy of Grid Connection Agreement required",
-              "Date for provision of deferred TEC",
-              "Termination Fee 1 Rate",
-              "Termination Fee 2 Rate",
-              "Termination Fee 3 Rate",
-              "Termination Fee 4 Rate",
-              "Termination Fee 5 Rate",
-              "Annual Penalty Cap",
-              "Monthly Penalty Cap",
-              "Legal Name of any Person with a Security Interest",
-              "Nature of the Security Interest",
-              "Capacity Agreement has been Terminated",
-              "Date of Termination of Capacity Agreement",
-              "List of Traded Capacity Obligations",
-              "Period for which the transfer applies",
-              "Capacity obligation Summary",
-              "Beta Value",
-              "Has Capacity Agreement been Suspended"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -844,10 +713,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -864,28 +730,13 @@
     {
       "key": "capacity_market_unit_cmu_history",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Application ID",
-              "CMU ID",
-              "Type",
-              "Delivery Year",
-              "Attribute",
-              "Previous",
-              "Latest",
-              "Change Type",
-              "Change Date"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -948,10 +799,7 @@
                 "format": "%Y-%m-%d",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -977,29 +825,13 @@
     {
       "key": "capacity_market_component_history",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Application ID",
-              "CMU ID",
-              "Component ID",
-              "Type",
-              "Delivery Year",
-              "Attribute",
-              "Previous",
-              "Latest",
-              "Change Type",
-              "Change Date"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -1068,10 +900,7 @@
                 "format": "%Y-%m-%d",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -1098,29 +927,13 @@
     {
       "key": "capacity_market_component_history_pre",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Application ID",
-              "CMU ID",
-              "Component ID",
-              "Type",
-              "Delivery Year",
-              "Attribute",
-              "Previous",
-              "Latest",
-              "Change Type",
-              "Change Date"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -1189,10 +1002,7 @@
                 "format": "%Y-%m-%d",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -1219,36 +1029,13 @@
     {
       "key": "capacity_market_components",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "weekly",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Name",
-              "Application ID",
-              "CMU ID",
-              "Delivery Year",
-              "Component ID",
-              "Type",
-              "Generating Technology Class",
-              "Permitted On Site Generating Unit",
-              "Primary Fuel of Component",
-              "Connection or DSR Capacity",
-              "De Rated Capacity",
-              "Pre Refurbishing De Rated Capacity",
-              "Post Refurbishing De Rated Capacity",
-              "Generating Capacity of On Site Generating Unit",
-              "Description of CMU Components",
-              "Location and Post Code",
-              "OS Grid Reference",
-              "Number of Components"
-            ],
             "columns": [
               {
                 "source": "Auction Name",
@@ -1358,10 +1145,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

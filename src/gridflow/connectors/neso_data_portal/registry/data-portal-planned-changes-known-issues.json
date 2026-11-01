@@ -11,28 +11,13 @@
     {
       "key": "portal_known_issues",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "adhoc",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "po",
-              "Change_Issue_Title",
-              "Description",
-              "Dataset_Specific",
-              "File_Specific",
-              "Status",
-              "Change_DateTime_From",
-              "Change_DateTime_To",
-              "Last_Updated",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "po",
@@ -100,10 +85,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

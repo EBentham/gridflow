@@ -763,14 +763,13 @@ def test_odfm_results_have_no_record_and_the_family_and_resources_are_unchanged(
     assert package.package == PACKAGE_OF[ODR]
     document = package_doc(PACKAGE_OF[ODR])
     (family,) = [f for f in document["families"] if f["key"] == ODR]
-    assert family == {
-        "key": ODR,
-        "kind": "tabular",
-        "archetype": "EVT",
-        "refresh": "frozen",
-        "empty_allowed": False,
-        "max_download_bytes": 536870912,
-    }
+    assert family == {"key": ODR, "kind": "tabular"}
+    assert (entry.archetype, entry.refresh, entry.empty_allowed, entry.max_download_bytes) == (
+        "EVT",
+        "frozen",
+        False,
+        536870912,
+    )
     results = [r for r in document["resources"] if r["family"] == ODR]
     assert len(results) == 2
     assert all(r["disposition"] == {"kind": "SILVER", "key": ODR} for r in results)

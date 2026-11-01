@@ -11,22 +11,12 @@
     {
       "key": "school_holiday_percentages",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Local_Authority",
-              "Multiplier",
-              "Date",
-              "School_Holiday"
-            ],
             "columns": [
               {
                 "source": "Local_Authority",
@@ -78,10 +68,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

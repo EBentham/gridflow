@@ -11,24 +11,12 @@
     {
       "key": "stability_midterm_y1",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "BMU ID",
-              "Inertia (in MVA.s)",
-              "Month & Year",
-              "Utilisation Start Datetime",
-              "Utilisation End Datetime",
-              "Hours Utilised"
-            ],
             "columns": [
               {
                 "source": "BMU ID",
@@ -71,10 +59,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

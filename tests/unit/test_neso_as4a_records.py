@@ -444,8 +444,8 @@ QUESTION_OF = {
     ),
 }
 
-# sha256 of disaggregated-bsad.json with line endings normalised to LF (the file is byte-unchanged).
-DISAGGREGATED_FILE_SHA256 = "820cf21f66a68654f454fd485a81c0ff468f7c3e862390e3a7627a981688f6d5"
+# sha256 of disaggregated-bsad.json with line endings normalised to LF, in its compacted form.
+DISAGGREGATED_FILE_SHA256 = "04d4b799e59060f8d35700ba305173d2b3f36176788cb9473c5a53b725481415"
 
 
 @dataclass(frozen=True)
@@ -1024,7 +1024,7 @@ def test_disaggregated_bsad_has_no_record_and_its_file_is_byte_unchanged() -> No
     family
     stays ingest-only (``get_transformer`` raises), its resources stay ``SILVER`` dispositions, the
     ledger names no disaggregated or DC family, and the package file (line endings normalised to LF)
-    matches the digest pinned from master. TODO: DISAGGREGATED-BSAD-ACTION-ID (a stable action
+    matches its pinned digest. TODO: DISAGGREGATED-BSAD-ACTION-ID (a stable action
     identity settles it); TODO: DISAGGREGATED-BSAD-COST-SIGN; the D08 encoding; the D-H2 date-format
     map (D10 ``%Y-%m-%dT%H:%M:%S``) for a future record."""
     package, entry = registry_module.load_registry().families[DIS]

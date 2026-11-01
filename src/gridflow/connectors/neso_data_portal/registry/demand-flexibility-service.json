@@ -11,24 +11,12 @@
     {
       "key": "dfs_industry_notification",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date",
-              "Notification Issued Time",
-              "Requirement For",
-              "Requirement Type",
-              "Status",
-              "Notification Type"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date",
@@ -68,10 +56,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -92,26 +77,12 @@
     {
       "key": "dfs_service_requirements",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Delivery Date",
-              "From",
-              "To",
-              "DFS Required MW",
-              "Service Requirement Type",
-              "Guaranteed Acceptance Price GBP per MWh",
-              "Despatch Type",
-              "Participant Bids Eligible"
-            ],
             "columns": [
               {
                 "source": "Delivery Date",
@@ -162,10 +133,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -188,44 +156,12 @@
     {
       "key": "dfs_utilisation_report",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Delivery Date",
-              "Registered DFS Participant",
-              "DFS Unit ID",
-              "DFS Volume MW",
-              "From",
-              "To",
-              "Service Requirement Type",
-              "Despatch Time",
-              "Utilisation Price GBP per MWh",
-              "Status",
-              "North Scotland",
-              "South and Central Scotland",
-              "North East England",
-              "North West England",
-              "Yorkshire",
-              "East Midlands",
-              "West Midlands",
-              "London",
-              "East England",
-              "South East England",
-              "South West England",
-              "Southern England",
-              "North Wales, Merseyside and Cheshire",
-              "South Wales",
-              "Other",
-              "Total"
-            ],
             "columns": [
               {
                 "source": "Delivery Date",
@@ -384,10 +320,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -406,27 +339,12 @@
     {
       "key": "dfs_utilisation_report_sum",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Delivery Date",
-              "From",
-              "To",
-              "Service Requirement Type",
-              "DFS Required MW",
-              "DFS Procured MW",
-              "DFS Provider Bids Accepted Total Cost GBP",
-              "Settled Volume MW",
-              "Settled Cost GBP"
-            ],
             "columns": [
               {
                 "source": "Delivery Date",
@@ -483,10 +401,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

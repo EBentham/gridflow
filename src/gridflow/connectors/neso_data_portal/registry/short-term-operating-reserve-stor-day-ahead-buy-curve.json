@@ -11,27 +11,12 @@
     {
       "key": "stor_da_buy_curve",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Buy Curve Name",
-              "Service Catalog",
-              "Curve to be applied to",
-              "Effective From Date",
-              "Effective To Date",
-              "Buy Curve Step: Buy Curve Step Id",
-              "MW",
-              "Availability Price (£/MWh)",
-              "Buy Curve: Buy Curve ID"
-            ],
             "columns": [
               {
                 "source": "Buy Curve Name",
@@ -91,10 +76,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -110,11 +92,7 @@
     },
     {
       "key": "stor_da_buy_curve_files",
-      "kind": "files",
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

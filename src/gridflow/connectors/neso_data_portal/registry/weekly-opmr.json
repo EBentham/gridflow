@@ -11,33 +11,12 @@
     {
       "key": "weekly_opmr",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "ENG_Week",
-              "ENG_Year",
-              "Publish Date",
-              "Peak Demand Forecast",
-              "Generator Availability",
-              "Maximum IC Import",
-              "Maximum IC Export",
-              "Generation Availability Margin",
-              "Operating Reserve provided by ICs",
-              "OPMR total",
-              "Constrained Plant",
-              "National Surplus",
-              "Minimum Demand Forecast",
-              "High Freq Response Requirement",
-              "Negative Reserve"
-            ],
             "columns": [
               {
                 "source": "ENG_Week",
@@ -130,10 +109,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

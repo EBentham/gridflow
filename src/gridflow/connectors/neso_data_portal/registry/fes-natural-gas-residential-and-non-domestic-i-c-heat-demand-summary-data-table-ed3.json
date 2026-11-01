@@ -11,10 +11,6 @@
     {
       "key": "fes_ed3_heat_demand_sum_ed",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -95,9 +91,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -294,9 +287,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -457,10 +447,6 @@
     {
       "key": "fes_ed3_heat_demand_natural_gas",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -544,9 +530,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -758,9 +741,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -935,10 +915,6 @@
     {
       "key": "fes_ed3_heat_demand_natural_gas_sum_ed",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1019,9 +995,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -1218,9 +1191,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [

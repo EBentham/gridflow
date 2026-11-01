@@ -11,23 +11,12 @@
     {
       "key": "transmission_losses_financial_year",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Financial Year",
-              "Sum of NGET",
-              "Sum of SPT",
-              "Sum of SHETL",
-              "Sum of GB totals"
-            ],
             "columns": [
               {
                 "source": "Financial Year",
@@ -59,10 +48,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -82,24 +68,12 @@
     {
       "key": "transmission_losses_main",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Financial Year",
-              "Month",
-              "NGET",
-              "SPT",
-              "SHETL",
-              "GB totals"
-            ],
             "columns": [
               {
                 "source": "Financial Year",
@@ -137,10 +111,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

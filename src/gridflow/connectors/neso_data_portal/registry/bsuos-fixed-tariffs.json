@@ -11,24 +11,12 @@
     {
       "key": "bsuos_fixed_tariffs",
       "kind": "tabular",
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication",
-              "Fixed Tariff Title",
-              "Published Date",
-              "Fixed Tariff Start Date",
-              "Fixed Tariff End Date",
-              "Fixed Tariff_GBP per MWh"
-            ],
             "columns": [
               {
                 "source": "Publication",
@@ -69,10 +57,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

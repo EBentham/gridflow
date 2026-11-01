@@ -11,24 +11,12 @@
     {
       "key": "dc_dm_dr_long_term_fc",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Forecast Created",
-              "Forecast Target Month",
-              "Service Type",
-              "EFA",
-              "Interval",
-              "Possibilities"
-            ],
             "columns": [
               {
                 "source": "Forecast Created",
@@ -68,10 +56,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

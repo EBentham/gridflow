@@ -11,22 +11,12 @@
     {
       "key": "inertia_bid_offer_costs",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Method A: Average bid price",
-              "Method B: Average wind price",
-              "Method C: Highest bid price"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -53,10 +43,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

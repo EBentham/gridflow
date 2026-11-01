@@ -11,22 +11,12 @@
     {
       "key": "national_ci_forecast",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "datetime",
-              "forecast",
-              "actual",
-              "index"
-            ],
             "columns": [
               {
                 "source": "datetime",
@@ -54,10 +44,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -78,11 +65,7 @@
     },
     {
       "key": "national_ci_forecast_files",
-      "kind": "files",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

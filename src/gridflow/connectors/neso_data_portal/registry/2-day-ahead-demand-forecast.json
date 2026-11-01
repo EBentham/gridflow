@@ -11,26 +11,12 @@
     {
       "key": "demand_forecast_2d_day_ahead",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DAYSAHEAD",
-              "TARGETDATE",
-              "FORECASTDEMAND",
-              "CARDINALPOINT",
-              "CP_TYPE",
-              "CP_ST_TIME",
-              "CP_END_TIME",
-              "F_Point"
-            ],
             "columns": [
               {
                 "source": "DAYSAHEAD",
@@ -81,10 +67,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -108,27 +91,12 @@
     {
       "key": "demand_forecast_2d_historic_day_ahead",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DAYSAHEAD",
-              "TARGETDATE",
-              "FORECASTDEMAND",
-              "CARDINALPOINT",
-              "CP_TYPE",
-              "CP_ST_TIME",
-              "CP_END_TIME",
-              "F_Point",
-              "FORECAST_TIMESTAMP"
-            ],
             "columns": [
               {
                 "source": "DAYSAHEAD",
@@ -185,10 +153,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -217,11 +182,7 @@
     },
     {
       "key": "demand_forecast_2d_files",
-      "kind": "files",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

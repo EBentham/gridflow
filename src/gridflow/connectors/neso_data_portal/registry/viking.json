@@ -11,25 +11,12 @@
     {
       "key": "viking_link_ntc",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Data Upload Time GMT",
-              "Auction Type",
-              "Operational Period Start Date and Time GMT",
-              "Flow in MW To GB",
-              "Reason For Restriction To GB",
-              "Flow in MW From GB",
-              "Reason For Restriction From GB"
-            ],
             "columns": [
               {
                 "source": "Data Upload Time GMT",
@@ -105,25 +92,12 @@
     {
       "key": "viking_ntc",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Operational Date",
-              "Auction Type",
-              "Version",
-              "Hourly Time Period (GMT)",
-              "Flow (MW) To GB",
-              "Flow (MW) From GB",
-              "Reason For Reduction"
-            ],
             "columns": [
               {
                 "source": "Operational Date",
@@ -167,10 +141,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -11,33 +11,13 @@
     {
       "key": "interconnector_register",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "daily",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Project Name",
-              "Customer Name",
-              "Connection Site",
-              "Stage",
-              "MW Import - Current",
-              "MW Export - Current",
-              "MW Import - Increase / Decrease",
-              "MW Export - Increase / Decrease",
-              "MW Import - Total",
-              "MW Export - Total",
-              "MW Effective From",
-              "Project Status",
-              "HOST TO",
-              "Project Number",
-              "Gate"
-            ],
             "columns": [
               {
                 "source": "Project Name",
@@ -130,10 +110,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

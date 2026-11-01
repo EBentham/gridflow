@@ -11,24 +11,12 @@
     {
       "key": "as_industry_notifications_balancing",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date Time",
-              "Service",
-              "Description",
-              "Effective From Date Time",
-              "Effective To Date Time",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date Time",
@@ -78,10 +66,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -98,24 +83,12 @@
     {
       "key": "as_industry_notifications_dc_dm_dr",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date Time",
-              "Service",
-              "Description",
-              "Effective From Date Time",
-              "Effective To Date Time",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date Time",
@@ -165,10 +138,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -185,23 +155,12 @@
     {
       "key": "as_industry_notifications_quick_reserve",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date Time",
-              "Description",
-              "Effective From Date Time",
-              "Effective To Date Time",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date Time",
@@ -245,10 +204,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -265,24 +221,12 @@
     {
       "key": "as_industry_notifications_sffr_important",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date Time",
-              "Service",
-              "Description",
-              "Effective From Date Time",
-              "Effective To Date Time",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date Time",
@@ -320,10 +264,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -344,23 +285,12 @@
     {
       "key": "as_industry_notifications_slow_reserve",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date Time",
-              "Description",
-              "Effective From Date Time",
-              "Effective To Date Time",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date Time",
@@ -404,10 +334,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -424,24 +351,12 @@
     {
       "key": "as_industry_notifications_stor_important",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date Time",
-              "Service",
-              "Description",
-              "Effective From Date Time",
-              "Effective To Date Time",
-              "Notes"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date Time",
@@ -491,10 +406,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

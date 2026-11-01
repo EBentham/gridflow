@@ -12,11 +12,7 @@
   "families": [
     {
       "key": "gis_dno_license_areas_files",
-      "kind": "files",
-      "archetype": "FILE",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

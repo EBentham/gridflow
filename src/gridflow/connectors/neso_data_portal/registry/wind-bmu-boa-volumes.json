@@ -11,23 +11,12 @@
     {
       "key": "wind_bmu_boa_volumes",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Settlement_Period",
-              "Generator_Name",
-              "Generator_Full_Name",
-              "BOA_Volume"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -62,10 +51,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -11,23 +11,12 @@
     {
       "key": "outturn_voltage_costs_historical",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Month",
-              "Voltage Constraint Group",
-              "Sync Costs (£m)",
-              "Utilisation Costs (£m)",
-              "Coordinates"
-            ],
             "columns": [
               {
                 "source": "Settlement Month",
@@ -105,10 +94,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -128,23 +114,12 @@
     {
       "key": "outturn_voltage_costs_main",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Month",
-              "Voltage Constraint Group",
-              "Sync Costs (£m)",
-              "Utilisation Costs (£m)",
-              "Coordinates"
-            ],
             "columns": [
               {
                 "source": "Settlement Month",
@@ -177,10 +152,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -197,11 +169,7 @@
     },
     {
       "key": "outturn_voltage_costs_files",
-      "kind": "files",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

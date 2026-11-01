@@ -11,24 +11,12 @@
     {
       "key": "demand_flexibility_industry_notification",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Notification Issued Date",
-              "Notification Issued Time",
-              "Requirement For",
-              "Requirement Type",
-              "Status",
-              "Notification Type"
-            ],
             "columns": [
               {
                 "source": "Notification Issued Date",
@@ -68,10 +56,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -94,26 +79,12 @@
     {
       "key": "demand_flexibility_service_requirement",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Delivery Date",
-              "From",
-              "To",
-              "Service Requirement MW",
-              "Service Requirement Type",
-              "Guaranteed Acceptance Price GBP per MWh",
-              "Dispatch Type",
-              "Participant Bids Eligible"
-            ],
             "columns": [
               {
                 "source": "Delivery Date",
@@ -164,29 +135,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Event ID",
-              "DFS Submission Time_Local",
-              "Event Type",
-              "Event Tag",
-              "Delivery Date",
-              "From_Local",
-              "To_Local",
-              "From_UTC",
-              "To_UTC",
-              "Service Requirement MW",
-              "Service Requirement Type",
-              "Guaranteed Acceptance Price GBP per MWh",
-              "Dispatch Type",
-              "Participant Bids Eligible",
-              "Zonal Cap"
-            ],
             "columns": [
               {
                 "source": "Event ID",
@@ -283,10 +234,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -312,43 +260,12 @@
     {
       "key": "demand_flexibility_utilisation_report",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Delivery Date",
-              "Registered DFS Participant",
-              "DFS Unit ID",
-              "DFS Volume MW",
-              "From",
-              "To",
-              "Service Requirement Type",
-              "Utilisation Price GBP per MWh",
-              "Status",
-              "North Scotland",
-              "South and Central Scotland",
-              "North East England",
-              "North West England",
-              "Yorkshire",
-              "East Midlands",
-              "West Midlands",
-              "London",
-              "East England",
-              "South East England",
-              "South West England",
-              "Southern England",
-              "North Wales Merseyside and Cheshire",
-              "South Wales",
-              "Other",
-              "Total"
-            ],
             "columns": [
               {
                 "source": "Delivery Date",
@@ -501,29 +418,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Event ID",
-              "Event Type",
-              "Event Tag",
-              "Delivery Date",
-              "From_Local",
-              "To_Local",
-              "From_UTC",
-              "To_UTC",
-              "Registered DFS Participant",
-              "DFS Unit ID",
-              "Zone",
-              "DFS Procured MW",
-              "Service Requirement Type",
-              "Utilisation Price GBP per MWh",
-              "Status"
-            ],
             "columns": [
               {
                 "source": "Event ID",
@@ -616,10 +513,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -641,27 +535,12 @@
     {
       "key": "demand_flexibility_utilisation_summary",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Delivery Date",
-              "From",
-              "To",
-              "Service Requirement Type",
-              "Service Requirement MW",
-              "DFS Procured MW",
-              "DFS Provider Bids Accepted Total Cost GBP",
-              "Settled Volume MW",
-              "Settled Cost GBP"
-            ],
             "columns": [
               {
                 "source": "Delivery Date",
@@ -718,28 +597,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Event ID",
-              "Event Type",
-              "Event Tag",
-              "Delivery Date",
-              "From_Local",
-              "To_Local",
-              "From_UTC",
-              "To_UTC",
-              "Service Requirement Type",
-              "Service Requirement MW",
-              "DFS Procured MW",
-              "DFS Provider Bids Accepted Total Cost GBP",
-              "Settled Volume MW",
-              "Settled Cost GBP"
-            ],
             "columns": [
               {
                 "source": "Event ID",
@@ -826,10 +686,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

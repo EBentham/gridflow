@@ -11,24 +11,12 @@
     {
       "key": "voltage_units_utilisation",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "BMU ID",
-              "Month and Year",
-              "Location",
-              "Total Injection MVAr",
-              "Total Absorption MVAr",
-              "Total Injection and Absorption MVAr"
-            ],
             "columns": [
               {
                 "source": "BMU ID",
@@ -67,10 +55,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

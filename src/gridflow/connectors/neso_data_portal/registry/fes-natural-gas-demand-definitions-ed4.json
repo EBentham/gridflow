@@ -11,21 +11,12 @@
     {
       "key": "fes_ed4_gas_demand_defs",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Item no.",
-              "Description",
-              "Definition"
-            ],
             "columns": [
               {
                 "source": "Item no.",
@@ -45,10 +36,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

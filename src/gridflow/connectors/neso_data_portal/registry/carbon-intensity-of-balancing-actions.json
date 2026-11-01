@@ -11,22 +11,12 @@
     {
       "key": "ci_balancing_actions",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DATETIME",
-              "FPN",
-              "BOA",
-              "Difference"
-            ],
             "columns": [
               {
                 "source": "DATETIME",
@@ -52,10 +42,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -75,11 +62,7 @@
     },
     {
       "key": "ci_balancing_actions_files",
-      "kind": "files",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

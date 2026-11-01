@@ -10,59 +10,25 @@
   "families": [
     {
       "key": "bsuos_monthly_forecast_including_new",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_impact_on_due",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_actual_sum",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_fc_summary",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Other_£m",
-              "Constraints_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "BSUoS Cost Recovery £m",
-              "ALoMCP £m",
-              "CMP345/350 Deferred Costs £m",
-              "CMP381 Deferred Costs £m",
-              "Estimated BSUoS Volume (TWh)",
-              ""
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -160,29 +126,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Other_£m",
-              "Constraints_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "BSUoS Cost Recovery £m",
-              "ALoMCP £m",
-              "CMP345/350 Deferred Costs £m",
-              "CMP381 Deferred Costs £m",
-              "Estimated BSUoS Volume (TWh)",
-              ""
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -274,27 +220,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Other_£m",
-              "Constraints_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "ALoMCP £m",
-              "CMP381 Deferred Costs £m",
-              "Estimated BSUoS Volume (TWh)"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -374,28 +302,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Other_£m",
-              "Constraints_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "ALoMCP £m",
-              "CMP381 Deferred Costs £m",
-              "Winter Contingency Cost (Central) £m",
-              "Estimated BSUoS Volume (TWh)"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -481,29 +390,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Constraints_£m",
-              "Other_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "ALoMCP £m",
-              "CMP381 Deferred Costs £m",
-              "Winter Contingency Cost (Central) £m",
-              "Winter Security of Supply Cost (£m)",
-              "Volume"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -595,26 +484,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Constraints_£m",
-              "Other_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "Winter Security of Supply Cost (£m)",
-              "Estimated BSUoS Volume (TWh)"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -688,27 +560,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Constraints_£m",
-              "Other_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "Winter Security of Supply Cost (£m)",
-              "21/22 Under-Recovered Costs (£m)",
-              "Estimated BSUoS Volume (TWh)"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -796,30 +650,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Month",
-              "Energy_Imbalance_£m",
-              "Positive_Reserve_£m",
-              "Negative_Reserve_£m",
-              "Frequency_Control_£m",
-              "Constraints_£m",
-              "Other_£m",
-              "Restoration_£m",
-              "Balancing Costs (Central) £m",
-              "Estimated Internal BSUoS & ESO Incentive £m",
-              "Winter Security of Supply Cost (£m)",
-              "21/22 Under-Recovered Costs (£m)",
-              "CMP398/412 Claim Costs (£m)",
-              "Interest Repayment (£m)",
-              "Additional NESO Framework Costs (£m)",
-              "Estimated BSUoS Volume (TWh)"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -917,10 +750,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -1157,43 +987,23 @@
     },
     {
       "key": "bsuos_monthly_forecast_fc_summary_pct",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_sum_winter",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_summary",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_summary_pct",
-      "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "bsuos_monthly_forecast_files",
-      "kind": "files",
-      "archetype": "FC",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

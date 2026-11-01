@@ -11,26 +11,12 @@
     {
       "key": "da_wind_forecast_day_ahead_bmu",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime",
-              "Date",
-              "Settlement_Period",
-              "Generator_Name",
-              "Generator_Full_Name",
-              "Region",
-              "Capacity",
-              "Wind_Forecast"
-            ],
             "columns": [
               {
                 "source": "Datetime",
@@ -85,10 +71,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -106,23 +89,12 @@
     {
       "key": "da_wind_forecast_day_ahead",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime_GMT",
-              "Date",
-              "Settlement_period",
-              "Capacity",
-              "Incentive_forecast"
-            ],
             "columns": [
               {
                 "source": "Datetime_GMT",
@@ -159,10 +131,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -179,27 +148,12 @@
     {
       "key": "da_wind_forecast_historic_day_ahead_bmu",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime",
-              "Date",
-              "Settlement_Period",
-              "Generator_Name",
-              "Generator_Full_Name",
-              "Region",
-              "Capacity",
-              "Wind_Forecast",
-              "Timestamp"
-            ],
             "columns": [
               {
                 "source": "Datetime",
@@ -294,24 +248,12 @@
     {
       "key": "da_wind_forecast_historic_day_ahead",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime_GMT",
-              "Date",
-              "Settlement_period",
-              "Capacity",
-              "Incentive_forecast",
-              "Forecast_Timestamp"
-            ],
             "columns": [
               {
                 "source": "Datetime_GMT",
@@ -354,10 +296,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

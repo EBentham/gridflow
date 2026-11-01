@@ -11,24 +11,12 @@
     {
       "key": "voltage_requirement",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Start Date",
-              "End Date",
-              "Group",
-              "Units",
-              "Notes",
-              "Last Updated"
-            ],
             "columns": [
               {
                 "source": "Start Date",
@@ -70,10 +58,7 @@
                 "nullable": false,
                 "zone": "UTC"
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -96,11 +81,7 @@
     },
     {
       "key": "voltage_requirement_files",
-      "kind": "files",
-      "archetype": "FC",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

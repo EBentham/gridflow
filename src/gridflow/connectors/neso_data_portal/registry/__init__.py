@@ -97,6 +97,9 @@ LEGACY_KEYS: tuple[str, ...] = (
     "embedded_wind_solar_forecast",
 )
 
+# The streaming size cap per member (A9) for a family that sets none.
+DEFAULT_MAX_DOWNLOAD_BYTES = 512 * 1024 * 1024
+
 FROZEN_KEYS_FILE = "_frozen_keys.json"
 ADJUDICATIONS_FILE = "_adjudications.json"
 RECONCILE_ADJUDICATIONS_FILE = "_reconcile_adjudications.json"
@@ -186,14 +189,18 @@ Disposition = Annotated[
 
 
 class FamilyEntry(_Frozen):
-    """One gridflow dataset key: a set of CKAN resources of one package."""
+    """One gridflow dataset key: a set of CKAN resources of one package.
+
+    A family file entry may leave out ``archetype`` and ``refresh``; it then
+    takes its package's (:class:`PackageEntry` fills them in).
+    """
 
     key: str
     kind: Literal["tabular", "files"]
     archetype: Archetype
     refresh: Refresh
-    empty_allowed: bool
-    max_download_bytes: int = Field(gt=0)
+    empty_allowed: bool = False
+    max_download_bytes: int = Field(default=DEFAULT_MAX_DOWNLOAD_BYTES, gt=0)
     record: SchemaRecord | None = None
 
     @property
@@ -232,6 +239,19 @@ class PackageEntry(_Frozen):
     eligibility: Eligibility
     families: tuple[FamilyEntry, ...]
     resources: tuple[ResourceEntry, ...]
+
+    @model_validator(mode="before")
+    @classmethod
+    def _inherit(cls, data: Any) -> Any:
+        """A family that leaves out ``archetype`` or ``refresh`` takes the package's."""
+        if not isinstance(data, dict) or not isinstance(data.get("families"), list | tuple):
+            return data
+        inherited = {name: data[name] for name in ("archetype", "refresh") if name in data}
+        families = [
+            {**inherited, **family} if isinstance(family, dict) else family
+            for family in data["families"]
+        ]
+        return {**data, "families": families}
 
 
 class FrozenKey(_Frozen):

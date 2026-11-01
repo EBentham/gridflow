@@ -11,26 +11,12 @@
     {
       "key": "national_demand_fc_2_14d_days_ahead",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DAYSAHEAD",
-              "TARGETDATE",
-              "FORECASTDEMAND",
-              "CARDINALPOINT",
-              "CP_TYPE",
-              "CP_ST_TIME",
-              "CP_END_TIME",
-              "F_Point"
-            ],
             "columns": [
               {
                 "source": "DAYSAHEAD",
@@ -81,10 +67,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -108,22 +91,12 @@
     {
       "key": "national_demand_fc_2_14d_days_ahead_half",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DATE",
-              "CTIME",
-              "GDATETIME",
-              "NATIONALDEMAND"
-            ],
             "columns": [
               {
                 "source": "DATE",
@@ -152,10 +125,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -180,27 +150,12 @@
     {
       "key": "national_demand_fc_2_14d_historic_day",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DAYSAHEAD",
-              "TARGETDATE",
-              "FORECASTDEMAND",
-              "CARDINALPOINT",
-              "CP_TYPE",
-              "CP_ST_TIME",
-              "CP_END_TIME",
-              "F_Point",
-              "FORECAST_TIMESTAMP"
-            ],
             "columns": [
               {
                 "source": "DAYSAHEAD",
@@ -257,10 +212,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

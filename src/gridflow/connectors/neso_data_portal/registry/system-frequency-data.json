@@ -10,29 +10,17 @@
   "families": [
     {
       "key": "system_frequency",
-      "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "system_frequency_dmy_csv",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "2",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "dtm",
-              "f"
-            ],
             "columns": [
               {
                 "source": "dtm",
@@ -46,10 +34,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -77,20 +62,12 @@
     {
       "key": "system_frequency_offset_csv",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "dtm",
-              "f"
-            ],
             "columns": [
               {
                 "source": "dtm",
@@ -105,10 +82,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -131,20 +105,12 @@
     {
       "key": "system_frequency_offset_zip",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "zip_member",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "dtm",
-              "f"
-            ],
             "columns": [
               {
                 "source": "dtm",
@@ -159,10 +125,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -189,20 +152,12 @@
     {
       "key": "system_frequency_gmt_zip",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "zip_member",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "dtm",
-              "f"
-            ],
             "columns": [
               {
                 "source": "dtm",
@@ -221,10 +176,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -251,20 +203,12 @@
     {
       "key": "system_frequency_gmt_csv",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "dtm",
-              "f"
-            ],
             "columns": [
               {
                 "source": "dtm",
@@ -283,10 +227,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -11,23 +11,12 @@
     {
       "key": "cmis_intertrip",
       "kind": "tabular",
-      "archetype": "EVT",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "BMU ID",
-              "Arming Date Time",
-              "Disarming Date Time",
-              "Current Arming Fee (£ / SP)",
-              "Cost for this utilisation (£)"
-            ],
             "columns": [
               {
                 "source": "BMU ID",
@@ -59,20 +48,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "BMU ID",
-              "Arming Date Time",
-              "Disarming Date Time",
-              "Current Arming Fee (£ / MWH)",
-              "Cost for this utilisation (£)",
-              "B6/EC5"
-            ],
             "columns": [
               {
                 "source": "BMU ID",
@@ -110,10 +88,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

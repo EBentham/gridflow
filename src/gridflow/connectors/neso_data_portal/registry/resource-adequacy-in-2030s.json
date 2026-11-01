@@ -11,21 +11,12 @@
     {
       "key": "resource_adequacy_2030s_peak_demand",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Spotlight year",
-              "Historical weather year",
-              "Peak Demand (MW)"
-            ],
             "columns": [
               {
                 "source": "Spotlight year",
@@ -45,10 +36,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -74,24 +62,12 @@
     {
       "key": "resource_adequacy_2030s_portfolio",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Name",
-              "Category",
-              "Technology",
-              "Future Year",
-              "Installed Capacity (MW)",
-              "Stored energy (MWh)"
-            ],
             "columns": [
               {
                 "source": "Name",
@@ -129,10 +105,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -159,23 +132,12 @@
     {
       "key": "resource_adequacy_2030s_results",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Simulation Name",
-              "Spotlight year",
-              "Historical weather year",
-              "Weather-conditional LOLE (h/year)",
-              "Weather-conditional EEU (MWh/year)"
-            ],
             "columns": [
               {
                 "source": "Simulation Name",
@@ -207,10 +169,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

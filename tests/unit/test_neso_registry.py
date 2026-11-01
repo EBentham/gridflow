@@ -540,6 +540,29 @@ class TestValidation:
         package["resources"] = [package["resources"][0], pdf]  # type: ignore[index]
         assert self._load(tmp_path, package).startswith("OK")
 
+    def test_a_compact_family_and_epoch_load_with_their_defaults(self, tmp_path: Path) -> None:
+        """The compacted file form: a family without ``archetype``/``refresh`` takes
+        its package's, ``empty_allowed``/``max_download_bytes`` and an epoch's
+        ``issue`` have defaults, and a wide epoch's ``header`` is its columns' sources."""
+        from _neso_registry_support import record, sp_columns, write_registry
+
+        from gridflow.connectors.neso_data_portal.registry import load_registry
+
+        document = _synthetic_package(archetype="FC", refresh="weekly")
+        (family,) = document["families"]  # type: ignore[misc]
+        for name in ("archetype", "refresh", "empty_allowed", "max_download_bytes"):
+            del family[name]
+        family["record"] = record(epochs=[{"columns": sp_columns()}])
+        registry = load_registry(write_registry(tmp_path / "registry", [document]))
+
+        _package, loaded = registry.families["synthetic_family"]
+        assert (loaded.archetype, loaded.refresh) == ("FC", "weekly")
+        assert (loaded.empty_allowed, loaded.max_download_bytes) == (False, 512 * 1024 * 1024)
+        assert loaded.record is not None
+        (epoch,) = loaded.record.epochs
+        assert epoch.header == ("SettlementDate", "SettlementPeriod", "Unit", "Value")
+        assert epoch.issue.kind == "none"
+
     def test_invalid_key(self, tmp_path: Path) -> None:
         package = _synthetic_package()
         package["families"][0]["key"] = "Bad-Key"  # type: ignore[index]

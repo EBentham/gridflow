@@ -11,25 +11,13 @@
     {
       "key": "stor_windows",
       "kind": "tabular",
-      "archetype": "REG",
-      "refresh": "adhoc",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Season",
-              "WD_NWD",
-              "Window 1 Start Time",
-              "Window 1 End Time",
-              "Window 2 Start Time",
-              "Window 2 End Time"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -74,10 +62,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

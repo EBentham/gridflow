@@ -11,26 +11,12 @@
     {
       "key": "wind_forecast_14d_day_ahead_bmu",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime",
-              "Date",
-              "Settlement_Period",
-              "Generator_Name",
-              "Generator_Full_Name",
-              "Region",
-              "Capacity",
-              "Wind_Forecast"
-            ],
             "columns": [
               {
                 "source": "Datetime",
@@ -85,10 +71,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -111,24 +94,12 @@
     {
       "key": "wind_forecast_14d_days_ahead",
       "kind": "tabular",
-      "archetype": "FC",
-      "refresh": "intraday",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime",
-              "Date",
-              "Settlement_Period",
-              "Capacity",
-              "Wind_Forecast",
-              "ForecastDateTime"
-            ],
             "columns": [
               {
                 "source": "Datetime",

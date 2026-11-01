@@ -11,23 +11,12 @@
     {
       "key": "stability_pathfinder_availability_report",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "UNIT",
-              "Settlement Period Start Date Time",
-              "Settlement Period End Date Time",
-              "Availability Flag",
-              "REMARK"
-            ],
             "columns": [
               {
                 "source": "UNIT",
@@ -59,10 +48,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -89,25 +75,12 @@
     {
       "key": "stability_pathfinder_utilisation_report",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "UNIT",
-              "Settlement Period Start Date Time",
-              "Settlement Period End Date Time",
-              "Instruction Code",
-              "Instruction Issue Time",
-              "Actual Service Start or Cease Time",
-              "Inertia"
-            ],
             "columns": [
               {
                 "source": "UNIT",
@@ -151,10 +124,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

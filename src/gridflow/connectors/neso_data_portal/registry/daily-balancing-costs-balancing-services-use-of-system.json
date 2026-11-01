@@ -10,19 +10,11 @@
   "families": [
     {
       "key": "daily_balancing_costs",
-      "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "daily_balancing_costs_files",
-      "kind": "files",
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "files"
     }
   ],
   "resources": [

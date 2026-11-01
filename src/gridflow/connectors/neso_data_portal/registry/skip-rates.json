@@ -10,37 +10,17 @@
   "families": [
     {
       "key": "skip_rates_in_merit_psa_dsf_unit",
-      "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "skip_rates_exclusion_reasons",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "date",
-              "bm_unit",
-              "fuel",
-              "bid_offer",
-              "excluded_from_accepted_or_feasible_merit_stack",
-              "exclusion_stage",
-              "pair_id",
-              "average_price_per_MWh",
-              "excluded_volume_MWh",
-              "exclusion_reason"
-            ],
             "columns": [
               {
                 "source": "date",
@@ -102,10 +82,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -134,29 +111,12 @@
     {
       "key": "skip_rates_in_merit_all_bm",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "date",
-              "bm_unit",
-              "fuel",
-              "bid_offer",
-              "stage",
-              "available_volume_MWh",
-              "average_price_per_MWh",
-              "pair_id",
-              "accepted_volume_MWh",
-              "in_merit_volume_MWh",
-              "skipped_volume_MWh"
-            ],
             "columns": [
               {
                 "source": "date",
@@ -224,10 +184,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -254,29 +211,12 @@
     {
       "key": "skip_rates_in_merit_psa",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "date",
-              "bm_unit",
-              "fuel",
-              "bid_offer",
-              "stage",
-              "available_volume_MWh",
-              "average_price_per_MWh",
-              "pair_id",
-              "accepted_volume_MWh",
-              "in_merit_volume_MWh",
-              "skipped_volume_MWh"
-            ],
             "columns": [
               {
                 "source": "date",
@@ -344,10 +284,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -374,26 +311,12 @@
     {
       "key": "skip_rates_stage6_acceptance",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "date",
-              "stage",
-              "bm_unit",
-              "fuel",
-              "bid_offer",
-              "pair_id",
-              "average_price_per_MWh",
-              "accepted_volume_MWh"
-            ],
             "columns": [
               {
                 "source": "date",
@@ -443,10 +366,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -471,28 +391,12 @@
     {
       "key": "skip_rates_summary",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "settlement_period_start",
-              "stage",
-              "bm_skip_rate_offers_percent",
-              "bm_total_volume_skipped_offers_MWh",
-              "post_system_action_skip_rate_offers_percent",
-              "post_system_action_total_volume_skipped_offers_MWh",
-              "bm_skip_rate_bids_percent",
-              "bm_total_volume_skipped_bids_MWh",
-              "post_system_action_skip_rate_bids_percent",
-              "post_system_action_total_volume_skipped_bids_MWh"
-            ],
             "columns": [
               {
                 "source": "settlement_period_start",
@@ -556,10 +460,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -577,25 +478,12 @@
     {
       "key": "skip_rates_behind_constraints_bmu",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "month",
-              "bm_unit",
-              "bid_offer",
-              "fuel_type",
-              "skipped_volume_mwh",
-              "in_merit_volume_mwh",
-              "skip_rate"
-            ],
             "columns": [
               {
                 "source": "month",
@@ -639,10 +527,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -665,23 +550,12 @@
     {
       "key": "skip_rates_behind_constraints_cons",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "month",
-              "constraint",
-              "skipped_volume_mwh",
-              "in_merit_volume_mwh",
-              "skip_rate"
-            ],
             "columns": [
               {
                 "source": "month",
@@ -713,10 +587,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -737,38 +608,17 @@
     },
     {
       "key": "skip_rates_stage5_dsf_technology",
-      "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912
+      "kind": "tabular"
     },
     {
       "key": "skip_rates_stage6_psa",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "date",
-              "bm_unit",
-              "fuel",
-              "bid_offer",
-              "stage",
-              "available_volume_MWh",
-              "average_price_per_MWh",
-              "pair_id",
-              "accepted_volume_MWh",
-              "in_merit_volume_MWh",
-              "skipped_volume_MWh"
-            ],
             "columns": [
               {
                 "source": "date",
@@ -836,10 +686,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -864,25 +711,12 @@
     {
       "key": "skip_rates_stage5_psa_technology",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "settlement_period_start",
-              "bid_offer",
-              "fuel",
-              "relative_technology_skip_rate",
-              "technology_specific_skip_rate",
-              "fuel_in_merit_volume_MWh",
-              "fuel_skipped_volume_MWh"
-            ],
             "columns": [
               {
                 "source": "settlement_period_start",
@@ -928,10 +762,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

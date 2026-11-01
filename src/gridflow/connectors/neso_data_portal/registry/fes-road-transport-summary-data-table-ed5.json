@@ -11,10 +11,6 @@
     {
       "key": "fes_ed5_road_transport",
       "kind": "tabular",
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -94,9 +90,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -313,9 +306,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -517,9 +507,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -709,9 +696,6 @@
                 "nullable": false
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [

@@ -11,29 +11,12 @@
     {
       "key": "da_demand_fc_performance",
       "kind": "tabular",
-      "archetype": "SER",
-      "refresh": "monthly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Month",
-              "Date",
-              "Datetime",
-              "Settlement_Period",
-              "Demand_Forecast",
-              "Demand_Outturn",
-              "TRIAD_Avoidance_Estimate",
-              "TRIAD_Avoidance_Corrected_Demand_Outturn",
-              "APE",
-              "Absolute_Error",
-              "Publish_Datetime"
-            ],
             "columns": [
               {
                 "source": "Month",
@@ -104,10 +87,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
