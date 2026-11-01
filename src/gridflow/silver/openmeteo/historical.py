@@ -193,7 +193,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         location_of = {self._location_dir(loc): loc.name for loc in self.LOCATIONS}
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for f in self._bronze_candidates(target_date):
+        for f in self._bronze_read_set(target_date):
             try:
                 data = json.loads(f.read_text())
                 rows.extend(

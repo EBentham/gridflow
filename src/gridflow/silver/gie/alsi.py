@@ -46,7 +46,7 @@ class LNGTerminalTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for f in self._bronze_candidates(target_date):
+        for f in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(f.read_text())
                 records = payload.get("data", []) if isinstance(payload, dict) else []

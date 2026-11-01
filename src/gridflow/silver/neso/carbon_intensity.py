@@ -56,7 +56,7 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for path in self._bronze_candidates(target_date):
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:

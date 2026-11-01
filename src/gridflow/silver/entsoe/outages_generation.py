@@ -55,7 +55,7 @@ class OutagesGenerationTransformer(EntsoeXmlTransformer):
         return parse_outage_xml(path.read_bytes())
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
         return outage_steps_for_day([r for _, records in pairs for r in records], target_date)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:

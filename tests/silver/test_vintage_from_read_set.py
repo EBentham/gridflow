@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import os
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -284,6 +284,31 @@ def test_a_body_read_without_a_usable_sidecar_stamps_now(
     (stamp,) = stamps
     assert before <= stamp <= after
     assert "no usable sidecar" in caplog.text
+
+
+def test_the_stamp_comes_from_the_listing_the_read_used(
+    tmp_data_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A listing taken after the read cannot drop a body that was read.
+
+    ENTSO-E H8's latest-fetch selector can: a sidecar landing after the read
+    can reclassify a body it read as an older fetch. Here every listing after
+    the first drops the newer body, so a relisted stamp would come out early.
+    """
+    payload = json.loads((FIXTURES / "elexon" / "ndf_response.json").read_text())
+    for row in payload["data"]:
+        row["demand"] = row.pop("nationalDemand")
+    day = _day(tmp_data_dir, "elexon", "indo", _ELEXON_TARGET)
+    older = _put(day, "raw_a.json", payload, written_at=_STAMP - timedelta(hours=1))
+    newer = _put(day, "raw_b.json", payload, written_at=_STAMP)
+    listings = iter([[older, newer]])
+    monkeypatch.setattr(
+        INDOTransformer, "_bronze_candidates", lambda self, d: next(listings, [older])
+    )
+
+    INDOTransformer(tmp_data_dir).run(_ELEXON_TARGET, reingest=True)
+
+    assert set(_silver(tmp_data_dir, "elexon", "indo")["available_at"].to_list()) == {_STAMP}
 
 
 def test_entsoe_default_hook_lists_only_xml_bodies(tmp_data_dir: Path) -> None:

@@ -132,7 +132,7 @@ class GasStorageTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for path in self._bronze_candidates(target_date):
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -326,7 +326,7 @@ class AgsiJsonTransformer(BaseSilverTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for path in self._bronze_candidates(target_date):
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -422,7 +422,7 @@ class AgsiJsonTransformer(BaseSilverTransformer):
         if not files:
             return []
         # The latest DATE partition (YYYY/MM/DD sorts by date), never the newest
-        # mtime: reingest lists twice, and an mtime can move to an older partition.
+        # mtime, which copies, restores and writes into an older partition move.
         latest_parent = max({path.parent for path in files})
         return sorted(path for path in files if path.parent == latest_parent)
 
@@ -569,7 +569,7 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
         rows: list[dict[str, Any]] = []
         undated_count = 0
         unparseable: list[Path] = []
-        for path in self._bronze_candidates(target_date):
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
             except (json.JSONDecodeError, UnicodeDecodeError) as exc:

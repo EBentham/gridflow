@@ -79,7 +79,7 @@ class BMUnitsTransformer(ElexonTransformer):
         return bodies[:1]
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
         rows = [record for _, records in pairs for record in records]
         return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 

@@ -63,7 +63,7 @@ class _H8BalancingTransformer(EntsoeXmlTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         # Full-length schema inference, unlike the base default: a field can
         # first appear past the first 100 rows.
-        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
         rows = [record for _, records in pairs for record in records]
         return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 

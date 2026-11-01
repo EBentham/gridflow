@@ -714,6 +714,8 @@ class BaseSilverTransformer(ABC):
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     VINTAGE_POLICY: ClassVar[VintagePolicy | None] = None
+    _listed_bronze: tuple[date, list[Path]] | None = None
+    """The plain ``run()``'s one listing while it reads; see :meth:`_bronze_read_set`."""
     APPEND_ONLY: ClassVar[bool] = False
     """Per-dataset opt-in for revision-preserving silver writes.
 
@@ -834,14 +836,14 @@ class BaseSilverTransformer(ABC):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         """Read and parse all bronze bodies for a date into one raw frame.
 
-        Reads :meth:`_bronze_candidates` through :meth:`_read_bronze_records`,
+        Reads :meth:`_bronze_read_set` through :meth:`_read_bronze_records`,
         so a body that cannot be parsed refuses the whole date
         (:class:`UnparseableBronzeError`) instead of vanishing while its
         siblings overwrite the partition. Override this only to change how the
         frame is built from the records; choose files in
         :meth:`_bronze_candidates`, so "the files read" stays one listing.
         """
-        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
         rows = [record for _, records in pairs for record in records]
         return pl.DataFrame(rows) if rows else pl.DataFrame()
 
@@ -875,17 +877,14 @@ class BaseSilverTransformer(ABC):
         """Resolve the ordered bronze BODY paths read for ``target_date``.
 
         THE one listing of the files read: :meth:`read_bronze` reads exactly
-        these, a ``LOCKSTEP_BRONZE_READ`` run vouches exactly these from one
-        filesystem scan, and a plain reingest stamps the frame from exactly
-        these (:meth:`_vintage_of`). The default is the bodies of the exact date
-        partition. A transformer that picks files another way overrides this,
-        not ``read_bronze``, so anything derived from the files read agrees
-        with the read.
-
-        Select by path names and sidecar contents only, never by mtimes or the
-        clock. The plain path lists twice, once to read and once to stamp, and
-        bronze is append-only, so such a selector can only add or prefer bodies
-        written in between, whose newer stamps make the frame late, never early.
+        these (through :meth:`_bronze_read_set`), a ``LOCKSTEP_BRONZE_READ`` run
+        vouches exactly these from one filesystem scan, and a plain reingest
+        stamps the frame from exactly these (:meth:`_vintage_of`). The default
+        is the bodies of the exact date partition. A transformer that picks
+        files another way overrides this, not ``read_bronze``, so anything
+        derived from the files read agrees with the read. Select by path names
+        and sidecar contents only, never by mtimes or the clock, so the same
+        bronze always gives the same listing.
 
         Under ``LOCKSTEP_BRONZE_READ`` it must return the FULL ordered list --
         any "newest only" truncation belongs to :class:`BronzeReadSelection`,
@@ -907,6 +906,19 @@ class BaseSilverTransformer(ABC):
         return sorted(
             path for path in day.glob(self.BRONZE_BODY_GLOB) if not path.name.endswith(".meta.json")
         )
+
+    def _bronze_read_set(self, target_date: date) -> list[Path]:
+        """The bodies a :meth:`read_bronze` of ``target_date`` reads.
+
+        Inside a plain ``run()`` this is the one listing that run took, which
+        also stamps the frame on reingest: a second listing could differ (a
+        sidecar landing can move H8's latest-fetch choice) and split the rows
+        from their stamp. Outside a run it lists afresh.
+        """
+        listed = self._listed_bronze
+        if listed is not None and listed[0] == target_date:
+            return list(listed[1])
+        return self._bronze_candidates(target_date)
 
     def _read_bronze_records(
         self,
@@ -1252,15 +1264,17 @@ class BaseSilverTransformer(ABC):
             # tail below, so master's "nothing to read" vs "read but transformed
             # to zero rows" distinction is preserved rather than bypassed.
         else:
-            # Read first, then list again for the stamp: see _bronze_candidates
-            # for why the second listing can only make the stamp later.
-            raw_df = self.read_bronze(target_date)
+            # One listing feeds both the read and the reingest stamp.
+            bodies = self._bronze_candidates(target_date)
+            self._listed_bronze = (target_date, bodies)
+            try:
+                raw_df = self.read_bronze(target_date)
+            finally:
+                self._listed_bronze = None
             if not raw_df.is_empty():
                 saw_bronze = True
                 available_at = (
-                    self._vintage_of(self._bronze_candidates(target_date), target_date)
-                    if reingest
-                    else datetime.now(UTC)
+                    self._vintage_of(bodies, target_date) if reingest else datetime.now(UTC)
                 )
                 clean_df = self._process_frame(
                     raw_df, target_date, resolved_run_id, available_at, window_plan
