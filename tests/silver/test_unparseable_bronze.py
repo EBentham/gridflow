@@ -128,6 +128,22 @@ def _transform(source: str, dataset: str, first: date, last: date | None = None)
     return results[0]
 
 
+def _stored_error(tmp_path: Path) -> str:
+    """The error message the run tracker persisted in ``pipeline_runs``."""
+    import duckdb
+
+    con = duckdb.connect(str(tmp_path / "catalogue" / "gridflow.duckdb"), read_only=True)
+    try:
+        row = con.execute(
+            "SELECT error_message FROM pipeline_runs WHERE status = 'failed' "
+            "ORDER BY started_at DESC LIMIT 1"
+        ).fetchone()
+    finally:
+        con.close()
+    assert row is not None
+    return str(row[0])
+
+
 def _silver(data_dir: Path, source: str, dataset: str, day: date) -> Path:
     from gridflow.silver.registry import get_transformer
 
@@ -210,6 +226,9 @@ def test_refused_date_detail_survives_a_later_crash(
     assert "second date failed" in (result.error or "")
     assert "UNPARSEABLE_BODY=1" in (result.error or "")
     assert second.name in (result.error or "")
+    stored = _stored_error(tmp_path)
+    assert "second date failed" in stored
+    assert second.name in stored
 
 
 def test_bmunits_corrupt_newest_body_is_refused(

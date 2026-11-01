@@ -1664,8 +1664,6 @@ def run_transform(
                 )
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
             error_message = describe_exception(e)
-            tracker.fail(error_message)
-            logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
             # Per-date ``finally`` has already folded a raising run exactly
             # once. Construction failures never enter that block and therefore
             # cannot reuse stale instance counters.
@@ -1674,6 +1672,7 @@ def run_transform(
             # rendering it would leave it exactly as invisible as before the
             # fold. One renderer, both paths. The unvouched detail too: a date
             # refused before this crash would otherwise lose its file paths.
+            # All of it goes in before the tracker stores the message.
             error_message += _describe_unvouched_bronze(unvouched_bronze, dates)
             error_message += _describe_unaccounted_frames(total_unaccounted_empty_frames)
             if source_exclusion_details:
@@ -1681,6 +1680,8 @@ def run_transform(
                     " Source partition diagnostics (no output came from each listed "
                     f"partition/body): {'; '.join(source_exclusion_details)}."
                 )
+            tracker.fail(error_message)
+            logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
             results.append(
                 DatasetResult(
                     source=source,
