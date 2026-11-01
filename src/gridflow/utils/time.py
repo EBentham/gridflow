@@ -120,6 +120,19 @@ def date_range(start: date, end: date) -> list[date]:
     return dates
 
 
+def window_dates(start: datetime, end: datetime) -> list[date]:
+    """UTC calendar dates touched by the half-open window ``[start, end)``.
+
+    Every window inside gridflow is half-open, so an ``end`` at midnight
+    excludes that date. A zero-width window (``start == end``) yields start's
+    date, so a point request still covers one day.
+    """
+    if end < start:
+        raise ValueError(f"window end {end!r} is before start {start!r}")
+    last = (end - timedelta(microseconds=1)).date() if end > start else start.date()
+    return date_range(start.date(), last)
+
+
 def day_subwindows(start: datetime, end: datetime) -> list[tuple[datetime, datetime]]:
     """Clamped calendar-day sub-windows covering ``[start, end)`` exactly.
 
@@ -137,7 +150,7 @@ def day_subwindows(start: datetime, end: datetime) -> list[tuple[datetime, datet
         A list of ``(sub_start, sub_end)`` pairs, one per UTC calendar day
         touched by ``[start, end)``, clamped to the window bounds. An ``end``
         that falls exactly at midnight excludes that date (matching the
-        exclusive ``periodEnd``/``to`` semantics of both chunked connectors).
+        exclusive end of every gridflow window).
         ``start == end`` returns an empty list; callers apply their own
         degenerate-window guard (a single legacy-shape request).
 
