@@ -109,7 +109,6 @@ class EntsoeConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch XML data for a date range from ENTSO-E.
 
@@ -152,9 +151,7 @@ class EntsoeConnector(BaseConnector):
         if doc_type.date_param:
             period_start = start.strftime(ENTSOE_DT_FORMAT)
             period_end = end.strftime(ENTSOE_DT_FORMAT)
-            tasks.extend(
-                self._build_unit_tasks(dataset, doc_type, period_start, period_end, params)
-            )
+            tasks.extend(self._build_unit_tasks(dataset, doc_type, period_start, period_end))
         else:
             # Degenerate guard: start == end collapses to no sub-windows —
             # fall back to a single legacy-shape request, preserving today's
@@ -163,9 +160,7 @@ class EntsoeConnector(BaseConnector):
             for sub_start, sub_end in windows:
                 period_start = sub_start.strftime(ENTSOE_DT_FORMAT)
                 period_end = sub_end.strftime(ENTSOE_DT_FORMAT)
-                tasks.extend(
-                    self._build_unit_tasks(dataset, doc_type, period_start, period_end, params)
-                )
+                tasks.extend(self._build_unit_tasks(dataset, doc_type, period_start, period_end))
 
         # ENTSO-E has no per-unit tolerance: a failing zone fails the whole run
         # (raise-on-any). ``return_exceptions=True`` collects every result, then
@@ -197,7 +192,6 @@ class EntsoeConnector(BaseConnector):
         doc_type: EntsoeDocType,
         period_start: str,
         period_end: str,
-        fetch_params: dict[str, Any],
     ) -> list[Coroutine[Any, Any, list[RawResponse]]]:
         """Build one ``_fetch_document`` task per unit for one request window.
 
@@ -223,7 +217,6 @@ class EntsoeConnector(BaseConnector):
                         out_domain=out_mrid,
                         period_start=period_start,
                         period_end=period_end,
-                        fetch_params=fetch_params,
                     )
                 )
         elif doc_type.domain_style == "control_area":
@@ -240,7 +233,6 @@ class EntsoeConnector(BaseConnector):
                         out_domain=None,
                         period_start=period_start,
                         period_end=period_end,
-                        fetch_params=fetch_params,
                     )
                 )
         else:
@@ -258,7 +250,6 @@ class EntsoeConnector(BaseConnector):
                         out_domain=mrid if doc_type.domain_style == "zone" else None,
                         period_start=period_start,
                         period_end=period_end,
-                        fetch_params=fetch_params,
                     )
                 )
         return tasks
@@ -272,14 +263,13 @@ class EntsoeConnector(BaseConnector):
         out_domain: str | None,
         period_start: str,
         period_end: str,
-        fetch_params: dict[str, Any] | None = None,
     ) -> list[RawResponse]:
         """Fetch a single ENTSO-E document using the dataset's request style.
 
         For doc types that declare ``"offset"`` in ``optional_params``
         (G9 ENTSOE-01 — A37 balancing energy bids, A15 procured balancing
         capacity, etc.), the function pages through results: starting at
-        the doc type's default offset and incrementing by
+        offset 0 and incrementing by
         ``_ENTSOE_PAGE_SIZE`` (100) until a page returns fewer
         series elements than the page size.
         """
@@ -303,7 +293,6 @@ class EntsoeConnector(BaseConnector):
             )
         )
         query_params.update(doc_type.extra_params)
-        query_params.update(_optional_filter_params(doc_type, fetch_params or {}))
         if doc_type.process_type:
             query_params["processType"] = doc_type.process_type
         if self.config.api_key:
@@ -318,10 +307,7 @@ class EntsoeConnector(BaseConnector):
 
         # G9 ENTSOE-01: page until a response carries < page-size series.
         all_responses: list[RawResponse] = []
-        try:
-            offset = int(query_params.get("offset", "0"))
-        except ValueError:
-            offset = 0
+        offset = 0
         pages_fetched = 0
         while True:
             query_params["offset"] = str(offset)
@@ -561,18 +547,6 @@ def _domain_params(
     if domain_style == "control_area":
         return {"controlArea_Domain": in_domain}
     raise ValueError(f"Unsupported ENTSO-E domain style: {domain_style!r}")
-
-
-def _optional_filter_params(
-    doc_type: EntsoeDocType,
-    fetch_params: dict[str, Any],
-) -> dict[str, str]:
-    """Forward documented optional filters while preserving ENTSO-E casing."""
-    query_params: dict[str, str] = {}
-    for param_name in doc_type.optional_params:
-        if param_name in fetch_params and fetch_params[param_name] is not None:
-            query_params[param_name] = str(fetch_params[param_name])
-    return query_params
 
 
 def _redact_security_token(url: str) -> str:

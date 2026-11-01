@@ -185,7 +185,6 @@ class BaseConnector(ABC):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch raw data for a date range. Returns list of raw responses
         (one per API page/call). Each RawResponse includes body + metadata."""

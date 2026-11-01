@@ -45,7 +45,6 @@ class ElexonConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch raw data for a date range from Elexon."""
         # Reset the partial-fetch counter at the top of the public entry point so

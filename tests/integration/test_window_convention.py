@@ -337,7 +337,6 @@ def test_neso_daily_endpoint_fetches_the_window_last_day() -> None:
         NESO_ENDPOINTS["intensity_date"],
         datetime(2026, 3, 1, 10, tzinfo=UTC),
         datetime(2026, 3, 5, 10, tzinfo=UTC),
-        {},
     )
 
     assert [window_start.date() for window_start, _end, _overrides in specs] == [

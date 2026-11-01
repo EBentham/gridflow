@@ -36,7 +36,6 @@ class CarbonIntensityConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch one NESO Carbon Intensity API dataset.
 
@@ -54,7 +53,7 @@ class CarbonIntensityConnector(BaseConnector):
             raise ValueError(f"Unknown NESO dataset: {dataset!r}. Available: {list(ENDPOINTS)}")
 
         endpoint = ENDPOINTS[dataset]
-        requests = _request_specs(endpoint, start, end, params)
+        requests = _request_specs(endpoint, start, end)
         responses: list[RawResponse] = []
         failures: list[tuple[datetime, datetime, Exception]] = []
 
@@ -127,11 +126,10 @@ def _request_specs(
     endpoint: NesoEndpoint,
     start: datetime,
     end: datetime,
-    base_overrides: dict[str, Any],
 ) -> list[tuple[datetime, datetime, dict[str, Any]]]:
     """Split date ranges into API request windows and path overrides."""
     if not endpoint.requires_window:
-        return [(start, end, base_overrides)]
+        return [(start, end, {})]
 
     if endpoint.daily_iteration:
         # One request per UTC calendar day the window touches, so a window ending
@@ -142,9 +140,9 @@ def _request_specs(
         ]:
             if endpoint.settlement_period_iteration:
                 for period in range(1, _settlement_period_count(day_start.date()) + 1):
-                    windows.append((day_start, day_end, {**base_overrides, "period": period}))
+                    windows.append((day_start, day_end, {"period": period}))
             else:
-                windows.append((day_start, day_end, base_overrides))
+                windows.append((day_start, day_end, {}))
         return windows
 
     effective_end = (
@@ -158,10 +156,10 @@ def _request_specs(
     chunk_delta = timedelta(days=_MAX_DAYS_PER_REQUEST)
     while chunk_start < effective_end:
         chunk_end = min(chunk_start + chunk_delta, effective_end)
-        windows.append((chunk_start, chunk_end, base_overrides))
+        windows.append((chunk_start, chunk_end, {}))
         chunk_start = chunk_end
     if not windows:
-        windows.append((start, start, base_overrides))
+        windows.append((start, start, {}))
     return windows
 
 

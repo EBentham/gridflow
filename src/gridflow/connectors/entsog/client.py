@@ -46,7 +46,6 @@ class EntsogConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch ENTSO-G JSON data for a date range or reference endpoint.
 
@@ -73,23 +72,19 @@ class EntsogConnector(BaseConnector):
         endpoint = ENDPOINTS[dataset]
 
         if not endpoint.requires_dates:
-            return [await self._fetch_one(dataset, endpoint.path, start, end, None, **params)]
+            return [await self._fetch_one(dataset, endpoint.path, start, end, None)]
 
         windows = day_subwindows(start, end)
         if not windows:
             # Degenerate guard: start == end -> single legacy-shape request,
             # preserving today's behaviour for a zero-width window.
-            return [
-                await self._fetch_one(dataset, endpoint.path, start, end, start.date(), **params)
-            ]
+            return [await self._fetch_one(dataset, endpoint.path, start, end, start.date())]
 
         covered_days = sorted({sub_start.date() for sub_start, _ in windows})
         responses: list[RawResponse] = []
         for day in covered_days:
             day_dt = datetime.combine(day, time.min, tzinfo=UTC)
-            responses.append(
-                await self._fetch_one(dataset, endpoint.path, day_dt, day_dt, day, **params)
-            )
+            responses.append(await self._fetch_one(dataset, endpoint.path, day_dt, day_dt, day))
 
         logger.info(
             "Fetched ENTSO-G %s for %d covered day(s) (%s..%s) via %s",
@@ -108,7 +103,6 @@ class EntsogConnector(BaseConnector):
         start: datetime,
         end: datetime,
         data_date: date | None,
-        **params: Any,
     ) -> RawResponse:
         """Issue one ENTSO-G request and wrap it into a ``RawResponse``.
 
@@ -118,7 +112,7 @@ class EntsogConnector(BaseConnector):
         per-day chunking loop in ``fetch()`` stays the single source of truth.
         """
         endpoint = ENDPOINTS[dataset]
-        query_params = build_params(endpoint, start=start, end=end, **params)
+        query_params = build_params(endpoint, start=start, end=end)
         raw = await self._request(path, query_params)
         return RawResponse(
             body=raw.content,

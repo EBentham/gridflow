@@ -1571,7 +1571,6 @@ class NesoDataPortalConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Not supported: every dataset of this source is captured by :meth:`iter_members`.
 

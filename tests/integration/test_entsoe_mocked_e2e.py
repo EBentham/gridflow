@@ -272,7 +272,7 @@ class TestEntsoeUrlConstructionAllDatasets:
 
     @respx.mock
     @pytest.mark.asyncio
-    async def test_h6_optional_filters_preserve_documented_casing(
+    async def test_h6_domain_params_preserve_documented_casing(
         self,
         entsoe_source_config: SourceConfig,
     ) -> None:
@@ -289,26 +289,16 @@ class TestEntsoeUrlConstructionAllDatasets:
                 dataset="offered_transfer_capacity_continuous",
                 start=START,
                 end=END,
-                **{
-                    "Auction.Type": "A01",
-                    "Contract_MarketAgreement.Type": "A01",
-                    "Update_DateAndOrTime": "2024-01-15T00:00Z",
-                    "auction.Type": "ignored-wrong-case",
-                },
             )
 
         params = dict(route.calls[0].request.url.params)
 
         assert params["In_Domain"] == "10YGB----------A"
         assert params["Out_Domain"] == "10YFR-RTE------C"
-        assert params["Auction.Type"] == "A01"
-        assert params["Contract_MarketAgreement.Type"] == "A01"
-        assert params["Update_DateAndOrTime"] == "2024-01-15T00:00Z"
-        assert "auction.Type" not in params
 
     @respx.mock
     @pytest.mark.asyncio
-    async def test_h7_outage_filters_preserve_documented_casing(
+    async def test_h7_outage_params_preserve_documented_casing(
         self,
         entsoe_source_config: SourceConfig,
     ) -> None:
@@ -325,12 +315,6 @@ class TestEntsoeUrlConstructionAllDatasets:
                 dataset="outages_transmission",
                 start=START,
                 end=END,
-                **{
-                    "DocStatus": "A05",
-                    "mRID": "fixture-transmission-outage-gb-fr-20240115",
-                    "PeriodStartUpdate": "2024-01-15T00:00Z",
-                    "docStatus": "ignored-wrong-case",
-                },
             )
 
         params = dict(route.calls[0].request.url.params)
@@ -338,10 +322,6 @@ class TestEntsoeUrlConstructionAllDatasets:
         assert params["In_Domain"] == "10YGB----------A"
         assert params["Out_Domain"] == "10YFR-RTE------C"
         assert params["BusinessType"] == "A53"
-        assert params["DocStatus"] == "A05"
-        assert params["mRID"] == "fixture-transmission-outage-gb-fr-20240115"
-        assert params["PeriodStartUpdate"] == "2024-01-15T00:00Z"
-        assert "docStatus" not in params
 
     @respx.mock
     @pytest.mark.asyncio

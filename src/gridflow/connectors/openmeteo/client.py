@@ -54,7 +54,6 @@ class OpenMeteoConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch weather data for all locations of the dataset's role.
 
