@@ -37,7 +37,6 @@ import csv
 import io
 import json
 import re
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -45,9 +44,15 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal import skeleton
@@ -62,7 +67,6 @@ from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -72,8 +76,6 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
@@ -342,23 +344,11 @@ HELD_PHRASES = {
 UNPARSED_NAMES = {"": "unnamed_9", "_duplicated_0": "unnamed_10", "_duplicated_1": "unnamed_11"}
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="sb", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -394,32 +384,16 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=PACKAGE,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=PACKAGE,
         package_id=PACKAGE_ID,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
 
 
 def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
@@ -514,7 +488,7 @@ def test_record_shape_matches_the_unit_spec(family: str) -> None:
     ``edition_by_filename`` pairs and the per-family key of ``resource_id`` + ``edition`` + the
     spec's identifiers + ``year_label``."""
     expect = EXPECT[family]
-    record = _record(family)
+    record = record_of(family)
     assert (record.version, record.reader, record.encoding) == ("1", "csv", "utf-8")
     assert [tuple(e.header) for e in record.epochs] == list(expect.headers)
     for epoch in record.epochs:
@@ -560,7 +534,7 @@ def test_measures_are_nullable_floats_and_identifiers_are_strings() -> None:
         "summpm",
     }
     for family in FAMILIES:
-        record = _record(family)
+        record = record_of(family)
         for epoch in record.epochs:
             for column in epoch.columns:
                 assert column.null_tokens == (), (family, column.name)
@@ -578,16 +552,16 @@ def test_measures_are_nullable_floats_and_identifiers_are_strings() -> None:
                     "gsp_id",
                 }:
                     assert column.nullable is False, (family, column.name)
-    gsp = {c.name: c for c in _record(GSP).epochs[0].columns}
+    gsp = {c.name: c for c in record_of(GSP).epochs[0].columns}
     assert gsp["latitude"].dtype == gsp["longitude"].dtype == "string"
     assert gsp["latitude"].nullable and gsp["longitude"].nullable
-    names = [c.name for c in _record(DG_GT).epochs[1].columns]
+    names = [c.name for c in record_of(DG_GT).epochs[1].columns]
     assert names[-4:] == ["unnamed_9", "unnamed_10", "unnamed_11", "note"]
-    assert [c.source for c in _record(DG_GT).epochs[1].columns][-4:] == list(UNNAMED)
-    assert all(c.dtype == "string" and c.nullable for c in _record(DG_GT).epochs[1].columns[-4:])
-    tech = {c.name: c for c in _record(STL).epochs[1].columns}["tech"]
+    assert [c.source for c in record_of(DG_GT).epochs[1].columns][-4:] == list(UNNAMED)
+    assert all(c.dtype == "string" and c.nullable for c in record_of(DG_GT).epochs[1].columns[-4:])
+    tech = {c.name: c for c in record_of(STL).epochs[1].columns}["tech"]
     assert tech.nullable is True
-    assert "tech" not in [c.name for c in _record(STL).epochs[0].columns]
+    assert "tech" not in [c.name for c in record_of(STL).epochs[0].columns]
 
 
 def test_held_and_eligible_families_are_exactly_as_ruled() -> None:
@@ -608,7 +582,7 @@ def test_held_and_eligible_families_are_exactly_as_ruled() -> None:
             assert HELD_PHRASES[family] in question, family
         else:
             assert effective.status == "eligible", family
-            assert _record(family).eligibility is None
+            assert record_of(family).eligibility is None
     assert len(HELD) == 4 and len(FAMILIES) - len(HELD) == 5
 
 
@@ -642,8 +616,8 @@ def test_fixture_types_with_no_exclusion(data: Path, alias: str) -> None:
     assert completion["row_count"] == len(rows(alias))
     assert completion["rows_excluded"] == 0
 
-    frame = _silver(data, meta.family)
-    expected = [name for name, _type in generic.output_columns(_record(meta.family))]
+    frame = silver_frame(data, meta.family)
+    expected = [name for name, _type in generic.output_columns(record_of(meta.family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected if c not in ("year", "month")
     ]
@@ -663,9 +637,9 @@ def test_identifiers_measures_zeros_and_blanks_survive_exactly(data: Path, alias
     null), ``year_label`` equals the label as written, in order."""
     meta = CAPTURES[alias]
     _run(data, alias)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     header, records = table(alias)
-    record = _record(meta.family)
+    record = record_of(meta.family)
     epoch = _matching_epoch(record, header)
     assert frame.height == len(records)
     for column in epoch.columns:
@@ -689,13 +663,13 @@ def test_a_blank_measure_is_null_never_zero(data: Path) -> None:
     cells (and the 2021 sub-1 MW generation blanks in all four measures) are null, their rows
     kept with the other measures intact, and the genuine zeros stay zero."""
     _run(data, "dem21")
-    demand = _silver(data, DEMAND)
+    demand = silver_frame(data, DEMAND)
     blank = sum(r["DemandPk"] == "" for r in rows("dem21"))
     assert blank > 0 and demand["demand_pk"].null_count() == blank
     assert demand["demand_am"].null_count() == demand["demand_pm"].null_count() == 0
     assert (demand["demand_am"] == 0.0).sum() > 0
     _run(data, "dgl21")
-    dg = _silver(data, DG_LT)
+    dg = silver_frame(data, DG_LT)
     blanks = sum(r["capacity"] == "" for r in rows("dgl21"))
     assert blanks > 0
     for measure in HDR_MEASURES:
@@ -709,13 +683,13 @@ def test_negative_and_all_zero_storage_values_are_kept(data: Path) -> None:
     _run(data, "stg23")
     _run(data, "stg24")
     _run(data, "stlpre21")
-    stg = _silver(data, STG)
+    stg = silver_frame(data, STG)
     zero = stg.filter(pl.col("edition") == 2023)
     assert zero.height > 0 and zero["wintpk"].null_count() == 0 and (zero["wintpk"] == 0.0).all()
     assert stg.filter(pl.col("edition") == 2024)["summpm"].min() < 0  # type: ignore[operator]
     negatives = [float(r["summpm"]) for r in rows("stlpre21") if float(r["summpm"]) < 0]
     assert sorted(
-        _silver(data, STL_PRE).filter(pl.col("summpm") < 0)["summpm"].to_list()
+        silver_frame(data, STL_PRE).filter(pl.col("summpm") < 0)["summpm"].to_list()
     ) == sorted(negatives)
 
 
@@ -728,9 +702,9 @@ def test_unmatched_location_codes_are_kept_as_written(data: Path) -> None:
     _run(data, "dgl21")
     _run(data, "dgl22")
     _run(data, "gsp21")
-    known = set(_silver(data, GSP)["gsp_id"].to_list())
-    demand_codes = set(_silver(data, DEMAND)["gsp"].to_list())
-    towh = _silver(data, DG_LT)
+    known = set(silver_frame(data, GSP)["gsp_id"].to_list())
+    demand_codes = set(silver_frame(data, DEMAND)["gsp"].to_list())
+    towh = silver_frame(data, DG_LT)
     assert "B_EXTRA_1" in demand_codes and "B_EXTRA_1" not in known
     assert {"TOWH", "TONG1"} <= set(towh["etys_location"].to_list())
     assert not {"TOWH", "TONG1"} & known
@@ -746,7 +720,7 @@ def test_the_vendor_year_label_is_kept_and_a_full_year_is_not_accepted(data: Pat
     _capture_id, written = _run(data, "dem24", raw=raw)
     transformer = get_transformer(SOURCE, meta.family, data)
     assert written == len(rows("dem24")) - 2
-    frame = _silver(data, DEMAND)
+    frame = silver_frame(data, DEMAND)
     assert set(frame["year_label"].to_list()) <= set(range(20, 51))
     assert {23, 35, 50} == set(frame["year_label"].to_list())
     del transformer
@@ -788,7 +762,7 @@ def test_a_blank_identifier_is_excluded_and_counted(data: Path) -> None:
     assert transformer.last_excluded_row_count == 1
     completion = read_completion(data, DSR, capture_id)
     assert completion is not None and completion["rows_excluded"] == 1
-    assert _silver(data, DSR)["scenario"].null_count() == 0
+    assert silver_frame(data, DSR)["scenario"].null_count() == 0
 
 
 @pytest.mark.parametrize("alias", ["dem24", "stl24"])
@@ -820,7 +794,7 @@ def test_editions_are_stamped_from_the_filename_and_both_are_served(data: Path) 
     filenames (their labels both span 2020-2050), and ``_latest`` serves each."""
     first, _ = _run(data, "dem21")
     second, _ = _run(data, "dem24")
-    frame = _silver(data, DEMAND)
+    frame = silver_frame(data, DEMAND)
     by_capture = {
         cid: set(editions)
         for cid, editions in frame.group_by("bronze_capture_id")
@@ -865,7 +839,7 @@ def test_the_2022_unnamed_trailing_columns_are_kept_with_the_note(data: Path) ->
     exactly the one 2022 row and null in the standard 2021 rows."""
     _run(data, "dgg21")
     _run(data, "dgg22")
-    frame = _silver(data, DG_GT)
+    frame = silver_frame(data, DG_GT)
     for name in ("unnamed_9", "unnamed_10", "unnamed_11"):
         assert frame[name].null_count() == frame.height, name
     noted = frame.filter(pl.col("note").is_not_null())
@@ -880,7 +854,7 @@ def test_storage_below_1mw_gains_tech_in_2024_and_stays_null_before(data: Path) 
     vendor's value, and the key (which holds ``tech``) stays unique across them."""
     _run(data, "stl23")
     _run(data, "stl24")
-    frame = _silver(data, STL)
+    frame = silver_frame(data, STL)
     assert frame.filter(pl.col("edition") == 2023)["tech"].null_count() == len(rows("stl23"))
     assert frame.filter(pl.col("edition") == 2024)["tech"].to_list() == [
         r["tech"] for r in rows("stl24")
@@ -898,7 +872,7 @@ def test_the_gsp_lookup_keeps_na_coordinates_as_text(data: Path) -> None:
     sentinel turned into null: the UTF-8 BOM body loads, ``#N/A`` is kept verbatim in both
     coordinates, and blank comments are null."""
     _run(data, "gsp21")
-    frame = _silver(data, GSP)
+    frame = silver_frame(data, GSP)
     na = [r for r in rows("gsp21") if r["Latitude"] == "#N/A"]
     assert len(na) >= 1
     assert frame["latitude"].to_list().count("#N/A") == len(na)
@@ -924,7 +898,7 @@ def test_the_2022_gsp_lookup_fails_alone_with_unicode_decode_error(data: Path) -
     assert failure["message"] == str(decoded.value)
     assert read_completion(data, GSP, bad) is None
     assert read_completion(data, GSP, good) is not None
-    silver = _silver(data, GSP)
+    silver = silver_frame(data, GSP)
     assert set(silver["bronze_capture_id"].to_list()) == {good}
     text = "".join(str(v) for column in silver.columns for v in silver[column].to_list())
     assert "�" not in text and "\x92" not in text
@@ -1025,7 +999,8 @@ def test_the_2021_storage_resource_is_held_with_its_reason() -> None:
     ]
     assert held_resources == [HOLD_RESOURCE]
     assert all(
-        "2021" not in filename for filename, _edition in _record(STG_PRE).edition_by_filename or ()
+        "2021" not in filename
+        for filename, _edition in record_of(STG_PRE).edition_by_filename or ()
     )
 
 
@@ -1039,15 +1014,15 @@ def test_the_held_resource_cannot_be_read_by_the_record_and_is_never_transformed
     held = capture(data, "stgpre21")
     capture(data, "stgpre22")
     path = next((data / "bronze" / SOURCE / STG_PRE).rglob(f"*{HOLD_RESOURCE}*.csv"))
-    parsed = next(read_csv_body(path, _record(STG_PRE), ()))
-    assert not any(list(epoch.header) == list(parsed.header) for epoch in _record(STG_PRE).epochs)
+    parsed = next(read_csv_body(path, record_of(STG_PRE), ()))
+    assert not any(list(epoch.header) == list(parsed.header) for epoch in record_of(STG_PRE).epochs)
     assert parsed.header[0] == "Created by CalcDxStorage.sas"
     assert get_transformer(SOURCE, STG_PRE, data).run(DAY, run_id="r") == len(rows("stgpre22"))
     assert read_completion(data, STG_PRE, held) is None
     assert read_failure(data, STG_PRE, held) is None
     report = reconcile(data, load_registry(), [STG_PRE], DAY)
     assert report.gaps == (), report.lines()
-    frame = _silver(data, STG_PRE)
+    frame = silver_frame(data, STG_PRE)
     assert set(frame["edition"].to_list()) == {2022}
     assert frame["resource_id"].unique().to_list() == [CAPTURES["stgpre22"].resource_id]
 
@@ -1056,7 +1031,7 @@ def test_blank_summer_measures_of_the_2022_storage_body_are_null(data: Path) -> 
     """Detects blank ``summam`` / ``summpm`` cells (76 each in the real body) dropped or zeroed:
     the 2022 above-1 MW storage rows with blanks are kept with null in those measures only."""
     _run(data, "stgpre22")
-    frame = _silver(data, STG_PRE)
+    frame = silver_frame(data, STG_PRE)
     blanks = sum(r["summam"] == "" for r in rows("stgpre22"))
     assert blanks > 0
     assert frame["summam"].null_count() == frame["summpm"].null_count() == blanks
@@ -1075,7 +1050,7 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(data: 
     serves nothing and one after it serves the capture, in the DuckDB view and in Polars."""
     meta = CAPTURES["dem21"]
     capture_id, _ = _run(data, "dem21")
-    frame = _silver(data, DEMAND)
+    frame = silver_frame(data, DEMAND)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}

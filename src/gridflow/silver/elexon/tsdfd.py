@@ -2,120 +2,33 @@
 
 from __future__ import annotations
 
-import json
-import logging
-from datetime import UTC, date, datetime
-from typing import Any
-
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonTSDFD
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
 
-logger = logging.getLogger(__name__)
 
-
-class TSDFDTransformer(BaseSilverTransformer):
+class TSDFDTransformer(ElexonTransformer):
     """Transform Elexon TSDFD data from bronze to silver."""
 
     source = "elexon"
     dataset = "tsdfd"
     schema_cls = ElexonTSDFD
-    ENTITY_KEY_COLUMNS = ("forecast_date",)  # D-8: verbatim from unique() below
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                data = json.loads(f.read_text())
-                records = data.get("data", []) if isinstance(data, dict) else data
-                rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as e:
-                logger.warning(f"Failed to parse bronze file {f}: {e}")
-                continue
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        column_mapping = {
-            "forecastDate": "forecast_date",
-            "publishTime": "published_at",
-            "demand": "forecast_demand_mw",
-        }
-        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
-        if rename_map:
-            raw_df = raw_df.rename(rename_map)
-
-        required = ["forecast_date", "forecast_demand_mw"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error(f"Missing required columns in TSDFD: {missing}")
-            return pl.DataFrame()
-
-        df = raw_df.with_columns(
-            [
-                pl.col("forecast_date").cast(pl.Date),
-                pl.col("forecast_demand_mw").cast(pl.Float64),
-            ]
-        )
-
-        # Use forecast_date midnight UTC as the timestamp
-        df = df.with_columns(
-            pl.col("forecast_date").cast(pl.Datetime("us", "UTC")).alias("timestamp_utc")
-        )
-
-        if "published_at" in df.columns:
-            df = df.with_columns(
-                pl.col("published_at")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-                .alias("published_at")
-            )
-        else:
-            # WHY: the silver schema declares published_at as a nullable contract
-            # column. Emit it as typed-null when bronze lacks the publish field so the
-            # silver schema is deterministic and partition globs don't drift across
-            # history (a missing column breaks SELECT * reads spanning files that do
-            # carry it).
-            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
-
-        df = df.unique(subset=["forecast_date"], keep="last")
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("elexon").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        output_cols = [
-            "forecast_date",
-            "timestamp_utc",
-            "forecast_demand_mw",
-            "published_at",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("forecast_date")
+    APPEND_ONLY = True
+    DATASET_VERSION = "3.0.0"
+    ENTITY_KEY_COLUMNS = ("forecast_date", "published_at")  # D-8
+    COLUMN_MAP = {
+        "forecastDate": "forecast_date",
+        "publishTime": "published_at",
+        "demand": "forecast_demand_mw",
+    }
+    REQUIRED = ("forecast_date", "forecast_demand_mw")
+    CASTS = {"forecast_demand_mw": pl.Float64()}
+    # The forecast date is a UK settlement day: stamped at the start of period 1.
+    SETTLEMENT_DATE = "forecast_date"
+    OUTPUT_COLS = ("forecast_date", "timestamp_utc", "forecast_demand_mw", "published_at")
+    SORT = ("forecast_date",)
 
 
 register_transformer("elexon", "tsdfd", TSDFDTransformer)

@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 class ParamStyle(Enum):
     """Elexon API parameter styles."""
 
-    SETTLEMENT_DATE = "settlement_date"  # ?settlementDate=2024-01-15
-    SETTLEMENT_DATE_PERIOD = "settlement_date_period"
+    SETTLEMENT_DATE_PERIOD = "settlement_date_period"  # ?settlementDate=...&settlementPeriod=N
     PUBLISH_DATETIME = "publish_datetime"  # ?publishDateTimeFrom=...&publishDateTimeTo=...
     DATE_PATH = "date_path"  # /endpoint/{date}  (e.g. system-prices)
     NO_PARAMS = "no_params"  # Static endpoint (e.g., BM unit reference)
@@ -27,15 +26,11 @@ class ElexonEndpoint:
 
     path: str
     description: str
-    param_style: ParamStyle = ParamStyle.SETTLEMENT_DATE
-    date_param: str = "settlementDate"
-    period_param: str | None = "settlementPeriod"
+    param_style: ParamStyle
     supports_pagination: bool = True
     # For publish datetime / from-to style endpoints:
     from_param: str = "publishDateTimeFrom"
     to_param: str = "publishDateTimeTo"
-    # For stream endpoints (used for backfill):
-    stream_path: str | None = None
     # Max hours per request chunk (UOU2T14D has a 4-hour API limit)
     max_chunk_hours: int = 24
 
@@ -294,14 +289,11 @@ def build_params(
     """Build query parameters based on endpoint parameter style."""
     params: dict[str, str | int] = {}
 
-    if endpoint.param_style in (
-        ParamStyle.SETTLEMENT_DATE,
-        ParamStyle.SETTLEMENT_DATE_PERIOD,
-    ):
+    if endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
         if settlement_date:
-            params[endpoint.date_param] = settlement_date.isoformat()
-        if settlement_period is not None and endpoint.period_param:
-            params[endpoint.period_param] = settlement_period
+            params["settlementDate"] = settlement_date.isoformat()
+        if settlement_period is not None:
+            params["settlementPeriod"] = settlement_period
 
     elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
         if start:
@@ -310,7 +302,7 @@ def build_params(
             params[endpoint.to_param] = _to_utc_z(end)
 
     elif endpoint.param_style == ParamStyle.DATE_PATH:
-        pass  # Path parameter appended by the connector in _fetch_date_path()
+        pass  # The connector appends the date to the path
 
     elif endpoint.param_style == ParamStyle.NO_PARAMS:
         pass  # No query parameters needed

@@ -26,18 +26,22 @@ import csv
 import io
 import json
 import re
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import (
+    both_as_of,
+    no_silver,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_recorded_capture,
+)
 from polars.exceptions import InvalidOperationError
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal import skeleton
@@ -51,7 +55,6 @@ from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -59,11 +62,6 @@ from gridflow.silver.neso_data_portal.readers import read_csv_body
 from gridflow.silver.neso_data_portal.reconcile import reconcile
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "scn2a"
@@ -411,23 +409,11 @@ FIRST_YEAR = {
 BOMS = ("es2_24", "flx1_24", "ed6_24")
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -473,36 +459,16 @@ def capture(
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
     slug, package_id = PACKAGES[meta.family]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=slug,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=slug,
         package_id=package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
     )
-    return capture_id_for(path, data)
-
-
-def _record(family: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[family][1].record
-    assert record is not None
-    return record
-
-
-def _silver(data: Path, family: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / family).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, family: str) -> bool:
-    return not list((data / "silver" / SOURCE / family).rglob("[!.]*.parquet"))
 
 
 def _run(data: Path, alias: str, **kwargs: Any) -> tuple[str, int]:
@@ -644,7 +610,7 @@ def test_record_shape_matches_the_unit_spec(family: str) -> None:
     """Detects a record that drifts from the spec: one csv/utf-8 record, no issue time, temporal
     ``none``, whole-capture selection per ``resource_id``, ``ckan_last_modified`` vintage, the
     exact ``edition_by_filename`` pairs of the SILVER resources only and the spec's entity key."""
-    record = _record(family)
+    record = record_of(family)
     assert (record.version, record.reader, record.encoding) == ("1", "csv", "utf-8")
     assert record.temporal.kind == "none"
     assert record.latest == "whole_capture"
@@ -670,7 +636,7 @@ def test_unpivot_epochs_carry_the_exact_year_labels(family: str, aliases: tuple[
     each frozen exactly as the real body's reader-returned header, the year labels exactly the
     header's year columns in order, each mapped to its integer and ending in 2050, the value a
     nullable float64 with no token or bound."""
-    record = _record(family)
+    record = record_of(family)
     assert len(record.epochs) == len(aliases)
     for epoch, alias in zip(record.epochs, aliases, strict=True):
         header, _ = table(alias)
@@ -690,8 +656,8 @@ def test_the_flx1_2026_all_year_tail_is_declared_in_full() -> None:
     """Detects a trailing blank-only year column left out of the unpivot (FACTS: 2026's
     ``2037``-``2050`` and ED5 2026's ``2037``-``2050`` are blank in every row, the long-row counts
     include them)."""
-    flx1 = _record(FLX1).epochs[2].unpivot
-    ed5 = _record(ED5).epochs[3].unpivot
+    flx1 = record_of(FLX1).epochs[2].unpivot
+    ed5 = record_of(ED5).epochs[3].unpivot
     assert flx1 is not None and ed5 is not None
     assert {"2024", "2037", "2050"} <= {label for label, _ in flx1.years}
     assert {"2037", "2050"} <= {label for label, _ in ed5.years}
@@ -702,7 +668,7 @@ def test_the_reference_record_has_one_epoch_and_no_unpivot() -> None:
     """Detects ED6 forced into the unpivot shape or split per edition: one ``Column`` /
     ``Category`` / ``Description`` epoch for all four editions, no ``projection_year`` and no
     ``value``, ``Column`` landing as ``column_name`` (``column`` is an SQL reserved word)."""
-    record = _record(ED6)
+    record = record_of(ED6)
     assert len(record.epochs) == 1
     epoch = record.epochs[0]
     assert epoch.unpivot is None
@@ -725,7 +691,7 @@ def test_dimension_columns_are_strings_with_the_spec_nullability(family: str) ->
     nullable, the rest are not), the vendor names lower-cased with non-alphanumeric runs as ``_``
     and the silver columns are only the dimensions plus the unpivot's ``projection_year`` and
     ``value``."""
-    record = _record(family)
+    record = record_of(family)
     seen: set[str] = set()
     for epoch in record.epochs:
         for column in epoch.columns:
@@ -752,7 +718,7 @@ def test_scenario_and_pathway_are_two_nullable_columns_never_merged() -> None:
         (ED5, ("scenario", "pathway")),
         (ES2, ("fes_scenario_alignment", "fes_pathway_alignment")),
     ):
-        record = _record(family)
+        record = record_of(family)
         for epoch in record.epochs:
             declared = {c.name for c in epoch.columns} & set(pairs)
             assert len(declared) == 1, (family, declared)
@@ -761,13 +727,13 @@ def test_scenario_and_pathway_are_two_nullable_columns_never_merged() -> None:
             for column in epoch.columns:
                 if column.name in pairs:
                     assert column.nullable is True and column.dtype == "string"
-    assert [e.header[2] for e in _record(ED5).epochs] == [
+    assert [e.header[2] for e in record_of(ED5).epochs] == [
         "Scenario",
         "Pathway",
         "Pathway",
         "Scenario",
     ]
-    assert [e.header[4] for e in _record(FLX1).epochs] == ["Pathway", "Pathway", "Scenario"]
+    assert [e.header[4] for e in record_of(FLX1).epochs] == ["Pathway", "Pathway", "Scenario"]
 
 
 def test_held_and_eligible_exactly_as_ruled() -> None:
@@ -785,7 +751,7 @@ def test_held_and_eligible_exactly_as_ruled() -> None:
     package, entry = registry.families[ED6]
     assert effective_eligibility(package, entry).status == "eligible"
     assert package.eligibility.status == "eligible"
-    assert _record(ED6).eligibility is None
+    assert record_of(ED6).eligibility is None
 
 
 @pytest.mark.parametrize("family", FAMILIES)
@@ -828,8 +794,8 @@ def test_fixture_unpivots_with_no_exclusion(data: Path, alias: str) -> None:
     assert completion["row_count"] == written
     assert completion["rows_excluded"] == 0
 
-    frame = _silver(data, family)
-    expected_columns = [name for name, _type in generic.output_columns(_record(family))]
+    frame = silver_frame(data, family)
+    expected_columns = [name for name, _type in generic.output_columns(record_of(family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected_columns if c not in ("year", "month")
     ]
@@ -852,7 +818,7 @@ def test_reference_fixture_types_with_no_exclusion(data: Path, alias: str) -> No
     assert written == len(records)
     completion = read_completion(data, ED6, capture_id)
     assert completion is not None and completion["rows_excluded"] == 0
-    frame = _silver(data, ED6)
+    frame = silver_frame(data, ED6)
     assert frame["edition"].to_list() == [meta.edition] * frame.height
     assert frame["resource_id"].to_list() == [meta.resource_id] * frame.height
     assert frame.select(list(KEYS[ED6])).is_duplicated().sum() == 0
@@ -868,14 +834,14 @@ def test_scenario_and_pathway_land_in_separate_columns(data: Path) -> None:
     ``fes_pathway_alignment`` only; the key keeps every edition's rows distinct."""
     for alias in TYPED_UNPIVOT:
         _run(data, alias)
-    ed5 = _silver(data, ED5)
+    ed5 = silver_frame(data, ED5)
     for edition in (2023, 2026):
         part = ed5.filter(pl.col("edition") == edition)
         assert part["scenario"].null_count() == 0 and part["pathway"].null_count() == part.height
     for edition in (2024, 2025):
         part = ed5.filter(pl.col("edition") == edition)
         assert part["pathway"].null_count() == 0 and part["scenario"].null_count() == part.height
-    flx1 = _silver(data, FLX1)
+    flx1 = silver_frame(data, FLX1)
     part = flx1.filter(pl.col("edition") == 2026)
     assert set(part["scenario"].to_list()) == {"Ten Year Outlook"}
     assert part["pathway"].null_count() == part.height
@@ -883,7 +849,7 @@ def test_scenario_and_pathway_land_in_separate_columns(data: Path) -> None:
         flx1.filter(pl.col("edition") != 2026)["scenario"].null_count()
         == flx1.filter(pl.col("edition") != 2026).height
     )
-    es2 = _silver(data, ES2)
+    es2 = silver_frame(data, ES2)
     for edition, present, absent in (
         (2023, "fes_scenario_alignment", "fes_pathway_alignment"),
         (2024, "fes_pathway_alignment", "fes_scenario_alignment"),
@@ -892,7 +858,7 @@ def test_scenario_and_pathway_land_in_separate_columns(data: Path) -> None:
         part = es2.filter(pl.col("edition") == edition)
         assert part[present].null_count() == 0 and part[absent].null_count() == part.height
     for family in UNPIVOT_FAMILIES:
-        assert _silver(data, family).select(list(KEYS[family])).is_duplicated().sum() == 0
+        assert silver_frame(data, family).select(list(KEYS[family])).is_duplicated().sum() == 0
 
 
 def test_comma_bearing_alignment_cells_are_single_values(data: Path) -> None:
@@ -901,7 +867,7 @@ def test_comma_bearing_alignment_cells_are_single_values(data: Path) -> None:
     ``fes_scenario_alignment`` / ``fes_pathway_alignment``."""
     for alias in ("es2_23", "es2_25"):
         _run(data, alias)
-    frame = _silver(data, ES2)
+    frame = silver_frame(data, ES2)
     expected = {
         r["FES Scenario Alignment"] for r in rows("es2_23") if "," in r["FES Scenario Alignment"]
     } | {r["FES Pathway Alignment"] for r in rows("es2_25") if "," in r["FES Pathway Alignment"]}
@@ -920,7 +886,7 @@ def test_blank_projection_cells_are_null_values_never_zero(data: Path) -> None:
         aliases = [a for a in TYPED_UNPIVOT if CAPTURES[a].family == family]
         for alias in aliases:
             _run(data, alias)
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         cells = [v for a in aliases for r in rows(a) for k, v in r.items() if k.isdigit()]
         blanks = sum(v == "" for v in cells)
         zeros = sum(v != "" and float(v) == 0 for v in cells)
@@ -937,13 +903,13 @@ def test_blank_tails_stay_as_null_valued_rows(data: Path) -> None:
     _, written = _run(data, "ed5_26")
     n = len(rows("ed5_26"))
     assert written == n * 28
-    frame = _silver(data, ED5)
+    frame = silver_frame(data, ED5)
     tail = frame.filter(pl.col("projection_year") >= 2037)
     assert tail.height == n * 14
     assert tail["value"].null_count() == tail.height
     _, written = _run(data, "es2_25")
     assert written == len(rows("es2_25")) * 27
-    tail = _silver(data, ES2).filter(pl.col("projection_year") >= 2036)
+    tail = silver_frame(data, ES2).filter(pl.col("projection_year") >= 2036)
     assert tail["value"].null_count() == sum(r["2036"] == "" for r in rows("es2_25")) * 15
 
 
@@ -952,7 +918,7 @@ def test_blank_subtype_is_null_and_keeps_its_rows(data: Path) -> None:
     (FACTS g5: 36 blanks in ES2 2023, ``Demand (TWh)`` rows): the rows are written, the dimension
     is null and nothing else is."""
     _run(data, "es2_23")
-    frame = _silver(data, ES2)
+    frame = silver_frame(data, ES2)
     n_blank = sum(r["SubType"] == "" for r in rows("es2_23"))
     assert n_blank > 0
     assert frame["subtype"].null_count() == n_blank * 29
@@ -968,7 +934,7 @@ def test_countries_are_kept_as_neso_names_without_a_code(data: Path) -> None:
     for byte."""
     for alias in ("es2_23", "es2_24", "es2_25"):
         _run(data, alias)
-    countries = set(_silver(data, ES2)["country"].to_list())
+    countries = set(silver_frame(data, ES2)["country"].to_list())
     assert countries == {r["Country"] for a in ("es2_23", "es2_24", "es2_25") for r in rows(a)}
     assert {"Ireland (IAI)", "SEM"} <= countries
 
@@ -979,12 +945,12 @@ def test_units_stay_in_variable_and_unit_columns_verbatim(data: Path) -> None:
     whole in ``variable``; FLX1 and ED5 keep GW / GWh / TWh and ``# Cars`` / ``# Vans`` per row."""
     for alias in TYPED_UNPIVOT:
         _run(data, alias)
-    es2 = _silver(data, ES2)
+    es2 = silver_frame(data, ES2)
     assert set(es2["variable"].to_list()) == {"Capacity (MW)", "Demand (TWh)"}
     assert not [c for c in es2.columns if "unit" in c.lower()]
-    flx1 = _silver(data, FLX1)
+    flx1 = silver_frame(data, FLX1)
     assert set(flx1["unit"].to_list()) == {"GW", "GWh", "TWh"}
-    ed5 = _silver(data, ED5)
+    ed5 = silver_frame(data, ED5)
     assert {"GW", "TWh", "# Cars", "# Vans"} <= set(ed5["unit"].to_list())
     flx1_cells = {r["Unit"] for a in ("flx1_24", "flx1_25", "flx1_26") for r in rows(a)}
     assert set(flx1["unit"].to_list()) == flx1_cells
@@ -1005,7 +971,7 @@ def test_negative_values_survive(data: Path) -> None:
             if k.isdigit() and v.startswith("-")
         )
         assert negatives, family
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         assert sorted(frame.filter(pl.col("value") < 0)["value"].to_list()) == negatives
 
 
@@ -1032,7 +998,7 @@ def test_an_uncastable_cell_fails_the_capture(
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize(
@@ -1054,7 +1020,7 @@ def test_a_blank_identifier_is_excluded_and_counted(data: Path, alias: str, colu
     assert transformer.last_excluded_row_count == per_row
     completion = read_completion(data, family, capture_id)
     assert completion is not None and completion["rows_excluded"] == per_row
-    assert _silver(data, family)[COLUMNS[family][column][0]].null_count() == 0
+    assert silver_frame(data, family)[COLUMNS[family][column][0]].null_count() == 0
 
 
 @pytest.mark.parametrize(
@@ -1087,7 +1053,7 @@ def test_a_repeated_dimension_tuple_fails_the_capture(data: Path, alias: str, ce
         in (info.value.failures[0][2])
     )
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("family", UNPIVOT_FAMILIES)
@@ -1099,7 +1065,7 @@ def test_a_header_outside_the_epochs_fails_loud(data: Path, family: str) -> None
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 def test_a_reference_header_outside_the_epoch_fails_loud(data: Path) -> None:
@@ -1108,7 +1074,7 @@ def test_a_reference_header_outside_the_epoch_fails_loud(data: Path) -> None:
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, ED6, data).run(DAY, run_id="r")
     assert read_completion(data, ED6, capture_id) is None
-    assert _no_silver(data, ED6)
+    assert no_silver(data, ED6)
 
 
 # --------------------------------------------------------------------------- #
@@ -1138,7 +1104,7 @@ def test_ed6_separators_between_populated_rows_give_the_same_rows(data: Path) ->
     )
     _, written = _run(data, "ed6_23", raw=between)
     assert written == 4
-    frame = _silver(data, ED6)
+    frame = silver_frame(data, ED6)
     assert sorted(frame["category"].to_list()) == sorted(r["Category"] for r in rows("ed6_23"))
 
 
@@ -1148,7 +1114,7 @@ def test_ed6_embedded_newlines_and_commas_are_kept_byte_equal(data: Path) -> Non
     one contains a newline."""
     for alias in ("ed6_24", "ed6_25", "ed6_26"):
         _run(data, alias)
-    frame = _silver(data, ED6)
+    frame = silver_frame(data, ED6)
     expected = {r["Description"] for a in ("ed6_24", "ed6_25", "ed6_26") for r in rows(a)}
     assert set(frame["description"].to_list()) == expected
     assert any("\n" in d for d in frame["description"].to_list())
@@ -1160,7 +1126,7 @@ def test_ed6_is_keyed_by_column_name_and_category_per_edition(data: Path) -> Non
     category)`` appears in several editions as separate rows, and the key has no duplicate."""
     for alias in TYPED_ED6:
         _run(data, alias)
-    frame = _silver(data, ED6)
+    frame = silver_frame(data, ED6)
     assert set(frame["edition"].to_list()) == {2023, 2024, 2025, 2026}
     keys = frame.select("edition", "column_name", "category")
     assert keys.is_duplicated().sum() == 0
@@ -1185,7 +1151,7 @@ def test_ed6_repeated_populated_key_fails_the_capture(data: Path) -> None:
         (capture_id, DuplicateEntityKeyError.__name__)
     ]
     assert read_completion(data, ED6, capture_id) is None
-    assert _no_silver(data, ED6)
+    assert no_silver(data, ED6)
 
 
 # --------------------------------------------------------------------------- #
@@ -1198,7 +1164,7 @@ def test_editions_are_stamped_from_the_filename_and_all_are_served(data: Path) -
     another: FLX1 2024 (vintage 2025), 2025 and 2026 stamp their filename's year and ``_latest``
     serves each."""
     ids = {a: _run(data, a)[0] for a in ("flx1_24", "flx1_25", "flx1_26")}
-    frame = _silver(data, FLX1)
+    frame = silver_frame(data, FLX1)
     by_capture = {
         cid: set(editions)
         for cid, editions in frame.group_by("bronze_capture_id")
@@ -1230,7 +1196,7 @@ def test_an_unmapped_filename_fails_loud(data: Path, alias: str, wrong: str) -> 
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 # --------------------------------------------------------------------------- #
@@ -1252,7 +1218,7 @@ def test_the_two_resources_are_held_with_their_reasons() -> None:
         assert held.disposition.unit == "E-SEM"
         for needle in needles:
             assert needle in held.disposition.reason, (alias, needle)
-        mapped = {fn for fn, _edition in _record(meta.family).edition_by_filename or ()}
+        mapped = {fn for fn, _edition in record_of(meta.family).edition_by_filename or ()}
         assert meta.filename not in mapped
     for family in FAMILIES:
         slug, _id = PACKAGES[family]
@@ -1276,7 +1242,7 @@ def test_the_held_bodies_are_not_readable_by_the_record(data: Path) -> None:
     cast fails."""
     for alias in HELD_ALIASES:
         meta = CAPTURES[alias]
-        record = _record(meta.family)
+        record = record_of(meta.family)
         capture(data, alias)
         path = next((data / "bronze" / SOURCE / meta.family).rglob(f"*{meta.resource_id}*.csv"))
         parsed = next(read_csv_body(path, record, ()))
@@ -1309,7 +1275,7 @@ def test_held_captures_are_never_transformed_and_not_a_gap(data: Path) -> None:
     report = reconcile(data, load_registry(), list(FAMILIES), DAY)
     assert report.gaps == (), report.lines()
     for family in FAMILIES:
-        frame = _silver(data, family)
+        frame = silver_frame(data, family)
         assert set(frame["resource_id"].to_list()) == {
             CAPTURES[a].resource_id for a in TYPED if CAPTURES[a].family == family
         }
@@ -1327,7 +1293,7 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(data: 
     an as-of read before the vintage serves nothing and one after it serves the capture."""
     meta = CAPTURES["flx1_24"]
     capture_id, _ = _run(data, "flx1_24")
-    frame = _silver(data, FLX1)
+    frame = silver_frame(data, FLX1)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}

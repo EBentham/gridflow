@@ -2,21 +2,20 @@
 
 from __future__ import annotations
 
-import json
 import logging
-from datetime import UTC, date, datetime
-from typing import Any, ClassVar
+from datetime import UTC, datetime
+from typing import ClassVar
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonREMIT
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
 
 
-class REMITTransformer(BaseSilverTransformer):
+class REMITTransformer(ElexonTransformer):
     """Transform Elexon REMIT data from bronze to silver.
 
     F7 changes the silver semantics: every revision of an outage message is
@@ -48,32 +47,6 @@ class REMITTransformer(BaseSilverTransformer):
     # (latest_views.py) -- the same business key the latest-vintage
     # projection groups by.
     ENTITY_KEY_COLUMNS = ("mrid",)
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                data = json.loads(f.read_text())
-                records = data.get("data", []) if isinstance(data, dict) else data
-                rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as e:
-                logger.warning(f"Failed to parse bronze file {f}: {e}")
-                continue
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

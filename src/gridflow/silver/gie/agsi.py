@@ -16,7 +16,11 @@ import polars as pl
 from gridflow.connectors.gie.client import classify_news_record_for_window
 from gridflow.connectors.gie.endpoints import parse_listing_inventory
 from gridflow.schemas.gie import GasStorage, GasStorageUnavailability
-from gridflow.silver.base import BaseSilverTransformer, gas_day_event_time_expr
+from gridflow.silver.base import (
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+    gas_day_event_time_expr,
+)
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -127,11 +131,13 @@ class GasStorageTransformer(BaseSilverTransformer):
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
-        for path in self._bronze_files(target_date):
+        unparseable: list[Path] = []
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse GIE AGSI bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
 
             request_params = _metadata_request_params(path)
@@ -142,6 +148,8 @@ class GasStorageTransformer(BaseSilverTransformer):
                 enriched["__request_company"] = request_params.get("company")
                 enriched["__request_facility"] = request_params.get("facility")
                 rows.append(enriched)
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
 
         if not rows:
             return pl.DataFrame()
@@ -272,21 +280,6 @@ class GasStorageTransformer(BaseSilverTransformer):
         available = [col for col in ordered if col in df.columns]
         return df.select(available).sort(["gas_day", "entity_level", "entity_code"])
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            return []
-        return [
-            path
-            for path in sorted(bronze_path.glob("raw_*.json"))
-            if not path.name.endswith(".meta.json")
-        ]
-
 
 class StorageReportsTransformer(GasStorageTransformer):
     """Catalog-aligned AGSI storage reports transformer."""
@@ -332,13 +325,17 @@ class AgsiJsonTransformer(BaseSilverTransformer):
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
-        for path in self._bronze_files(target_date):
+        unparseable: list[Path] = []
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
             rows.extend(self._records_from_payload(payload))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         # P0.8: accumulate rows across ALL raw files first (unfiltered), THEN
         # apply the filter hook exactly once — news is paginated (multiple
         # raw_*.json per partition), so a per-payload call would warn once per
@@ -399,7 +396,7 @@ class AgsiJsonTransformer(BaseSilverTransformer):
     def _records_from_payload(self, payload: Any) -> list[dict[str, Any]]:
         return _extract_data_records(payload, self.response_key)
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
         files = self._bronze_files_for_date(target_date)
         if files or not self.fallback_to_latest_partition:
             return files
@@ -424,7 +421,9 @@ class AgsiJsonTransformer(BaseSilverTransformer):
         files = self._all_bronze_files()
         if not files:
             return []
-        latest_parent = max({path.parent for path in files}, key=lambda path: path.stat().st_mtime)
+        # The latest DATE partition (YYYY/MM/DD sorts by date), never the newest
+        # mtime, which copies, restores and writes into an older partition move.
+        latest_parent = max({path.parent for path in files})
         return sorted(path for path in files if path.parent == latest_parent)
 
     def _all_bronze_files(self) -> list[Path]:
@@ -569,11 +568,13 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []
         undated_count = 0
-        for path in self._bronze_files(target_date):
+        unparseable: list[Path] = []
+        for path in self._bronze_read_set(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
             for record in self._records_from_payload(payload):
                 classification = _classify_unavailability_record(record, target_date)
@@ -582,6 +583,8 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
                 if classification == "undated":
                     undated_count += 1
                 rows.append(_flatten_unavailability_record(record, target_date))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         if undated_count:
             logger.warning(
                 "%s/%s: %d record(s) had no parseable start/end for target_date %s; "
@@ -651,7 +654,7 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
             )
         return df.sort(list(self.ENTITY_KEY_COLUMNS), nulls_last=True, maintain_order=True)
 
-    def _bronze_files(self, target_date: date) -> list[Path]:
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
         files = self._bronze_files_for_date(target_date)
         if files:
             return files

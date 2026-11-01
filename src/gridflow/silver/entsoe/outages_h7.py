@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
@@ -13,44 +13,51 @@ from gridflow.schemas.entsoe import (
     EntsoeOutagesProduction,
     EntsoeOutagesTransmission,
 )
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.entsoe._outages import (
     OUTAGE_COMMON_COLUMNS,
     latest_revision_steps,
+    outage_steps_for_day,
+    parse_outage_xml,
     prepare_outage_frame,
-    read_outage_partition,
 )
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
     from datetime import date
+    from pathlib import Path
 
     from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
 
-class _H7OutageTransformer(BaseSilverTransformer):
+class _H7OutageTransformer(EntsoeXmlTransformer):
     """Shared outage transformer: one row per step of each document's latest revision.
 
     Rows are clipped to the partition's UTC day (see ``_outages.py``).
-    ``identity`` names one step of one document together with
-    ``timestamp_utc``; ``document_status`` ``A09`` marks a cancelled outage.
+    ``ENTITY_KEY_COLUMNS`` names one step of one document;
+    ``document_status`` ``A09`` marks a cancelled outage.
     """
 
     schema_cls: ClassVar[type[BaseModel]] = EntsoeOutagesConsumption
     DATASET_VERSION: ClassVar[str] = "2.0.0"
-    identity_cols: ClassVar[tuple[str, ...]] = ()
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = (
+        "document_mrid",
+        "timeseries_mrid",
+        "timestamp_utc",
+    )
     required_domain_cols: ClassVar[frozenset[str]] = frozenset({"in_domain"})
     rename_cols: ClassVar[dict[str, str]] = {"in_domain": "area_code"}
     lead_cols: ClassVar[tuple[str, ...]] = ()
 
+    def _parse_bronze_body(self, path: Path) -> list[dict[str, Any]]:
+        return parse_outage_xml(path.read_bytes())
+
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-        return read_outage_partition(bronze_path, target_date)
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
+        return outage_steps_for_day([r for _, records in pairs for r in records], target_date)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -63,7 +70,8 @@ class _H7OutageTransformer(BaseSilverTransformer):
             return pl.DataFrame()
 
         df = prepare_outage_frame(raw_df.rename(self.rename_cols))
-        df = latest_revision_steps(df, ("document_mrid", "timeseries_mrid", *self.identity_cols))
+        df = latest_revision_steps(df)
+        df = self.dedup_to_grain(df).sort(list(self.ENTITY_KEY_COLUMNS))
         # ADR-025 P1.1: carry the document publication vintage (createdDateTime)
         # as published_at before the hard select; typed-null when absent.
         df = with_published_at(df, dataset=self.dataset)
@@ -83,7 +91,7 @@ class OutagesTransmissionTransformer(_H7OutageTransformer):
     schema_cls = EntsoeOutagesTransmission
     required_domain_cols = frozenset({"in_domain", "out_domain"})
     rename_cols = {"in_domain": "in_area_code", "out_domain": "out_area_code"}
-    identity_cols = ("asset_mrid",)
+    ENTITY_KEY_COLUMNS = ("document_mrid", "timeseries_mrid", "asset_mrid", "timestamp_utc")
     lead_cols = ("in_area_code", "out_area_code", "asset_mrid", "asset_name")
 
 
@@ -91,7 +99,7 @@ class OutagesOffshoreGridTransformer(_H7OutageTransformer):
     source = "entsoe"
     dataset = "outages_offshore_grid"
     schema_cls = EntsoeOutagesOffshoreGrid
-    identity_cols = ("asset_mrid",)
+    ENTITY_KEY_COLUMNS = ("document_mrid", "timeseries_mrid", "asset_mrid", "timestamp_utc")
     lead_cols = ("area_code", "asset_mrid", "asset_name", "nominal_mw")
 
 
@@ -99,7 +107,7 @@ class OutagesProductionTransformer(_H7OutageTransformer):
     source = "entsoe"
     dataset = "outages_production"
     schema_cls = EntsoeOutagesProduction
-    identity_cols = ("unit_mrid",)
+    ENTITY_KEY_COLUMNS = ("document_mrid", "timeseries_mrid", "unit_mrid", "timestamp_utc")
     lead_cols = ("area_code", "unit_mrid", "unit_name", "production_type", "nominal_mw")
 
 
