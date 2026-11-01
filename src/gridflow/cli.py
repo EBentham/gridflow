@@ -198,7 +198,7 @@ def ingest(
         "--incremental",
         "--since-watermark",
         help="Resume each dataset from its stored watermark (minus the configured "
-        "overlap, default 72h). Ignored when --start or --last is given. First run "
+        "overlap, default 72h). Ignored when --start, --end or --last is given. First run "
         "falls back to the default lookback. The watermark advances only on "
         "observed data (not on empty or partial fetches), and the overlap "
         "re-fetches the recent window to recover late publications and Elexon "
@@ -229,10 +229,12 @@ def ingest(
     # end_dt is resolved once up front (= now for the lookback/incremental paths);
     # incremental resolves start per-dataset inside the runner loop from each
     # watermark. Precedence: --start > --last > --incremental > default lookback.
+    # An explicit --end also wins over --incremental: a watermark newer than that
+    # end would otherwise give an inverted window.
     default_start_dt, end_dt = _resolve_dates(
         start, end, last, settings.pipeline.default_lookback_hours
     )
-    use_watermark_start = incremental and start is None and last is None
+    use_watermark_start = incremental and start is None and last is None and end is None
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
     runner.import_connectors()

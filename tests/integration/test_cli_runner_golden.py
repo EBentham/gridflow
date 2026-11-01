@@ -207,6 +207,26 @@ def test_ingest_naive_datetime_bad_parameter(
     assert result.exit_code == 2, result.output
 
 
+def test_ingest_end_wins_over_incremental(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """An explicit --end wins over --incremental, as --start and --last do: a
+    watermark newer than that end would otherwise give an inverted window."""
+    from gridflow.pipeline import runner as pipeline_runner
+
+    _isolated_env(tmp_path, monkeypatch)
+    seen: list[tuple[datetime, bool]] = []
+
+    def _fake_ingest(ctx, source, datasets, start_dt, end_dt, *, incremental, write_watermark):
+        seen.append((end_dt, incremental))
+        return [pipeline_runner.DatasetResult(source, datasets[0], "ingest", "success")]
+
+    monkeypatch.setattr(pipeline_runner, "run_ingest", _fake_ingest)
+    result = runner.invoke(
+        app, ["ingest", "elexon", "fuelhh", "--incremental", "--end", "2026-10-01"]
+    )
+    assert result.exit_code == 0, result.output
+    assert seen == [(datetime(2026, 10, 2, tzinfo=UTC), False)]
+
+
 # --------------------------------------------------------------------------- #
 # transform
 # --------------------------------------------------------------------------- #
