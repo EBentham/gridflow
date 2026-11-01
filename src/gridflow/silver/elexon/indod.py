@@ -10,7 +10,7 @@ import polars as pl
 from gridflow.schemas.elexon import ElexonINDOD
 from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc
+from gridflow.utils.time import settlement_period_to_utc_expr
 
 logger = logging.getLogger(__name__)
 
@@ -53,12 +53,7 @@ class INDODTransformer(ElexonTransformer):
         # 00:00 UK local), so the daily roll-up aligns with its own half-hourly
         # INDO series. A plain UTC-midnight cast would sit 1h off during BST.
         df = df.with_columns(
-            pl.col("settlement_date")
-            .map_elements(
-                lambda d: settlement_period_to_utc(d, 1),
-                return_dtype=pl.Datetime("us", "UTC"),
-            )
-            .alias("timestamp_utc")
+            settlement_period_to_utc_expr("settlement_date").alias("timestamp_utc")
         )
 
         # F-08: INDOD carries its own independent vendor vintage (publishTime,

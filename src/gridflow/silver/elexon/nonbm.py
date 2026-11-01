@@ -12,7 +12,7 @@ import polars as pl
 from gridflow.schemas.elexon import ElexonNonBM
 from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc
+from gridflow.utils.time import settlement_period_to_utc_expr
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -101,14 +101,9 @@ class NONBMTransformer(ElexonTransformer):
         )
 
         df = df.with_columns(
-            pl.struct(["settlement_date", "settlement_period"])
-            .map_elements(
-                lambda row: settlement_period_to_utc(
-                    row["settlement_date"], row["settlement_period"]
-                ),
-                return_dtype=pl.Datetime("us", "UTC"),
+            settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
+                "timestamp_utc"
             )
-            .alias("timestamp_utc")
         )
 
         # G6 (W2.2 pattern): cast `published_at` to UTC datetime so the
