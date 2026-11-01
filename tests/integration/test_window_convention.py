@@ -4,17 +4,19 @@ Inside gridflow every window is half-open ``[start, end)`` in UTC, and the CLI
 turns a bare ``--end D`` into ``D+1 00:00Z``. The contract test below feeds each
 connector the window the CLI resolves for ``--start A --end D`` and reads, from
 the requests it actually sends (respx, no network), which days it asked the
-vendor for: exactly A..D, never D+1. ``run_transform`` derives its days from the
-same window through ``window_dates``, asserted alongside.
+vendor for: exactly A..D, never D+1. The same windows then drive the real
+``run_transform`` and ``run_build``.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from types import SimpleNamespace
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
+import polars as pl
 import pytest
 import respx
 from typer.testing import CliRunner
@@ -28,7 +30,9 @@ from gridflow.connectors.gie.client import AgsiConnector, AlsiConnector
 from gridflow.connectors.neso.carbon_intensity import CarbonIntensityConnector, _request_specs
 from gridflow.connectors.neso.endpoints import ENDPOINTS as NESO_ENDPOINTS
 from gridflow.connectors.openmeteo.client import OpenMeteoConnector
+from gridflow.pipeline import runner
 from gridflow.pipeline.runner import resolve_dates
+from gridflow.silver.base import BaseSilverTransformer
 from gridflow.storage.paths import PathBuilder
 from gridflow.utils.time import date_range, window_dates
 
@@ -249,7 +253,7 @@ WINDOWS: list[tuple[str, Callable[[], tuple[datetime, datetime]], list[date]]] =
     ids=[case[0] for case in CASES],
 )
 @pytest.mark.asyncio
-async def test_end_date_fetches_and_transforms_through_that_day(
+async def test_end_date_fetches_through_that_day(
     connector: Callable[[], BaseConnector],
     dataset: str,
     url: str,
@@ -267,7 +271,64 @@ async def test_end_date_fetches_and_transforms_through_that_day(
         requested = set().union(*(days_of(call.request) for call in router.calls))
 
     assert sorted(requested) == expected
-    assert window_dates(start, end) == expected, "run_transform's days"
+
+
+class _RecordingTransformer(BaseSilverTransformer):
+    """Records the dates the real ``run_transform`` asks it to transform."""
+
+    source = "test"
+    dataset = "window"
+    seen: ClassVar[list[date]] = []
+
+    def read_bronze(self, target_date: date) -> pl.DataFrame:
+        return pl.DataFrame()
+
+    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
+        return raw_df
+
+    def run(self, target_date: date, run_id: str | None = None, reingest: bool = False) -> int:
+        type(self).seen.append(target_date)
+        return 1
+
+
+@pytest.mark.parametrize(
+    ("window", "expected"),
+    [case[1:] for case in WINDOWS],
+    ids=[case[0] for case in WINDOWS],
+)
+def test_end_date_transforms_and_builds_through_that_day(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    window: Callable[[], tuple[datetime, datetime]],
+    expected: list[date],
+) -> None:
+    """The same window drives the real ``run_transform`` and ``run_build``."""
+    built: list[tuple[date, date]] = []
+    builder = SimpleNamespace(run=lambda first, last: built.append((first, last)) or 0)
+    tracker = SimpleNamespace(
+        run_id="probe",
+        complete=lambda **_kwargs: None,
+        complete_with_warnings=lambda **_kwargs: None,
+        fail=lambda _message: None,
+    )
+    _RecordingTransformer.seen = []
+    monkeypatch.setattr(
+        "gridflow.silver.registry.get_transformer",
+        lambda *_args: _RecordingTransformer(tmp_path),
+    )
+    monkeypatch.setattr("gridflow.gold.registry.get_builder", lambda *_args: builder)
+    monkeypatch.setattr("gridflow.observability.PipelineRunTracker", lambda *_args: tracker)
+    settings = SimpleNamespace(pipeline=SimpleNamespace(data_dir=tmp_path, write_silver_csv=False))
+    ctx = runner.PipelineContext(con=None, settings=settings)  # type: ignore[arg-type]
+    start, end = window()
+
+    [transformed] = runner.run_transform(ctx, "test", ["window"], start, end)
+    [gold] = runner.run_build(ctx, [runner.GOLD_DATASETS[0]], start, end)
+
+    assert transformed.ok, transformed.error
+    assert _RecordingTransformer.seen == expected
+    assert gold.ok, gold.error
+    assert built == [(expected[0], expected[-1])]
 
 
 def test_neso_daily_endpoint_fetches_the_window_last_day() -> None:
