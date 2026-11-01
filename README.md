@@ -52,6 +52,9 @@ them into modelling-ready tables:
 | Open-Meteo   | `open_meteo` | none                 | Weather: temperature, wind, solar irradiance      |
 | NESO         | `neso`       | none                 | UK carbon intensity (current + regional + fcst)   |
 
+Each vendor's terms, the attribution it asks for and which test fixtures hold real
+responses are in [DATA-SOURCES.md](DATA-SOURCES.md).
+
 ---
 
 ## Install
