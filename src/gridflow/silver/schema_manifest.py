@@ -318,7 +318,9 @@ class SilverSchemaEntry:
             removed — never a name derived from ``dataset``. ``None`` for
             gold-backed rows, which have no silver base and were never
             vintage-stacked.
-        deprecated_alias: Legacy single-token silver alias, when unique.
+        deprecated_alias: The retired single-token ``silver_{dataset}`` name,
+            when unique. No view of that name is registered; consumers use it
+            to check they never query the old name.
         designated_date_col: Column to use for date-range filtering.
         date_col_sql_type: SQL type family for ``designated_date_col``.
         columns: Declared public columns, or ``None`` for dynamic schemas.

@@ -172,10 +172,9 @@ class GridflowClient:
         cutoff, not historical point-in-time selection**: an ``as_of`` that
         falls between vintages returns nothing for that key rather than the
         value that was current then (ADR-025:117-120). A consumer needing
-        genuine historical PIT must query the **all-vintage** surface —
-        ``silver_elexon_system_prices``, or the deprecated
-        ``silver_system_prices`` alias, both of which still return every
-        vintage by design — and apply ``available_at <= as_of`` **then
+        genuine historical PIT must query the **all-vintage** surface,
+        ``silver_elexon_system_prices``, which returns every vintage by
+        design, and apply ``available_at <= as_of`` **then
         latest-of-survivors**. That primitive is consumer-side
         (gridflow_models) and is not built here.
 
