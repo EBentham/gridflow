@@ -11,29 +11,12 @@
     {
       "key": "obp_reserve_avail_price",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Data",
-              "Unit ID",
-              "Time From",
-              "Time To",
-              "Pair ID",
-              "Availability Power",
-              "Utilisation Price",
-              "Service ID"
-            ],
             "columns": [
               {
                 "source": "Data",
@@ -87,10 +70,7 @@
                 "dtype": "string",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

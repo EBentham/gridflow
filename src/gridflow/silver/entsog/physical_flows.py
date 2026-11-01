@@ -62,7 +62,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
     dataset = "physical_flows"
     schema_cls = EntsogPhysicalFlow
     LOCKSTEP_BRONZE_READ: ClassVar[bool] = True
-    # BRONZE_READ_SELECTION stays ALL: every raw_*.json in the resolved
+    # The lockstep selection stays ALL: every raw_*.json in the resolved
     # partition is read, so every vouched body's rows enter the frame.
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:

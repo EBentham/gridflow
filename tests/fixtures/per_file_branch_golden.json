@@ -3,9 +3,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -381,9 +378,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -417,9 +411,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -722,9 +713,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,
@@ -746,9 +734,6 @@
     "counters": {
       "last_excluded_row_count": 0,
       "last_partition_filter_all_dropped_count": 0,
-      "last_partition_filter_boundary_retained_count": 0,
-      "last_partition_filter_dropped_count": 0,
-      "last_partition_filter_unclassified_count": 0,
       "last_partition_filter_unresolved_count": 0,
       "last_partition_trim_details": [],
       "last_partition_trim_unrecoverable_count": 0,

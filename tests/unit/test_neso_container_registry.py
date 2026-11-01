@@ -8,9 +8,6 @@ interpreter, as unit A's registry tests do.
 from __future__ import annotations
 
 import asyncio
-import subprocess
-import sys
-import textwrap
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -34,7 +31,7 @@ from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
 from gridflow.connectors.neso_data_portal.registry import RegistryError, load_registry
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
 
 pytestmark = pytest.mark.usefixtures("forbid_zipfile_reads", "stub_neso_resolver")
 
@@ -42,23 +39,6 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PKG = "eeeeeeee-0000-4000-8000-000000000000"
 BASE_URL = "https://api.neso.energy"
 XLSX = {"header_row": 1, "columns": "A:D"}
-
-
-def _run(code: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=180,
-        check=False,
-    )
-
-
-def _assert_ok(result: subprocess.CompletedProcess[str]) -> None:
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout, result.stdout
 
 
 def _child(name: str, key: str | None = None) -> dict[str, Any]:
@@ -169,10 +149,10 @@ class TestV15:
 class TestCommittedRegistry:
     """T-X2-9 (V-16) and T-X2-11 over the committed registry."""
 
-    def test_v16_every_recorded_sibling_fed_family_lists_a_sibling(self) -> None:
-        _assert_ok(
-            _run(
-                """
+    def test_v16_every_recorded_sibling_fed_family_lists_a_sibling(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
+        assert "OK" in run_fresh("""
                 from gridflow.connectors.neso_data_portal.registry import load_registry
                 registry = load_registry()
                 owners = {resource.family for _p, resource in registry.resources.values()}
@@ -201,14 +181,10 @@ class TestCommittedRegistry:
                     if record is not None:
                         assert record.siblings, key
                 print('OK')
-                """
-            )
-        )
+                """)
 
-    def test_x2_11_inventories_and_dispositions(self) -> None:
-        _assert_ok(
-            _run(
-                """
+    def test_x2_11_inventories_and_dispositions(self, run_fresh: Callable[..., str]) -> None:
+        assert "OK" in run_fresh("""
                 import re
                 from collections import Counter
                 from gridflow.connectors.neso_data_portal.registry import (
@@ -234,9 +210,7 @@ class TestCommittedRegistry:
                 for r in cmp:
                     assert [c.disposition.kind for c in r.children] == ['SILVER', 'DOC'], r.id
                 print('OK')
-                """
-            )
-        )
+                """)
 
 
 def _sibling_fed_registry(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

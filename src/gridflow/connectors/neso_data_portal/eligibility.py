@@ -7,8 +7,7 @@ Usage::
 
 The committed report (``docs/neso_data_portal/eligibility.md`` by default,
 relative to the current directory) is a pure function of the registry, so
-``--check`` fails CI whenever a registry commit forgets to regenerate it, the
-same discipline as ``registry yaml --check``.
+``--check`` fails CI whenever a registry commit forgets to regenerate it.
 
 **Effective eligibility of an output** (the one rule, :func:`effective_eligibility`):
 

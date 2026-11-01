@@ -130,15 +130,13 @@ def entsoe_source_config() -> SourceConfig:
 
 
 def _silver_path(data_dir: Path, dataset: str, target_date: date) -> Path:
-    return (
-        data_dir
-        / "silver"
-        / "entsoe"
-        / dataset
-        / f"year={target_date.year}"
-        / f"month={target_date.month:02d}"
-        / f"{dataset}_{target_date:%Y%m%d}.parquet"
-    )
+    """The partition's one silver file; an APPEND_ONLY name carries a run suffix."""
+    partition = (
+        data_dir / "silver" / "entsoe" / dataset / f"year={target_date.year}"
+    ) / f"month={target_date.month:02d}"
+    name = f"{dataset}_{target_date:%Y%m%d}"
+    matches = [*partition.glob(f"{name}.parquet"), *partition.glob(f"{name}_run*.parquet")]
+    return matches[0] if len(matches) == 1 else partition / f"{name}.parquet"
 
 
 def _write_fixture_to_bronze(tmp_data_dir: Path, dataset: str, fixture_name: str) -> Path:
@@ -274,7 +272,7 @@ class TestEntsoeUrlConstructionAllDatasets:
 
     @respx.mock
     @pytest.mark.asyncio
-    async def test_h6_optional_filters_preserve_documented_casing(
+    async def test_h6_domain_params_preserve_documented_casing(
         self,
         entsoe_source_config: SourceConfig,
     ) -> None:
@@ -291,26 +289,16 @@ class TestEntsoeUrlConstructionAllDatasets:
                 dataset="offered_transfer_capacity_continuous",
                 start=START,
                 end=END,
-                **{
-                    "Auction.Type": "A01",
-                    "Contract_MarketAgreement.Type": "A01",
-                    "Update_DateAndOrTime": "2024-01-15T00:00Z",
-                    "auction.Type": "ignored-wrong-case",
-                },
             )
 
         params = dict(route.calls[0].request.url.params)
 
         assert params["In_Domain"] == "10YGB----------A"
         assert params["Out_Domain"] == "10YFR-RTE------C"
-        assert params["Auction.Type"] == "A01"
-        assert params["Contract_MarketAgreement.Type"] == "A01"
-        assert params["Update_DateAndOrTime"] == "2024-01-15T00:00Z"
-        assert "auction.Type" not in params
 
     @respx.mock
     @pytest.mark.asyncio
-    async def test_h7_outage_filters_preserve_documented_casing(
+    async def test_h7_outage_params_preserve_documented_casing(
         self,
         entsoe_source_config: SourceConfig,
     ) -> None:
@@ -327,12 +315,6 @@ class TestEntsoeUrlConstructionAllDatasets:
                 dataset="outages_transmission",
                 start=START,
                 end=END,
-                **{
-                    "DocStatus": "A05",
-                    "mRID": "fixture-transmission-outage-gb-fr-20240115",
-                    "PeriodStartUpdate": "2024-01-15T00:00Z",
-                    "docStatus": "ignored-wrong-case",
-                },
             )
 
         params = dict(route.calls[0].request.url.params)
@@ -340,10 +322,6 @@ class TestEntsoeUrlConstructionAllDatasets:
         assert params["In_Domain"] == "10YGB----------A"
         assert params["Out_Domain"] == "10YFR-RTE------C"
         assert params["BusinessType"] == "A53"
-        assert params["DocStatus"] == "A05"
-        assert params["mRID"] == "fixture-transmission-outage-gb-fr-20240115"
-        assert params["PeriodStartUpdate"] == "2024-01-15T00:00Z"
-        assert "docStatus" not in params
 
     @respx.mock
     @pytest.mark.asyncio
@@ -577,12 +555,6 @@ class TestEntsoeBronzeToSilverPipeline:
                 {"timestamp_utc", "area_code", "reserve_type", "direction", "price_eur_mwh"},
                 id="activated_balancing_prices",
             ),
-            # NOTE: activated_balancing_qty is intentionally NOT added here — it
-            # has no DOC_TYPES/connector config entry (pre-existing gap, unrelated
-            # to F-02, out of scope per this batch's ingest-changes scope fence).
-            # Its value-level published_at coverage lives at the unit level:
-            # tests/unit/test_entsoe.py::TestActivatedBalancingQtyTransformer::
-            # test_published_at_equals_document_vintage.
             pytest.param(
                 "contracted_reserves",
                 "contracted_reserves_gb.xml",

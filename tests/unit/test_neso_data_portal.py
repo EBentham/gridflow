@@ -35,7 +35,12 @@ from _neso_capture_support import capture_legacy, record_sends, unsent
 from pydantic import Field
 from tenacity import wait_none
 
-from gridflow.config.settings import DatasetConfig, PipelineSettings, SourceConfig
+from gridflow.config.settings import (
+    DatasetConfig,
+    PipelineSettings,
+    SourceConfig,
+    load_settings,
+)
 from gridflow.connectors.neso_data_portal import client as client_module
 from gridflow.connectors.neso_data_portal.client import (
     _MAX_INGEST_WINDOW,
@@ -147,6 +152,20 @@ def router() -> Iterator[respx.MockRouter]:
     """
     with respx.mock(assert_all_called=False) as mock_router:
         yield mock_router
+
+
+@pytest.fixture
+def noon(monkeypatch: pytest.MonkeyPatch) -> datetime:
+    """Freeze the connector's clock at 2026-08-16 12:00Z, so day boundaries are exact."""
+    frozen = datetime(2026, 8, 16, 12, tzinfo=UTC)
+
+    class _Frozen(datetime):
+        @classmethod
+        def now(cls, tz: Any = None) -> datetime:  # type: ignore[override]
+            return frozen.astimezone(tz) if tz is not None else frozen.replace(tzinfo=None)
+
+    monkeypatch.setattr(client_module, "datetime", _Frozen)
+    return frozen
 
 
 def _wire_happy_path(router: respx.MockRouter) -> None:
@@ -471,28 +490,50 @@ class TestWindowAdmission:
 
         assert len(router.calls) == 0
 
-    @pytest.mark.parametrize("ahead", [timedelta(hours=1), timedelta(hours=24)])
-    def test_future_end_is_refused_and_names_the_remedy(
-        self, router: respx.MockRouter, ahead: timedelta
+    def test_future_partition_is_refused_and_names_the_remedy(
+        self, router: respx.MockRouter, noon: datetime
     ) -> None:
-        """A future ``end`` is unserveable by definition and is the one window
-        shape that defeats D-13 outright: the capture would land under a future
-        partition no ``--last``-style transform window ever reaches.
+        """A future partition is unserveable by definition and is the one window
+        shape that defeats D-13 outright: no ``--last``-style transform window
+        ever reaches it.
 
-        24 h ahead is the likely trigger — a bare ``--end <tomorrow>`` meant as
-        "through today", which ``_parse_window_bound`` reads as midnight
-        tomorrow — so the message names the remedy.
+        The likely trigger is a bare ``--end <tomorrow>``, which now reads as
+        "through tomorrow", so the message names the remedy.
         """
         _wire_happy_path(router)
-        end = datetime.now(UTC) + ahead
+        end = datetime(2026, 8, 18, tzinfo=UTC)  # --end 2026-08-17, the day after `noon`
 
         with pytest.raises(NesoFutureWindowError) as excinfo:
             _capture(_source_config(), end - timedelta(hours=24), end)
 
         message = str(excinfo.value)
         assert "--last 24h" in message
-        assert "--end" in message
+        assert "--end 2026-08-16" in message
         assert len(router.calls) == 0
+
+    def test_end_today_is_admitted_and_partitioned_today(
+        self, router: respx.MockRouter, noon: datetime
+    ) -> None:
+        """``--end <today>`` is ``[today, tomorrow 00:00)``: its one partition
+        is today, which is not in the future, so the window is admitted."""
+        _wire_happy_path(router)
+        today = datetime(2026, 8, 16, tzinfo=UTC)
+
+        responses = _capture(_source_config(), today, today + timedelta(days=1))
+
+        assert [response.data_date for response in responses] == [date(2026, 8, 16)]
+
+    def test_end_yesterday_is_partitioned_yesterday(
+        self, router: respx.MockRouter, noon: datetime
+    ) -> None:
+        """``--end <yesterday>`` ends at today 00:00. The partition is the
+        window's last day, yesterday, which is the day the transform reads."""
+        _wire_happy_path(router)
+        today = datetime(2026, 8, 16, tzinfo=UTC)
+
+        responses = _capture(_source_config(), today - timedelta(days=1), today)
+
+        assert [response.data_date for response in responses] == [date(2026, 8, 15)]
 
     def test_end_two_minutes_ahead_is_within_the_skew_tolerance(
         self, router: respx.MockRouter
@@ -519,9 +560,9 @@ class TestWindowAdmission:
         assert len(router.calls) == 0
 
     def test_end_47_hours_stale_still_proceeds(self, router: respx.MockRouter) -> None:
-        """``--end 2026-08-16`` parses to midnight UTC, so a legitimate
-        "yesterday to today" window can end ~24 h behind the wall clock; 48 h
-        clears that with margin. The tolerance is deliberately not tightened."""
+        """``--end <yesterday>`` ends at today 00:00, so a legitimate window can
+        end ~24 h behind the wall clock; 48 h clears that with margin. The
+        tolerance is deliberately not tightened."""
         _wire_happy_path(router)
         end = datetime.now(UTC) - timedelta(hours=47)
 
@@ -592,6 +633,23 @@ class TestWindowAdmission:
         assert "4 days" in message
         assert "1" in message
         assert "one" in message.lower() or "single" in message.lower()
+
+    def test_the_loaded_config_takes_the_incremental_span_without_a_notice(
+        self, caplog: pytest.LogCaptureFixture
+    ) -> None:
+        """Every portal dataset of the loaded config has ``max_query_days`` 0, so the
+        ~4-day ``--incremental`` span, normal for this source, logs no notice; at 1
+        it logged one WARNING per dataset on every incremental run."""
+        config = load_settings().get_source_config("neso_data_portal")
+        connector = NesoDataPortalConnector(config)
+        end = datetime.now(UTC)
+
+        with caplog.at_level(logging.WARNING, logger="gridflow.connectors.neso_data_portal.client"):
+            for dataset in config.datasets:
+                connector._assert_window_admissible(dataset, end - timedelta(days=4), end)
+
+        assert len(config.datasets) == 326
+        assert not [r for r in caplog.records if "max_query_days" in r.getMessage()]
 
     def test_max_ingest_window_is_coupled_to_the_declared_pipeline_ceiling(self) -> None:
         """The bound is not this plan's taste: it is the widest window

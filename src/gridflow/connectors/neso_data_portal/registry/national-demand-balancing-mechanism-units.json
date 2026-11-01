@@ -11,22 +11,13 @@
     {
       "key": "national_demand_bmus",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "REG",
-      "refresh": "adhoc",
       "empty_allowed": true,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "BM_Name"
-            ],
             "columns": [
               {
                 "source": "BM_Name",
@@ -34,10 +25,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

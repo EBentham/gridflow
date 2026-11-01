@@ -9,8 +9,9 @@ import polars as pl
 
 from gridflow.schemas.elexon import ElexonSOSO
 from gridflow.silver.elexon._base import ElexonTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc
+from gridflow.utils.time import settlement_period_to_utc_expr
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,8 @@ class SOSOTransformer(ElexonTransformer):
     dataset = "soso"
     schema_cls = ElexonSOSO
     ENTITY_KEY_COLUMNS = ("settlement_date", "contract_identification")  # D-8
-    OPTIONAL_ENTITY_KEY_COLUMNS = ("trade_direction",)
+    DATASET_VERSION = "2.1.0"
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("trade_direction", "trader_unit")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -62,14 +64,9 @@ class SOSOTransformer(ElexonTransformer):
         if "settlement_period" in df.columns:
             df = df.with_columns(pl.col("settlement_period").cast(pl.Int32))
             df = df.with_columns(
-                pl.struct(["settlement_date", "settlement_period"])
-                .map_elements(
-                    lambda row: settlement_period_to_utc(
-                        row["settlement_date"], row["settlement_period"]
-                    ),
-                    return_dtype=pl.Datetime("us", "UTC"),
+                settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
+                    "timestamp_utc"
                 )
-                .alias("timestamp_utc")
             )
         elif "start_time" in df.columns:
             df = df.with_columns(
@@ -80,12 +77,18 @@ class SOSOTransformer(ElexonTransformer):
             )
         else:
             df = df.with_columns(
-                pl.col("settlement_date").cast(pl.Datetime("us", "UTC")).alias("timestamp_utc")
+                settlement_period_to_utc_expr("settlement_date").alias("timestamp_utc")
             )
 
         for col in ["trade_quantity_mw", "trade_price"]:
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
+
+        # endTime arrives without a zone marker and the vendor documents none, so
+        # the text is kept as sent. end_time below is filled only when a value
+        # carries its zone; an unzoned value stays null rather than guessed.
+        if "end_time" in df.columns:
+            df = df.with_columns(pl.col("end_time").cast(pl.Utf8).alias("end_time_raw"))
 
         for col in ["end_time", "start_time"]:
             if col in df.columns:
@@ -101,19 +104,9 @@ class SOSOTransformer(ElexonTransformer):
         # datetime (indo.py W2.2 pattern) rather than dropping it at select —
         # there is no "event_time<=available_at" invariant to protect (X2-F03:
         # 802/1022 windfor rows legitimately invert it), so emit unconditionally.
-        if "published_at" in df.columns:
-            df = df.with_columns(
-                pl.col("published_at")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-            )
-        else:
-            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
+        df = with_published_at(df, "published_at", dataset=self.dataset)
 
-        dedup_cols = ["settlement_date", "contract_identification"]
-        if "trade_direction" in df.columns:
-            dedup_cols.append("trade_direction")
-        df = df.unique(subset=dedup_cols, keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(
@@ -137,6 +130,7 @@ class SOSOTransformer(ElexonTransformer):
             "trader_unit",
             "start_time",
             "end_time",
+            "end_time_raw",
             "published_at",
             "data_provider",
             "ingested_at",

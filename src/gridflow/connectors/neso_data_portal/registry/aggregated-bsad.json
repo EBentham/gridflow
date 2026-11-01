@@ -11,31 +11,12 @@
     {
       "key": "aggregated_bsad",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Settlement Period",
-              "EBCA (£)",
-              "EBVA (MWh)",
-              "SBVA (MWh)",
-              "BPA (£/MWh)",
-              "ESCA (£)",
-              "ESVA (MWh)",
-              "SSVA (MWh)",
-              "SPA (£/MWh)"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -100,24 +81,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Date",
-              "SettlementPeriod",
-              "EBCA",
-              "EBVA",
-              "SBVA",
-              "BPA",
-              "ESCA",
-              "ESVA",
-              "SSVA",
-              "SPA"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -182,10 +148,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

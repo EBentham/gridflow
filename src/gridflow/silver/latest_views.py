@@ -132,6 +132,36 @@ LATEST_VIEW_SPECS: dict[tuple[str, str], LatestViewSpec] = {
         key_columns=("settlement_date", "fuel_type"),
         optional_key_columns=("settlement_period",),
     ),
+    # The forecasts below keep every publication (Elexon) or observation
+    # (ENTSO-E); each key is the transformer's grain minus published_at.
+    ("elexon", "uou2t14d"): LatestViewSpec(
+        key_columns=("settlement_date", "bm_unit_id"),
+        optional_key_columns=("national_grid_bm_unit", "settlement_period"),
+    ),
+    **{
+        ("elexon", dataset): LatestViewSpec(
+            key_columns=("settlement_date", "settlement_period"),
+            optional_key_columns=("boundary",),
+        )
+        for dataset in ("inddem", "indgen", "tsdf", "imbalngc", "melngc")
+    },
+    ("elexon", "lolpdrm"): LatestViewSpec(key_columns=("settlement_date", "settlement_period")),
+    ("elexon", "tsdfd"): LatestViewSpec(key_columns=("forecast_date",)),
+    **{
+        ("entsoe", dataset): LatestViewSpec(key_columns=("timestamp_utc", "area_code"))
+        for dataset in (
+            "load_forecast",
+            "load_forecast_weekly",
+            "load_forecast_monthly",
+            "load_forecast_yearly",
+        )
+    },
+    **{
+        ("entsoe", dataset): LatestViewSpec(
+            key_columns=("timestamp_utc", "area_code", "production_type")
+        )
+        for dataset in ("generation_forecast", "wind_solar_forecast")
+    },
 }
 
 

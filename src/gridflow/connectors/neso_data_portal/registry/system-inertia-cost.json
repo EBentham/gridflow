@@ -11,23 +11,12 @@
     {
       "key": "system_inertia_cost",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Date",
-              "Cost"
-            ],
             "columns": [
               {
                 "source": "Settlement Date",
@@ -67,16 +56,9 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "Settlement Date",
-              "Cost_per_GVAs"
-            ],
             "columns": [
               {
                 "source": "Settlement Date",
@@ -116,10 +98,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

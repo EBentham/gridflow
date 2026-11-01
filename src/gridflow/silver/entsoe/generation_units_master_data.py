@@ -25,6 +25,7 @@ class GenerationUnitsMasterDataTransformer(EntsoeXmlTransformer):
     source = "entsoe"
     dataset = "generation_units_master_data"
     schema_cls = EntsoeGenerationUnitsMasterData
+    ENTITY_KEY_COLUMNS = ("area_code", "unit_mrid")
 
     def _parse_bronze_body(self, path: Path) -> list[dict[str, Any]]:
         return parse_generation_units_master_data_xml(path.read_bytes())
@@ -56,7 +57,7 @@ class GenerationUnitsMasterDataTransformer(EntsoeXmlTransformer):
             )
 
         df = df.filter(pl.col("unit_mrid") != "")
-        df = df.unique(subset=["area_code", "unit_mrid"], keep="last")
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(
