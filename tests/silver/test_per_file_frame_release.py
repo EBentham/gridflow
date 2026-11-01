@@ -6,15 +6,17 @@ grew with its body count. P-9 replaces the list with a running row and frame
 count. Two things are pinned here:
 
 1. **Byte-unchanged behaviour.** :func:`run_harness` drives the per-file branch
-   over the ``elexon/system_prices`` JSON shape, including unvouched bodies and
-   the opt-in silver CSV sidecar, and records the silver filenames and column
-   order, every written row (minus the per-run ``source_run_id`` and
-   system_prices' wall-clock ``ingested_at``), the CSV rows, ``run()``'s return
-   value and every ``last_*`` counter. The golden
-   ``tests/fixtures/per_file_branch_golden.json`` was produced by this exact
-   harness on a checkout of master ``d7cf513`` (before P-9), via
-   ``json.dumps(run_harness(root), indent=2, sort_keys=True)``; its NESO
-   ``daily_wind_availability`` case left with that bespoke transformer.
+   over the ``elexon/system_prices`` JSON shape and a per-file CSV stub (no
+   partition column), including unvouched and declined bodies and the opt-in
+   silver CSV sidecar, and records the silver filenames and column order, every
+   written row (minus the per-run ``source_run_id`` and system_prices'
+   wall-clock ``ingested_at``), the CSV rows, ``run()``'s return value and every
+   ``last_*`` counter. The golden ``tests/fixtures/per_file_branch_golden.json``
+   was produced by this exact harness on a checkout of master ``d7cf513``
+   (before P-9), via ``json.dumps(run_harness(root), indent=2, sort_keys=True)``.
+   The stub's case replaced the NESO ``daily_wind_availability`` case when that
+   bespoke transformer retired (ADR-034 Amendment 2); it was captured on
+   ``d7cf513`` too.
 2. **Release.** A weak reference to each body's written frame is dead once the
    next body is being written. On ``d7cf513`` the list kept every frame alive,
    so that assertion fails there.
@@ -66,6 +68,9 @@ class _PerFileCsv(BaseSilverTransformer):
         return pl.DataFrame()
 
     def read_bronze_file(self, raw_path: Path) -> pl.DataFrame:
+        """An empty frame declines the body, as a provenance rule would."""
+        if "declined" in raw_path.name:
+            return pl.DataFrame()
         return pl.read_csv(raw_path)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -108,21 +113,27 @@ def _seed_sp(data_dir: Path, *, vintages: bool = True, unvouched: bool = True) -
         (partition / "raw_nostamp.meta.json").write_text(json.dumps({"other": "x"}))
 
 
-def _seed_csv(data_dir: Path) -> None:
+def _seed_csv(data_dir: Path, *, unvouched: bool = False) -> None:
     partition = data_dir / "bronze" / "test_per_file" / "csv_bodies" / "2026" / "08" / "16"
     partition.mkdir(parents=True, exist_ok=True)
     fixture = CSV_FIXTURE.read_bytes()
     revised = fixture.replace(b"120.5", b"121.5")
-    bodies = (
+    bodies = [
         ("20260816T090000Z_aaaa", fixture, datetime(2026, 8, 16, 9, tzinfo=UTC)),
         ("20260816T183000Z_bbbb", revised, datetime(2026, 8, 16, 18, 30, tzinfo=UTC)),
         ("20260816T200000Z_cccc", fixture, datetime(2026, 8, 16, 20, tzinfo=UTC)),
-    )
+    ]
+    if unvouched:
+        bodies.append(("declined", fixture, datetime(2026, 8, 16, 21, tzinfo=UTC)))
     for name, body, written_at in bodies:
         (partition / f"raw_{name}.csv").write_bytes(body)
         (partition / f"raw_{name}.meta.json").write_text(
             json.dumps({"written_at": written_at.isoformat()})
         )
+    if unvouched:
+        (partition / "raw_orphan.csv").write_bytes(fixture)
+        (partition / "raw_nostamp.csv").write_bytes(fixture)
+        (partition / "raw_nostamp.meta.json").write_text(json.dumps({"other": "x"}))
 
 
 def _jsonable(value: Any) -> Any:
@@ -217,6 +228,10 @@ def run_harness(base: Path) -> dict[str, Any]:
 
     root = base / "sp_empty"
     cases["sp_empty"] = _run_case(root, SystemPriceTransformer, SP_DATE)
+
+    root = base / "csv_per_file"
+    _seed_csv(root, unvouched=True)
+    cases["csv_per_file"] = _run_case(root, _PerFileCsv, CSV_DATE, write_csv=True)
     return cases
 
 
