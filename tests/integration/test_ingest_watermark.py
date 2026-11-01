@@ -882,15 +882,11 @@ def test_elexon_settlement_date_empty_data_array_does_not_advance_watermark(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """T3-a (RED-first): an incremental Elexon run over a genuinely stamped
-    path (``_fetch_date``) whose every response is HTTP 200 with a parsed,
-    empty ``data`` array must NOT advance the watermark (C-8).
+    per-date path whose every response is HTTP 200 with a parsed, empty
+    ``data`` array must NOT advance the watermark (C-8).
 
-    No production ``ENDPOINTS`` entry currently uses the plain
-    ``SETTLEMENT_DATE`` style (all active datasets use
-    ``SETTLEMENT_DATE_PERIOD`` / ``PUBLISH_DATETIME`` / ``DATE_PATH`` /
-    ``NO_PARAMS``), so a throwaway dataset entry is registered for the
-    duration of this test to exercise ``_fetch_date`` specifically -- it is
-    removed automatically by ``monkeypatch`` teardown.
+    A throwaway ``DATE_PATH`` dataset entry is registered for the duration of
+    this test -- it is removed automatically by ``monkeypatch`` teardown.
 
     Before C-8 is closed, ``data_responses`` only filters on ``http_status``,
     so this 200-with-empty-array response counts as evidence and the
@@ -905,8 +901,8 @@ def test_elexon_settlement_date_empty_data_array_does_not_advance_watermark(
         "c8_settlement_date_probe",
         ElexonEndpoint(
             path="/datasets/C8PROBE",
-            description="R2-C T3-a boundary probe (SETTLEMENT_DATE, test-only)",
-            param_style=ParamStyle.SETTLEMENT_DATE,
+            description="R2-C T3-a boundary probe (DATE_PATH, test-only)",
+            param_style=ParamStyle.DATE_PATH,
         ),
     )
     respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8PROBE").mock(
@@ -942,12 +938,12 @@ def test_elexon_mixed_empty_and_populated_responses_advances(
         ElexonEndpoint(
             path="/datasets/C8MIXED",
             description="R2-C mixed-evidence boundary probe (test-only)",
-            param_style=ParamStyle.SETTLEMENT_DATE,
+            param_style=ParamStyle.DATE_PATH,
         ),
     )
 
     def handler(request: httpx.Request) -> httpx.Response:
-        settlement_date = request.url.params.get("settlementDate", "")
+        settlement_date = request.url.path.rsplit("/", 1)[-1]
         if settlement_date == "2024-01-15":
             body = {
                 "data": [{"settlementDate": settlement_date, "x": i} for i in range(5)],
@@ -1001,7 +997,7 @@ def test_elexon_truncated_json_stamps_none_and_advances_unchanged(
         ElexonEndpoint(
             path="/datasets/C8TRUNC",
             description="R2-C truncated-JSON boundary probe (test-only)",
-            param_style=ParamStyle.SETTLEMENT_DATE,
+            param_style=ParamStyle.DATE_PATH,
         ),
     )
     respx.get(url__startswith="https://data.elexon.co.uk/bmrs/api/v1/datasets/C8TRUNC").mock(

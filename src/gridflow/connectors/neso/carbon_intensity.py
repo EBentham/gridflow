@@ -4,16 +4,12 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo
-
-if TYPE_CHECKING:
-    import httpx
 
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.neso.endpoints import ENDPOINTS, NesoEndpoint, build_path
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
 from gridflow.utils.time import day_subwindows
 
 logger = logging.getLogger(__name__)
@@ -65,17 +61,13 @@ class CarbonIntensityConnector(BaseConnector):
                 **path_overrides,
             )
             try:
-                raw = await self._request(path, {})
+                raw = await self._get(path, {})
                 responses.append(
-                    RawResponse(
-                        body=raw.content,
-                        content_type=raw.headers.get("content-type", "application/json"),
+                    RawResponse.from_httpx(
+                        raw,
                         source="neso",
                         dataset=dataset,
-                        request_url=str(raw.url),
-                        request_params=path_values,
-                        api_version="v1",
-                        http_status=raw.status_code,
+                        params=path_values,
                         data_date=(None if endpoint.reference else window_start.date()),
                     )
                 )
@@ -107,19 +99,6 @@ class CarbonIntensityConnector(BaseConnector):
             len(failures),
         )
         return responses
-
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET request."""
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            resp = await self._client.get(path, params=params)
-            resp.raise_for_status()
-            return resp
 
 
 def _request_specs(

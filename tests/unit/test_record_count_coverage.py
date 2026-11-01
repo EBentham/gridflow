@@ -1,5 +1,5 @@
 """T3-f (D-18.1/P3-5/P3-8): AST coverage registry for every ``RawResponse(``
-construction site under ``src/gridflow/connectors``.
+and ``RawResponse.from_httpx(`` construction site under ``src/gridflow/connectors``.
 
 Each site is classified STAMPED / POST_STAMPED / EXEMPT (D-18.1). The
 pinned counts are the anti-drift invariant this module exists for: a new
@@ -35,10 +35,7 @@ class _RegistryEntry:
 # Seed per §3.4 of the R2-C plan (audited reasons -- each says WHY the count
 # is unavailable at that site).
 REGISTRY: dict[str, _RegistryEntry] = {
-    "elexon/client.py:_fetch_date": _RegistryEntry("STAMPED", 1),
-    "elexon/client.py:_fetch_date_period": _RegistryEntry("STAMPED", 1),
-    "elexon/client.py:_fetch_date_path": _RegistryEntry("STAMPED", 1),
-    "elexon/client.py:_fetch_datetime_range": _RegistryEntry("STAMPED", 1),
+    "elexon/client.py:_fetch_pages": _RegistryEntry("STAMPED", 1),
     "elexon/client.py:_fetch_single": _RegistryEntry(
         "EXEMPT",
         1,
@@ -96,6 +93,10 @@ REGISTRY: dict[str, _RegistryEntry] = {
 }
 
 
+# A construction is a direct ``RawResponse(...)`` or ``RawResponse.from_httpx(...)``.
+_CONSTRUCTORS = frozenset({"RawResponse", "from_httpx"})
+
+
 def _relpath(path: Path) -> str:
     return path.relative_to(CONNECTORS_ROOT).as_posix()
 
@@ -137,7 +138,7 @@ class _ModuleWalker(ast.NodeVisitor):
     def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
         enclosing = self._stack[-1] if self._stack else "<module>"
         name = _callee_name(node.func)
-        if name == "RawResponse":
+        if name in _CONSTRUCTORS:
             self.constructions.append((enclosing, node))
         if name is not None and name in self._watched_callees:
             self.calls.append(enclosing)
@@ -325,22 +326,22 @@ class TestElexonParseOnceHelpers:
             return _FakeRaw()
 
         connector = ElexonConnector(config)
-        real_request = client_module.ElexonConnector._request
+        real_get = client_module.ElexonConnector._get
         try:
             client_module.parse_json_response = _counting_parse
-            client_module.ElexonConnector._request = _fake_request  # type: ignore[method-assign]
+            client_module.ElexonConnector._get = _fake_request  # type: ignore[method-assign,assignment]
             responses = asyncio.run(
                 connector._fetch_date_period(
-                    "pn", endpoint, __import__("datetime").date(2024, 1, 15), max_periods=1
+                    "pn", endpoint, __import__("datetime").date(2024, 1, 15)
                 )
             )
         finally:
             client_module.parse_json_response = real_parse
-            client_module.ElexonConnector._request = real_request  # type: ignore[method-assign]
+            client_module.ElexonConnector._get = real_get  # type: ignore[method-assign]
 
-        assert len(responses) == 1
-        assert responses[0].record_count == 1
-        assert call_count[0] == 1, (
+        assert len(responses) == 48
+        assert all(response.record_count == 1 for response in responses)
+        assert call_count[0] == len(responses), (
             f"expected exactly one parse_json_response call per HTTP response, got {call_count[0]}"
         )
 
