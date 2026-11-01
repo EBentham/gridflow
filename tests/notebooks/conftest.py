@@ -63,8 +63,10 @@ def sample_store(tmp_path_factory: pytest.TempPathFactory) -> Path:
         mp.setenv("GRIDFLOW_LOG_DIR", str(root / "logs"))
         # Register as `gridflow` does outside pytest: a gold view whose inputs the
         # store lacks (the GB benchmark reads MID) is skipped with a warning, as on
-        # any partial store, rather than raising.
+        # any partial store, rather than raising. GRIDFLOW_ENV is pinned empty, not
+        # unset, so a `.env` read by load_settings cannot turn strict mode back on.
         mp.delenv("PYTEST_CURRENT_TEST", raising=False)
+        mp.setenv("GRIDFLOW_ENV", "")
         settings = load_settings()
         runner.import_transformers()
         day = FIXTURE_DATE.isoformat()
