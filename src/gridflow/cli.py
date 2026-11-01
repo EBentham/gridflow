@@ -351,7 +351,7 @@ def backfill(
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     start: str = typer.Option(..., help="Start date (YYYY-MM-DD) or ISO datetime"),
     end: str = typer.Option(..., help=_END_HELP),
-    chunk_days: int = typer.Option(1, help="Days per chunk"),
+    chunk_days: int = typer.Option(1, min=1, help="Days per chunk"),
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
 ) -> None:
     """Backfill historical data in chunks."""

@@ -107,3 +107,21 @@ def test_on_chunk_reports_each_chunk_once(
         ("pn", 1, D, D + one),
         ("pn", 2, D + one, D + 2 * one),
     ]
+
+
+@pytest.mark.usefixtures("calls")
+def test_chunk_days_below_one_is_refused(
+    sample_config: GridflowConfig, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``chunk_days=0`` never advanced the loop. ``run_ingest`` raises here so
+    the old code fails fast instead of hanging the suite."""
+
+    def _ingest(*_args: object, **_kwargs: object) -> list[DatasetResult]:
+        raise RuntimeError("the chunk loop was entered")
+
+    monkeypatch.setattr(runner, "run_ingest", _ingest)
+
+    with pytest.raises(ValueError, match="chunk_days must be >= 1"):
+        runner.run_backfill(
+            sample_config, "elexon", ["system_prices"], D, D + timedelta(days=1), chunk_days=0
+        )

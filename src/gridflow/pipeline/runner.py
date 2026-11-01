@@ -1829,17 +1829,22 @@ def run_backfill(
         datasets: Datasets to backfill.
         start_dt: Inclusive range start (tz-aware UTC).
         end_dt: Exclusive range end (tz-aware UTC).
-        chunk_days: Days per chunk.
+        chunk_days: Days per chunk, at least 1.
         on_chunk: Called before each chunk with ``(dataset, number, start, end)``,
             numbering from 1 per dataset, so an adapter can echo progress.
 
     Returns:
         A :class:`RunReport` aggregating every chunk's ingest + transform results.
+
+    Raises:
+        ValueError: ``chunk_days`` is below 1 (the loop would never advance).
     """
     # D-35: before date resolution and before the chunk loop. A snapshot-only
     # source is refused for EVERY window shape and every chunk size, because the
     # refusal is decided by the capability, not by what the window looks like.
     assert_backfillable(source)
+    if chunk_days < 1:
+        raise ValueError("chunk_days must be >= 1")
 
     results: list[DatasetResult] = []
     with build_context(settings) as ctx:

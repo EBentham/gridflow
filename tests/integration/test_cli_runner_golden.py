@@ -552,6 +552,7 @@ def test_backfill_converts_offsets_through_the_shared_parser(
 @pytest.mark.parametrize(
     ("extra", "case"),
     [
+        (["--chunk-days", "0"], "chunk-days 0 never advanced the loop"),
         (["--start", "2024-01-15T00:00:00"], "naive start"),
     ],
 )
