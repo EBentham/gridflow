@@ -5,11 +5,10 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
-from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
 from gridflow.schemas.entsoe import (
     EntsoeBalancingCapacity,
     EntsoeBalancingEnergyBid,
@@ -17,8 +16,8 @@ from gridflow.schemas.entsoe import (
     EntsoeBalancingState,
     EntsoeCrossZonalBalancingCapacity,
 )
-from gridflow.silver.base import BaseSilverTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.entsoe._base import EntsoeXmlTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:
@@ -29,7 +28,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class _H8BalancingTransformer(BaseSilverTransformer):
+class _H8BalancingTransformer(EntsoeXmlTransformer):
     """Shared transformer for H8 balancing time-series payloads."""
 
     value_tag = "quantity"
@@ -50,39 +49,23 @@ class _H8BalancingTransformer(BaseSilverTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset: ClassVar[tuple[str, ...]] = ("timestamp_utc", "area_code", "business_type")
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ("timestamp_utc", "area_code", "business_type")
     #: Read only the latest fetch of each distinct request. ENTSO-E stamps a
     #: fresh document mRID on every reply and A15 restarts its series mRIDs at
     #: 1 on every page, so neither identifies a row across pages or re-fetches;
     #: the request (zone, offset, ...) does.
     LATEST_FETCH_PER_REQUEST: ClassVar[bool] = False
 
+    def _bronze_candidates(self, target_date: date) -> list[Path]:
+        candidates = super()._bronze_candidates(target_date)
+        return _latest_fetch_files(candidates) if self.LATEST_FETCH_PER_REQUEST else candidates
+
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return pl.DataFrame()
-
-        xml_files = sorted(bronze_path.glob("raw_*.xml"))
-        if self.LATEST_FETCH_PER_REQUEST:
-            xml_files = _latest_fetch_files(xml_files)
-
-        rows: list[dict[str, Any]] = []
-        for xml_file in xml_files:
-            if xml_file.name.endswith(".meta.json"):
-                continue
-            try:
-                rows.extend(
-                    parse_timeseries_xml(
-                        xml_file.read_bytes(),
-                        value_tag=self.value_tag,
-                    )
-                )
-            except Exception as exc:  # noqa: BLE001
-                logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows, infer_schema_length=None)
+        # Full-length schema inference, unlike the base default: a field can
+        # first appear past the first 100 rows.
+        pairs = self._read_bronze_records(self._bronze_read_set(target_date), target_date)
+        rows = [record for _, records in pairs for record in records]
+        return pl.DataFrame(rows, infer_schema_length=None) if rows else pl.DataFrame()
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -118,8 +101,8 @@ class _H8BalancingTransformer(BaseSilverTransformer):
                 ]
             )
             .select(list(self.output_cols))
-            .unique(subset=list(self.unique_subset), keep="last")
-            .sort(list(self.unique_subset))
+            .pipe(self.dedup_to_grain)
+            .sort(list(self.ENTITY_KEY_COLUMNS))
         )
 
         return df
@@ -161,7 +144,7 @@ class CurrentBalancingStateTransformer(_H8BalancingTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = ("timestamp_utc", "area_code", "business_type", "direction")
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type", "direction")
 
 
 class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
@@ -191,7 +174,7 @@ class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
     )
     # One bid mRID can carry several standard products at different prices
     # (BE, 2026-08-01: 326 such groups), so the product is part of the key.
-    unique_subset: ClassVar[tuple[str, ...]] = (
+    ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = (
         "timestamp_utc",
         "area_code",
         "bid_mrid",
@@ -201,7 +184,7 @@ class BalancingEnergyBidsTransformer(_H8BalancingTransformer):
     )
     # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, lower edge
     # coincides exactly with the request start (R3-RESEARCH.md:56, B-7);
-    # see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -262,10 +245,10 @@ class ProcuredBalancingCapacityTransformer(_H8BalancingTransformer):
     # Each series is one procured offer: several share every descriptive
     # attribute at the same time with different quantities and prices
     # (2026-08-01: 496 such groups), so a row is one series of one reply.
-    unique_subset = ("timestamp_utc", "area_code", "document_mrid", "series_mrid")
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "document_mrid", "series_mrid")
     # B4 (N-9): FILTER_SAFE, live probe DE-LU 2026-06-01, CET-boundary
     # over-span, same shape as the already-proven A44 case (R3-RESEARCH.md:55,
-    # B-7); see _event_window.py::EVENT_WINDOW_CLASSIFICATION.
+    # B-7); see ADR-026 Appendix A.
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
 
 
@@ -286,7 +269,7 @@ class CrossZonalBalancingCapacityTransformer(_H8BalancingTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = (
+    ENTITY_KEY_COLUMNS = (
         "timestamp_utc",
         "acquiring_area_code",
         "connecting_area_code",
@@ -322,7 +305,7 @@ class BalancingFinancialExpensesIncomeTransformer(_H8BalancingTransformer):
         "data_provider",
         "ingested_at",
     )
-    unique_subset = ("timestamp_utc", "area_code", "business_type")
+    ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "business_type")
 
 
 def _with_optional_columns(df: pl.DataFrame) -> pl.DataFrame:

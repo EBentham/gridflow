@@ -95,18 +95,10 @@ _SILVER_BITEMPORAL_COLUMNS: tuple[str, ...] = (
 
 _PARTITION_COLUMNS: tuple[str, str] = ("year", "month")
 
-# WHY: the vendor Elexon BOD endpoint is decommissioned. The transformer file is
-# retained for historical tests and self-registers when imported directly, so the
-# runtime manifest must ignore that legacy registry entry without weakening the
-# strict date-column drift alarm for any other registered transformer.
-DECOMMISSIONED_DATASETS: frozenset[tuple[str, str]] = frozenset({("elexon", "bod")})
-
 # Ratified from gridflow_models' F18 inventory on 2026-07-09, then filtered
 # against the live registry after importing the six silver subpackages. The five
-# serving seed aliases are represented separately in _SERVING_ALIASES. The old
-# Elexon BOD endpoint remains intentionally absent: src/gridflow/silver/elexon
-# keeps the transformer file but does not import/register it because the vendor
-# endpoint is decommissioned. elexon/system_prices was present only as a seed row
+# serving seed aliases are represented separately in _SERVING_ALIASES.
+# elexon/system_prices was present only as a seed row
 # in the models inventory, so its settlement_date convention is carried here as
 # the sole registered transformer whose date column was derived after seed
 # removal.
@@ -145,7 +137,6 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     ("elexon", "uou2t14d"): "settlement_date",
     ("elexon", "windfor"): "timestamp_utc",
     ("entsoe", "activated_balancing_prices"): "timestamp_utc",
-    ("entsoe", "activated_balancing_qty"): "timestamp_utc",
     ("entsoe", "actual_generation"): "timestamp_utc",
     ("entsoe", "actual_generation_units"): "timestamp_utc",
     ("entsoe", "actual_load"): "timestamp_utc",
@@ -269,22 +260,6 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     ("neso", "regional_regionid"): "timestamp_utc",
     ("neso", "regional_scotland"): "timestamp_utc",
     ("neso", "regional_wales"): "timestamp_utc",
-    # D-24. `availability_date` and not the derived `timestamp_utc`: the
-    # vendor's own date is the authoritative user-facing field, and
-    # `timestamp_utc` is SP1 of that GB availability day (D-25) -- a derived
-    # instant, correct for event ordering and wrong as the thing a consumer
-    # filters a forecast day by.
-    ("neso_data_portal", "daily_wind_availability"): "availability_date",
-    # D-24. The vendor's own half-hourly instant, read as UTC on the strength
-    # of the `datastore_search` field metadata (see the transformer's module
-    # docstring). This dataset has no settlement pair and no calendar date of
-    # its own -- the instant IS the grain.
-    ("neso_data_portal", "historic_generation_mix"): "timestamp_utc",
-    # D-24/D-26. The settlement DATE, not a derived instant: this dataset
-    # deliberately emits no `timestamp_utc` (emitting one would take
-    # `event_time` off the DST-fold-safe settlement-pair branch), and the
-    # settlement date is what a consumer filters a forecast day by.
-    ("neso_data_portal", "embedded_wind_solar_forecast"): "settlement_date",
     ("open_meteo", "forecast_demand"): "timestamp_utc",
     ("open_meteo", "forecast_solar"): "timestamp_utc",
     ("open_meteo", "forecast_wind"): "timestamp_utc",
@@ -342,7 +317,9 @@ class SilverSchemaEntry:
             removed — never a name derived from ``dataset``. ``None`` for
             gold-backed rows, which have no silver base and were never
             vintage-stacked.
-        deprecated_alias: Legacy single-token silver alias, when unique.
+        deprecated_alias: The retired single-token ``silver_{dataset}`` name,
+            when unique. No view of that name is registered; consumers use it
+            to check they never query the old name.
         designated_date_col: Column to use for date-range filtering.
         date_col_sql_type: SQL type family for ``designated_date_col``.
         columns: Declared public columns, or ``None`` for dynamic schemas.
@@ -378,9 +355,6 @@ class _ServingAliasSpec:
     designated_date_col: str
 
 
-# ``weather`` is a pre-existing SDK-compat misnomer: GridflowClient.get_weather
-# reads silver_elexon_itsdo, which serves GB Initial Transmission System Demand
-# Outturn, not meteorological weather data.
 _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
     # R1-A shipped GridflowClient.get_system_prices reading the `_latest`
     # projection (serving/client.py:166); this row advertised the all-vintage
@@ -403,11 +377,11 @@ _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
     ),
     _ServingAliasSpec("gie_agsi", "gas_storage", "gold_eu_gas_storage", "gold", "gas_day"),
     _ServingAliasSpec(
-        "elexon",
+        "open_meteo",
         "weather",
-        "silver_elexon_itsdo",
+        "silver_open_meteo_historical_demand",
         "serving_alias",
-        "settlement_date",
+        "timestamp_utc",
     ),
     _ServingAliasSpec(
         None,
@@ -472,11 +446,7 @@ def get_silver_schema_manifest(
     """
 
     _ensure_silver_transformers_registered()
-    registered = sorted(
-        transformer
-        for transformer in list_transformers()
-        if transformer not in DECOMMISSIONED_DATASETS
-    )
+    registered = sorted(list_transformers())
     aliases = _deprecated_aliases(registered)
     entries = [_silver_entry(source, dataset, aliases) for source, dataset in registered]
     if include_serving_aliases:

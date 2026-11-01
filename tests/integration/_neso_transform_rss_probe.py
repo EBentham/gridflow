@@ -165,13 +165,10 @@ def _registry_documents(members: int, reader: str = "csv") -> dict[str, Any]:
             {
                 "key": FAMILY,
                 "kind": "tabular",
-                "legacy": False,
                 "archetype": "SER",
                 "refresh": "daily",
                 "empty_allowed": False,
                 "max_download_bytes": 200 * MIB,
-                "name_regex": r"^Member \d+$",
-                "transformer": None,
                 "record": rec,
             }
         ],

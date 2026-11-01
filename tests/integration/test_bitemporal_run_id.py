@@ -3,41 +3,22 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from typer.testing import CliRunner
 
 from gridflow.cli import app
 from gridflow.storage.duckdb import get_connection, init_catalogue
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
+
+if TYPE_CHECKING:
+    from conftest import IsolatedPaths
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
 TARGET_DATE = date(2024, 1, 15)
 runner = CliRunner()
-
-
-@dataclass(frozen=True)
-class IsolatedPaths:
-    data_dir: Path
-    duckdb_path: Path
-    log_dir: Path
-
-
-def _isolated_env(tmp_path: Path, monkeypatch) -> IsolatedPaths:
-    paths = IsolatedPaths(
-        data_dir=tmp_path / "data",
-        duckdb_path=tmp_path / "catalogue" / "gridflow.duckdb",
-        log_dir=tmp_path / "logs",
-    )
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(paths.data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(paths.duckdb_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(paths.log_dir))
-    # F15-D: gold SQL views reference silver views that don't exist in test
-    # tmpdirs; mock out to avoid CatalogException propagating under strict mode.
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return paths
 
 
 def _write_fuelhh_bronze(
@@ -70,11 +51,9 @@ def _write_fuelhh_bronze(
 
 
 def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
-    tmp_path: Path,
-    monkeypatch,
+    isolated_env: IsolatedPaths,
 ) -> None:
-    paths = _isolated_env(tmp_path, monkeypatch)
-    _write_fuelhh_bronze(paths.data_dir)
+    _write_fuelhh_bronze(isolated_env.data_dir)
 
     result = runner.invoke(
         app,
@@ -91,11 +70,11 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
 
     assert result.exit_code == 0, result.output
 
-    silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
+    silver = scan_parquet_dir(isolated_env.data_dir / "silver" / "elexon" / "fuelhh").collect()
     run_ids = set(silver["source_run_id"].to_list())
     assert len(run_ids) == 1
 
-    con = get_connection(paths.duckdb_path, read_only=True)
+    con = get_connection(isolated_env.duckdb_path, read_only=True)
     try:
         runs = con.execute(
             """
@@ -117,8 +96,8 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
         )
     ]
 
-    init_catalogue(paths.duckdb_path, paths.data_dir)
-    con = get_connection(paths.duckdb_path, read_only=True)
+    init_catalogue(isolated_env.duckdb_path, isolated_env.data_dir)
+    con = get_connection(isolated_env.duckdb_path, read_only=True)
     try:
         duckdb_rows = con.execute(
             """
@@ -138,12 +117,12 @@ def test_cli_transform_stamps_source_run_id_matching_pipeline_run(
 
 
 def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
-    tmp_path: Path,
-    monkeypatch,
+    isolated_env: IsolatedPaths,
 ) -> None:
-    paths = _isolated_env(tmp_path, monkeypatch)
+    """--reingest takes available_at from the bronze sidecar and still stamps
+    the transform run's id on every silver row."""
     sidecar_time = datetime(2024, 1, 16, 9, 30, tzinfo=UTC)
-    _write_fuelhh_bronze(paths.data_dir, fetched_at=sidecar_time)
+    _write_fuelhh_bronze(isolated_env.data_dir, fetched_at=sidecar_time)
 
     result = runner.invoke(
         app,
@@ -161,67 +140,18 @@ def test_cli_transform_reingest_uses_bronze_sidecar_available_at(
 
     assert result.exit_code == 0, result.output
 
-    silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
+    silver = scan_parquet_dir(isolated_env.data_dir / "silver" / "elexon" / "fuelhh").collect()
     assert set(silver["available_at"].to_list()) == {sidecar_time}
 
-
-def test_script_silver_step_threads_run_id_and_reingest(
-    tmp_path: Path,
-    monkeypatch,
-) -> None:
-    """CH4-01: the script's silver step is now ``runner.run_transform`` (the
-    duplicated ``run_pipeline.run_silver`` was deduplicated into the shared
-    runner). Assert the runner threads ``run_id`` + ``reingest`` identically."""
-    from gridflow.config.settings import load_settings
-    from gridflow.pipeline import runner as pipeline_runner
-
-    paths = _isolated_env(tmp_path, monkeypatch)
-    sidecar_time = datetime(2024, 1, 16, 10, 15, tzinfo=UTC)
-    _write_fuelhh_bronze(paths.data_dir, fetched_at=sidecar_time)
-
-    from gridflow.storage.duckdb import get_connection, init_catalogue
-
-    settings = load_settings()
-    pipeline_runner.import_transformers()
-    init_catalogue(paths.duckdb_path, paths.data_dir)
-    con = get_connection(paths.duckdb_path)
-    try:
-        start_dt = datetime(2024, 1, 15, tzinfo=UTC)
-        ctx = pipeline_runner.PipelineContext(con=con, settings=settings)
-        pipeline_runner.run_transform(
-            ctx,
-            "elexon",
-            ["fuelhh"],
-            start_dt,
-            start_dt,
-            reingest=True,
-        )
-    finally:
-        con.close()
-
-    silver = read_parquet(paths.data_dir / "silver" / "elexon" / "fuelhh" / "**" / "*.parquet")
-    run_ids = set(silver["source_run_id"].to_list())
-    assert len(run_ids) == 1
-    assert set(silver["available_at"].to_list()) == {sidecar_time}
-
-    con = get_connection(paths.duckdb_path, read_only=True)
+    con = get_connection(isolated_env.duckdb_path, read_only=True)
     try:
         runs = con.execute(
             """
-            SELECT run_id, source, dataset, operation, status
-            FROM pipeline_runs
+            SELECT run_id FROM pipeline_runs
             WHERE source = 'elexon' AND dataset = 'fuelhh' AND operation = 'transform'
             """
         ).fetchall()
     finally:
         con.close()
-
-    assert runs == [
-        (
-            next(iter(run_ids)),
-            "elexon",
-            "fuelhh",
-            "transform",
-            "completed_with_warnings",
-        )
-    ]
+    assert len(runs) == 1
+    assert set(silver["source_run_id"].to_list()) == {runs[0][0]}

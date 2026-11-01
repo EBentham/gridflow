@@ -11,13 +11,47 @@
     {
       "key": "daily_wind_availability",
       "kind": "tabular",
-      "legacy": true,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
       "max_download_bytes": 8388608,
-      "name_regex": null,
-      "transformer": "bespoke"
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "columns": [
+              {
+                "source": "BMU_ID",
+                "name": "bmu_id",
+                "dtype": "string",
+                "nullable": false
+              },
+              {
+                "source": "Date",
+                "name": "availability_date",
+                "dtype": "date",
+                "format": "%Y-%m-%d",
+                "nullable": false
+              },
+              {
+                "source": "MW",
+                "name": "availability_mw",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ]
+          }
+        ],
+        "temporal": {
+          "kind": "date_sp1",
+          "date_column": "availability_date"
+        },
+        "entity_key": [
+          "bmu_id",
+          "availability_date"
+        ],
+        "latest": "key_latest",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

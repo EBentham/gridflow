@@ -28,11 +28,6 @@ import csv
 import io
 import json
 import logging
-import os
-import subprocess
-import sys
-import tempfile
-import textwrap
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -40,9 +35,17 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings, run_cli
+from _neso_generic_support import (
+    both_as_of,
+    install_generated,
+    package_doc,
+    point_settings,
+    record_of,
+    run_cli,
+    silver_frame,
+    tree_bytes,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -55,7 +58,6 @@ from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -63,9 +65,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
+    from collections.abc import Callable
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "ic2"
@@ -320,21 +320,11 @@ SOP_FLOATS = [
 """Every physical SOP column (K-IC-2-FACTS §4 g4), all MW, by silver name."""
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings (and so the CLI) point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="ic", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -360,32 +350,17 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=meta.package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=meta.package,
         package_id=meta.package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         ckan_last_modified=meta.modified or None,
         url_type=meta.url_type,
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
 
 
 def _load(data: Path, *aliases: str) -> dict[str, str]:
@@ -402,27 +377,6 @@ def _of(frame: pl.DataFrame, alias: str) -> pl.DataFrame:
 
 def _instant(value: str) -> datetime:
     return datetime.strptime(value, INSTANT).replace(tzinfo=UTC)
-
-
-def _package_doc(filename: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / filename).read_text(encoding="utf-8"))
-    return document
-
-
-def _fresh_interpreter(code: str) -> Any:
-    """Run ``code`` in a fresh interpreter (nothing collection imported can mask it); the
-    JSON of its last stdout line."""
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=120,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    return json.loads(result.stdout.strip().splitlines()[-1])
 
 
 # --------------------------------------------------------------------------- #
@@ -474,7 +428,7 @@ def test_brit_ned_record_shape() -> None:
     + label), per-resource whole-capture selection, the upload ``ckan_last_modified`` vintage,
     one silver name per meaning across epochs (E0's From-before-To included), every column a
     nullable raw string (no numeric cast, no null token, no bound) and the E-SEM hold."""
-    record = _record("brit_ned")
+    record = record_of("brit_ned")
     assert (record.reader, record.encoding, record.version) == ("csv", "utf-8", "1")
     assert [list(epoch.header) for epoch in record.epochs] == list(HEADERS.values())
     assert [epoch.issue.kind for epoch in record.epochs] == ["none"] * 5
@@ -517,7 +471,7 @@ def test_nordpool_record_shape() -> None:
     float64, temporal ``none`` (no recipe composes a UTC date with an interval label and
     ``date_sp1`` would apply UK settlement rules to a UTC label), no issue, the dump vintage
     ``capture_fallback``, key ``(date, delivery_period)`` and an eligible family (no hold)."""
-    record = _record("nordpool_da_prices")
+    record = record_of("nordpool_da_prices")
     assert (record.reader, record.encoding, record.version) == ("csv", "utf-8", "1")
     (epoch,) = record.epochs
     assert list(epoch.header) == ["Date", "Delivery Period", "Price"]
@@ -543,7 +497,7 @@ def test_sop_record_shape() -> None:
     cardinal point raw strings, all 86 physical columns float64 (the MW list of FACTS §4 g4,
     lower-cased), temporal ``utc_instant(sop_datetime)``, issue from the creation time, key
     ``(issue_time, sop_datetime)``, dump vintage and the E-SEM hold."""
-    record = _record("system_operating_plan")
+    record = record_of("system_operating_plan")
     assert (record.reader, record.encoding, record.version) == ("csv", "utf-8", "1")
     (epoch,) = record.epochs
     assert list(epoch.header) == list(rows("SOP")[0])
@@ -588,7 +542,7 @@ def test_each_family_is_in_the_package_file_the_spec_names() -> None:
         "system-operating-plan-sop.json": {"system_operating_plan"},
     }
     for filename, keys in expected.items():
-        document = _package_doc(filename)
+        document = package_doc(filename)
         assert {f["key"] for f in document["families"] if "record" in f} == keys, filename
         for resource in document["resources"]:
             if resource["family"] == "system_operating_plan_files":
@@ -634,8 +588,8 @@ def test_brit_fixture_types_with_no_exclusion(
     logged = [r.getMessage() for r in caplog.records if "blank row" in r.getMessage()]
     assert len(logged) == (1 if blank else 0)
     assert all(f"dropped {blank} blank row(s)" in message for message in logged)
-    frame = _silver(data, meta.family)
-    expected_columns = [name for name, _type in generic.output_columns(_record(meta.family))]
+    frame = silver_frame(data, meta.family)
+    expected_columns = [name for name, _type in generic.output_columns(record_of(meta.family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected_columns if c not in ("year", "month")
     ]
@@ -653,7 +607,7 @@ def test_the_blank_line_is_dropped_by_the_logged_path_and_the_bom_is_stripped(
     assert body("BOM").startswith(b"\xef\xbb\xbf")
     with caplog.at_level(logging.INFO, logger="gridflow.silver.csv_bronze"):
         _load(data, "BOM")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     source = rows("BOM")
     assert len(source) == 73 and frame.height == 72
     assert frame["operational_date_and_hour"].to_list() == [r[W] for r in source[:72]]
@@ -670,7 +624,7 @@ def test_brit_labels_and_values_survive_byte_identical(data: Path, alias: str) -
     corrected, ``"1,056.00"`` stays text, a zero limit stays ``"0"`` and a blank cell (limit or
     reason) is null, never zero or a filled reason."""
     _load(data, alias)
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     source = populated(alias)
     header = HEADERS[EPOCH_OF[alias]]
     names = {
@@ -689,7 +643,7 @@ def test_cells_with_commas_decimals_and_zeros_are_kept_as_text(data: Path) -> No
     not a null): the E3 fixture's comma cells arrive exact, a zero limit arrives as ``"0"`` (E1
     carries them) and a blank limit is null, never ``"0"``."""
     _load(data, "E3", "E1")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     e3, e1 = _of(frame, "E3"), _of(frame, "E1")
     assert {"1,056.00", "1,076.00", "1,016.00"} <= set(e3["flow_from_gb_mw_raw"].to_list())
     assert frame.schema["flow_from_gb_mw_raw"] == pl.Utf8
@@ -706,7 +660,7 @@ def test_e0_maps_from_and_to_gb_by_name_not_by_position(data: Path) -> None:
     the cell of the header it is named for, and E0 and E2 (same data direction, opposite
     column order) agree on which column is the import."""
     _load(data, "E0")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     to_cells = [r["Flow (MW) To GB"] for r in populated("E0")]
     from_cells = [r["Flow (MW) From GB"] for r in populated("E0")]
     assert to_cells != from_cells
@@ -720,7 +674,7 @@ def test_brit_issue_and_instant_are_never_derived(data: Path) -> None:
     token or the CKAN ``last_modified``: ``timestamp_utc`` is the capture time, ``issue_time``
     is absent or null and no date or datetime column exists beyond the engine's."""
     _load(data, "E1", "E4")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     for alias in ("E1", "E4"):
         written = datetime.fromisoformat(CAPTURES[alias].written).astimezone(UTC)
         assert set(_of(frame, alias)["timestamp_utc"].to_list()) == {written}
@@ -734,7 +688,7 @@ def test_e4_time_column_is_the_same_label_not_a_datetime(data: Path) -> None:
     datetime on its name alone: its cells are ``YYYYMMDD HH:MM-HH:MM`` labels, stored raw under
     the same silver name as the other epochs."""
     _load(data, "E4")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     assert frame.schema["operational_date_and_hour"] == pl.Utf8
     assert frame["operational_date_and_hour"].to_list() == [r[G] for r in rows("E4")]
     assert frame["operational_date_and_hour"][0] == "20260920 23:00-00:00"
@@ -746,7 +700,7 @@ def test_two_uploads_load_and_latest_serves_each(data: Path) -> None:
     every row carries its own resource, and ``_latest`` (the catalogue view and Polars agree)
     serves both, then serves a later capture of one with the other still present."""
     ids = _load(data, "E1", "E2")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     assert (_of(frame, "E1").height, _of(frame, "E2").height) == (
         len(populated("E1")),
         len(populated("E2")),
@@ -764,7 +718,7 @@ def test_overlapping_uploads_are_both_served(data: Path) -> None:
     uploads both publish stay one row per upload (48 rows for the 24 shared labels), the value
     pairs are equal and the key is unique once the resource is part of it."""
     _load(data, "O1", "O2")
-    frame = _silver(data, "brit_ned")
+    frame = silver_frame(data, "brit_ned")
     shared = [r[W] for r in rows("O2")]
     both = frame.filter(pl.col("operational_date_and_hour").is_in(shared))
     assert both.height == 48
@@ -792,7 +746,7 @@ def test_the_repeated_label_fails_the_guard_and_the_clean_part_loads(data: Path)
     assert read_completion(data, "brit_ned", old) is None
     completion = read_completion(data, "brit_ned", clean)
     assert completion is not None and completion["rows_excluded"] == 0
-    silver = _silver(data, "brit_ned")
+    silver = silver_frame(data, "brit_ned")
     assert set(silver["bronze_capture_id"].to_list()) == {clean}
 
 
@@ -817,7 +771,7 @@ def test_the_0xa0_body_fails_alone_and_nothing_is_altered(data: Path) -> None:
     assert read_completion(data, "brit_ned", enc) is None
     completion = read_completion(data, "brit_ned", clean)
     assert completion is not None and completion["row_count"] == len(populated("E1"))
-    silver = _silver(data, "brit_ned")
+    silver = silver_frame(data, "brit_ned")
     assert set(silver["bronze_capture_id"].to_list()) == {clean}
     text = "".join(str(v) for column in silver.columns for v in silver[column].to_list())
     assert "�" not in text and "\xa0" not in text
@@ -894,7 +848,7 @@ def test_the_committed_brit_ned_entries_adjudicate_the_overlap_and_the_collision
     entries reconcile reports the repeated-label failure and the overlap; with the committed
     entries (their capture ids swapped for the fixture captures') every gap is adjudicated, none
     is open or stale, and the silver, state and ``_latest`` bytes are equal before and after."""
-    install_generated(monkeypatch, data / "_registry", [_package_doc("brit-ned.json")])
+    install_generated(monkeypatch, data / "_registry", [package_doc("brit-ned.json")])
     old, o1, o2, clean = (capture(data, a) for a in ("OLD", "O1", "O2", "E1"))
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, "brit_ned", data).run(DAY, run_id="r")
@@ -933,19 +887,11 @@ def test_the_committed_brit_ned_entries_adjudicate_the_overlap_and_the_collision
     assert snapshot() == before
 
 
-def _tree_bytes(data: Path, top: str) -> dict[str, bytes]:
-    return {
-        p.relative_to(data / top).as_posix(): p.read_bytes()
-        for p in sorted((data / top).rglob("*"))
-        if p.is_file()
-    }
-
-
 def _adjudicate_all_three(data: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, str]:
     """Capture ENC, OLD, O1, O2 and E1, run the family (ENC and OLD fail) and install the
     three committed BritNed entries with their capture ids swapped for the fixture captures'.
     The capture id of each alias."""
-    install_generated(monkeypatch, data / "_registry", [_package_doc("brit-ned.json")])
+    install_generated(monkeypatch, data / "_registry", [package_doc("brit-ned.json")])
     ids = {a: capture(data, a) for a in ("ENC", "OLD", "O1", "O2", "E1")}
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, "brit_ned", data).run(DAY, run_id="r")
@@ -967,7 +913,7 @@ def test_the_0xa0_capture_is_adjudicated(data: Path, monkeypatch: pytest.MonkeyP
     stale, the ENC line names ``UnicodeDecodeError`` and ruling 575, and the silver and state
     bytes are equal before and after."""
     ids = _adjudicate_all_three(data, monkeypatch)
-    before = (_tree_bytes(data, "silver"), _tree_bytes(data, "state"))
+    before = (tree_bytes(data, "silver"), tree_bytes(data, "state"))
     code, lines = run_cli("brit_ned", "--cutoff", DAY.isoformat())
     assert code == 0, lines
     assert [line for line in lines if line.startswith("GAP")] == []
@@ -977,7 +923,7 @@ def test_the_0xa0_capture_is_adjudicated(data: Path, monkeypatch: pytest.MonkeyP
     assert len(encoded) == 1
     assert encoded[0].startswith("ADJUDICATED failed brit_ned")
     assert "UnicodeDecodeError" in encoded[0] and "ruling 575" in encoded[0]
-    assert (_tree_bytes(data, "silver"), _tree_bytes(data, "state")) == before
+    assert (tree_bytes(data, "silver"), tree_bytes(data, "state")) == before
 
 
 def test_a_pre_gate_compute_error_record_is_drained_into_the_ruled_class(
@@ -1037,7 +983,9 @@ ENCODING_ENTRY: dict[str, Any] = {
 """The ruled IC-2H entry (RULINGS 575), field for field."""
 
 
-def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
+def test_the_committed_ledger_carries_the_three_brit_ned_entries(
+    run_fresh: Callable[..., str],
+) -> None:
     """Detects the committed entries drifting from the ruled text (another capture, a wider
     scope, an edited reason or question), a ledger the registry rejects, an entry naming a
     resource that is not a BritNed weekly upload, or a stray entry for another family; in a
@@ -1050,8 +998,8 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
     FFR TR127 / TR136 amended-edition overlaps (798), the DFS archive utilisation report failed
     capture (804), the WS1 2025 capture (839) and the October 2014 system frequency capture (861),
     appended last."""
-    loaded = _fresh_interpreter(
-        """
+    loaded = json.loads(
+        run_fresh("""
         import json
         from gridflow.connectors.neso_data_portal.registry import (
             CAPTURE_ID_PATTERN, load_reconcile_adjudications, load_registry,
@@ -1073,7 +1021,7 @@ def test_the_committed_ledger_carries_the_three_brit_ned_entries() -> None:
             "names": names,
             "families": [e.family for e in entries],
         }))
-        """
+        """).splitlines()[-1]
     )
     assert loaded["families"] == [
         "metered_wind_output_monthly",
@@ -1148,7 +1096,7 @@ def test_nordpool_types_with_no_exclusion_and_keeps_every_price(data: Path) -> N
     assert transformer.last_excluded_row_count == 0
     completion = read_completion(data, meta.family, capture_id)
     assert completion is not None and completion["rows_excluded"] == 0
-    frame = _silver(data, "nordpool_da_prices")
+    frame = silver_frame(data, "nordpool_da_prices")
     source = rows("NP")
     assert frame.schema["date"] == pl.Date and frame.schema["price"] == pl.Float64
     assert frame.schema["delivery_period"] == pl.Utf8
@@ -1170,7 +1118,7 @@ def test_nordpool_dst_day_keeps_24_gmt_hours_and_the_clock_is_the_capture_time(
     (the record's temporal recipe is ``none`` until a date-plus-interval recipe exists), so the
     delivery instant is only ``date`` plus the interval's start hour, UTC, for a consumer."""
     _load(data, "NP")
-    frame = _silver(data, "nordpool_da_prices")
+    frame = silver_frame(data, "nordpool_da_prices")
     day = frame.filter(pl.col("date") == date(2024, 10, 27))
     assert day.height == 24 and day["delivery_period"].n_unique() == 24
     assert not any("(" in v for v in day["delivery_period"].to_list())
@@ -1199,7 +1147,7 @@ def test_sop_types_with_no_exclusion_and_keeps_blanks_zeros_and_minus_ones(data:
     assert transformer.last_excluded_row_count == 0
     completion = read_completion(data, meta.family, capture_id)
     assert completion is not None and completion["rows_excluded"] == 0
-    frame = _silver(data, "system_operating_plan")
+    frame = silver_frame(data, "system_operating_plan")
     source = rows("SOP")
     for name in SOP_FLOATS:
         header = next(h for h in source[0] if h.lower() == name)
@@ -1226,7 +1174,7 @@ def test_sop_clocks_are_utc_the_issue_is_the_creation_time_and_report_date_is_a_
     characters of its midnight serialisation (it differs from the creation date on some rows
     and is never an issue or a target)."""
     _load(data, "SOP")
-    frame = _silver(data, "system_operating_plan")
+    frame = silver_frame(data, "system_operating_plan")
     source = rows("SOP")
     utc = pl.Datetime("us", "UTC")
     for name in ("sop_datetime", "sop_report_creation_time_gmt", "sop_d_and_c_time_gmt"):

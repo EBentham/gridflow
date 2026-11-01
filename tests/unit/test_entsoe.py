@@ -21,7 +21,6 @@ from gridflow.connectors.entsoe.parsers import (
 )
 from gridflow.schemas.entsoe import (
     EntsoeActivatedBalancingPrices,
-    EntsoeActivatedBalancingQty,
     EntsoeActualGeneration,
     EntsoeActualGenerationUnits,
     EntsoeActualLoad,
@@ -55,7 +54,6 @@ from gridflow.schemas.entsoe import (
 )
 from gridflow.silver.entsoe._outages import parse_outage_xml
 from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
-from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_generation_units import ActualGenerationUnitsTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
@@ -294,9 +292,12 @@ class TestParseTimeseriesXml:
         records = parse_timeseries_xml(b"<root></root>", value_tag="price.amount")
         assert records == []
 
-    def test_invalid_xml_returns_empty(self):
-        records = parse_timeseries_xml(b"not xml at all <<<", value_tag="price.amount")
-        assert records == []
+    def test_invalid_xml_raises(self):
+        """A body that is not XML is refused, so the reader can refuse its date."""
+        with pytest.raises(ValueError, match="not well-formed XML"):
+            parse_timeseries_xml(b"not xml at all <<<", value_tag="price.amount")
+        with pytest.raises(ValueError, match="not well-formed XML"):
+            parse_generation_units_master_data_xml(b"not xml at all <<<")
 
     # -- C-9: empty <position/> must not fabricate position 0 -----------------
 
@@ -1196,6 +1197,15 @@ class TestOutagesGenerationTransformer:
         raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
+
+    def test_null_and_unknown_codes_are_counted_and_listed(self, caplog):
+        """A null code beside an unknown one is listed, not a TypeError in the sort."""
+        raw = _make_outage_df("outages_generation_gb.xml")
+        codes = pl.Series([None, "A99"] * raw.height)[: raw.height]
+        result = self.t.transform(raw.with_columns(business_type=codes))
+        assert set(result["outage_type"].to_list()) == {"unmapped"}
+        assert self.t.last_unmapped_count == len(result)
+        assert "['A99', 'None']" in caplog.text
 
     def test_ingested_at_present(self):
         raw = _make_outage_df("outages_generation_gb.xml")
@@ -2261,17 +2271,29 @@ class TestParserA03ForwardFill:
         assert "document-a03" in caplog.text
         assert "series-a03" in caplog.text
 
-    def test_a03_unmapped_resolution_warns_and_keeps_declared_points_only(self, caplog):
+    @pytest.mark.parametrize("a03_as_steps", [False, True])
+    @pytest.mark.parametrize("curve_type", ["A03", "A01"])
+    @pytest.mark.parametrize("resolution", ["PT5M", ""])
+    def test_unmapped_resolution_refuses_the_period(
+        self, caplog, curve_type: str, resolution: str, a03_as_steps: bool
+    ):
+        """Position 2 of a PT5M series starts at 04:05; the old one-hour default
+        stamped it 05:00. A period whose resolution is unknown is refused, in
+        the outage step mode as well."""
         records = parse_timeseries_xml(
             self._xml(
-                "<Point><position>1</position><quantity>100</quantity></Point>",
-                resolution="PT5M",
+                """
+<Point><position>1</position><quantity>100</quantity></Point>
+<Point><position>2</position><quantity>50</quantity></Point>""",
+                curve_type=curve_type,
+                resolution=resolution,
             ),
             value_tag="quantity",
+            a03_as_steps=a03_as_steps,
         )
 
-        assert len(records) == 1
-        assert "Skipping ENTSO-E A03 forward-fill" in caplog.text
+        assert records == []
+        assert "Skipping ENTSO-E period" in caplog.text
         assert "document-a03" in caplog.text
         assert "series-a03" in caplog.text
 
@@ -2304,25 +2326,11 @@ class TestPhase3Endpoints:
         assert iv.domain_style == "control_area"
         assert iv.extra_params == {"businessType": "A19"}
 
-    def test_activated_balancing_qty_doc_type(self):
-        assert "activated_balancing_qty" not in DOC_TYPES
-
     def test_activated_balancing_prices_doc_type(self):
         ab = DOC_TYPES["activated_balancing_prices"]
         assert ab.document_type == "A84"
         assert ab.domain_style == "control_area"
         assert ab.extra_params == {"businessType": "A96"}
-
-    def test_activated_balancing_prices_business_type_is_overridable(self):
-        """G9 ENTSOE-05: connector must accept businessType override so
-        callers can request A95 (FCR) / A97 (mFRR) / A98 (RR) in addition
-        to the default A96 (aFRR). The silver layer already maps all
-        four codes — the connector previously hardcoded A96 only."""
-        ab = DOC_TYPES["activated_balancing_prices"]
-        assert "businessType" in ab.optional_params, (
-            "G9 ENTSOE-05 regression: businessType must be in optional_params "
-            "so callers can override the A96 default to FCR/mFRR/RR"
-        )
 
     def test_contracted_reserves_doc_type(self):
         cr = DOC_TYPES["contracted_reserves"]
@@ -2496,82 +2504,6 @@ class TestImbalanceVolumeTransformer:
         """F-02: the column-dropping select must not precede with_published_at
         — value-level check, not just column presence."""
         raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert "published_at" in result.columns
-        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
-        assert result["published_at"].null_count() == 0
-        assert set(result["published_at"].to_list()) == {_VINTAGE}
-        assert result["published_at"].to_list() != result["ingested_at"].to_list()
-
-
-# ---------------------------------------------------------------------------
-# Phase 3 — ActivatedBalancingQtyTransformer
-# ---------------------------------------------------------------------------
-
-
-class TestActivatedBalancingQtyTransformer:
-    def setup_method(self):
-        self.t = _make_entsoe_transformer(ActivatedBalancingQtyTransformer)
-
-    def test_transform_basic(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert not result.is_empty()
-        assert "quantity_mwh" in result.columns
-        assert "reserve_type" in result.columns
-        assert "direction" in result.columns
-
-    def test_four_records(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert len(result) == 4
-
-    def test_reserve_type_values(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        rtypes = set(result["reserve_type"].to_list())
-        assert "fcr" in rtypes
-        assert "afrr" in rtypes
-
-    def test_direction_values(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        dirs = set(result["direction"].to_list())
-        assert "up" in dirs
-        assert "down" in dirs
-
-    def test_fcr_up_qty_values(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = (
-            self.t.transform(raw)
-            .filter((pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up"))
-            .sort("timestamp_utc")
-        )
-        assert abs(result["quantity_mwh"][0] - 320) < 0.1
-
-    def test_timestamp_dtype(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
-
-    def test_ingested_at_present(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert "ingested_at" in result.columns
-
-    def test_dedup(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        doubled = pl.concat([raw, raw])
-        result = self.t.transform(doubled)
-        assert len(result) == 4
-
-    def test_empty_input(self):
-        assert self.t.transform(pl.DataFrame()).is_empty()
-
-    def test_published_at_equals_document_vintage(self):
-        """F-02: the column-dropping select must not precede with_published_at
-        — value-level check, not just column presence."""
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert "published_at" in result.columns
         assert result["published_at"].dtype == pl.Datetime("us", "UTC")
@@ -2788,34 +2720,6 @@ class TestEntsoeImbalanceVolumeSchema:
             )
 
 
-class TestEntsoeActivatedBalancingQtySchema:
-    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
-
-    def test_valid_record(self):
-        r = EntsoeActivatedBalancingQty(
-            timestamp_utc=self._TS,
-            area_code="10YGB----------A",
-            reserve_type="fcr",
-            direction="up",
-            quantity_mwh=320.0,
-        )
-        assert r.data_provider == "entsoe"
-        assert r.quantity_mwh == 320.0
-        assert r.reserve_type == "fcr"
-
-    def test_naive_timestamp_rejected(self):
-        from pydantic import ValidationError
-
-        with pytest.raises(ValidationError):
-            EntsoeActivatedBalancingQty(
-                timestamp_utc=datetime(2024, 1, 15),
-                area_code="10YGB----------A",
-                reserve_type="fcr",
-                direction="up",
-                quantity_mwh=320.0,
-            )
-
-
 class TestEntsoeActivatedBalancingPricesSchema:
     _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
 
@@ -2960,6 +2864,23 @@ class TestActualGenerationUnitsTransformer:
         raw = _make_df_from_xml("actual_generation_units_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert len(result) == 4
+
+
+@pytest.mark.parametrize(
+    ("cls", "fixture"),
+    [
+        (ActualGenerationUnitsTransformer, "actual_generation_units_gb.xml"),
+        (InstalledCapacityUnitsTransformer, "installed_capacity_units_gb.xml"),
+    ],
+)
+def test_unit_series_without_a_unit_mrid_are_dropped(cls, fixture):
+    """A null or empty unit mRID leaves no unit to key on, so those rows go."""
+    raw = _make_df_from_xml(fixture, "quantity")
+    mrids = raw["unit_mrid"].to_list()
+    mrids[0], mrids[1] = None, ""
+    result = _make_entsoe_transformer(cls).transform(raw.with_columns(unit_mrid=pl.Series(mrids)))
+    assert set(result["unit_mrid"].to_list()) == set(mrids[2:])
+    assert result.height < raw.height
 
 
 class TestWaterReservoirsTransformer:

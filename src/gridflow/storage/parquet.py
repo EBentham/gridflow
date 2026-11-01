@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import glob
 import logging
 import os
 import re
@@ -65,44 +64,6 @@ def write_parquet(
 
     logger.debug(f"Wrote {len(df)} rows to {path}")
     return path
-
-
-def read_parquet(path: Path | str) -> pl.DataFrame:
-    """Read a Parquet file or glob pattern into a Polars DataFrame.
-
-    For a glob, each matched file is read separately and diagonal-concatenated
-    so that within-glob schema drift (an extra column in a later file) unions
-    and null-fills instead of raising. A single multi-file read resolves the
-    schema from the first file and rejects any later file carrying an extra
-    column -- a real failure once silver gains bitemporal columns over time and
-    a partial re-transform leaves a narrow file beside a wide one. Genuine
-    corruption / dtype conflicts still surface (per-file read raises). See
-    :func:`scan_parquet_dir` for the directory-tree equivalent.
-    """
-    path_str = str(path)
-
-    if "*" in path_str:
-        matched = sorted(glob.glob(path_str, recursive=True))
-        files = [f for f in matched if not is_reserved_temp_path(f)]
-        if not files:
-            if matched:
-                return pl.DataFrame()
-            # No match: defer to polars so a genuinely bad path raises the same
-            # error as before rather than being masked as empty data.
-            return pl.read_parquet(path_str, hive_partitioning=True, missing_columns="insert")
-        frames = [
-            pl.read_parquet(f, hive_partitioning=True, missing_columns="insert") for f in files
-        ]
-        return pl.concat(frames, how="diagonal")
-
-    path_obj = Path(path_str)
-    if is_reserved_temp_path(path_obj):
-        raise ValueError(f"Refusing to read reserved temporary Parquet path: {path_obj}")
-    if not path_obj.exists():
-        logger.warning(f"Parquet file not found: {path}")
-        return pl.DataFrame()
-
-    return pl.read_parquet(path_obj, hive_partitioning=True, missing_columns="insert")
 
 
 def scan_parquet_dir(directory: Path) -> pl.LazyFrame:

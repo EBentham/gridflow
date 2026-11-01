@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 from gridflow.silver.elexon.remit import REMITTransformer
-from gridflow.storage.parquet import read_parquet
 from gridflow.storage.paths import PathBuilder
 
 if TYPE_CHECKING:
@@ -155,7 +154,7 @@ def test_remit_append_only_preserves_revisions_across_runs(
     REMITTransformer(tmp_data_dir).run(TARGET_DATE, run_id="run-2")
 
     parquet_files = _list_parquet_files(silver_dir)
-    frames = [read_parquet(p) for p in parquet_files]
+    frames = [pl.read_parquet(p) for p in parquet_files]
     union = pl.concat(frames, how="diagonal_relaxed")
 
     revisions = union.filter(pl.col("mrid") == "MSG-A")["revision_number"].to_list()

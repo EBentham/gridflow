@@ -11,13 +11,6 @@
     {
       "key": "fes_ed1_electricity_demand",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -111,9 +104,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -365,9 +355,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -576,9 +563,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -775,9 +759,6 @@
                 "nullable": true
               }
             ],
-            "issue": {
-              "kind": "none"
-            },
             "unpivot": {
               "years": [
                 [
@@ -946,14 +927,7 @@
     },
     {
       "key": "fes_ed1_electricity_demand_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

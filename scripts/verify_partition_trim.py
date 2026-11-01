@@ -30,8 +30,8 @@ if TYPE_CHECKING:
 
 from gridflow.pipeline.runner import import_transformers
 from gridflow.silver import base as silver_base
+from gridflow.silver.elexon import _base as elexon_base_module
 from gridflow.silver.elexon import fuelhh as fuelhh_module
-from gridflow.silver.elexon import mid as mid_module
 from gridflow.silver.elexon import system_prices as system_prices_module
 from gridflow.silver.elexon.fuelhh import FuelHHTransformer
 from gridflow.silver.elexon.system_prices import SystemPriceTransformer
@@ -386,7 +386,7 @@ def _availability_map(output_root: Path, dataset: str) -> dict[Identity, tuple[o
 @contextmanager
 def _scoped_fixed_clocks() -> Iterator[None]:
     """Bind deterministic clocks for the complete rebuild, then restore exactly."""
-    modules = (silver_base, fuelhh_module, mid_module, system_prices_module)
+    modules = (silver_base, fuelhh_module, elexon_base_module, system_prices_module)
     incoming = tuple(module.datetime for module in modules)
     try:
         for module in modules:

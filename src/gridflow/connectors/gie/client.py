@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
-from datetime import date, datetime
-from typing import TYPE_CHECKING, Any, Literal, cast
+from datetime import date, datetime, time
+from typing import Any, Literal, cast
 from urllib.parse import parse_qs, urlparse
-
-if TYPE_CHECKING:
-    import httpx
 
 from gridflow.connectors.base import BaseConnector, RawResponse
 from gridflow.connectors.gie.endpoints import (
@@ -23,7 +19,7 @@ from gridflow.connectors.gie.endpoints import (
     build_storage_query_plan,
 )
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import window_dates
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +40,9 @@ class GieConnector(BaseConnector):
 
     # source_name is set dynamically at class-registration time
     source_name = "gie_agsi"
+    # GIE allows 60 calls a minute: every send, retries included, is paced at
+    # ``rate_limit_per_second`` (1 in ``sources.yaml``).
+    PACED_SENDS = True
 
     def list_datasets(self) -> list[str]:
         return list(self.config.datasets.keys())
@@ -53,28 +52,14 @@ class GieConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
-        """Fetch GIE data for the given date range."""
-        # Reset the partial-fetch counter at the top of the public entry point so
-        # a reused connector never inherits a prior call's count (CH-COR-01).
-        # Reset before the dispatch branch so an AGSI raise-path can't leave a
-        # stale legacy count behind.
-        self.last_skipped_units = 0
+        """Fetch GIE data for the half-open window ``[start, end)``."""
+        # GIE takes inclusive gas days; convert the half-open window once, here.
+        end = datetime.combine(window_dates(start, end)[-1], time.min, tzinfo=end.tzinfo)
         if self.source_name == "gie_agsi":
             if dataset in _AGSI_STORAGE_DATASETS:
-                return await self._fetch_agsi_storage(
-                    dataset=dataset,
-                    start=start,
-                    end=end,
-                    **params,
-                )
-            return await self._fetch_agsi_endpoint(
-                dataset=dataset,
-                start=start,
-                end=end,
-                **params,
-            )
+                return await self._fetch_agsi_storage(dataset=dataset, start=start, end=end)
+            return await self._fetch_agsi_endpoint(dataset=dataset, start=start, end=end)
 
         return await self._fetch_legacy_country_dataset(
             dataset=dataset,
@@ -101,58 +86,18 @@ class GieConnector(BaseConnector):
         ``completed_with_warnings`` (raise-on-all-fail, matching the Open-Meteo
         contract).
 
-        Countries are independent units, so they fetch concurrently via
-        ``asyncio.gather(..., return_exceptions=True)`` (CH3-03 / C2-7). Paging
-        *within* a country stays sequential inside ``_fetch_country``; only the
-        across-country loop is parallel. The ``rate_limit_per_second`` semaphore
-        inside ``_request`` keeps in-flight HTTP bounded, so widening this loop
-        does not widen concurrency. Tallying once from a post-gather count (not
-        incremented mid-coroutine) is the drop-in the CH-COR-01 counter was
-        designed for.
+        Countries are independent units, so they fetch concurrently (CH3-03 /
+        C2-7). Paging *within* a country stays sequential inside
+        ``_fetch_country``; the semaphore keeps in-flight HTTP bounded.
         """
         countries = _COUNTRY_MAP.get(self.source_name, AGSI_COUNTRIES)
-        results = await asyncio.gather(
-            *(
-                self._fetch_country(
-                    dataset=dataset,
-                    country=country,
-                    start=start,
-                    end=end,
-                )
+        responses = await self._gather_units(
+            [
+                self._fetch_country(dataset=dataset, country=country, start=start, end=end)
                 for country in countries
-            ),
-            return_exceptions=True,
+            ],
+            skip_labels=[f"{dataset} for country {country}" for country in countries],
         )
-
-        responses: list[RawResponse] = []
-        failures: list[tuple[str, Exception]] = []
-        for country, result in zip(countries, results, strict=True):
-            if isinstance(result, Exception):
-                # Tolerate a per-country failure (the original ``except Exception``
-                # behaviour); tally it for the CH-COR-01 partial-fetch contract.
-                logger.warning(
-                    "Failed to fetch %s/%s for country %s: %s",
-                    self.source_name,
-                    dataset,
-                    country,
-                    result,
-                )
-                failures.append((country, result))
-            elif isinstance(result, BaseException):
-                # CancelledError / KeyboardInterrupt / SystemExit are not country
-                # failures — the sequential ``except Exception`` propagated them,
-                # so do not swallow them into a partial-success tally.
-                raise result
-            else:
-                responses.extend(result)
-
-        # Tally once from the post-gather count (CH-COR-01 contract).
-        self.last_skipped_units = len(failures)
-
-        # All attempted countries failed → re-raise so the run is recorded as
-        # 'failed', not an empty 'success'/'completed_with_warnings' (C2-6).
-        if not responses and failures:
-            raise failures[-1][1]
 
         logger.info(
             "Fetched %d responses for %s/%s from %s to %s (%d countries skipped)",
@@ -161,7 +106,7 @@ class GieConnector(BaseConnector):
             dataset,
             start.date(),
             end.date(),
-            len(failures),
+            self.last_skipped_units,
         )
         return responses
 
@@ -171,43 +116,17 @@ class GieConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
-        """Fetch AGSI storage reports for a documented query scope."""
-        scope = QueryScope(
-            params.pop(
-                "scope",
-                QueryScope.COUNTRY if dataset == "storage" else QueryScope.AGGREGATE_TYPE,
-            )
-        )
-        listing_payload = params.pop("listing_payload", None)
-        if scope in (QueryScope.COMPANY, QueryScope.FACILITY) and listing_payload is None:
-            listing_payload = await self._fetch_listing_payload()
-
-        plan = build_storage_query_plan(
-            scope=scope,
-            start=start,
-            end=end,
-            aggregate_types=_as_tuple(
-                params.pop("aggregate_types", None),
-                default=("EU",),
-            ),
-            countries=_as_optional_tuple(params.pop("countries", None)),
-            listing_payload=listing_payload,
-            size=int(params.pop("size", DEFAULT_PAGE_SIZE)),
-        )
-
+        """Fetch AGSI storage: every country for ``storage``, the EU aggregate otherwise."""
+        scope = QueryScope.COUNTRY if dataset == "storage" else QueryScope.AGGREGATE_TYPE
         responses: list[RawResponse] = []
-        for planned in plan:
-            if len(planned.expected_gas_days) != 1:
-                raise ValueError("AGSI exact-date storage plan must target one gas day")
-            gas_day = planned.expected_gas_days[0]
+        for planned in build_storage_query_plan(scope=scope, start=start, end=end):
             responses.extend(
                 await self._fetch_paginated(
                     dataset=dataset,
-                    path=planned.path,
+                    path=GIE_API_PATH,
                     params=planned.params,
-                    data_date=gas_day,
+                    data_date=planned.gas_day,
                     paginated=True,
                     validate_gas_day=True,
                 )
@@ -229,22 +148,17 @@ class GieConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
+        turl: str | None = None,
     ) -> list[RawResponse]:
-        """Fetch a non-storage AGSI endpoint family."""
+        """Fetch a non-storage AGSI endpoint family (one news item when ``turl`` is set)."""
         if dataset not in ENDPOINTS:
             raise ValueError(f"Unknown GIE AGSI dataset: {dataset!r}")
 
         endpoint = ENDPOINTS[dataset]
         query_params = dict(endpoint.default_params)
         if dataset == "news_item":
-            turl = params.pop("turl", params.pop("id", None))
             if turl is None:
-                return await self._fetch_agsi_news_items_from_listing(
-                    start=start,
-                    end=end,
-                    **params,
-                )
+                return await self._fetch_agsi_news_items_from_listing(start=start, end=end)
             query_params["turl"] = turl
         if dataset == "unavailability":
             query_params.update(
@@ -253,7 +167,6 @@ class GieConnector(BaseConnector):
                     "end": end.date().isoformat(),
                 }
             )
-        query_params.update(params)
 
         responses = await self._fetch_paginated(
             dataset=dataset,
@@ -275,15 +188,9 @@ class GieConnector(BaseConnector):
         *,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch news item details by discovering item URLs from the news listing."""
-        listing_responses = await self._fetch_agsi_endpoint(
-            dataset="news",
-            start=start,
-            end=end,
-            **params,
-        )
+        listing_responses = await self._fetch_agsi_endpoint(dataset="news", start=start, end=end)
         turls = list(
             dict.fromkeys(
                 turl
@@ -308,13 +215,6 @@ class GieConnector(BaseConnector):
             )
         return responses
 
-    async def _fetch_listing_payload(self) -> dict[str, Any] | list[dict[str, Any]]:
-        raw = await self._request(
-            ENDPOINTS["about_listing"].path,
-            dict(ENDPOINTS["about_listing"].default_params),
-        )
-        return cast("dict[str, Any] | list[dict[str, Any]]", json.loads(raw.content))
-
     async def _fetch_paginated(
         self,
         *,
@@ -326,29 +226,26 @@ class GieConnector(BaseConnector):
         validate_gas_day: bool,
     ) -> list[RawResponse]:
         responses: list[RawResponse] = []
-        page = int(params.get("page", 1))
+        page = 1
 
         while True:
             query_params = {**params, "page": page} if paginated else dict(params)
-            raw = await self._request(path, query_params)
+            raw = await self._get(path, query_params)
             body = raw.content
             total_pages = _last_page(body) if paginated else 1
             if validate_gas_day and data_date is not None:
                 _validate_storage_gas_day(body, data_date)
 
             responses.append(
-                RawResponse(
-                    body=body,
-                    content_type=raw.headers.get("content-type", "application/json"),
+                RawResponse.from_httpx(
+                    raw,
                     source=self.source_name,
                     dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params=dict(query_params),
-                    api_version="v1",
+                    params=query_params,
                     page=page,
                     total_pages=total_pages,
-                    http_status=raw.status_code,
                     data_date=data_date,
+                    record_count=_record_count(body),
                 )
             )
 
@@ -378,20 +275,16 @@ class GieConnector(BaseConnector):
                 "page": page,
                 "size": DEFAULT_PAGE_SIZE,
             }
-            raw = await self._request(GIE_API_PATH, query_params)
+            raw = await self._get(GIE_API_PATH, query_params)
             body = raw.content
 
             responses.append(
-                RawResponse(
-                    body=body,
-                    content_type=raw.headers.get("content-type", "application/json"),
+                RawResponse.from_httpx(
+                    raw,
                     source=self.source_name,
                     dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params=dict(query_params),
-                    api_version="v1",
+                    params=query_params,
                     page=page,
-                    http_status=raw.status_code,
                     data_date=start.date(),
                 )
             )
@@ -414,19 +307,6 @@ class GieConnector(BaseConnector):
 
         return responses
 
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Rate-limited, retried HTTP GET request."""
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            resp = await self._client.get(path, params=params)
-            resp.raise_for_status()
-            return resp
-
 
 class AgsiConnector(GieConnector):
     """AGSI+ gas storage connector (source_name='gie_agsi')."""
@@ -444,20 +324,19 @@ register_connector("gie_agsi", AgsiConnector)
 register_connector("gie_alsi", AlsiConnector)
 
 
-def _as_tuple(value: Any, *, default: tuple[str, ...]) -> tuple[str, ...]:
-    if value is None:
-        return default
-    if isinstance(value, str):
-        return (value,)
-    return tuple(value)
+def _record_count(body: bytes) -> int | None:
+    """The number of records in an AGSI body, stamped as ``record_count``.
 
-
-def _as_optional_tuple(value: Any) -> tuple[str, ...] | None:
-    if value is None:
+    An HTTP 200 ``{"data": []}`` (a gas day not yet published, a quiet window)
+    is a confirmed zero, so it is not evidence that advances the watermark
+    (C-8). ``None`` when the body has no ``data`` list to count.
+    """
+    try:
+        payload = json.loads(body)
+    except ValueError:  # not JSON, or not decodable text
         return None
-    if isinstance(value, str):
-        return (value,)
-    return tuple(value)
+    data = payload.get("data") if isinstance(payload, dict) else None
+    return len(data) if isinstance(data, list) else None
 
 
 def _last_page(body: bytes) -> int:

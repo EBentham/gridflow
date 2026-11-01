@@ -11,17 +11,13 @@ real A80 bronze (outages_generation/2026/09/08), trimmed.
 from __future__ import annotations
 
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING
 
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
-from gridflow.silver.entsoe._outages import clip_to_day, parse_outage_xml, read_outage_partition
+from gridflow.silver.entsoe._outages import clip_to_day, outage_steps_for_day, parse_outage_xml
 from gridflow.silver.entsoe.outages_generation import OutagesGenerationTransformer
 from gridflow.silver.entsoe.outages_h7 import OutagesProductionTransformer
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 _NS = "urn:iec62325.351:tc57wg16:451-6:outagedocument:3:0"
 
@@ -152,35 +148,24 @@ class TestDayOwnership:
             (_utc("2026-09-10T00:00"), _utc("2026-09-11T00:00"))
         ]
 
-    def test_query_over_two_days_returns_each_outage_minute_once(self, tmp_path: Path) -> None:
+    def test_query_over_two_days_returns_each_outage_minute_once(self) -> None:
         """13al: both daily files held the whole outage, so a two-day read doubled it."""
-        body = _a80("doc", 1)
-        frames = []
-        for day in (date(2026, 9, 10), date(2026, 9, 11)):
-            part = tmp_path / f"{day:%Y%m%d}"
-            part.mkdir()
-            (part / "raw_x.xml").write_bytes(body)
-            frames.append(read_outage_partition(part, day))
+        rows = parse_outage_xml(_a80("doc", 1))
+        frames = [outage_steps_for_day(rows, day) for day in (date(2026, 9, 10), date(2026, 9, 11))]
         both = pl.concat(frames, how="diagonal")
         assert both.height == 2
         assert both["timestamp_utc"].n_unique() == 2
         assert (both["step_end_utc"] - both["timestamp_utc"]).dt.total_hours().to_list() == [24, 24]
 
-    def test_superseded_revision_does_not_return_on_days_it_alone_covers(
-        self, tmp_path: Path
-    ) -> None:
+    def test_superseded_revision_does_not_return_on_days_it_alone_covers(self) -> None:
         """Review finding: clipping before choosing the revision kept revision 1
         on 9 Sep although revision 2 moved the outage to start on 10 Sep."""
-        (tmp_path / "raw_1.xml").write_bytes(
-            _a80("doc", 1, start="2026-09-08T00:00Z", end="2026-09-12T00:00Z")
-        )
-        (tmp_path / "raw_2.xml").write_bytes(
-            _a80("doc", 2, start="2026-09-10T00:00Z", end="2026-09-12T00:00Z")
-        )
-        assert read_outage_partition(tmp_path, date(2026, 9, 9)).is_empty()
-        assert read_outage_partition(tmp_path, date(2026, 9, 10))["revision_number"].to_list() == [
-            "2"
+        rows = [
+            *parse_outage_xml(_a80("doc", 1, start="2026-09-08T00:00Z", end="2026-09-12T00:00Z")),
+            *parse_outage_xml(_a80("doc", 2, start="2026-09-10T00:00Z", end="2026-09-12T00:00Z")),
         ]
+        assert outage_steps_for_day(rows, date(2026, 9, 9)).is_empty()
+        assert outage_steps_for_day(rows, date(2026, 9, 10))["revision_number"].to_list() == ["2"]
 
     def test_production_table_keys_on_document(self) -> None:
         """13ak: production's timeseries_mrid is always "1", so two documents collided."""

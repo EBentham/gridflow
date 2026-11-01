@@ -2,22 +2,22 @@
 
 from __future__ import annotations
 
-import json
 import logging
-from datetime import UTC, date, datetime
+from datetime import UTC, datetime
 from typing import Any, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonFuelHH
-from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.elexon._base import ElexonTransformer
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 from gridflow.utils.time import settlement_period_to_utc, utc_to_settlement_period
 
 logger = logging.getLogger(__name__)
 
 
-class FuelHHTransformer(BaseSilverTransformer):
+class FuelHHTransformer(ElexonTransformer):
     """Transform Elexon FUELHH data from bronze to silver."""
 
     source = "elexon"
@@ -30,33 +30,7 @@ class FuelHHTransformer(BaseSilverTransformer):
         "settlement_date",
         "settlement_period",
         "fuel_type",
-    )  # D-8: verbatim from unique() below
-
-    def read_bronze(self, target_date: date) -> pl.DataFrame:
-        bronze_path = (
-            self.bronze_dir
-            / str(target_date.year)
-            / f"{target_date.month:02d}"
-            / f"{target_date.day:02d}"
-        )
-        if not bronze_path.exists():
-            return pl.DataFrame()
-
-        rows: list[dict[str, Any]] = []
-        for f in sorted(bronze_path.glob("raw_*.json")):
-            if f.name.endswith(".meta.json"):
-                continue
-            try:
-                data = json.loads(f.read_text())
-                records = data.get("data", []) if isinstance(data, dict) else data
-                rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as e:
-                logger.warning(f"Failed to parse bronze file {f}: {e}")
-                continue
-
-        if not rows:
-            return pl.DataFrame()
-        return pl.DataFrame(rows)
+    )  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         self.last_start_time_fallback_count = 0
@@ -169,24 +143,9 @@ class FuelHHTransformer(BaseSilverTransformer):
         # it's well-typed when it survives to silver. ElexonFuelHH schema
         # declares `published_at: datetime | None`; without this cast it
         # was being silently dropped from output_cols.
-        if "published_at" in df.columns:
-            df = df.with_columns(
-                pl.col("published_at")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-            )
-        else:
-            # WHY: the silver schema declares published_at as a nullable contract
-            # column. Emit it as typed-null when bronze lacks the publish field so the
-            # silver schema is deterministic and partition globs don't drift across
-            # history (a missing column breaks SELECT * reads spanning files that do
-            # carry it).
-            df = df.with_columns(pl.lit(None).cast(pl.Datetime("us", "UTC")).alias("published_at"))
+        df = with_published_at(df, "published_at", dataset=self.dataset)
 
-        df = df.unique(
-            subset=["settlement_date", "settlement_period", "fuel_type"],
-            keep="last",
-        )
+        df = self.dedup_to_grain(df)
 
         now = datetime.now(UTC)
         df = df.with_columns(

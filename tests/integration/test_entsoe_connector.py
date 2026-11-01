@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -194,3 +196,28 @@ async def test_acknowledgement_error_includes_reason_and_redacts_token(
     assert "Input parameter does not exist: in_Domain.mRID" in message
     assert "test-token" not in message
     assert "securityToken=<redacted>" in message
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_http_error_traceback_does_not_leak_token(entsoe_config: SourceConfig) -> None:
+    """A rendered traceback (CLI crash, ``logger.exception``) must not print the token.
+
+    The redacted error used to chain httpx's own error, whose message is the raw
+    request URL with ``securityToken`` in it.
+    """
+    token = "fake-entsoe-token-5f3c9a"
+    config = entsoe_config.model_copy(update={"api_key": token})
+    respx.get(f"{_ENTSOE_BASE}/api").mock(return_value=httpx.Response(401, content=b""))
+
+    async with EntsoeConnector(config) as connector:
+        with pytest.raises(httpx.HTTPStatusError) as exc_info:
+            await connector.fetch(
+                dataset="actual_load",
+                start=datetime(2024, 1, 15, tzinfo=UTC),
+                end=datetime(2024, 1, 16, tzinfo=UTC),
+            )
+
+    exc = exc_info.value
+    assert token not in "".join(traceback.format_exception(exc))
+    assert token not in logging.Formatter().formatException((type(exc), exc, exc.__traceback__))

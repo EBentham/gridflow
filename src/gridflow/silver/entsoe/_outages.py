@@ -19,19 +19,12 @@ The outage's own start and end survive unclipped as ``outage_start_utc`` and
 
 from __future__ import annotations
 
-import logging
 from datetime import UTC, date, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 
 from gridflow.connectors.entsoe.parsers import parse_timeseries_xml
-
-if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from pathlib import Path
-
-logger = logging.getLogger(__name__)
 
 _UTC_US = pl.Datetime("us", "UTC")
 
@@ -84,23 +77,17 @@ def parse_outage_xml(xml_bytes: bytes) -> list[dict[str, Any]]:
     return parse_timeseries_xml(xml_bytes, value_tag="quantity", a03_as_steps=True)
 
 
-def read_outage_partition(bronze_path: Path, target_date: date) -> pl.DataFrame:
-    """Parse every raw body in one bronze partition and clip it to that day.
+def outage_steps_for_day(rows: list[dict[str, Any]], target_date: date) -> pl.DataFrame:
+    """Keep each document's latest revision, then clip its steps to the day.
 
     Args:
-        bronze_path: The partition directory holding ``raw_*.xml`` bodies.
+        rows: :func:`parse_outage_xml` records from every body of one partition.
         target_date: The partition's UTC day.
 
     Returns:
         Step rows of each document's latest revision that overlap
         ``target_date``, clipped to it; empty when none.
     """
-    rows: list[dict[str, Any]] = []
-    for xml_file in sorted(bronze_path.glob("raw_*.xml")):
-        try:
-            rows.extend(parse_outage_xml(xml_file.read_bytes()))
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("Failed to parse ENTSO-E XML %s: %s", xml_file, exc)
     if not rows:
         return pl.DataFrame()
     # Revision first, clip second: clipping first would let a superseded
@@ -196,24 +183,21 @@ def prepare_outage_frame(raw_df: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-def latest_revision_steps(df: pl.DataFrame, identity: Sequence[str]) -> pl.DataFrame:
-    """Keep each document's latest revision and one row per step.
+def latest_revision_steps(df: pl.DataFrame) -> pl.DataFrame:
+    """Keep each document's latest revision, its newest copy read last.
 
     A later revision supersedes the whole document, so older revisions are
     dropped by document, not point by point. Repeated fetches of the same
-    revision collapse on ``identity`` plus the step start.
+    revision then collapse in the caller's ``dedup_to_grain``, on the
+    document step its ``ENTITY_KEY_COLUMNS`` name; ordering by
+    ``document_created_at`` makes the newest copy the one kept.
 
     Args:
         df: Output of :func:`prepare_outage_frame`.
-        identity: Columns that, with ``timestamp_utc``, name one step of one
-            document (always including ``document_mrid``).
 
     Returns:
-        The de-duplicated frame, sorted by document and time.
+        The latest revision's rows, oldest copy first.
     """
     df = keep_latest_revision(df)
-    key = [*identity, "timestamp_utc"]
     order = [c for c in ("document_created_at",) if c in df.columns]
-    if order:
-        df = df.sort(order, nulls_last=False)
-    return df.unique(subset=key, keep="last").sort(key)
+    return df.sort(order, nulls_last=False) if order else df
