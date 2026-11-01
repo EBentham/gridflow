@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
 from typing import ClassVar
 
 import polars as pl
 
 from gridflow.schemas.entsoe import EntsoeWindSolarForecast
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-
-logger = logging.getLogger(__name__)
 
 
 class WindSolarForecastTransformer(EntsoeXmlTransformer):
@@ -21,6 +16,8 @@ class WindSolarForecastTransformer(EntsoeXmlTransformer):
 
     Each TimeSeries carries a MktPSRType / psrType code:
       B16 = Solar, B18 = Wind Offshore, B19 = Wind Onshore.
+    ``published_at`` is in the grain: each fetch is an observation an as-of
+    read must find.
     """
 
     source = "entsoe"
@@ -31,56 +28,19 @@ class WindSolarForecastTransformer(EntsoeXmlTransformer):
     ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "production_type", "published_at")
     EVENT_WINDOW_FILTER: ClassVar[bool] = True
     """R2-A Task 4 / F-10 opt-in — see ``silver/entsoe/_event_window.py``."""
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        required = ["timestamp_utc", "value", "in_domain"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error("Missing required columns in wind_solar_forecast: %s", missing)
-            return pl.DataFrame()
-
-        df = raw_df.rename({"value": "generation_forecast_mw", "in_domain": "area_code"})
-
-        if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
-
-        df = df.with_columns(pl.col("generation_forecast_mw").cast(pl.Float64))
-
-        # production_type comes from parser (MktPSRType → psrType); fill empty
-        if "production_type" in df.columns:
-            df = df.with_columns(
-                pl.col("production_type").fill_null("unknown").alias("production_type")
-            )
-
-        # Issue 04: carry the document publication vintage (createdDateTime)
-        # as published_at; typed-null when the source lacks it. It is in the
-        # grain: each fetch is an observation an as-of read must still find.
-        df = with_published_at(df, dataset=self.dataset)
-        df = self.dedup_to_grain(df)
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        output_cols = [
-            "timestamp_utc",
-            "area_code",
-            "production_type",
-            "generation_forecast_mw",
-            "resolution",
-            "published_at",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc", "area_code", "production_type")
+    COLUMN_MAP = {"value": "generation_forecast_mw", "in_domain": "area_code"}
+    REQUIRED = ("timestamp_utc", "generation_forecast_mw", "area_code")
+    CASTS = {"generation_forecast_mw": pl.Float64()}
+    FILL_NULL = {"production_type": "unknown"}
+    OUTPUT_COLS = (
+        "timestamp_utc",
+        "area_code",
+        "production_type",
+        "generation_forecast_mw",
+        "resolution",
+        "published_at",
+    )
+    SORT = ("timestamp_utc", "area_code", "production_type")
 
 
 register_transformer("entsoe", "wind_solar_forecast", WindSolarForecastTransformer)

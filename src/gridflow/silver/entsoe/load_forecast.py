@@ -2,26 +2,29 @@
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.entsoe import EntsoeLoadForecast
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 
 class LoadForecastTransformer(EntsoeXmlTransformer):
-    """Transform ENTSO-E day-ahead load forecast XML from bronze to silver."""
+    """Transform ENTSO-E day-ahead load forecast XML from bronze to silver.
+
+    ``published_at`` is in the grain: each fetch is an observation an as-of
+    read must find. The week-, month- and year-ahead forecasts subclass this
+    with their own ``forecast_horizon`` label.
+    """
 
     source = "entsoe"
     dataset = "load_forecast"
-    schema_cls = EntsoeLoadForecast
+    schema_cls: ClassVar[type[BaseModel]] = EntsoeLoadForecast
     APPEND_ONLY = True
     DATASET_VERSION = "2.0.0"
     ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "published_at")
@@ -30,51 +33,20 @@ class LoadForecastTransformer(EntsoeXmlTransformer):
     """R2-A Task 4 / F-10 opt-in — day-ahead only (A01), NOT the week/month/
     year-ahead siblings (A31/A32/A33 — those stay exempt, see
     ``silver/entsoe/_event_window.py``)."""
+    COLUMN_MAP = {"value": "load_forecast_mw", "in_domain": "area_code"}
+    REQUIRED = ("timestamp_utc", "load_forecast_mw", "area_code")
+    CASTS = {"load_forecast_mw": pl.Float64()}
+    OUTPUT_COLS = (
+        "timestamp_utc",
+        "area_code",
+        "load_forecast_mw",
+        "resolution",
+        "forecast_horizon",
+        "published_at",
+    )
 
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        required = ["timestamp_utc", "value", "in_domain"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error("Missing required columns in %s: %s", self.dataset, missing)
-            return pl.DataFrame()
-
-        df = raw_df.rename({"value": "load_forecast_mw", "in_domain": "area_code"})
-
-        if df["timestamp_utc"].dtype != pl.Datetime("us", "UTC"):
-            df = df.with_columns(pl.col("timestamp_utc").cast(pl.Datetime("us", "UTC")))
-
-        df = df.with_columns(pl.col("load_forecast_mw").cast(pl.Float64))
-
-        # Issue 04: carry the document publication vintage (createdDateTime)
-        # as published_at; typed-null when the source lacks it. It is in the
-        # grain: each fetch is an observation an as-of read must still find.
-        df = with_published_at(df, dataset=self.dataset)
-        df = self.dedup_to_grain(df)
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("entsoe").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-                pl.lit(self.forecast_horizon).alias("forecast_horizon"),
-            ]
-        )
-
-        output_cols = [
-            "timestamp_utc",
-            "area_code",
-            "load_forecast_mw",
-            "resolution",
-            "forecast_horizon",
-            "published_at",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc", "area_code")
+    def _derive(self, df: pl.DataFrame) -> pl.DataFrame:
+        return df.with_columns(pl.lit(self.forecast_horizon).alias("forecast_horizon"))
 
 
 register_transformer("entsoe", "load_forecast", LoadForecastTransformer)

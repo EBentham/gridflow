@@ -72,7 +72,7 @@ def _fixed_mid(
     inputs: dict[date, pl.DataFrame],
 ) -> MIDTransformer:
     monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
-    monkeypatch.setattr("gridflow.silver.elexon.mid.datetime", _Clock)
+    monkeypatch.setattr("gridflow.silver.elexon._base.datetime", _Clock)
     transformer = MIDTransformer(root)
     monkeypatch.setattr(
         transformer,
