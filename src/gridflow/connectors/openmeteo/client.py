@@ -18,6 +18,7 @@ from gridflow.connectors.openmeteo.endpoints import (
 )
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import window_dates
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +112,7 @@ class OpenMeteoConnector(BaseConnector):
             "longitude": location.longitude,
             "hourly": ",".join(spec.hourly),
             "start_date": start.strftime("%Y-%m-%d"),
-            "end_date": end.strftime("%Y-%m-%d"),
+            "end_date": window_dates(start, end)[-1].isoformat(),
             "timezone": "UTC",
         }
         if spec.extra_params:

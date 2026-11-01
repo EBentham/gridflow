@@ -413,11 +413,11 @@ async def test_elexon_concurrent_fetch_returns_all_dates() -> None:
     )
 
     start = datetime(2024, 1, 15, tzinfo=UTC)
-    end = datetime(2024, 1, 18, tzinfo=UTC)
+    end = datetime(2024, 1, 19, tzinfo=UTC)
     async with ElexonConnector(_elexon_config()) as connector:
         responses = await connector.fetch("system_prices", start, end)
 
-    # 4 inclusive dates, one single-page response each.
+    # 4 dates in the half-open window, one single-page response each.
     assert len(responses) == 4
     assert [r.data_date for r in responses] == [
         datetime(2024, 1, d, tzinfo=UTC).date() for d in (15, 16, 17, 18)
@@ -450,7 +450,7 @@ async def test_elexon_settlement_period_concurrent_matches_sequential() -> None:
     respx.get(re.compile(rf"^{re.escape(ELEXON_BASE)}/.*")).mock(side_effect=handler)
 
     start = datetime(2024, 1, 15, tzinfo=UTC)
-    end = datetime(2024, 1, 16, tzinfo=UTC)
+    end = datetime(2024, 1, 17, tzinfo=UTC)
     async with ElexonConnector(_elexon_config()) as connector:
         responses = await connector.fetch("pn", start, end)
 
@@ -479,7 +479,7 @@ async def test_elexon_fetch_is_bounded_and_overlapping() -> None:
     )
 
     start = datetime(2024, 1, 15, tzinfo=UTC)
-    end = datetime(2024, 1, 20, tzinfo=UTC)  # 6 dates > rate
+    end = datetime(2024, 1, 21, tzinfo=UTC)  # 6 dates > rate
     async with ElexonConnector(_elexon_config(rate=rate)) as connector:
         probe.install(connector)
         responses = await connector.fetch("system_prices", start, end)

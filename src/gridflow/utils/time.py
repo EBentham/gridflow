@@ -136,7 +136,7 @@ def window_dates(start: datetime, end: datetime) -> list[date]:
 def day_subwindows(start: datetime, end: datetime) -> list[tuple[datetime, datetime]]:
     """Clamped calendar-day sub-windows covering ``[start, end)`` exactly.
 
-    Used by the ENTSO-E and ENTSO-G connectors (P0.8 / R2-F08) to chunk a
+    Used by the ENTSO-E, ENTSO-G and NESO Carbon Intensity connectors to chunk a
     multi-day fetch window into one request per covered UTC calendar day, so
     bronze ``data_date`` honours its documented contract (the calendar date the
     data refers to) instead of stamping every day's rows under the window's

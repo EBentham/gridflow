@@ -614,8 +614,9 @@ class TestGieEndpointDefinitions:
 
         assert params["country"] == "BE"
         assert params["from"] == "2026-02-01"
-        # GIE uses 'till', not 'to' — the critical naming difference.
-        assert params["till"] == "2026-02-02"
+        # GIE uses 'till', not 'to' — the critical naming difference. It is an
+        # inclusive day, so the half-open [1 Feb, 2 Feb) window asks till 1 Feb.
+        assert params["till"] == "2026-02-01"
         assert "to" not in params
         assert params["size"] == str(DEFAULT_PAGE_SIZE)
 
@@ -787,7 +788,8 @@ class TestOpenMeteoEndpointDefinitions:
         assert params["latitude"] == "51.5074"
         assert params["longitude"] == "-0.1278"
         assert params["start_date"] == "2026-02-01"
-        assert params["end_date"] == "2026-02-02"
+        # end_date is an inclusive day: [1 Feb, 2 Feb) asks for 1 Feb only.
+        assert params["end_date"] == "2026-02-01"
         assert params["timezone"] == "UTC"
         assert "temperature_2m" in params["hourly"]
         assert "snowfall" in params["hourly"]

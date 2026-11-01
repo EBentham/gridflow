@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import TYPE_CHECKING, Any, Literal, cast
 from urllib.parse import parse_qs, urlparse
 
@@ -24,6 +24,7 @@ from gridflow.connectors.gie.endpoints import (
 )
 from gridflow.connectors.registry import register_connector
 from gridflow.utils.retry import RETRY_POLICY
+from gridflow.utils.time import window_dates
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,9 @@ class GieConnector(BaseConnector):
         end: datetime,
         **params: Any,
     ) -> list[RawResponse]:
-        """Fetch GIE data for the given date range."""
+        """Fetch GIE data for the half-open window ``[start, end)``."""
+        # GIE takes inclusive gas days; convert the half-open window once, here.
+        end = datetime.combine(window_dates(start, end)[-1], time.min, tzinfo=end.tzinfo)
         # Reset the partial-fetch counter at the top of the public entry point so
         # a reused connector never inherits a prior call's count (CH-COR-01).
         # Reset before the dispatch branch so an AGSI raise-path can't leave a
