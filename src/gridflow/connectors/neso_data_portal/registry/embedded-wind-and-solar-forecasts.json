@@ -58,7 +58,9 @@
                 "source": "SETTLEMENT_PERIOD",
                 "name": "settlement_period",
                 "dtype": "int64",
-                "nullable": false
+                "nullable": false,
+                "min": 1,
+                "max": 50
               },
               {
                 "source": "EMBEDDED_WIND_FORECAST",
