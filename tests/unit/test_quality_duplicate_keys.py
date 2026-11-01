@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import logging
 
+import duckdb
 import polars as pl
 
 from gridflow.cli import _entity_key_for
@@ -38,14 +39,19 @@ class TestFuelhhFalsePositive:
         entity_key = _entity_key_for("elexon", "fuelhh", df.columns)
         assert entity_key == ["settlement_date", "settlement_period", "fuel_type"]
 
-        result = check_duplicates(df, entity_key, source="elexon", dataset="fuelhh")
+        result = check_duplicates(
+            duckdb.from_arrow(df), entity_key, source="elexon", dataset="fuelhh"
+        )
         assert result.passed is True
         assert result.metric == 0.0
 
         # The RED comparison, demonstrated inline: the OLD hardcoded pair
         # DOES flag this exact frame as one giant duplicate group.
         legacy_result = check_duplicates(
-            df, ["settlement_date", "settlement_period"], source="elexon", dataset="fuelhh"
+            duckdb.from_arrow(df),
+            ["settlement_date", "settlement_period"],
+            source="elexon",
+            dataset="fuelhh",
         )
         assert legacy_result.passed is False
         assert legacy_result.metric == 1.0  # one duplicate key combination, 20 rows
@@ -54,7 +60,9 @@ class TestFuelhhFalsePositive:
         df = pl.concat([_fuelhh_frame(), _fuelhh_frame().head(1)])  # one real dupe
         entity_key = _entity_key_for("elexon", "fuelhh", df.columns)
 
-        result = check_duplicates(df, entity_key, source="elexon", dataset="fuelhh")
+        result = check_duplicates(
+            duckdb.from_arrow(df), entity_key, source="elexon", dataset="fuelhh"
+        )
         assert result.passed is False
         assert result.metric == 1.0
 

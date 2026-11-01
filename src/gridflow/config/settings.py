@@ -82,6 +82,9 @@ class QualityConfig(BaseModel):
     null_rate_threshold: float = 0.05
     enable_outlier_detection: bool = True
     expected_freq_minutes: int = 30
+    # DuckDB's memory cap for the checks; past it a large aggregation spills to
+    # a temporary directory. A quarter of a 16 GB machine shared with other jobs.
+    duckdb_memory_limit: str = "4GB"
 
 
 class PipelineSettings(BaseSettings):

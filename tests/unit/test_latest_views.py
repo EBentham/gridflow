@@ -226,14 +226,15 @@ class TestQualityReadsLatestSurface:
 
     def test_duplicate_check_false_fails_on_raw_and_passes_on_latest(self):
         df = _sp_frame()
-        raw = check_duplicates(
-            df, ["settlement_date", "settlement_period"], source="elexon", dataset="system_prices"
-        )
+        key = ["settlement_date", "settlement_period"]
+        con = duckdb.connect()
+        con.register("base", df)
+        sql = latest_view_sql("base", "base_latest", _SP_SPEC, set(df.columns))
+        assert sql is not None
+        con.execute(sql)
+        raw = check_duplicates(con.view("base"), key, source="elexon", dataset="system_prices")
         latest = check_duplicates(
-            select_latest_vintage(df.lazy(), _SP_SPEC).collect(),
-            ["settlement_date", "settlement_period"],
-            source="elexon",
-            dataset="system_prices",
+            con.view("base_latest"), key, source="elexon", dataset="system_prices"
         )
         assert not raw.passed, "raw vintages must look duplicated — guards the fixture"
         assert latest.passed

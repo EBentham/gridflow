@@ -3,9 +3,12 @@
 These tests assert *behaviour and values*, not shapes:
 - ``check_time_series_gaps`` must not raise on a normal frame, and must bite on
   duplicate timestamps (zero interval) and too-frequent cadence.
-- ``check_null_rate`` must count float ``NaN`` as missing, not just ``null``.
+- ``check_null_rates`` must count float ``NaN`` as missing, not just ``null``.
 - ``check_range`` must not silently pass genuine ``null``s.
 - ``quality_reports`` ids must be unique across separate report runs.
+
+The checks ``gridflow quality`` runs take a DuckDB relation; each test hands
+them its Polars frame through :func:`_rel`.
 """
 
 from __future__ import annotations
@@ -13,18 +16,31 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 
+import duckdb
 import polars as pl
 import pytest
 
 from gridflow.quality.checks import (
-    check_null_rate,
+    QualityResult,
+    check_duplicates,
+    check_null_rates,
     check_range,
+    check_row_count,
     check_time_series_gaps,
 )
 from gridflow.quality.reporter import QualityReporter
 
 if TYPE_CHECKING:
     from pathlib import Path
+
+
+def _rel(df: pl.DataFrame) -> duckdb.DuckDBPyRelation:
+    return duckdb.from_arrow(df)
+
+
+def _null_rate(df: pl.DataFrame, column: str, max_rate: float = 0.05) -> QualityResult:
+    (result,) = check_null_rates(_rel(df), [column], max_rate=max_rate)
+    return result
 
 
 def _half_hourly(n: int, start: datetime | None = None) -> pl.DataFrame:
@@ -41,7 +57,7 @@ def test_gap_check_does_not_raise_on_normal_frame() -> None:
     Pre-fix: raises TypeError (Expr vs Series.filter) under Polars 1.40.1.
     """
     df = _half_hourly(4)
-    result = check_time_series_gaps(df, expected_freq_minutes=30)
+    result = check_time_series_gaps(_rel(df), expected_freq_minutes=30)
     assert result.passed is True
     assert result.metric == 0
 
@@ -57,7 +73,7 @@ def test_gap_check_flags_true_gap() -> None:
             ]
         }
     )
-    result = check_time_series_gaps(df, expected_freq_minutes=30)
+    result = check_time_series_gaps(_rel(df), expected_freq_minutes=30)
     assert result.passed is False
     assert result.metric == 1
 
@@ -66,7 +82,7 @@ def test_gap_check_flags_duplicate_timestamps() -> None:
     """Two identical (zero-interval) timestamps must not pass."""
     ts = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
     df = pl.DataFrame({"timestamp_utc": [ts, ts, ts + timedelta(minutes=30)]})
-    result = check_time_series_gaps(df, expected_freq_minutes=30)
+    result = check_time_series_gaps(_rel(df), expected_freq_minutes=30)
     assert result.passed is False
 
 
@@ -74,17 +90,17 @@ def test_gap_check_flags_too_frequent_cadence() -> None:
     """A 15-minute cadence against an expected 30-minute cadence must not pass."""
     start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
     df = pl.DataFrame({"timestamp_utc": [start + timedelta(minutes=15 * i) for i in range(4)]})
-    result = check_time_series_gaps(df, expected_freq_minutes=30)
+    result = check_time_series_gaps(_rel(df), expected_freq_minutes=30)
     assert result.passed is False
 
 
 def test_gap_check_short_circuits_on_insufficient_data() -> None:
     """< 2 rows or missing column still short-circuits to a benign pass."""
-    assert check_time_series_gaps(_half_hourly(1)).passed is True
-    assert check_time_series_gaps(pl.DataFrame({"other": [1, 2]})).passed is True
+    assert check_time_series_gaps(_rel(_half_hourly(1))).passed is True
+    assert check_time_series_gaps(_rel(pl.DataFrame({"other": [1, 2]}))).passed is True
 
 
-# --- check_null_rate ---------------------------------------------------------
+# --- check_null_rates --------------------------------------------------------
 
 
 def test_null_rate_counts_nan() -> None:
@@ -93,7 +109,7 @@ def test_null_rate_counts_nan() -> None:
     Pre-fix: null_count() ignores NaN -> reports 0.0 / passed=True.
     """
     df = pl.DataFrame({"x": [float("nan")] * 3}, schema={"x": pl.Float64})
-    result = check_null_rate(df, "x")
+    result = _null_rate(df, "x")
     assert result.metric == pytest.approx(1.0)
     assert result.passed is False
 
@@ -101,7 +117,7 @@ def test_null_rate_counts_nan() -> None:
 def test_null_rate_counts_mixed_nan_and_value() -> None:
     """NaN counts toward the rate alongside genuine values."""
     df = pl.DataFrame({"x": [1.0, float("nan"), 3.0, 4.0]}, schema={"x": pl.Float64})
-    result = check_null_rate(df, "x", max_rate=0.05)
+    result = _null_rate(df, "x", max_rate=0.05)
     assert result.metric == pytest.approx(0.25)
     assert result.passed is False
 
@@ -109,7 +125,7 @@ def test_null_rate_counts_mixed_nan_and_value() -> None:
 def test_null_rate_still_catches_genuine_nulls() -> None:
     """Genuine nulls are still counted (no regression)."""
     df = pl.DataFrame({"x": [1.0, None, None, 4.0]}, schema={"x": pl.Float64})
-    result = check_null_rate(df, "x", max_rate=0.05)
+    result = _null_rate(df, "x", max_rate=0.05)
     assert result.metric == pytest.approx(0.5)
     assert result.passed is False
 
@@ -117,7 +133,7 @@ def test_null_rate_still_catches_genuine_nulls() -> None:
 def test_null_rate_passes_clean_float_column() -> None:
     """A fully populated float column passes with 0% missing."""
     df = pl.DataFrame({"x": [1.0, 2.0, 3.0]}, schema={"x": pl.Float64})
-    result = check_null_rate(df, "x")
+    result = _null_rate(df, "x")
     assert result.metric == pytest.approx(0.0)
     assert result.passed is True
 
@@ -125,14 +141,86 @@ def test_null_rate_passes_clean_float_column() -> None:
 def test_null_rate_handles_non_float_column() -> None:
     """is_nan is float-only; an int column must not raise."""
     df = pl.DataFrame({"x": [1, 2, None]}, schema={"x": pl.Int64})
-    result = check_null_rate(df, "x", max_rate=0.5)
+    result = _null_rate(df, "x", max_rate=0.5)
     assert result.metric == pytest.approx(1 / 3)
 
 
 def test_null_rate_short_circuits_empty_and_missing() -> None:
     """Empty frame and missing column short-circuits are preserved."""
-    assert check_null_rate(pl.DataFrame({"x": []}), "x").passed is True
-    assert check_null_rate(pl.DataFrame({"x": [1.0]}), "missing").passed is False
+    assert _null_rate(pl.DataFrame({"x": []}), "x").passed is True
+    assert _null_rate(pl.DataFrame({"x": [1.0]}), "missing").passed is False
+
+
+# --- DuckDB results match the Polars checks they replaced ---------------------
+
+
+def test_checks_reproduce_the_polars_results() -> None:
+    """Each check gives the result the Polars implementation gave for this frame.
+
+    ``gridflow quality`` collected every dataset into Polars to check it, and
+    ran out of memory on NESO portal families of over 100 million rows. The
+    checks now run as DuckDB SQL; these are the results the Polars checks
+    returned, so quality_reports keeps the same rows and verdicts. The frame has
+    a NaN, nulls, a null timestamp, a repeated key and gaps in one series.
+    """
+    start = datetime(2024, 1, 1, tzinfo=UTC)
+    minute = timedelta(minutes=1)
+    rel = _rel(
+        pl.DataFrame(
+            {
+                "timestamp_utc": [
+                    start,
+                    start,
+                    start + 30 * minute,
+                    start,
+                    None,
+                    start + 90 * minute,
+                ],
+                "unit": ["A", "B", "A", "A", "B", "A"],
+                "price": [1.0, float("nan"), None, 2.0, 3.0, 4.0],
+                "volume": pl.Series([1, None, 3, 4, 5, 6], dtype=pl.Int64),
+            }
+        )
+    )
+
+    def result(check: str, passed: bool, metric: float | None, detail: str) -> QualityResult:
+        return QualityResult(check, "ds", "src", passed, metric, detail)
+
+    gaps = "intervals deviating from 30min (gaps or too-frequent/duplicate rows)"
+    assert check_row_count(rel, source="src", dataset="ds") == result(
+        "row_count", True, 6.0, "6 rows (minimum: 1)"
+    )
+    assert check_null_rates(rel, ["price", "volume", "missing"], source="src", dataset="ds") == [
+        result("null_rate", False, 2 / 6, "price: 33.33% null/NaN (threshold: 5.00%)"),
+        result("null_rate", False, 1 / 6, "volume: 16.67% null/NaN (threshold: 5.00%)"),
+        result("null_rate", False, 1.0, "Column 'missing' not found in DataFrame"),
+    ]
+    # Unit A steps 0 then 60 minutes; B's only interval starts at its null timestamp.
+    assert check_time_series_gaps(rel, source="src", dataset="ds", group_by=["unit"]) == result(
+        "time_series_gaps", False, 2.0, f"Found 2 {gaps}"
+    )
+    assert check_time_series_gaps(rel, source="src", dataset="ds") == result(
+        "time_series_gaps", False, 3.0, f"Found 3 {gaps}"
+    )
+    assert check_duplicates(rel, ["timestamp_utc", "unit"], source="src", dataset="ds") == result(
+        "duplicates", False, 1.0, "1 duplicate key combinations found"
+    )
+    assert check_duplicates(rel, ["missing"], source="src", dataset="ds") == result(
+        "duplicates", False, None, "Key columns not found: ['missing']"
+    )
+
+
+def test_duplicate_check_counts_a_repeated_null_key() -> None:
+    """Rows sharing a null key are duplicates, as they were in the Polars check."""
+    rel = _rel(
+        pl.DataFrame(
+            {
+                "k": [1, 1, 2, 3, 3, 3, 4, None, None],
+                "j": ["a", "a", "b", "c", "c", "d", "e", None, None],
+            }
+        )
+    )
+    assert check_duplicates(rel, ["k", "j"]).metric == 3  # (1, a), (3, c) and (null, null)
 
 
 # --- check_range -------------------------------------------------------------
@@ -170,7 +258,6 @@ def test_write_report_uses_shared_writable_connection(
 ) -> None:
     """Quality reports must use the shared retrying writable connection helper."""
     import gridflow.quality.reporter as reporter_mod
-    from gridflow.quality.checks import QualityResult
 
     duckdb_path = tmp_path / "q.duckdb"
     data_dir = tmp_path / "data"
@@ -195,8 +282,6 @@ def test_quality_report_ids_unique_across_runs(tmp_path: Path) -> None:
 
     Pre-fix: id is a per-batch enumerate index -> both runs start at id=0.
     """
-    from gridflow.quality.checks import QualityResult
-
     duckdb_path = tmp_path / "q.duckdb"
     data_dir = tmp_path / "data"
     data_dir.mkdir()
@@ -210,8 +295,6 @@ def test_quality_report_ids_unique_across_runs(tmp_path: Path) -> None:
     r2.add_result(QualityResult("c", "ds", "src", True, 0.0, "ok"))
     r2.add_result(QualityResult("c2", "ds", "src", True, 0.0, "ok"))
     assert r2.write_report() == 2
-
-    import duckdb
 
     con = duckdb.connect(str(duckdb_path), read_only=True)
     try:
@@ -238,9 +321,6 @@ def test_write_report_reconciles_legacy_quality_reports_schema(
     explicit-column INSERT. Now that the command completes, init_catalogue must
     reconcile the schema so the run_id INSERT succeeds against an old table.
     """
-    import duckdb
-
-    from gridflow.quality.checks import QualityResult
     from gridflow.storage import duckdb as duckdb_mod
     from gridflow.storage.duckdb import init_catalogue
 

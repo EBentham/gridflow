@@ -12,6 +12,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+import duckdb
 import polars as pl
 
 import gridflow.silver.elexon  # noqa: F401 -- registers every elexon transformer
@@ -119,7 +120,9 @@ class TestWindforAlternateKeyShape:
         entity_key = _entity_key_for("elexon", "windfor", df.columns)
         assert entity_key == ["timestamp_utc", "published_at"]
 
-        result = check_duplicates(df, entity_key, source="elexon", dataset="windfor")
+        result = check_duplicates(
+            duckdb.from_arrow(df), entity_key, source="elexon", dataset="windfor"
+        )
         assert result.passed is True
         assert "not found" not in result.detail
 

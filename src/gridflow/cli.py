@@ -621,16 +621,15 @@ def quality(
     all_sources: bool = typer.Option(False, "--all", help="Run for all sources"),
 ) -> None:
     """Run quality checks and write report."""
-    from gridflow.quality.checks import (
-        check_duplicates,
-        check_null_rate,
-        check_row_count,
-        check_time_series_gaps,
-    )
+    import tempfile
+    from contextlib import closing
+
+    import polars as pl
+
+    from gridflow.quality import checks
     from gridflow.quality.reporter import QualityReporter
-    from gridflow.silver.latest_views import LATEST_VIEW_SPECS, select_latest_vintage
-    from gridflow.silver.owned_relations import RegisteredRelationsTransformer
-    from gridflow.silver.registry import get_transformer_class
+    from gridflow.silver.latest_views import LATEST_VIEW_SPECS
+    from gridflow.storage.duckdb import quality_connection, register_check_relation
     from gridflow.storage.parquet import scan_parquet_dir
 
     settings = _load_and_log()
@@ -651,102 +650,101 @@ def quality(
 
     sources = [source] if source else [d.name for d in silver_dir.iterdir() if d.is_dir()]
 
-    for src in sources:
-        src_dir = silver_dir / src
-        if not src_dir.exists():
-            continue
-        for dataset_dir in src_dir.iterdir():
-            if not dataset_dir.is_dir():
+    # Every check is DuckDB SQL over the dataset's silver files, capped at the
+    # configured memory limit: collecting whole datasets into Polars ran
+    # `quality --all` out of memory on NESO portal families of 100M+ rows.
+    spill_dir = tempfile.TemporaryDirectory(prefix="gridflow-quality-", ignore_cleanup_errors=True)
+    with (
+        spill_dir as spill,
+        closing(
+            quality_connection(
+                settings.pipeline.data_dir, settings.quality.duckdb_memory_limit, Path(spill)
+            )
+        ) as con,
+    ):
+        for src in sources:
+            src_dir = silver_dir / src
+            if not src_dir.exists():
                 continue
-            ds = dataset_dir.name
-            # Quality wants the whole dataset (no date range); non-date/single
-            # flat-file datasets (NESO carbon_intensity, entsog generic) route
-            # through the rangeless dir scan, never the range helper.
-            lf = scan_parquet_dir(dataset_dir)
-            # APPEND_ONLY datasets keep every vintage on disk; quality reads the
-            # latest-vintage surface (ADR-025 P0.3) so duplicate/gap checks see
-            # one row per entity key, not one per vintage.
-            spec = LATEST_VIEW_SPECS.get((src, ds))
-            if spec is not None and spec.mode == "whole_capture":
-                owner = get_transformer_class(src, ds)
-                if owner is None or not issubclass(owner, RegisteredRelationsTransformer):
-                    raise RuntimeError(f"{src}/{ds}: a whole-capture spec without its owner class")
-                lf = select_latest_vintage(
-                    lf, spec, completions=owner.completions(settings.pipeline.data_dir)
-                )
-            elif spec is not None:
-                lf = select_latest_vintage(lf, spec)
-            df = lf.collect()
-            if df.is_empty():
-                continue
+            for dataset_dir in src_dir.iterdir():
+                if not dataset_dir.is_dir():
+                    continue
+                ds = dataset_dir.name
+                # Polars reads only the file footers here. Its dtypes pick the
+                # null-rate columns, as before: DuckDB reads a Polars Null
+                # column as INTEGER, a Duration as BIGINT and a month=01
+                # partition as VARCHAR, which would add or drop checks.
+                schema = scan_parquet_dir(dataset_dir).collect_schema()
+                if not schema:
+                    continue
+                # APPEND_ONLY datasets keep every vintage on disk; quality reads
+                # the latest-vintage surface (ADR-025 P0.3) so duplicate/gap
+                # checks see one row per entity key, not one per vintage.
+                rel = register_check_relation(con, src, ds, dataset_dir)
+                spec = LATEST_VIEW_SPECS.get((src, ds))
 
-            reporter.add_result(check_row_count(df, source=src, dataset=ds))
+                row_count = checks.check_row_count(rel, source=src, dataset=ds)
+                if row_count.metric == 0:
+                    continue
+                reporter.add_result(row_count)
 
-            # Check nulls for numeric columns
-            for col in df.columns:
-                if df[col].dtype in (
-                    __import__("polars").Float64,
-                    __import__("polars").Float32,
-                    __import__("polars").Int32,
-                    __import__("polars").Int64,
+                numeric = [
+                    col
+                    for col, dtype in schema.items()
+                    if dtype in (pl.Float64, pl.Float32, pl.Int32, pl.Int64)
+                ]
+                for result in checks.check_null_rates(
+                    rel,
+                    numeric,
+                    source=src,
+                    dataset=ds,
+                    max_rate=settings.quality.null_rate_threshold,
                 ):
+                    reporter.add_result(result)
+
+                entity_key = _entity_key_for(src, ds, schema.names())
+
+                # Gap check, one series per entity. Only a dataset on the
+                # settlement-period grain declares a cadence (half-hourly), and
+                # a constant period is a placeholder (NDFD's daily rows all
+                # carry 1); any other dataset is skipped rather than measured
+                # against a cadence it lacks. A frame missing a key column is
+                # left to the duplicate check below, which reports it. DISTINCT
+                # keeps null as a value, as Polars' n_unique did.
+                if (
+                    "timestamp_utc" in schema
+                    and entity_key
+                    and "settlement_period" in entity_key
+                    and set(entity_key) <= set(schema.names())
+                    and len(rel.unique('"settlement_period"').limit(2).fetchall()) > 1
+                ):
+                    # After the latest-vintage selection a series is the latest
+                    # view's key: the publication column an append-only entity
+                    # key carries would split one revised forecast into a
+                    # broken series per publication.
+                    series_key = entity_key
+                    if spec is not None and spec.mode == "key_latest":
+                        series_key = [
+                            *spec.key_columns,
+                            *(c for c in spec.optional_key_columns if c in schema),
+                        ]
                     reporter.add_result(
-                        check_null_rate(
-                            df,
-                            col,
+                        checks.check_time_series_gaps(
+                            rel,
                             source=src,
                             dataset=ds,
-                            max_rate=settings.quality.null_rate_threshold,
+                            expected_freq_minutes=settings.quality.expected_freq_minutes,
+                            group_by=[c for c in series_key if c not in _SETTLEMENT_TIME_COLUMNS],
                         )
                     )
 
-            entity_key = _entity_key_for(src, ds, df.columns)
-
-            # Gap check, one series per entity. Only a dataset on the
-            # settlement-period grain declares a cadence (half-hourly), and a
-            # constant period is a placeholder (NDFD's daily rows all carry 1);
-            # any other dataset is skipped rather than measured against a
-            # cadence it lacks. A frame missing a key column is left to the
-            # duplicate check below, which reports it.
-            if (
-                "timestamp_utc" in df.columns
-                and entity_key
-                and "settlement_period" in entity_key
-                and set(entity_key) <= set(df.columns)
-                and df["settlement_period"].n_unique() > 1
-            ):
-                # After the latest-vintage selection a series is the latest
-                # view's key: the publication column an append-only entity key
-                # carries would split one revised forecast into a broken series
-                # per publication.
-                series_key = entity_key
-                if spec is not None and spec.mode == "key_latest":
-                    series_key = [
-                        *spec.key_columns,
-                        *(c for c in spec.optional_key_columns if c in df.columns),
-                    ]
-                reporter.add_result(
-                    check_time_series_gaps(
-                        df,
-                        source=src,
-                        dataset=ds,
-                        expected_freq_minutes=settings.quality.expected_freq_minutes,
-                        group_by=[c for c in series_key if c not in _SETTLEMENT_TIME_COLUMNS],
+                # Check for duplicates on the dataset's own entity grain (F-16):
+                # see _entity_key_for's docstring for why a hardcoded pair was
+                # wrong and what stays unchanged for non-Elexon sources.
+                if entity_key is not None:
+                    reporter.add_result(
+                        checks.check_duplicates(rel, entity_key, source=src, dataset=ds)
                     )
-                )
-
-            # Check for duplicates on the dataset's own entity grain (F-16):
-            # see _entity_key_for's docstring for why a hardcoded pair was
-            # wrong and what stays unchanged for non-Elexon sources.
-            if entity_key is not None:
-                reporter.add_result(
-                    check_duplicates(
-                        df,
-                        entity_key,
-                        source=src,
-                        dataset=ds,
-                    )
-                )
 
     # A failed quality-report write is a real failure of this command, not a
     # clean empty result — surface it as a non-zero exit instead of swallowing.
