@@ -8,6 +8,7 @@ from pathlib import Path
 
 import polars as pl
 import pytest
+from _bronze_fixtures import seed_gie_fixture, write_bronze_payload
 
 from gridflow.connectors.gie.endpoints import AGSI_COUNTRIES, ALSI_COUNTRIES
 from gridflow.schemas.gie import GasStorage, LNGTerminal
@@ -68,18 +69,6 @@ def _load_fixture_records(filename: str) -> list[dict]:
     return payload.get("data", [])
 
 
-def _write_bronze_payload(
-    transformer: BaseSilverTransformer,
-    target_date: date,
-    payload: dict,
-) -> None:
-    bronze_dir = PathBuilder(transformer.data_dir).bronze_date_dir(
-        transformer.source, transformer.dataset, target_date
-    )
-    bronze_dir.mkdir(parents=True)
-    (bronze_dir / "raw_test.json").write_text(json.dumps(payload), encoding="utf-8")
-
-
 def _write_bronze_payloads(
     transformer: BaseSilverTransformer,
     target_date: date,
@@ -92,15 +81,6 @@ def _write_bronze_payloads(
     bronze_dir.mkdir(parents=True, exist_ok=True)
     for i, payload in enumerate(payloads):
         (bronze_dir / f"raw_test_{i}.json").write_text(json.dumps(payload), encoding="utf-8")
-
-
-def _seed_fixture(
-    transformer: BaseSilverTransformer,
-    target_date: date,
-    filename: str,
-) -> None:
-    payload = json.loads((FIXTURES / filename).read_text(encoding="utf-8"))
-    _write_bronze_payload(transformer, target_date, payload)
 
 
 def _read_single_silver(transformer: BaseSilverTransformer) -> pl.DataFrame:
@@ -149,7 +129,7 @@ def test_gie_gas_day_run_persists_row_event_time_contract(
 ) -> None:
     transformer = transformer_cls(tmp_data_dir)
     _assert_transformer_isolated(transformer, tmp_data_dir)
-    _seed_fixture(transformer, target_date, fixture_name)
+    seed_gie_fixture(transformer, target_date, fixture_name)
 
     assert transformer.run(target_date, run_id="gie-gas-day-test") == expected_rows
     persisted = _read_single_silver(transformer)
@@ -179,7 +159,7 @@ def test_alsi_lng_run_persists_only_target_gas_day(tmp_data_dir: Path) -> None:
     transformer = LNGTerminalTransformer(tmp_data_dir)
     _assert_transformer_isolated(transformer, tmp_data_dir)
     target_date = date(2024, 1, 15)
-    _seed_fixture(transformer, target_date, "alsi_gb_response.json")
+    seed_gie_fixture(transformer, target_date, "alsi_gb_response.json")
 
     assert transformer.run(target_date, run_id="gie-gas-day-test") == 1
     persisted = _read_single_silver(transformer)
@@ -364,7 +344,7 @@ class TestGasStorageTransformer:
         target_date = date(2024, 1, 20)
         transformer = GasStorageTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {
@@ -505,7 +485,7 @@ class TestAgsiReferenceTransformers:
         target_date = date(2024, 1, 20)
         transformer = AboutListingTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _seed_fixture(transformer, target_date, "agsi_listing_response.json")
+        seed_gie_fixture(transformer, target_date, "agsi_listing_response.json")
 
         assert transformer.run(target_date, run_id="agsi-reference-test") == 7
         persisted = _read_single_silver(transformer)
@@ -615,7 +595,7 @@ class TestLNGTerminalTransformer:
         target_date = date(2024, 1, 20)
         transformer = LNGTerminalTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {
@@ -645,7 +625,7 @@ class TestLNGTerminalTransformer:
         target_date = date(2024, 1, 20)
         transformer = LNGTerminalTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {
@@ -667,7 +647,7 @@ class TestLNGTerminalTransformer:
         target_date = date(2024, 1, 20)
         transformer = LNGTerminalTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {
@@ -694,7 +674,7 @@ class TestLNGTerminalTransformer:
         target_date = date(2024, 1, 20)
         transformer = LNGTerminalTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             window_start,
             {
@@ -730,7 +710,7 @@ class TestNewsReadBronzeFilter:
         target_date = date(2026, 5, 10)
         transformer = NewsTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {
@@ -763,7 +743,7 @@ class TestNewsReadBronzeFilter:
         target_date = date(2026, 5, 10)
         transformer = NewsTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {
@@ -794,7 +774,7 @@ class TestNewsReadBronzeFilter:
         target_date = date(2026, 5, 10)
         transformer = NewsTransformer(tmp_data_dir)
         _assert_transformer_isolated(transformer, tmp_data_dir)
-        _write_bronze_payload(
+        write_bronze_payload(
             transformer,
             target_date,
             {

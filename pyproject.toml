@@ -20,6 +20,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "fastexcel>=0.21.0",
     "certifi>=2024.7.4",  # imported by connectors/base.py for its CA bundle, not only via httpx
+    "truststore>=0.10",  # connectors trust the OS certificate store, as behind a corporate proxy
 ]
 
 [project.optional-dependencies]
@@ -34,6 +35,16 @@ dev = [
 [project.scripts]
 gridflow = "gridflow.cli:app"
 
+# Outside the core dependencies, so the library stays Polars-only. plotly 6 reads
+# Polars frames directly (through narwhals), so the notebooks never need pandas.
+[dependency-groups]
+notebooks = [
+    "jupyterlab>=4.2",
+    "jupytext>=1.16",
+    "ipykernel>=6.29",
+    "plotly>=6.0",
+]
+
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
@@ -42,7 +53,12 @@ build-backend = "setuptools.build_meta"
 where = ["src"]
 
 [tool.setuptools.package-data]
+"gridflow.config" = ["sources.yaml"]
 "gridflow.connectors.neso_data_portal.registry" = ["*.json"]
+"gridflow.gold" = ["views/*.sql", "views/held/*.sql"]
+
+[tool.jupytext]
+formats = "py:percent"
 
 [tool.ruff]
 target-version = "py311"

@@ -52,6 +52,9 @@ them into modelling-ready tables:
 | Open-Meteo   | `open_meteo` | none                 | Weather: temperature, wind, solar irradiance      |
 | NESO         | `neso`       | none                 | UK carbon intensity (current + regional + fcst)   |
 
+Each vendor's terms, the attribution it asks for and which test fixtures hold real
+responses are in [DATA-SOURCES.md](DATA-SOURCES.md).
+
 ---
 
 ## Install
@@ -62,11 +65,12 @@ management.
 ```bash
 git clone https://github.com/EBentham/gridflow.git
 cd gridflow
-uv pip install -e ".[dev]"
+uv sync
 uv run gridflow init
 ```
 
-`init` scaffolds the local `data/` directory and DuckDB catalogue.
+`init` creates the data root (`~/gridflow-data` unless `GRIDFLOW_DATA_DIR` is
+set) and its DuckDB catalogue.
 
 ### API keys (optional)
 
@@ -81,17 +85,19 @@ Elexon, Open-Meteo, ENTSO-G, and NESO work out of the box with no key.
 
 ### Configuring the data root
 
-By default, gridflow stores data in repo-local `data/` and the catalogue at
-`data/gridflow.duckdb`. To move the data root, set environment variables in
-your shell or in an untracked repo-root `.env` file:
+By default, gridflow stores data in `~/gridflow-data`, with the catalogue at
+`~/gridflow-data/gridflow.duckdb`, whichever folder you run it from. To move
+the data root, set one variable in your shell or in an untracked `.env` in
+(or above) the folder you run from:
 
 ```env
 GRIDFLOW_DATA_DIR=<absolute local data root>
-GRIDFLOW_DUCKDB_PATH=<absolute local data root>/gridflow.duckdb
 ```
 
-Absolute paths pass through unchanged. Precedence is process environment,
-then repo-root `.env`, then `config/settings.yaml`, then built-in defaults.
+The catalogue and logs follow it; `GRIDFLOW_DUCKDB_PATH` and
+`GRIDFLOW_LOG_DIR` are optional overrides. Relative paths resolve against the
+current folder. Precedence is the environment (including `.env`), then
+`config/settings.yaml` in the current folder, then built-in defaults.
 Keep cloud-synced folders such as OneDrive or Google Drive out of the data
 root; sync clients can lock the DuckDB file and make reads or writes fail.
 

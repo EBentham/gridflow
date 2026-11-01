@@ -1,0 +1,5 @@
+# Text files are stored with LF; each checkout gets its own OS line endings.
+* text=auto
+# Fixtures are vendor responses kept byte for byte: CRLF or lone-LF terminators,
+# LFs inside quoted cells and BOMs must survive git unchanged on every OS.
+tests/fixtures/** -text

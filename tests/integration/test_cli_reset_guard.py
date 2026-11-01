@@ -68,6 +68,24 @@ def test_predicate_allows_repo_data_and_tmp(
     assert _is_dangerous_delete_target(tmp_path / "elsewhere" / "data", repo) is False
 
 
+def test_reset_allows_default_root_under_home(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The default data root, ``~/gridflow-data``, is a child of home, not home: deletable.
+
+    The second case is an installed gridflow run from the home folder, where the
+    project root falls back to the current folder.
+    """
+    repo = tmp_path / "repo" / "gridflow"
+    repo.mkdir(parents=True)
+    fake_home = tmp_path / "home"
+    fake_home.mkdir()
+    monkeypatch.setattr(Path, "home", classmethod(lambda cls: fake_home))
+
+    assert _is_dangerous_delete_target(fake_home / "gridflow-data", repo) is False
+    assert _is_dangerous_delete_target(fake_home / "gridflow-data", fake_home) is False
+
+
 def _isolated_env(data_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Point gridflow at a tmp data_dir / duckdb / log dir for the duration."""
     monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))

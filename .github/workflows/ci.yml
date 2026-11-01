@@ -28,6 +28,15 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Guard against tracked .ipynb in notebooks/
+        run: |
+          if git ls-files notebooks | grep -q '\.ipynb$'; then
+            echo "Tracked .ipynb file found in notebooks/ — these must be jupytext-paired and gitignored."
+            echo "Offenders:"
+            git ls-files notebooks | grep '\.ipynb$'
+            exit 1
+          fi
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
@@ -58,6 +67,115 @@ jobs:
 
       - name: Test
         run: uv run --frozen pytest tests/ -v --tb=short -x -m "not live and not slow"
+
+  package-smoke:
+    # The wheel, installed into a clean venv and run outside the checkout, must
+    # find its gold views and sources and write only under the data root. The
+    # anchored steps run unchanged on Windows and macOS in cross-platform.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - &build-wheel
+        name: Build and install the wheel
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          uv build --wheel --out-dir dist "$GITHUB_WORKSPACE"
+          uv venv venv
+          uv pip install --python venv dist/*.whl
+          # Later steps run the installed gridflow and python by name on every OS.
+          if [ "$RUNNER_OS" = Windows ]; then
+            echo "$RUNNER_TEMP\venv\Scripts" >> "$GITHUB_PATH"
+          else
+            echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          fi
+
+      - &init-outside
+        name: Init and load settings outside the checkout
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        env:
+          GRIDFLOW_DATA_DIR: ${{ runner.temp }}/data
+        run: |
+          gridflow init
+          python - <<'EOF'
+          import importlib.resources as resources
+          import os
+          from pathlib import Path
+
+          import yaml
+
+          from gridflow.config.settings import load_settings
+
+          # Gold views need silver to bind, so an empty root registers none;
+          # what the wheel must carry is the SQL itself.
+          repo = Path(os.environ["GITHUB_WORKSPACE"]) / "src" / "gridflow"
+          shipped = sorted(p.name for p in (resources.files("gridflow.gold") / "views").iterdir())
+          expected = sorted(p.name for p in (repo / "gold" / "views").iterdir())
+          print("views:", shipped)
+          assert shipped == expected, f"wheel views {shipped} != repo views {expected}"
+
+          catalogue = Path(os.environ["GRIDFLOW_DATA_DIR"]) / "gridflow.duckdb"
+          assert catalogue.is_file(), f"init wrote no catalogue at {catalogue}"
+
+          sources = load_settings().sources
+          sources_yaml = (repo / "config" / "sources.yaml").read_text(encoding="utf-8")
+          declared = yaml.safe_load(sources_yaml)["sources"]
+          print("sources:", len(sources))
+          assert set(sources) == set(declared), sorted(sources)
+          EOF
+          # Logs go under the data root, not the current folder.
+          test -d data/logs && test ! -e logs
+
+      - &init-default
+        name: Init with the default data root
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: |
+          # Path.home() reads USERPROFILE on Windows and HOME elsewhere.
+          HOME="$RUNNER_TEMP/home" USERPROFILE="$RUNNER_TEMP/home" gridflow init
+          test -f "$RUNNER_TEMP/home/gridflow-data/gridflow.duckdb"
+
+  cross-platform:
+    # The full suite runs on ubuntu only (lint-and-test). Windows and macOS run
+    # the settings, data-root and trust-store tests, the notebook smoke on the
+    # sample store, and the package smoke.
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install dependencies
+        run: uv sync --locked --extra dev
+
+      - name: Settings, data-root, trust-store and notebook tests
+        shell: bash
+        run: >-
+          uv run --frozen pytest -v --tb=short
+          tests/integration/test_data_dir_resolution.py tests/unit/test_settings*
+          tests/unit/test_ssl_context.py tests/notebooks
+
+      - *build-wheel
+      - *init-outside
+      - *init-default
 
   slow-tests:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

@@ -3,7 +3,7 @@
 # Generated/reviewed during H4 on 2026-05-03.
 #
 # status values:
-# - implemented: active in DOC_TYPES and config/sources.yaml
+# - implemented: active in DOC_TYPES and src/gridflow/config/sources.yaml
 # - planned: classified for future implementation
 # - deferred: intentionally not active yet, with reason
 # - excluded: duplicate/example-only collection item

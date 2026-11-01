@@ -69,9 +69,9 @@ class GridflowClient:
 
     Args:
         db_path: Path to the DuckDB catalogue. When omitted, the path comes
-            from gridflow settings: process environment
-            ``GRIDFLOW_DUCKDB_PATH`` first, then repo-root ``.env``, then
-            ``config/settings.yaml``, then the default.
+            from gridflow settings: ``GRIDFLOW_DUCKDB_PATH`` if set, else
+            ``gridflow.duckdb`` under the data root, ``GRIDFLOW_DATA_DIR``
+            (default ``~/gridflow-data``).
 
     Usage:
         gf = GridflowClient()
@@ -88,13 +88,15 @@ class GridflowClient:
             raise FileNotFoundError(
                 "DuckDB catalogue not found at "
                 + str(self._db_path)
-                + ". Run 'gridflow init' to create it."
+                + ". Run 'gridflow init' to create it, or set GRIDFLOW_DATA_DIR"
+                + " to your data root."
             )
         self._con: duckdb.DuckDBPyConnection | None = duckdb.connect(
             str(self._db_path), read_only=True
         )
 
-    def _require_con(self) -> duckdb.DuckDBPyConnection:
+    def require_con(self) -> duckdb.DuckDBPyConnection:
+        """Return the open read-only connection, or raise if the client is closed."""
         # WHY: close() can leave _con as None; every query path must
         # surface a clear error rather than an opaque AttributeError if
         # callers reach for the connection after closing it.
@@ -105,9 +107,12 @@ class GridflowClient:
             )
         return self._con
 
+    # kept until gridflow-models stops calling it; remove in 0.24
+    _require_con = require_con
+
     def query(self, sql: str) -> pl.DataFrame:
         """Execute a SQL query and return results as a Polars DataFrame."""
-        return self._require_con().sql(sql).pl()
+        return self.require_con().sql(sql).pl()
 
     def _present_bitemporal_exclude_clause(
         self, relation: str, *, retain: Sequence[str] = ()
@@ -138,7 +143,7 @@ class GridflowClient:
         # information_schema rather than being interpolated into the query text.
         present = {
             row[0]
-            for row in self._require_con()
+            for row in self.require_con()
             .execute(
                 "SELECT column_name FROM information_schema.columns WHERE table_name = ?",
                 [relation],
@@ -172,7 +177,7 @@ class GridflowClient:
         """
         exclude = self._present_bitemporal_exclude_clause(relation, retain=retain)
         sql = f"SELECT *{exclude} FROM {relation} WHERE {where} ORDER BY {order_by}"
-        return self._require_con().execute(sql, list(params)).pl()
+        return self.require_con().execute(sql, list(params)).pl()
 
     def get_system_prices(
         self,
@@ -267,7 +272,7 @@ class GridflowClient:
             "WHERE settlement_date BETWEEN ? AND ? "
             "ORDER BY timestamp_utc, fuel_type"
         )
-        return self._require_con().execute(sql, [str(start), str(end)]).pl()
+        return self.require_con().execute(sql, [str(start), str(end)]).pl()
 
     def get_fuel_generation(
         self,
@@ -368,7 +373,7 @@ class GridflowClient:
     def get_tables(self) -> list[str]:
         """List all available tables and views."""
         result = (
-            self._require_con()
+            self.require_con()
             .sql(
                 "SELECT table_name FROM information_schema.tables "
                 "WHERE table_schema = 'main' "

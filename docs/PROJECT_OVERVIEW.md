@@ -223,7 +223,7 @@ CLI: gridflow build system_marginal_price --last 30d
 
 | Class | Role |
 |-------|------|
-| `GridflowConfig` | Pydantic v2 settings: loads from `config/settings.yaml` + `config/sources.yaml` + env vars. |
+| `GridflowConfig` | Pydantic v2 settings: loads from the packaged `sources.yaml`, an optional `config/settings.yaml` in the current folder, and env vars. |
 | `PathBuilder` | Centralised path construction for bronze/silver/gold directories. |
 | `PipelineRunTracker` | Records each run (UUID, source, dataset, operation, status, rows, duration) to DuckDB. |
 | `QualityReporter` | Runs 5 check types against silver data, writes results to DuckDB. |
@@ -271,16 +271,17 @@ data/
 
 ## Configuration
 
-Two YAML files in `config/`:
+Two YAML files:
 
-- **`settings.yaml`** — Pipeline paths, lookback defaults, quality thresholds
-- **`sources.yaml`** — All 7 sources with base URLs, auth, rate limits, and per-dataset endpoint configs
+- **`config/settings.yaml`** — optional override, read from the current folder: lookback defaults, quality thresholds
+- **`src/gridflow/config/sources.yaml`** — ships in the package: every source with base URLs, auth, rate limits, and per-dataset endpoint configs
 
-The default data root is repo-local `data/`, with the DuckDB catalogue at
-`data/gridflow.duckdb`. Override it with `GRIDFLOW_DATA_DIR` and
-`GRIDFLOW_DUCKDB_PATH` in the process environment or an untracked repo-root
-`.env`; absolute paths pass through unchanged. Precedence is process
-environment, then repo-root `.env`, then `config/settings.yaml`, then built-in
+The default data root is `~/gridflow-data`, with the DuckDB catalogue at
+`<data root>/gridflow.duckdb` and logs in `<data root>/logs`. Override it with
+`GRIDFLOW_DATA_DIR` in the process environment or a `.env` in (or above) the
+folder you run from; `GRIDFLOW_DUCKDB_PATH` and `GRIDFLOW_LOG_DIR` are optional.
+Relative paths resolve against the current folder. Precedence is the
+environment (including `.env`), then `config/settings.yaml`, then built-in
 defaults.
 
 API keys are resolved from environment variables (e.g. `ENTSOE_API_KEY`, `GIE_API_KEY`). Sources without auth (Elexon, Open-Meteo, ENTSO-G, NESO) work out of the box.

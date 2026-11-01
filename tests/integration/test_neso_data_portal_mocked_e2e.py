@@ -94,7 +94,7 @@ def _package_show_payload() -> dict[str, Any]:
 
 
 def _source_config() -> SourceConfig:
-    """The REAL config from ``config/sources.yaml``, paced for a test.
+    """The REAL config from the packaged ``gridflow/config/sources.yaml``, paced for a test.
 
     Built from the shipped YAML rather than hand-assembled: a base URL or a
     dataset key that drifted out of the config would otherwise be invisible
@@ -753,7 +753,7 @@ def test_local_fuelhh_parquet_agrees_in_magnitude_where_both_sources_exist() -> 
     **Which root it looks in, and why it usually skips.** The repo-root
     conftest's autouse `_clear_gridflow_path_env` deletes `GRIDFLOW_DATA_DIR`
     so a machine's real root cannot leak into the suite, which leaves
-    `load_settings()` on `config/settings.yaml`'s repo-relative `./data`. That
+    `load_settings()` on the default root, `~/gridflow-data`. That
     is deliberately NOT worked around here -- reading the env var directly
     would reintroduce exactly the leak the fixture exists to prevent -- and it
     is the same path the plan names. So on a machine whose data lives

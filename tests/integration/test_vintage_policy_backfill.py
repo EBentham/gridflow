@@ -203,7 +203,7 @@ def test_l_t01_l_t04_vendor_stamp_persists_and_serving_handles_legacy_union(
         served = client.get_system_prices(day, day)
         # Production visibility uses available_at as the primary barrier. With
         # zero fallback rows, published_at is an expected coincident cross-check.
-        con = client._require_con()
+        con = client.require_con()
         at_stamp = con.execute(
             "SELECT count(*) FROM silver_elexon_system_prices "
             "WHERE available_at <= ? AND settlement_date = ?",

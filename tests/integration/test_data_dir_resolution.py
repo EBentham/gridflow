@@ -1,10 +1,10 @@
-"""Integration test: data_dir resolves to project root, not CWD (WBH-04, ADR-001).
+"""Integration test: where gridflow puts its data.
 
-The `_project_root()` + `@model_validator` port from gridflow_models
-(D-WORKTREE-PATH, commit 3e9b7e8) makes relative `data_dir`, `duckdb_path`,
-and `log_dir` resolve against the project root rather than the current
-working directory. This eliminates the "writes data to notebooks/data/"
-silent-bug class hit on 2026-05-10.
+One variable, ``GRIDFLOW_DATA_DIR``, picks the data root, defaulting to
+``~/gridflow-data`` on every OS so a checkout, an installed package, a notebook
+and a downstream repo all find the same data. The catalogue and the logs sit
+under it unless set on their own. Relative values resolve against the current
+folder, as any command-line tool's would.
 """
 
 from __future__ import annotations
@@ -12,9 +12,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from gridflow.cli import app
 from gridflow.config import settings as settings_module
 from gridflow.config.settings import PipelineSettings, _project_root
+from gridflow.serving.client import GridflowClient
 
 
 @pytest.fixture(autouse=True)
@@ -24,42 +27,62 @@ def _clear_project_root_cache() -> None:
     _project_root.cache_clear()
 
 
+def _fake_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Point ``Path.home()`` at a tmp folder: it reads USERPROFILE on Windows, HOME elsewhere."""
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setenv("USERPROFILE", str(home))
+    return home
+
+
 def test_project_root_returns_parent_of_pyproject() -> None:
     """Sanity check: _project_root() points at a directory containing pyproject.toml."""
     root = _project_root()
     assert (root / "pyproject.toml").exists(), f"_project_root={root}"
 
 
-def test_relative_data_dir_resolves_to_project_root_regardless_of_cwd(
+def test_default_data_root_is_home_gridflow_data(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Constructing PipelineSettings with relative paths from a foreign CWD
-    must produce absolute paths anchored at the gridflow project root, not
-    the (foreign) CWD."""
+    """With nothing set, data, catalogue and logs go under ``~/gridflow-data``, from any folder."""
+    home = _fake_home(tmp_path, monkeypatch)
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    pipeline = settings_module.load_settings().pipeline
+
+    assert pipeline.data_dir == home / "gridflow-data"
+    assert pipeline.duckdb_path == home / "gridflow-data" / "gridflow.duckdb"
+    assert pipeline.log_dir == home / "gridflow-data" / "logs"
+
+
+def test_duckdb_path_follows_data_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Setting only ``GRIDFLOW_DATA_DIR`` moves the catalogue and the logs with it."""
+    root = tmp_path / "root"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(root))
+
+    pipeline = settings_module.load_settings().pipeline
+
+    assert pipeline.data_dir == root
+    assert pipeline.duckdb_path == root / "gridflow.duckdb"
+    assert pipeline.log_dir == root / "logs"
+
+
+def test_relative_data_dir_resolves_against_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A relative value means the current folder, never the checkout gridflow came from."""
     nested = tmp_path / "subdir" / "deeper"
     nested.mkdir(parents=True)
     monkeypatch.chdir(nested)
 
-    # Direct construction with the YAML-style relative defaults.
-    pipeline = PipelineSettings(
-        data_dir=Path("./data"),
-        log_dir=Path("./logs"),
-        duckdb_path=Path("./data/gridflow.duckdb"),
-    )
+    pipeline = PipelineSettings(data_dir=Path("data"), log_dir=Path("./logs"))
 
-    assert pipeline.data_dir.is_absolute()
-    assert pipeline.duckdb_path.is_absolute()
-    assert pipeline.log_dir.is_absolute()
-    # The resolved paths must NOT contain the foreign CWD components —
-    # that would mean the bug is unfixed.
-    assert "subdir" not in str(pipeline.data_dir)
-    assert "deeper" not in str(pipeline.data_dir)
-    # And they MUST sit under a directory containing pyproject.toml
-    # (the project root).
-    expected_root = _project_root()
-    assert pipeline.data_dir == (expected_root / "data").resolve()
-    assert pipeline.log_dir == (expected_root / "logs").resolve()
-    assert pipeline.duckdb_path == (expected_root / "data" / "gridflow.duckdb").resolve()
+    assert pipeline.data_dir == (nested / "data").resolve()
+    assert pipeline.duckdb_path == (nested / "data" / "gridflow.duckdb").resolve()
+    assert pipeline.log_dir == (nested / "logs").resolve()
 
 
 def test_absolute_data_dir_passes_through_unchanged(tmp_path: Path) -> None:
@@ -84,8 +107,8 @@ def test_absolute_data_dir_passes_through_unchanged(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("field", ["data_dir", "duckdb_path", "log_dir"])
 def test_drive_relative_path_is_refused(field: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """`C:x` has a drive but no root, so it is relative and used to be joined
-    to the project root with no error. An unquoted `C:\\gridflow-data\\x` set
+    """`C:x` has a drive but no root, so it is relative and would be joined
+    to the current folder with no error. An unquoted `C:\\gridflow-data\\x` set
     in a POSIX shell arrives in exactly this form."""
     monkeypatch.setenv(f"GRIDFLOW_{field.upper()}", "C:gridflow-x.duckdb")
 
@@ -93,30 +116,48 @@ def test_drive_relative_path_is_refused(field: str, monkeypatch: pytest.MonkeyPa
         PipelineSettings()
 
 
-def test_load_settings_resolves_yaml_paths_to_project_root(
+def test_env_beats_yaml_beats_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """``GRIDFLOW_DATA_DIR`` wins over ``config/settings.yaml`` in the current folder,
+    which wins over ``~/gridflow-data``."""
+    home = _fake_home(tmp_path, monkeypatch)
+    yaml_root = tmp_path / "yaml-root"
+    env_root = tmp_path / "env-root"
+    with_yaml = tmp_path / "with-yaml"
+    (with_yaml / "config").mkdir(parents=True)
+    (with_yaml / "config" / "settings.yaml").write_text(
+        f"pipeline:\n  data_dir: {yaml_root.as_posix()}\n", encoding="utf-8"
+    )
+    without_yaml = tmp_path / "without-yaml"
+    without_yaml.mkdir()
+
+    monkeypatch.chdir(without_yaml)
+    assert settings_module.load_settings().pipeline.data_dir == home / "gridflow-data"
+
+    monkeypatch.chdir(with_yaml)
+    yaml_pipeline = settings_module.load_settings().pipeline
+    assert yaml_pipeline.data_dir == yaml_root
+    assert yaml_pipeline.duckdb_path == yaml_root / "gridflow.duckdb"
+
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(env_root))
+    env_pipeline = settings_module.load_settings().pipeline
+    assert env_pipeline.data_dir == env_root
+    assert env_pipeline.duckdb_path == env_root / "gridflow.duckdb"
+
+
+def test_missing_root_message_names_variable(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """End-to-end load_settings(): YAML's relative `./data` must resolve
-    to <project_root>/data even when invoked from a foreign CWD.
+    """A missing catalogue names the path tried and the variable that moves it."""
+    catalogue = tmp_path / "no-such-root" / "gridflow.duckdb"
+    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(catalogue.parent))
 
-    Uses a clean tmp config dir to avoid coupling to the gridflow repo's
-    own config/settings.yaml — we want to verify the validator runs, not
-    that any particular value is read.
-    """
-    # Populate a minimal config tree at tmp_path/config/.
-    cfg_root = tmp_path / "config"
-    cfg_root.mkdir()
-    (cfg_root / "settings.yaml").write_text(
-        "pipeline:\n  data_dir: ./data\n  log_dir: ./logs\n  duckdb_path: ./data/gridflow.duckdb\n"
-    )
-    (cfg_root / "sources.yaml").write_text("sources: {}\n")
+    with pytest.raises(FileNotFoundError) as excinfo:
+        GridflowClient()
+    assert str(catalogue) in str(excinfo.value)
+    assert "GRIDFLOW_DATA_DIR" in str(excinfo.value)
 
-    monkeypatch.setattr(settings_module, "_find_config_dir", lambda: cfg_root)
-
-    # CWD is foreign — settings.yaml's `./data` must NOT anchor here.
-    monkeypatch.chdir(tmp_path)
-
-    config = settings_module.load_settings()
-    assert config.pipeline.data_dir.is_absolute()
-    expected_root = _project_root()
-    assert config.pipeline.data_dir == (expected_root / "data").resolve()
+    result = CliRunner().invoke(app, ["status"])
+    assert result.exit_code == 1
+    assert str(catalogue) in result.output
+    assert "GRIDFLOW_DATA_DIR" in result.output
+    assert not catalogue.parent.exists()
