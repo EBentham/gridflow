@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import UTC, date, datetime, timedelta
 from typing import ClassVar
 
@@ -12,9 +11,6 @@ from gridflow.schemas.elexon import ElexonMID
 from gridflow.silver.base import VintagePolicy
 from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc_expr
-
-logger = logging.getLogger(__name__)
 
 
 class MIDTransformer(ElexonTransformer):
@@ -38,80 +34,30 @@ class MIDTransformer(ElexonTransformer):
         ),
         applies_before=datetime(2026, 8, 1, tzinfo=UTC),
     )
-    ENTITY_KEY_COLUMNS = (
-        "settlement_date",
-        "settlement_period",
-    )  # D-8
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("data_provider_id",)
     DATASET_VERSION = "1.1.0"
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        # G5-W1.2 (2026-05): live API renamed two fields. Keep legacy keys
-        # so historical bronze still ingests cleanly.
-        # - dataProviderId  → dataProvider  (current)
-        # - midPrice        → price         (current)
-        column_mapping = {
-            "settlementDate": "settlement_date",
-            "settlementPeriod": "settlement_period",
-            "dataProviderId": "data_provider_id",  # legacy (pre-2026)
-            "dataProvider": "data_provider_id",  # current API
-            "midPrice": "market_index_price",  # legacy (pre-2026)
-            "price": "market_index_price",  # current API
-            "volume": "market_index_volume",
-        }
-        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
-        if rename_map:
-            raw_df = raw_df.rename(rename_map)
-
-        required = ["settlement_date", "settlement_period"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error(f"Missing required columns in MID: {missing}")
-            return pl.DataFrame()
-
-        df = raw_df.with_columns(
-            [
-                pl.col("settlement_date").cast(pl.Date),
-                pl.col("settlement_period").cast(pl.Int32),
-            ]
-        )
-
-        if "market_index_price" in df.columns:
-            df = df.with_columns(pl.col("market_index_price").cast(pl.Float64))
-        if "market_index_volume" in df.columns:
-            df = df.with_columns(pl.col("market_index_volume").cast(pl.Float64))
-
-        df = df.with_columns(
-            settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
-                "timestamp_utc"
-            )
-        )
-
-        df = self.dedup_to_grain(df)
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("elexon").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        output_cols = [
-            "settlement_date",
-            "settlement_period",
-            "timestamp_utc",
-            "data_provider_id",
-            "market_index_price",
-            "market_index_volume",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc")
+    # G5-W1.2 (2026-05): the live API renamed two fields; the legacy keys stay
+    # so historical bronze still ingests.
+    COLUMN_MAP = {
+        "settlementDate": "settlement_date",
+        "settlementPeriod": "settlement_period",
+        "dataProviderId": "data_provider_id",  # legacy (pre-2026)
+        "dataProvider": "data_provider_id",  # current API
+        "midPrice": "market_index_price",  # legacy (pre-2026)
+        "price": "market_index_price",  # current API
+        "volume": "market_index_volume",
+    }
+    REQUIRED = ("settlement_date", "settlement_period")
+    CASTS = {"market_index_price": pl.Float64(), "market_index_volume": pl.Float64()}
+    OUTPUT_COLS = (
+        "settlement_date",
+        "settlement_period",
+        "timestamp_utc",
+        "data_provider_id",
+        "market_index_price",
+        "market_index_volume",
+    )
 
 
 register_transformer("elexon", "mid", MIDTransformer)
