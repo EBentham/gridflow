@@ -151,6 +151,23 @@ def test_segments_reach_silver(cls: type[BaseSilverTransformer], row) -> None:  
     assert transformer.last_excluded_row_count == 0
 
 
+@pytest.mark.parametrize(
+    ("cls", "row"),
+    [(PNTransformer, _pn_row), (BOALTransformer, _boal_row)],
+    ids=["pn", "boal"],
+)
+def test_all_null_segment_times_still_transform(cls: type[BaseSilverTransformer], row) -> None:  # type: ignore[no-untyped-def]
+    """A body whose timeFrom/timeTo are all null loads them as Polars' Null dtype;
+    parsing that as text raised SchemaError and failed the whole date."""
+    raw = pl.DataFrame([{**row("2026-09-14T23:00:00Z", 1.0), "timeFrom": None, "timeTo": None}])
+
+    out = _bare(cls).transform(raw)
+
+    assert out.height == 1
+    assert out["time_from"].to_list() == [None]
+    assert out.schema["time_from"] == pl.Datetime("us", "UTC")
+
+
 def _ngc_rows(value_field: str) -> list[dict[str, object]]:
     base = {
         "publishTime": "2026-09-15T23:47:00Z",

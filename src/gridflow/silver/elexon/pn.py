@@ -61,11 +61,13 @@ class PNTransformer(ElexonTransformer):
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
 
         # A unit-period carries one row per segment (a ramp in PN, an
-        # acceptance's steps in BOAL); time_from tells them apart.
+        # acceptance's steps in BOAL); time_from tells them apart. An all-null
+        # column loads as the Null dtype, which the string parser refuses.
         for col in ("time_from", "time_to"):
             if col in df.columns:
                 df = df.with_columns(
                     pl.col(col)
+                    .cast(pl.Utf8)
                     .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
                     .dt.replace_time_zone("UTC")
                 )
