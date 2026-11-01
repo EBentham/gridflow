@@ -1198,6 +1198,15 @@ class TestOutagesGenerationTransformer:
         result = self.t.transform(raw)
         assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
 
+    def test_null_and_unknown_codes_are_counted_and_listed(self, caplog):
+        """A null code beside an unknown one is listed, not a TypeError in the sort."""
+        raw = _make_outage_df("outages_generation_gb.xml")
+        codes = pl.Series([None, "A99"] * raw.height)[: raw.height]
+        result = self.t.transform(raw.with_columns(business_type=codes))
+        assert set(result["outage_type"].to_list()) == {"unmapped"}
+        assert self.t.last_unmapped_count == len(result)
+        assert "['A99', 'None']" in caplog.text
+
     def test_ingested_at_present(self):
         raw = _make_outage_df("outages_generation_gb.xml")
         result = self.t.transform(raw)
