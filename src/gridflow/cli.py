@@ -31,6 +31,7 @@ from gridflow.pipeline.runner import (
 
 app = typer.Typer(name="gridflow", help="UK/EU energy market data pipeline")
 logger = logging.getLogger(__name__)
+_END_HELP = "End date, inclusive (YYYY-MM-DD), or an exclusive ISO datetime"
 
 
 def _is_dangerous_delete_target(target: Path, project_root: Path) -> bool:
@@ -187,7 +188,7 @@ def ingest(
     source: str = typer.Argument(help="Data source (elexon, entsoe, entsog)"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name, or omit for --all"),
     start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help=_END_HELP),
     last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(
         False, "--all", "-all", help="Ingest all datasets for source"
@@ -262,7 +263,7 @@ def transform(
     source: str = typer.Argument(help="Data source"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help=_END_HELP),
     last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", help="Transform all datasets for source"),
     reingest: bool = typer.Option(
@@ -306,7 +307,7 @@ def transform(
 def build(
     gold_dataset: str | None = typer.Argument(default=None, help="Gold dataset name"),
     start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help=_END_HELP),
     last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Build all gold datasets"),
 ) -> None:
@@ -348,8 +349,8 @@ def build(
 def backfill(
     source: str = typer.Argument(help="Data source"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
-    start: str = typer.Option(..., help="Start date (YYYY-MM-DD)"),
-    end: str = typer.Option(..., help="End date (YYYY-MM-DD)"),
+    start: str = typer.Option(..., help="Start date (YYYY-MM-DD) or ISO datetime"),
+    end: str = typer.Option(..., help=_END_HELP),
     chunk_days: int = typer.Option(1, help="Days per chunk"),
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
 ) -> None:
@@ -364,6 +365,7 @@ def backfill(
 
     from gridflow.config.settings import load_settings
     from gridflow.utils.logging import setup_logging
+    from gridflow.utils.time import window_dates
 
     settings = load_settings()
     setup_logging(
@@ -373,64 +375,34 @@ def backfill(
     )
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
-
-    start_dt = datetime.fromisoformat(start).replace(tzinfo=UTC)
-    end_dt = datetime.fromisoformat(end).replace(tzinfo=UTC)
+    start_dt, end_dt = _resolve_dates(start, end, None, 0)
 
     runner.import_connectors()
     runner.import_transformers()
 
-    # The adapter owns the chunk loop + per-chunk echo; each chunk's ingest and
-    # transform delegate to the runner on ONE shared connection (Windows-safe:
-    # no second RW handle to the catalogue). Views are refreshed once at the end
-    # after the connection closes.
-    # Collect every chunk's ingest + transform result so a failed step can no
-    # longer hide behind "Backfill complete" / exit 0 (R3-F03).
-    all_results: list[DatasetResult] = []
-    with runner.build_context(settings) as ctx:
-        for ds in datasets:
+    def _echo_chunk(ds: str, number: int, chunk_start: datetime, chunk_end: datetime) -> None:
+        if number == 1:
             typer.echo(f"\n--- Backfilling {source}/{ds} ---")
-            current = start_dt
-            chunk_num = 0
-            while current < end_dt:
-                chunk_end = min(current + timedelta(days=chunk_days), end_dt)
-                chunk_num += 1
-                typer.echo(f"  Chunk {chunk_num}: {current.date()} to {chunk_end.date()}")
+        days = window_dates(chunk_start, chunk_end)
+        typer.echo(f"  Chunk {number}: {days[0]} to {days[-1]}")
 
-                # write_watermark=False: backfill is an explicit historical op and
-                # must never advance/rewind the forward incremental frontier (C3-11).
-                all_results.extend(
-                    runner.run_ingest(
-                        ctx,
-                        source,
-                        [ds],
-                        current,
-                        chunk_end,
-                        incremental=False,
-                        write_watermark=False,
-                    )
-                )
-
-                # chunk_end is the exclusive API boundary; transform date iteration
-                # is inclusive, so subtract one day to avoid a spurious "no bronze
-                # data" warning for the end date.
-                transform_end = chunk_end - timedelta(days=1)
-                all_results.extend(runner.run_transform(ctx, source, [ds], current, transform_end))
-
-                current = chunk_end
-
-            typer.echo(f"  {source}/{ds}: {chunk_num} chunks processed")
-
-    runner.refresh_views(settings)
+    report = runner.run_backfill(
+        settings,
+        source,
+        datasets,
+        start_dt,
+        end_dt,
+        chunk_days=chunk_days,
+        on_chunk=_echo_chunk,
+    )
 
     # R3-F03: surface any failed ingest/transform step and exit non-zero, mirroring
     # cli.ingest. Only per-dataset step failures are echoed
     # here; an infra exception outside the runner's per-dataset guards still
     # propagates and exits non-zero, just without this summary.
-    failures = [r for r in all_results if r.status == "failed"]
-    if failures:
-        typer.echo(f"Backfill failed for {len(failures)} step(s):", err=True)
-        for r in failures:
+    if report.failed:
+        typer.echo(f"Backfill failed for {len(report.failed)} step(s):", err=True)
+        for r in report.failed:
             typer.echo(f"  {r.operation} {source}/{r.dataset}: {r.error}", err=True)
         raise typer.Exit(1)
     typer.echo("\nBackfill complete")
@@ -488,7 +460,7 @@ def pipeline(
     source: str = typer.Argument(help="Data source"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD)"),
-    end: str | None = typer.Option(None, help="End date (YYYY-MM-DD)"),
+    end: str | None = typer.Option(None, help=_END_HELP),
     last: str | None = typer.Option(None, help="Relative lookback (e.g. 24h, 7d)"),
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Run all datasets for source"),
     gold_dataset: str | None = typer.Option(

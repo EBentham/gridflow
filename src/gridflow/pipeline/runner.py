@@ -23,7 +23,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, assert_never
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable, Iterator
     from pathlib import Path
 
     import duckdb
@@ -463,20 +463,23 @@ def import_transformers() -> None:
 # --------------------------------------------------------------------------- #
 
 
-def _parse_window_bound(value: str) -> datetime:
+def _parse_window_bound(value: str, *, end: bool = False) -> datetime:
     """Parse a ``--start``/``--end`` bound to a tz-aware UTC datetime.
 
-    Offset-bearing strings are CONVERTED (``astimezone``), not relabelled; a
-    bare calendar date (no time component) is taken as midnight UTC
-    (unambiguous); a naive datetime (wall-clock time, no offset) is REJECTED
-    with :class:`NaiveDatetimeError`. Silently relabelling a naive datetime as
-    UTC — what ``.replace(tzinfo=...)`` did — shifts the ingest window by up to
-    ±1h under BST (issue-19 site A).
+    Every window inside gridflow is half-open ``[start, end)``. A bare calendar
+    date is the one inclusive form: as a start it is that date's midnight UTC,
+    and as an end (``end=True``) it means "through that date", so it becomes the
+    next midnight. Offset-bearing strings are exact instants, CONVERTED
+    (``astimezone``), not relabelled; a naive datetime (wall-clock time, no
+    offset) is REJECTED with :class:`NaiveDatetimeError`. Silently relabelling a
+    naive datetime as UTC shifts the window by up to ±1h under BST (issue-19
+    site A).
     """
     parsed = datetime.fromisoformat(value)
     if parsed.tzinfo is None:
         if "T" not in value and ":" not in value:
-            return parsed.replace(tzinfo=UTC)
+            midnight = parsed.replace(tzinfo=UTC)
+            return midnight + timedelta(days=1) if end else midnight
         raise NaiveDatetimeError(
             f"Naive datetime {value!r} has no timezone; pass an explicit offset "
             f"(e.g. '2026-02-01T00:00:00Z' or '...+01:00') or a bare date."
@@ -490,23 +493,22 @@ def resolve_dates(
     last: str | None,
     default_lookback_hours: int,
 ) -> tuple[datetime, datetime]:
-    """Parse date arguments into ``(start_dt, end_dt)`` UTC datetimes.
+    """Parse date arguments into a half-open ``[start_dt, end_dt)`` UTC window.
 
-    Precedence: ``--last`` > ``--start``/``--end`` > default lookback. Offset
-    bounds are converted to their UTC instant; naive bounds raise
-    :class:`NaiveDatetimeError`; a bare date is midnight UTC.
+    The window ends at ``end`` when given (a bare date is inclusive), else now.
+    It starts ``--last`` before that end, else at ``start``, else the default
+    lookback before that end. Offset bounds are converted to their UTC instant;
+    naive bounds raise :class:`NaiveDatetimeError`.
     """
     now = datetime.now(UTC)
+    end_dt = _parse_window_bound(end, end=True) if end else now
     if last:
         from gridflow.utils.time import parse_lookback
 
-        delta = parse_lookback(last)
-        return now - delta, now
+        return end_dt - parse_lookback(last), end_dt
     if start:
-        start_dt = _parse_window_bound(start)
-        end_dt = _parse_window_bound(end) if end else now
-        return start_dt, end_dt
-    return now - timedelta(hours=default_lookback_hours), now
+        return _parse_window_bound(start), end_dt
+    return end_dt - timedelta(hours=default_lookback_hours), end_dt
 
 
 def resolve_datasets(
@@ -1280,8 +1282,8 @@ def run_transform(
         ctx: Open pipeline context.
         source: Data source name.
         datasets: Datasets to transform.
-        start_dt: Window start (date taken).
-        end_dt: Window end (date taken, inclusive).
+        start_dt: Window start (inclusive).
+        end_dt: Window end (exclusive); the UTC dates the window touches run.
         reingest: Use bronze sidecar timestamps for historical available_at.
 
     Returns:
@@ -1290,11 +1292,11 @@ def run_transform(
     from gridflow.observability import PipelineRunTracker
     from gridflow.silver.base import BronzeVouchReason, UnparseableBronzeError
     from gridflow.silver.registry import get_transformer, ingest_only_reason, post_run_hooks
-    from gridflow.utils.time import date_range
+    from gridflow.utils.time import window_dates
 
     con = ctx.con
     settings = ctx.settings
-    dates = date_range(start_dt.date(), end_dt.date())
+    dates = window_dates(start_dt, end_dt)
     results: list[DatasetResult] = []
 
     for ds in datasets:
@@ -1355,7 +1357,7 @@ def run_transform(
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             positive_offsets, missing_owner_dates = _assess_partition_retouch_window(
-                transformer, dates, end_dt.date()
+                transformer, dates, dates[-1]
             )
             partition_retouch_warnings = int(bool(missing_owner_dates))
             if missing_owner_dates:
@@ -1725,8 +1727,9 @@ def run_build(
     Args:
         ctx: Open pipeline context.
         targets: Gold dataset names to build.
-        start_dt: Window start (date taken).
-        end_dt: Window end (date taken).
+        start_dt: Window start (inclusive).
+        end_dt: Window end (exclusive); builders get the first and last UTC
+            dates the window touches.
 
     Returns:
         One :class:`DatasetResult` per requested target, in input order.
@@ -1734,9 +1737,11 @@ def run_build(
     import gridflow.gold  # noqa: F401 — import the package to populate the gold registry
     from gridflow.gold.registry import get_builder, list_gold_datasets
     from gridflow.observability import PipelineRunTracker
+    from gridflow.utils.time import window_dates
 
     con = ctx.con
     settings = ctx.settings
+    days = window_dates(start_dt, end_dt)
     known = set(list_gold_datasets())
     # Drift guard: the lazily-populated gold registry and the static
     # GOLD_DATASETS tuple (used by adapters for ``--all`` expansion) must stay in
@@ -1765,7 +1770,7 @@ def run_build(
         tracker = PipelineRunTracker(con, "gold", name, "build")
         try:
             builder = get_builder(name, settings.pipeline.data_dir)
-            rows = builder.run(start_dt.date(), end_dt.date())
+            rows = builder.run(days[0], days[-1])
             tracker.complete(rows_out=rows)
             results.append(
                 DatasetResult(
@@ -1806,15 +1811,14 @@ def run_backfill(
     end_dt: datetime,
     *,
     chunk_days: int = 1,
+    on_chunk: Callable[[str, int, datetime, datetime], None] | None = None,
 ) -> RunReport:
     """Backfill historical data in chunks, in-process, on one connection.
 
     For each dataset, walk ``[start_dt, end_dt)`` in ``chunk_days`` windows. Each
     chunk ingests (``write_watermark=False`` — a historical op must never move the
-    forward frontier) then transforms. The transform end is ``chunk_end - 1 day``:
-    ``chunk_end`` is the exclusive API boundary but transform date iteration is
-    inclusive, so without the -1d the end date would warn "no bronze data"
-    (preserved off-by-one from cli.backfill).
+    forward frontier), then transforms the same window, so a final chunk that
+    ends mid-day still transforms its last day.
 
     One DuckDB connection is reused across all chunks (Windows-safe: no second RW
     handle), and views are refreshed once at the very end after it closes.
@@ -1826,6 +1830,8 @@ def run_backfill(
         start_dt: Inclusive range start (tz-aware UTC).
         end_dt: Exclusive range end (tz-aware UTC).
         chunk_days: Days per chunk.
+        on_chunk: Called before each chunk with ``(dataset, number, start, end)``,
+            numbering from 1 per dataset, so an adapter can echo progress.
 
     Returns:
         A :class:`RunReport` aggregating every chunk's ingest + transform results.
@@ -1839,21 +1845,23 @@ def run_backfill(
     with build_context(settings) as ctx:
         for ds in datasets:
             current = start_dt
+            number = 0
             while current < end_dt:
                 chunk_end = min(current + timedelta(days=chunk_days), end_dt)
-                results.extend(
-                    run_ingest(
-                        ctx,
-                        source,
-                        [ds],
-                        current,
-                        chunk_end,
-                        incremental=False,
-                        write_watermark=False,
-                    )
+                number += 1
+                if on_chunk is not None:
+                    on_chunk(ds, number, current, chunk_end)
+                ingested = run_ingest(
+                    ctx,
+                    source,
+                    [ds],
+                    current,
+                    chunk_end,
+                    incremental=False,
+                    write_watermark=False,
                 )
-                transform_end = chunk_end - timedelta(days=1)
-                results.extend(run_transform(ctx, source, [ds], current, transform_end))
+                results.extend(ingested)
+                results.extend(run_transform(ctx, source, [ds], current, chunk_end))
                 current = chunk_end
     refresh_views(settings)
     return RunReport(results=results)
