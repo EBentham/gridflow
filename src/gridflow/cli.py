@@ -21,6 +21,8 @@ import typer
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
+    from gridflow.config.settings import GridflowConfig
+
 from gridflow.pipeline import runner
 from gridflow.pipeline.runner import (
     DatasetResolutionError,
@@ -1270,14 +1272,13 @@ def _resolve_datasets(
     source: str,
     dataset: str | None,
     all_flag: bool,
-    settings: object,
+    settings: GridflowConfig,
 ) -> list[str]:
     """Resolve which datasets to process.
 
     Delegates to :func:`gridflow.pipeline.runner.resolve_datasets`, translating
     the runner's :class:`~gridflow.pipeline.runner.DatasetResolutionError` into a
-    ``typer.BadParameter``. A ``TypeError`` (non-``GridflowConfig`` settings)
-    propagates unchanged, preserving ``test_invalid_settings_type``.
+    ``typer.BadParameter``.
     """
     try:
         return runner.resolve_datasets(source, dataset, all_flag, settings)

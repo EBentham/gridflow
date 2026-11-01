@@ -515,7 +515,7 @@ def resolve_datasets(
     source: str,
     dataset: str | None,
     all_flag: bool,
-    settings: object,
+    settings: GridflowConfig,
 ) -> list[str]:
     """Resolve which datasets to process for a source.
 
@@ -523,20 +523,14 @@ def resolve_datasets(
         source: Data source name.
         dataset: A dataset name, the literal ``"all"`` (case-insensitive), or None.
         all_flag: The ``--all`` flag.
-        settings: A :class:`~gridflow.config.settings.GridflowConfig`.
+        settings: The loaded config, whose source entry lists ``--all``'s datasets.
 
     Returns:
         The list of dataset names to process.
 
     Raises:
-        TypeError: If ``settings`` is not a ``GridflowConfig``.
         DatasetResolutionError: If neither a dataset name nor ``--all`` is given.
     """
-    from gridflow.config.settings import GridflowConfig
-
-    if not isinstance(settings, GridflowConfig):
-        raise TypeError("Expected GridflowConfig")
-
     if all_flag or (dataset is not None and dataset.lower() == "all"):
         source_config = settings.get_source_config(source)
         return list(source_config.datasets.keys())
