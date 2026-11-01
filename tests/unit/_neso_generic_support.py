@@ -394,7 +394,7 @@ def both_as_of(db: Path, data_dir: Path, key: str, as_of: datetime | None) -> li
         polars = ids(
             select_latest_vintage(lf, spec, as_of, completions=scan_completions(data_dir)).collect()
         )
-    assert sql == polars, (key, as_of)
+    assert sql == polars, (key, as_of, sql, polars)
     return sql
 
 
