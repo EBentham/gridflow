@@ -6,22 +6,20 @@ through ``read_csv_body`` twice, each in a FRESH interpreter
 with the gate. The gated peak may exceed the stubbed one by at most 2% of the
 stubbed peak (a whole-body decode would add the body's size, about 616 MiB).
 
-Skipped unless the body exists under ``GRIDFLOW_REAL_DATA_DIR`` (default
-``C:/gridflow-data``) and at least 5 GiB of physical memory is free; the guard is
-never lowered. Read-only.
+Skipped unless the body exists under ``GRIDFLOW_REAL_DATA_DIR`` (unset: skipped) and at
+least 5 GiB of physical memory is free; the guard is never lowered. Read-only.
 
 Marked ``slow``: excluded from the local fast gate.
 """
 
 from __future__ import annotations
 
-import os
 import subprocess
 import sys
 from pathlib import Path
 
 import pytest
-from test_neso_overlap_memory import _available_physical
+from test_neso_overlap_memory import _available_physical, _root
 
 PROBE = Path(__file__).resolve().parent / "_neso_reader_rss_probe.py"
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -37,7 +35,7 @@ BOUND = 0.02
 
 
 def _body() -> Path:
-    path = Path(os.environ.get("GRIDFLOW_REAL_DATA_DIR", "C:/gridflow-data")) / BODY
+    path = _root() / BODY
     if not path.is_file():
         pytest.skip(f"no body at {path}")
     return path

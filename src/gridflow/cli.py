@@ -322,56 +322,112 @@ def build(
 
 @app.command()
 def backfill(
-    source: str = typer.Argument(help="Data source"),
+    source: str | None = typer.Argument(default=None, help="Data source"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
-    start: str = typer.Option(..., help="Start date (YYYY-MM-DD) or ISO datetime"),
-    end: str = typer.Option(..., help=_END_HELP),
+    start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD) or ISO datetime"),
+    end: str | None = typer.Option(None, help=_END_HELP),
     chunk_days: int = typer.Option(1, min=1, help="Days per chunk"),
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
+    preset: str | None = typer.Option(
+        None,
+        help="A packaged preset name (tour) or a preset .yaml path, in place of SOURCE, "
+        "DATASET, --start and --end. Sources whose API key is unset are skipped.",
+    ),
 ) -> None:
-    """Backfill historical data in chunks."""
-    # D-35: FIRST statement — before settings, before _resolve_datasets, before
-    # date parsing, before the chunk loop. The helper bootstraps the connector
-    # registry itself, so this does not depend on the import_connectors() call
-    # further down. No source name appears here: the CLI interrogates a declared
+    """Backfill historical data in chunks, for one source or for a preset."""
+    if preset is not None:
+        if source is not None or all_datasets or start is not None or end is not None:
+            raise typer.BadParameter(
+                "a preset names its own datasets and window; drop SOURCE, --all, --start and --end",
+                param_hint="--preset",
+            )
+        _backfill_preset(preset, chunk_days)
+        return
+    if source is None or start is None or end is None:
+        raise typer.BadParameter("give a SOURCE with --start and --end, or a --preset")
+
+    # D-35: before settings, before _resolve_datasets, before date parsing,
+    # before the chunk loop. The helper bootstraps the connector registry
+    # itself, so this does not depend on the import_connectors() call further
+    # down. No source name appears here: the CLI interrogates a declared
     # capability through a generic helper, exactly as get_connector already
     # resolves by string.
     runner.assert_backfillable(source)
-
-    from gridflow.utils.time import window_dates
 
     settings = _load_and_log()
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
     start_dt, end_dt = _resolve_dates(start, end, None, 0)
+    _run_backfills(settings, {source: datasets}, start_dt, end_dt, chunk_days)
+
+
+def _backfill_preset(name_or_path: str, chunk_days: int) -> None:
+    """Backfill a preset's datasets, source by source, skipping a source without its key."""
+    settings = _load_and_log()
+    try:
+        preset = runner.load_preset(name_or_path, settings)
+    except runner.PresetError as e:
+        raise typer.BadParameter(str(e), param_hint="--preset") from e
+    # D-35 for every source in the preset, before the first request to any of them.
+    for source in preset.datasets:
+        runner.assert_backfillable(source)
+
+    jobs: dict[str, list[str]] = {}
+    for source, datasets in preset.datasets.items():
+        key = settings.sources[source].api_key_env
+        if key and not settings.get_source_config(source).api_key:
+            typer.echo(f"Skipping {source}: {key} is not set (see .env.example)")
+        else:
+            jobs[source] = datasets
+    # The same one-day chunks as any backfill, though Open-Meteo then costs a request
+    # per site per day: NESO files a multi-day response under its first day, so a
+    # wider chunk would duplicate rows in silver when the tour reruns a day later.
+    _run_backfills(settings, jobs, preset.start_dt, preset.end_dt, chunk_days)
+
+
+def _run_backfills(
+    settings: GridflowConfig,
+    jobs: dict[str, list[str]],
+    start_dt: datetime,
+    end_dt: datetime,
+    chunk_days: int,
+) -> None:
+    """Run ``runner.run_backfill`` per source, echoing chunks, and exit 1 on any failed step."""
+    from gridflow.utils.time import window_dates
 
     runner.import_connectors()
     runner.import_transformers()
 
-    def _echo_chunk(ds: str, number: int, chunk_start: datetime, chunk_end: datetime) -> None:
-        if number == 1:
-            typer.echo(f"\n--- Backfilling {source}/{ds} ---")
-        days = window_dates(chunk_start, chunk_end)
-        typer.echo(f"  Chunk {number}: {days[0]} to {days[-1]}")
+    failed: list[DatasetResult] = []
+    for source, datasets in jobs.items():
 
-    report = runner.run_backfill(
-        settings,
-        source,
-        datasets,
-        start_dt,
-        end_dt,
-        chunk_days=chunk_days,
-        on_chunk=_echo_chunk,
-    )
+        def _echo_chunk(
+            ds: str, number: int, chunk_start: datetime, chunk_end: datetime, source: str = source
+        ) -> None:
+            if number == 1:
+                typer.echo(f"\n--- Backfilling {source}/{ds} ---")
+            days = window_dates(chunk_start, chunk_end)
+            typer.echo(f"  Chunk {number}: {days[0]} to {days[-1]}")
+
+        report = runner.run_backfill(
+            settings,
+            source,
+            datasets,
+            start_dt,
+            end_dt,
+            chunk_days=chunk_days,
+            on_chunk=_echo_chunk,
+        )
+        failed.extend(report.failed)
 
     # R3-F03: surface any failed ingest/transform step and exit non-zero, mirroring
     # cli.ingest. Only per-dataset step failures are echoed
     # here; an infra exception outside the runner's per-dataset guards still
     # propagates and exits non-zero, just without this summary.
-    if report.failed:
-        typer.echo(f"Backfill failed for {len(report.failed)} step(s):", err=True)
-        for r in report.failed:
-            typer.echo(f"  {r.operation} {source}/{r.dataset}: {r.error}", err=True)
+    if failed:
+        typer.echo(f"Backfill failed for {len(failed)} step(s):", err=True)
+        for r in failed:
+            typer.echo(f"  {r.operation} {r.source}/{r.dataset}: {r.error}", err=True)
         raise typer.Exit(1)
     typer.echo("\nBackfill complete")
 

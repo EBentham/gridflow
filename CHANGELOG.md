@@ -16,10 +16,18 @@ expansion) was paused before release and is intentionally absent.
   on 0.x, any change to it is a minor version bump.
 - **`GridflowClient.require_con()`**: the connection accessor models already uses, now public
   and listed in `gridflow.contract`.
+- **`gridflow backfill --preset NAME|PATH`**: backfills a preset's datasets over its window,
+  skipping each source whose API key is unset with a line naming the variable. gridflow ships
+  `tour`, the datasets the data-layer notebooks read over the last 7 complete days; a path loads
+  your own preset file. The README quickstart and `docs/QUICKSTART.md` go from a clone to
+  notebooks with data.
 
 ### Deprecated
 - **`GridflowClient._require_con()`**: kept as an alias of `require_con()` until gridflow-models
   stops calling it; removed in 0.24.
+
+### Removed
+- **`scripts/extract_all.py`**: the front-end chart extract, which hard-coded the owner's paths.
 
 ## [v0.22] - 2026-10-16 — NESO Data Portal: full catalogue
 

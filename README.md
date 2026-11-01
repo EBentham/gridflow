@@ -57,122 +57,52 @@ responses are in [DATA-SOURCES.md](DATA-SOURCES.md).
 
 ---
 
-## Install
+## Quickstart
 
-Requires Python 3.11+. Uses [`uv`](https://docs.astral.sh/uv/) for environment
-management.
-
-```bash
-git clone https://github.com/EBentham/gridflow.git
-cd gridflow
-uv sync
-uv run gridflow init
-```
-
-`init` creates the data root (`~/gridflow-data` unless `GRIDFLOW_DATA_DIR` is
-set) and its DuckDB catalogue.
-
-### API keys (optional)
-
-Only required for ENTSO-E and GIE. Put them in a `.env` file at the repo root:
-
-```env
-ENTSOE_API_KEY=your-token-here
-GIE_API_KEY=your-token-here
-```
-
-Elexon, Open-Meteo, ENTSO-G, and NESO work out of the box with no key.
-
-### Configuring the data root
-
-By default, gridflow stores data in `~/gridflow-data`, with the catalogue at
-`~/gridflow-data/gridflow.duckdb`, whichever folder you run it from. To move
-the data root, set one variable in your shell or in an untracked `.env` in
-(or above) the folder you run from:
-
-```env
-GRIDFLOW_DATA_DIR=<absolute local data root>
-```
-
-The catalogue and logs follow it; `GRIDFLOW_DUCKDB_PATH` and
-`GRIDFLOW_LOG_DIR` are optional overrides. Relative paths resolve against the
-current folder. Precedence is the environment (including `.env`), then
-`config/settings.yaml` in the current folder, then built-in defaults.
-Keep cloud-synced folders such as OneDrive or Google Drive out of the data
-root; sync clients can lock the DuckDB file and make reads or writes fail.
-
----
-
-## Usage
-
-### One-shot pipeline (most common)
-
-Fetch + transform in a single command:
+Needs [`uv`](https://docs.astral.sh/uv/getting-started/installation/), which
+fetches Python 3.12 if you don't have it (gridflow supports 3.11 and later).
 
 ```bash
-# Single dataset, last 24 hours
-uv run gridflow pipeline elexon system_prices --last 24h
-
-# All datasets for a source
-uv run gridflow pipeline elexon --all --last 24h
-
-# Specific date range
-uv run gridflow pipeline entsoe day_ahead_prices --start 2024-06-01 --end 2024-06-07
-
-# Pipeline + gold build
-uv run gridflow pipeline elexon system_prices --last 7d --gold system_marginal_price
+git clone https://github.com/EBentham/gridflow.git && cd gridflow
+uv sync --group notebooks                    # gridflow, its CLI, JupyterLab and plotly
+cp .env.example .env                         # optional: API keys, GRIDFLOW_DATA_DIR
+uv run gridflow init                         # creates ~/gridflow-data and its catalogue
+uv run gridflow backfill --preset tour       # last 7 days of what the notebooks read
+uv run --group notebooks python notebooks/01_sources.py   # a notebook, run as a script
+uv run --group notebooks jupyter lab notebooks/
 ```
 
-### Stages separately
+Without keys, the tour skips ENTSO-E and GIE with one line each that names the
+variable to set, and fetches everything else. [docs/QUICKSTART.md](docs/QUICKSTART.md)
+explains each step: the data root, keys, presets and their measured cost, and
+the notebooks. [docs/CLI_CHEAT_SHEET.md](docs/CLI_CHEAT_SHEET.md) lists every
+command.
 
-```bash
-uv run gridflow ingest elexon system_prices --last 24h        # bronze only
-uv run gridflow transform elexon system_prices --last 24h     # silver only
-uv run gridflow build system_marginal_price --last 30d        # gold only
-```
+### What needs a key
 
-### Backfill historical data
+Both keys are free. Put them in `.env`, in or above the folder you run gridflow
+from, or in your shell environment. Reading data you already stored needs no key.
 
-Chunks the request to respect API rate limits:
+| Variable | Register | Unlocks |
+|---|---|---|
+| `ENTSOE_API_KEY` | an account on the [Transparency Platform](https://transparency.entsoe.eu/), then a [token](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token) | `entsoe`: EU day-ahead prices, load, generation and flows (the ENTSO-E section of `01_sources`) |
+| `GIE_API_KEY` | API, on [agsi.gie.eu](https://agsi.gie.eu/account); one key covers ALSI too | `gie_agsi` gas storage and `gie_alsi` LNG terminals (the GIE section of `01_sources`) |
 
-```bash
-uv run gridflow backfill elexon --all --start 2024-01-01 --end 2024-12-31
-uv run gridflow backfill entsoe day_ahead_prices --start 2023-01-01 --end 2024-12-31 --chunk-days 7
-```
+Elexon, NESO, ENTSO-G and Open-Meteo need no key.
 
-### Inspect
+### Windows
 
-```bash
-uv run gridflow status                  # pipeline run history + watermarks
-uv run gridflow quality --all           # run data-quality checks
-uv run gridflow export-csv elexon system_prices --last 24h
-```
-
-### Querying
-
-The DuckDB catalogue exposes auto-registered views over the Parquet files. From
-Python:
-
-```python
-from gridflow.serving.client import GridflowClient
-
-client = GridflowClient()
-df = client.query("SELECT * FROM silver_elexon_system_prices WHERE start_time > '2024-06-01' LIMIT 100")
-```
-
-Or directly from the DuckDB CLI:
-
-```bash
-duckdb data/gridflow.duckdb
-> SELECT * FROM silver_elexon_system_prices LIMIT 5;
-```
+The commands run as written in PowerShell 7. Windows PowerShell 5.1 has no `&&`,
+so clone with `git clone https://github.com/EBentham/gridflow.git; cd gridflow`.
+To set a variable for one session, bash's `export GRIDFLOW_DATA_DIR=/srv/gridflow-data`
+is `$env:GRIDFLOW_DATA_DIR = "D:\gridflow-data"` in PowerShell.
 
 ---
 
 ## On-disk layout
 
 ```
-data/
+~/gridflow-data/
 ├── bronze/
 │   └── elexon/system_prices/2024/01/15/
 │       ├── raw_20240115T120000Z_a1b2c3.json       # raw response bytes
@@ -220,12 +150,16 @@ the import in `runner.import_connectors()`. See
 ## Development
 
 ```bash
-uv run pytest -x -q              # fast test run (default)
-uv run pytest -m "not live"      # skip tests that hit real APIs
-uv run ruff check src/ tests/
-uv run ruff format src/ tests/
+uv sync --extra dev                              # pytest, ruff and mypy
+uv run pytest -x -q -m "not live and not slow"   # the fast run, as CI runs it
+uv run ruff check src/ tests/ scripts/
+uv run ruff format src/ tests/ scripts/
 uv run mypy src/gridflow/
 ```
+
+Tests that call the real APIs run only when selected with `-m live`. The `slow`
+memory gates read a real data root and skip unless `GRIDFLOW_REAL_DATA_DIR`
+names one.
 
 Tests cover unit, integration (via `respx` HTTP mocks), contract validation
 against Pydantic schemas, and property-based checks.
