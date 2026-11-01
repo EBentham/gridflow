@@ -23,9 +23,11 @@ _UTC_INSTANT = pl.Datetime("us", "UTC")
 
 def _cast(column: str, dtype: pl.DataType) -> pl.Expr:
     if dtype == _UTC_INSTANT:
-        # Elexon sends instants as "2024-01-15T00:30:00Z" text.
+        # Elexon sends instants as "2024-01-15T00:30:00Z" text. A column null on
+        # every row loads as the Null dtype, which the string parser refuses.
         return (
             pl.col(column)
+            .cast(pl.Utf8)
             .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
             .dt.replace_time_zone("UTC")
         )
