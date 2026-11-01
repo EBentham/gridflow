@@ -5,9 +5,9 @@ whole-family window over ``da_wind_forecast_historic_day_ahead_bmu`` (21,906,814
 rows). Each probe mode runs in a FRESH interpreter (``_neso_overlap_rss_probe.py``)
 over the real data root, read-only, and must exit 0 under ``PEAK < 3 GiB``.
 
-Skipped unless the family's silver exists under ``GRIDFLOW_REAL_DATA_DIR`` (default
-``C:/gridflow-data``) and at least 4 GiB of physical memory is free: a crash still
-opens a Windows error dialog, so the guard is never lowered.
+Skipped unless the family's silver exists under ``GRIDFLOW_REAL_DATA_DIR`` (unset: skipped)
+and at least 4 GiB of physical memory is free: a crash still opens a Windows error dialog,
+so the guard is never lowered.
 
 Marked ``slow``: excluded from the local fast gate.
 """
@@ -30,7 +30,11 @@ FREE_GUARD = 4 * GIB
 
 
 def _root() -> Path:
-    return Path(os.environ.get("GRIDFLOW_REAL_DATA_DIR", "C:/gridflow-data"))
+    """The real data root, or a skip: no machine's live store is read unless named."""
+    root = os.environ.get("GRIDFLOW_REAL_DATA_DIR")
+    if not root:
+        pytest.skip("GRIDFLOW_REAL_DATA_DIR is unset")
+    return Path(root)
 
 
 def _available_physical() -> int:

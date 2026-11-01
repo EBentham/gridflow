@@ -2,12 +2,12 @@
 
 Runs the engine's per-capture composition (``capture_context`` -> ``read_children`` ->
 ``type_child`` -> ``finish_capture``) over the 75 newest captures of the 2026-10-08 sweep under
-``GRIDFLOW_REAL_DATA_DIR`` (default ``C:/gridflow-data``), twice: with the committed record and
-with the same record minus the two F12 cost columns' ``trim`` and ``null_tokens``. Nothing is
-written: no silver, no completion, no failure record.
+``GRIDFLOW_REAL_DATA_DIR``, twice: with the committed record and with the same record minus the
+two F12 cost columns' ``trim`` and ``null_tokens``. Nothing is written: no silver, no
+completion, no failure record.
 
-Skipped unless the 2026-10-08 bronze date directory exists. Marked ``slow``: excluded from the
-local fast gate.
+Skipped unless ``GRIDFLOW_REAL_DATA_DIR`` is set and holds the 2026-10-08 bronze date
+directory. Marked ``slow``: excluded from the local fast gate.
 """
 
 from __future__ import annotations
@@ -46,7 +46,11 @@ MARCH_TO_MAY = {
 
 
 def _root() -> Path:
-    return Path(os.environ.get("GRIDFLOW_REAL_DATA_DIR", "C:/gridflow-data"))
+    """The real data root, or a skip: no machine's live store is read unless named."""
+    root = os.environ.get("GRIDFLOW_REAL_DATA_DIR")
+    if not root:
+        pytest.skip("GRIDFLOW_REAL_DATA_DIR is unset")
+    return Path(root)
 
 
 def _reverted(record: SchemaRecord) -> SchemaRecord:
