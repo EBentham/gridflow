@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 import subprocess
 from functools import cache
+from importlib.resources import files
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
@@ -274,7 +275,7 @@ def _neso_portal_datasets() -> dict[str, DatasetConfig]:
 def load_settings() -> GridflowConfig:
     """Load the complete gridflow configuration.
 
-    Merges settings.yaml, sources.yaml, environment variables, and .env file.
+    Merges settings.yaml, the packaged sources.yaml, environment variables, and .env file.
     The ``neso_data_portal`` datasets come from its registry unless
     sources.yaml lists some.
     """
@@ -283,7 +284,10 @@ def load_settings() -> GridflowConfig:
 
     # Load YAML configs
     settings_data = _load_yaml(config_dir / "settings.yaml")
-    sources_data = _load_yaml(config_dir / "sources.yaml")
+    # Sources are code (endpoints, pacing) and ship inside the package.
+    sources_data = yaml.safe_load(
+        files("gridflow.config").joinpath("sources.yaml").read_text(encoding="utf-8")
+    )
 
     # Build pipeline settings (env vars override YAML)
     pipeline_yaml = settings_data.get("pipeline", {})

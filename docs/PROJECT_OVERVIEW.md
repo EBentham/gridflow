@@ -223,7 +223,7 @@ CLI: gridflow build system_marginal_price --last 30d
 
 | Class | Role |
 |-------|------|
-| `GridflowConfig` | Pydantic v2 settings: loads from `config/settings.yaml` + `config/sources.yaml` + env vars. |
+| `GridflowConfig` | Pydantic v2 settings: loads from the packaged `sources.yaml`, an optional `config/settings.yaml` in the current folder, and env vars. |
 | `PathBuilder` | Centralised path construction for bronze/silver/gold directories. |
 | `PipelineRunTracker` | Records each run (UUID, source, dataset, operation, status, rows, duration) to DuckDB. |
 | `QualityReporter` | Runs 5 check types against silver data, writes results to DuckDB. |
@@ -271,10 +271,10 @@ data/
 
 ## Configuration
 
-Two YAML files in `config/`:
+Two YAML files:
 
-- **`settings.yaml`** — Pipeline paths, lookback defaults, quality thresholds
-- **`sources.yaml`** — All 7 sources with base URLs, auth, rate limits, and per-dataset endpoint configs
+- **`config/settings.yaml`** — optional override, read from the current folder: lookback defaults, quality thresholds
+- **`src/gridflow/config/sources.yaml`** — ships in the package: every source with base URLs, auth, rate limits, and per-dataset endpoint configs
 
 The default data root is repo-local `data/`, with the DuckDB catalogue at
 `data/gridflow.duckdb`. Override it with `GRIDFLOW_DATA_DIR` and

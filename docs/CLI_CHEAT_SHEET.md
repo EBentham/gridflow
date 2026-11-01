@@ -282,7 +282,7 @@ untracked repo-root `.env`.
 | What | Path |
 |------|------|
 | CLI entrypoint | `src/gridflow/cli.py` |
-| Config files | `config/settings.yaml`, `config/sources.yaml` |
+| Config files | `config/settings.yaml` (optional override, read from the current folder), `src/gridflow/config/sources.yaml` (ships in the package) |
 | Raw data (bronze) | `<data-root>/bronze/{source}/{dataset}/YYYY/MM/DD/` |
 | Clean data (silver) | `<data-root>/silver/{source}/{dataset}/year=YYYY/month=MM/` |
 | Analytics data (gold) | `<data-root>/gold/{dataset}/year=YYYY/` |

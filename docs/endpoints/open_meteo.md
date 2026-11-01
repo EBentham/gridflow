@@ -3,7 +3,7 @@
 **Source:** `open_meteo`
 **Base URLs:** `https://archive-api.open-meteo.com/v1` (historical) · `https://api.open-meteo.com/v1` (forecast)
 **Authentication:** None (public API)
-**Rate limit:** 5 req/sec (cap; via `rate_limit_per_second` in `config/sources.yaml`)
+**Rate limit:** 5 req/sec (cap; via `rate_limit_per_second` in `src/gridflow/config/sources.yaml`)
 **Resolution:** Hourly
 **DATASET_VERSION:** `2.0.0` (bumped from `1.0.0` at F7.5)
 

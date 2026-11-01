@@ -94,7 +94,7 @@ def _package_show_payload() -> dict[str, Any]:
 
 
 def _source_config() -> SourceConfig:
-    """The REAL config from ``config/sources.yaml``, paced for a test.
+    """The REAL config from the packaged ``gridflow/config/sources.yaml``, paced for a test.
 
     Built from the shipped YAML rather than hand-assembled: a base URL or a
     dataset key that drifted out of the config would otherwise be invisible

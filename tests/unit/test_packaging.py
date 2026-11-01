@@ -9,7 +9,16 @@ from __future__ import annotations
 
 import tomllib
 from fnmatch import fnmatchcase
+from importlib.resources import files
 from pathlib import Path, PurePosixPath
+from typing import TYPE_CHECKING
+
+import yaml
+
+from gridflow.config.settings import load_settings
+
+if TYPE_CHECKING:
+    import pytest
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PACKAGE_ROOT = PROJECT_ROOT / "src" / "gridflow"
@@ -50,8 +59,18 @@ def test_package_data_covers_every_non_python_file() -> None:
     pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     package_data = pyproject["tool"]["setuptools"]["package-data"]
 
-    files = _non_python_files()
-    unshipped = [str(file) for file in files if not _is_shipped(file, package_data)]
+    found = _non_python_files()
+    unshipped = [str(file) for file in found if not _is_shipped(file, package_data)]
 
-    assert files, "found no non-Python files under src/gridflow"
+    assert found, "found no non-Python files under src/gridflow"
     assert unshipped == [], f"not matched by [tool.setuptools.package-data]: {unshipped}"
+
+
+def test_sources_load_without_a_config_folder(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An installed gridflow has no repo ``config/`` beside it, so sources ship in the package."""
+    shipped = files("gridflow.config").joinpath("sources.yaml").read_text(encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+
+    assert set(load_settings().sources) == set(yaml.safe_load(shipped)["sources"])

@@ -5,7 +5,7 @@
 # - https://github.com/nhcb/entsog-py
 #
 # status values:
-# - implemented: active in config/sources.yaml, endpoint registry, and silver registry
+# - implemented: active in src/gridflow/config/sources.yaml, endpoint registry, and silver registry
 # - deferred: intentionally not active yet, with reason
 
 entries:
