@@ -122,31 +122,10 @@ class PipelineRunTracker:
         rows are retained; the terms are not disjoint discarded-row counts.
         Declaring transformers may count repeated D-1/D source reads.
         """
-        now = datetime.now(UTC)
-        duration = (now - self.started_at).total_seconds()
-        try:
-            self.con.execute(
-                """
-                UPDATE pipeline_runs
-                SET status='success', completed_at=?, rows_in=?, rows_out=?,
-                    rows_skipped=?, duration_seconds=?
-                WHERE run_id = ?
-                """,
-                [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
-            )
-        except Exception:
-            # Non-fatal: an otherwise-successful run must not fail on a telemetry
-            # write. But the lost transition means the row stays 'running' — log
-            # that explicitly so the stuck run is visible.
-            logger.error(
-                "Failed to record pipeline completion; run remains 'running': "
-                "run_id=%s operation=%s source=%s dataset=%s",
-                self.run_id,
-                self.operation,
-                self.source,
-                self.dataset,
-                exc_info=True,
-            )
+        self._finish(
+            "success",
+            {"rows_in": rows_in, "rows_out": rows_out, "rows_skipped": rows_skipped},
+        )
 
     def complete_with_warnings(
         self,
@@ -157,65 +136,53 @@ class PipelineRunTracker:
         """Record completion of a run that wrote rows but hit recoverable warnings.
 
         Identical to :meth:`complete` except the terminal ``status`` is
-        ``'completed_with_warnings'`` rather than ``'success'``. Used when a
-        transform finished but encountered a recoverable warning. For transforms,
-        ``rows_skipped`` is the warning-accounting sum of unmapped,
-        start-time-fallback, and invalid occurrences. Some affected rows are
-        retained, the terms are not disjoint discarded-row counts, and declaring
-        transformers may count repeated D-1/D source reads. The run is distinguished
-        from both a clean
-        ``'success'`` and a hard ``'failed'``. ``pipeline_runs.status`` is an
+        ``'completed_with_warnings'``, distinguishing the run from both a clean
+        ``'success'`` and a hard ``'failed'``. ``rows_skipped`` has the same
+        meaning as in :meth:`complete`. ``pipeline_runs.status`` is an
         unconstrained VARCHAR, so this needs no schema change.
+        """
+        self._finish(
+            "completed_with_warnings",
+            {"rows_in": rows_in, "rows_out": rows_out, "rows_skipped": rows_skipped},
+        )
+
+    def fail(self, error: str) -> None:
+        """Record pipeline run failure; the row counts are left as they are."""
+        self._finish("failed", {"error_message": error[:2000]}, original_error=error[:500])
+
+    def _finish(
+        self,
+        status: Literal["success", "completed_with_warnings", "failed"],
+        columns: dict[str, object],
+        *,
+        original_error: str | None = None,
+    ) -> None:
+        """Write the terminal status, completion time, duration and ``columns``.
+
+        Non-fatal: a telemetry write must not fail the operation. But a lost
+        write leaves the row 'running' (doubly misleading for a failed run),
+        so it is logged at ERROR with the run's context.
         """
         now = datetime.now(UTC)
         duration = (now - self.started_at).total_seconds()
+        # Column names come from the three callers above, never from data.
+        assignments = "".join(f", {name}=?" for name in columns)
         try:
             self.con.execute(
-                """
-                UPDATE pipeline_runs
-                SET status='completed_with_warnings', completed_at=?, rows_in=?,
-                    rows_out=?, rows_skipped=?, duration_seconds=?
-                WHERE run_id = ?
-                """,
-                [now, rows_in, rows_out, rows_skipped, duration, self.run_id],
+                "UPDATE pipeline_runs SET status=?, completed_at=?, duration_seconds=?"
+                f"{assignments} WHERE run_id = ?",
+                [status, now, duration, *columns.values(), self.run_id],
             )
         except Exception:
-            # Non-fatal; but the lost transition leaves the row 'running'.
             logger.error(
-                "Failed to record pipeline completion-with-warnings; run remains "
-                "'running': run_id=%s operation=%s source=%s dataset=%s",
+                "Failed to record pipeline status %r; run remains 'running': "
+                "run_id=%s operation=%s source=%s dataset=%s original_error=%s",
+                status,
                 self.run_id,
                 self.operation,
                 self.source,
                 self.dataset,
-                exc_info=True,
-            )
-
-    def fail(self, error: str) -> None:
-        """Record pipeline run failure."""
-        now = datetime.now(UTC)
-        duration = (now - self.started_at).total_seconds()
-        try:
-            self.con.execute(
-                """
-                UPDATE pipeline_runs
-                SET status='failed', completed_at=?, duration_seconds=?, error_message=?
-                WHERE run_id = ?
-                """,
-                [now, duration, error[:2000], self.run_id],
-            )
-        except Exception:
-            # Non-fatal; but the lost transition leaves the row 'running' even
-            # though the operation actually failed — doubly misleading, so ERROR.
-            logger.error(
-                "Failed to record pipeline failure; run remains 'running' despite "
-                "the failure: run_id=%s operation=%s source=%s dataset=%s "
-                "original_error=%s",
-                self.run_id,
-                self.operation,
-                self.source,
-                self.dataset,
-                error[:500],
+                original_error,
                 exc_info=True,
             )
 
