@@ -245,6 +245,15 @@ def test_embedded_forecast_out_of_calendar_periods_are_excluded_and_counted(
     assert (row["row_count"], row["rows_excluded"]) == (len(kept), len(periods) - len(kept))
 
 
+def test_daily_wind_bm_unit_ids_are_stored_verbatim(data: Path) -> None:
+    """Detects case folding or stripping of a BM unit id (stored as-is repo-wide)."""
+    _capture(data, DWA, (DWA_HEADER + "t_abru-1,2026-08-16,10\nABRTW-1 ,2026-08-16,11\n").encode())
+
+    assert _run(data, DWA) == 2
+    frame, _row = _only(data, DWA)
+    assert sorted(frame["bmu_id"]) == ["ABRTW-1 ", "t_abru-1"]
+
+
 def test_daily_wind_duplicate_key_fails_the_capture(data: Path) -> None:
     """Detects a repeated (bmu_id, Date) silently collapsed to one row."""
     body = _capture(
