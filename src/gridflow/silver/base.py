@@ -77,30 +77,17 @@ _NON_VALUE_COLUMNS = frozenset({"published_at", "ingested_at", "data_provider"})
 two copies of one row from different fetches differ only in these."""
 
 _BRONZE_VINTAGE_COLUMN = "gf_bronze_vintage"
-"""Transient per-row bronze vintage carrier for ``LOCKSTEP_BRONZE_READ`` reads.
+"""Transient per-row bronze stamp for ``LOCKSTEP_BRONZE_READ`` reads; never reaches silver.
 
-Added by ``run()`` to the RAW frame, consumed by ``_add_bitemporal_columns``
-as the ingest-time source, and DROPPED inside ``_process_frame`` before
-``_write_silver`` -- it must never reach silver.
+No frame-level ``available_at`` is right once two bodies with different stamps
+contribute rows: ``max`` hides the earlier body's rows from a point-in-time
+query between the two, and ``min`` leaks the later body's. So each row carries
+its own body's stamp into the ingest-time arm of
+``coalesce(published_at, ingest_time)`` (ADR-025).
 
-No frame-level ``available_at`` can satisfy the invariant once two bronze
-files with different stamps both contribute rows: ``max`` over-stamps the
-earlier file's rows (hiding them from a point-in-time query positioned between
-the two) and ``min`` leaks the later file's (lookahead bias). So the stamp
-travels WITH the row, from the same per-file structure the rows come from, and
-``available_at``'s existing row-wise ``coalesce(published_at, ingest_time)``
-(ADR-025 §3) simply gets a per-row fallback arm for opted-in transformers.
-
-The name is deliberately (a) lower-snake with no leading underscore, so
-ENTSO-G's ``_camel_to_snake`` is the identity on it, and (b) ``gf_``-prefixed,
-to make a vendor-field clash implausible.
-
-WARNING: ``gf_``-prefixing does NOT make collision impossible.
-``_normalise_column_names`` maps ``gfBronzeVintage``, ``gf-bronze-vintage`` and
-``GF_Bronze_Vintage`` all onto this exact name and coalesces them, so the
-collision guard tests NORMALISED names (``_normalise_raw_column_name``), never
-the literal string. "Vendor fields are camelCase" is not a defence here --
-camelCase is precisely the colliding spelling.
+Lower snake case so ENTSO-G's ``_camel_to_snake`` leaves it alone. The
+collision guard compares normalised names, because vendor spellings such as
+``gfBronzeVintage`` normalise onto this one.
 """
 
 _SIDECAR_TIMESTAMP_KEYS: tuple[str, ...] = (
@@ -109,40 +96,24 @@ _SIDECAR_TIMESTAMP_KEYS: tuple[str, ...] = (
     "response_received_at",
     "fetched_at",
 )
-"""Bronze sidecar timestamp keys, most-to-least authoritative as the historical
-availability anchor.
+"""Bronze sidecar timestamp keys, most authoritative first.
 
-``written_at`` (durable bronze write completion) is preferred over
-``fetched_at`` (stamped at ``RawResponse`` construction, before any
-paging/retries) so reingest reconstructs availability from the true write time
-rather than a pre-write proxy. The direction is conservative
-(``written_at >= fetched_at``), so this never makes a row look available
-earlier than it truly was. ``response_received_at`` is an as-yet-unwritten
-reserved key kept for forward compatibility.
+``written_at`` (the bronze write) beats ``fetched_at`` (taken before paging and
+retries), and ``written_at >= fetched_at``, so the order never makes a row look
+available earlier than it was. ``response_received_at`` is reserved. A present
+key that fails to parse does not end the search: a later key can still vouch.
 
-**The search FALLS THROUGH on a parse failure** (R2-g D-3): a key that is
-present but unparseable does not end the search, so a sidecar with an invalid
-``written_at`` and a valid ``fetched_at`` still vouches, on ``fetched_at``.
-Only a successful parse returns.
-
-N-16 (accepted residual, NOT fixed in R2-g): ``bronze/writer.py`` captures
-``written_at`` *before* the body write it marks the completion of, so a
-RECORDED stamp can be earlier than the true durable-write instant. Every
-availability claim in this module is stated over the recorded stamp.
+``bronze/writer.py`` records ``written_at`` just before the body write, so
+every availability claim here is over the recorded stamp.
 """
 
 
 class BronzeVouchReason(StrEnum):
-    """Why a bronze body could not be vouched for by its own sidecar (ADR-028).
-
-    ``UNPARSEABLE_TIMESTAMP`` means EVERY present-and-truthy key in
-    :data:`_SIDECAR_TIMESTAMP_KEYS` failed to parse, never merely the first
-    one -- see that constant's fall-through note (R2-g D-3).
-    """
+    """Why a bronze body could not be vouched for by its own sidecar (ADR-028)."""
 
     NO_SIDECAR = "NO_SIDECAR"
-    """No ``<body stem>.meta.json`` beside the body (the literal orphan: a
-    crash between ``bronze/writer.py``'s body write and its sidecar write)."""
+    """No ``<body stem>.meta.json`` beside the body: a crash between the body
+    write and the sidecar write."""
     UNREADABLE_SIDECAR = "UNREADABLE_SIDECAR"
     """``OSError``/``JSONDecodeError`` on the sidecar, or syntactically valid
     but non-object JSON (``[1, 2]``, ``"text"``, ``3``, ``null``)."""
@@ -150,15 +121,11 @@ class BronzeVouchReason(StrEnum):
     """Valid sidecar object, but no key from :data:`_SIDECAR_TIMESTAMP_KEYS`
     was present and truthy."""
     UNPARSEABLE_TIMESTAMP = "UNPARSEABLE_TIMESTAMP"
-    """Every present-and-truthy key failed to parse into a datetime."""
+    """Every present-and-truthy key failed to parse, not merely the first."""
     UNUSABLE_PROVENANCE = "UNUSABLE_PROVENANCE"
-    """The sidecar vouched for a timestamp, but the source-specific provenance
-    the transformer requires was absent or unparseable, so ``read_bronze_file``
-    returned an empty frame and the body was declined (D-41).
-
-    A NEW reason rather than reusing ``NO_TIMESTAMP_KEY``, which would be
-    false: the timestamp key was present and fine. The exclusion is one level
-    further in -- the vouching succeeded and the READ did not."""
+    """The sidecar vouched, but the source-specific provenance the transformer
+    requires was absent or unparseable, so ``read_bronze_file`` returned an
+    empty frame and the body was declined."""
     UNPARSEABLE_BODY = "UNPARSEABLE_BODY"
     """The body itself could not be parsed, so its whole date was refused."""
 
@@ -178,46 +145,35 @@ class UnparseableBronzeError(ValueError):
 
 
 class BronzeReadSelection(StrEnum):
-    """Which vouched bronze bodies a lockstep read consumes (R2-g D-4).
+    """Which vouched bronze bodies a lockstep read consumes.
 
-    The truncation happens INSIDE the resolver, on the vouched list -- never
-    before it. Truncating first would let one orphan newest body empty the
-    frame for a dataset with dozens of perfectly good older files.
+    Applied to the vouched list, never before vouching: truncating first would
+    let one orphan newest body empty the frame.
     """
 
     ALL = "ALL"
     """Examine every candidate; read every one that vouches."""
     NEWEST_VOUCHED = "NEWEST_VOUCHED"
-    """Walk candidates in order and stop at the FIRST that vouches. The
-    stepped-over bodies are counted and named; the selected file's rows are
-    read together with its OWN stamp -- never a borrowed sibling's."""
+    """Walk candidates in order and stop at the first that vouches. The bodies
+    stepped over are reported as unvouched."""
 
 
 @dataclass(frozen=True)
 class VouchedBronzeSet:
-    """The single value threaded to BOTH the frame read and the vintage (I-1).
+    """The one bronze listing that both the frame read and the vintage use.
 
-    Resolved by exactly ONE filesystem scan and ONE sidecar read per examined
-    candidate, so there is no second scan for the two derivations to disagree
-    about -- R2-C's ``IncrementalWindow.snapshot`` shape (ADR-027) applied to
-    the filesystem.
-
-    Deliberately has NO ``available_at()`` aggregate: per D-5 the vintage is
-    PER ROW, taken from ``dict(entries)`` as a path -> stamp lookup at
-    frame-build time. No frame-level scalar can satisfy the invariant once two
-    files with different stamps both contribute rows, so none is offered.
+    Built from one scan and one sidecar read per examined candidate, so the
+    files read and the files that stamp ``available_at`` cannot disagree. It
+    offers no frame-level stamp: each row takes its own body's stamp.
 
     Attributes:
-        entries: ``(body path, that body's OWN recorded stamp)`` pairs, in
-            candidate order. The pairing is structural: a stamp exists only as
-            the second element of a tuple whose first element IS in the read
-            set, so a sibling's stamp can never be borrowed.
+        entries: ``(body path, that body's recorded stamp)`` pairs, in
+            candidate order.
         unvouched: ``(body path, reason)`` for every examined candidate that
-            could not vouch. Excluded from the frame AND from the vintage --
-            never deleted, never repaired, never written to.
-        examined: How many candidates were actually probed. Under
-            ``NEWEST_VOUCHED`` the walk stops early, so this is less than
-            ``len(candidates)`` whenever a vouched file was found.
+            could not vouch. Excluded from the frame and the vintage, never
+            modified.
+        examined: How many candidates were probed. ``NEWEST_VOUCHED`` stops
+            at the first vouched one.
     """
 
     entries: tuple[tuple[Path, datetime], ...]
@@ -238,10 +194,9 @@ class SidecarDiagnostic:
         key: The :data:`_SIDECAR_TIMESTAMP_KEYS` entry that failed, or ``None``
             for a file-level failure (unreadable / undecodable sidecar).
         reason: The classification this individual failure carries.
-        detail: Pre-narrowed text for the WARNING the logging wrapper replays,
-            or ``None`` when master emits no warning for this failure -- a
-            present-but-non-string, non-datetime value fails *silently* on
-            master.
+        detail: Text for the WARNING the logging wrapper emits, or ``None``
+            for a failure that is not logged: a present value that is neither
+            a string nor a datetime fails silently.
     """
 
     key: str | None
@@ -251,23 +206,19 @@ class SidecarDiagnostic:
 
 @dataclass(frozen=True)
 class SidecarRead:
-    """Pure classification of one bronze sidecar (R2-g D-7).
+    """Pure classification of one bronze sidecar.
 
     Attributes:
         timestamp: The vouched tz-aware UTC stamp, or ``None``.
         reason: ``None`` iff ``timestamp`` is not ``None``.
-        diagnostics: An ORDERED log of every failure seen on the way,
-            INCLUDING ones that preceded a later success. Master logs a
-            warning per failed key and then keeps going (the fall-through at
-            :data:`_SIDECAR_TIMESTAMP_KEYS`), so a single ``reason``/``detail``
-            pair could not let the logging wrapper replay master's output.
+        diagnostics: Every failure seen, in order, including ones before a
+            later key vouched, so the logging wrapper can warn once per
+            failed key.
         non_object_json: ``True`` iff the sidecar held syntactically valid
-            JSON that is not an object. Master reaches ``meta.get(key)`` on it
-            and raises an uncaught ``AttributeError``; the wrapper preserves
-            that exactly (N-18) while this classifier excludes the file.
-        payload: The parsed non-object payload, kept solely so the wrapper can
-            reproduce master's ``AttributeError`` verbatim. Meaningless unless
-            ``non_object_json`` is ``True``.
+            JSON that is not an object.
+        payload: That non-object payload, which the logging wrapper calls
+            ``.get`` on to raise the parser's ``AttributeError``. Meaningless
+            unless ``non_object_json`` is ``True``.
     """
 
     timestamp: datetime | None
@@ -278,82 +229,35 @@ class SidecarRead:
 
 
 _EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe", "entsog"})
-"""Sources whose connectors write day-exact bronze partitions (P0.8 / R2-F08,
-plus ENTSO-G via R2-g / F-05).
+"""Sources whose connectors write one bronze partition per UTC day.
 
-As of P0.8, ``EntsoeConnector.fetch`` chunks every multi-day window into one
-request per covered UTC calendar day, so a correctly-fetched ENTSO-E date
-either has its own exact bronze partition or has no bronze at all. For these
-sources, any covering-fallback hit (``_find_covering_bronze_partition``) would
-fabricate wrong-day rows: it would silently relabel a neighbouring day's rows
-under the requested date's silver file, reproducing the R2-F08 duplication bug
-chunking exists to fix. This mirrors the project's own precedent for exactly
-this failure class — ``VINTAGE_PER_BRONZE_FILE`` / ADR-025 (class docstring
-above, "Only the EXACT date partition is read — never the multi-day
-covering-partition fallback") and the ENTSO-G generic family's exact-only
-``_bronze_candidates`` (``silver/entsog/generic.py``).
-
-**ENTSO-G (R2-g, closing F-05's open half).** ``EntsogConnector.fetch`` chunks
-every multi-day window into one request per covered UTC calendar day
-(``connectors/entsog/client.py``), so the same exact-or-nothing guarantee
-holds. Before this change, ``PhysicalFlowsTransformer.read_bronze`` could
-resolve a covering partition up to **35 days** before ``target_date`` and
-relabel those rows under it -- precisely the fabrication the per-day chunking
-exists to prevent.
-
-The gated call site is ``_bronze_path_for_date`` (the READ path, below):
-the covering fallback is removed. This IS F-05's open half.
-
-Source-scoped (not a per-transformer ``ClassVar`` flag) because the exact-only
-guarantee is a property of the *connector's* write layout established by this
-unit: every current and future ENTSO-E transformer is covered automatically,
-and a new ENTSO-E dataset cannot silently reintroduce the fallback by
-forgetting to set a flag. ``_find_covering_bronze_partition`` itself is not
-modified — NESO and Open-Meteo/ALSI resolution (the other callers) are
-unaffected; ``tests/silver/test_partition_fallback.py``'s ``test_source``
-stub pins that the fallback stays intact for non-ENTSO-E sources.
-
-**P0-a-1 (v0.19).** ``neso`` is deliberately absent from this frozenset: it
-enforces its own exact-partition read at
-``GenericNesoJsonTransformer._bronze_candidates`` (``silver/neso/carbon_intensity.py``),
-because this docstring's per-day-chunking invariant is true for
-entsoe/entsog but false for NESO's deliberate 14-day batching. See ADR-026's
-2026-08-22 amendment for the full ruling (D-2).
+Their connectors split every multi-day window into one request per day, so the
+covering-partition fallback in :meth:`BaseSilverTransformer._bronze_path_for_date`
+could only relabel a neighbouring day's rows under the requested date. Keyed by
+source because the guarantee belongs to the connector, so a new dataset cannot
+forget it. NESO batches 14 days per fetch and enforces its own exact-partition
+read in ``GenericNesoJsonTransformer._bronze_candidates`` (ADR-026).
 """
 
 _PUBLICATION_WINDOW_FILTER_SOURCES: frozenset[str] = frozenset({"elexon"})
-"""Sources whose bronze partitions are PUBLICATION windows, not settlement
-days (R2-A / F-04, F-10, F-16).
+"""Sources whose bronze partitions are publication windows, not settlement days.
 
 Elexon's ``PUBLISH_DATETIME`` chunks are closed at both ends and share their
-boundary instant with the neighbouring chunk (``R2-A-PLAN.md`` S1.1), so the
-same vendor record is written into BOTH partitions unless trimmed under a
-proven neighbour-durability gate (D-3b). Source-scoped like
-``_EXACT_PARTITION_ONLY_SOURCES`` above, for the same reason: the property
-belongs to the connector's write layout, not to any one transformer, so every
-current and future in-scope Elexon dataset is covered automatically (scope
-and exemptions are resolved per-dataset by
-``silver.elexon._publication_window``, imported lazily inside
-``_resolve_publication_window_plan`` to avoid a module-load-time cycle
-through ``silver.elexon.__init__`` — see that method's docstring).
+boundary instant with the next chunk, so a boundary record lands in both
+partitions unless it is trimmed under the neighbour-durability proof. Keyed by
+source for the same reason as ``_EXACT_PARTITION_ONLY_SOURCES``; per-dataset
+scope and exemptions live in ``silver.elexon._publication_window``.
 """
 
 
 @dataclass(frozen=True)
 class _PublicationWindowPlan:
-    """Per-``run()`` inputs for the request-window filter, shared by both
-    Elexon's publication-window filter
-    (:meth:`BaseSilverTransformer._apply_publication_window_filter`, Task 2)
-    and ENTSO-E's event-window filter
-    (:meth:`BaseSilverTransformer._apply_event_window_filter`, Task 4 / F-10).
+    """One partition's request-window filter inputs, shared by Elexon's
+    publication-window filter and ENTSO-E's event-window filter.
 
-    Resolved once per ``run()`` call from the CURRENT partition's own
-    sidecars (D-7e, all-or-nothing) — cheap and IO-bounded to this one
-    partition. Any neighbour-durability proof needed under CLOSED interval
-    semantics (D-3b, extra IO against a neighbour partition) is deliberately
-    NOT resolved here: it is deferred until the transformed frame is known
-    to actually have a row sitting at a boundary (R-10's short-circuit),
-    which needs the frame, not just the partition directory.
+    Resolved once per ``run()`` from the partition's own sidecars, all or
+    nothing. The neighbour-durability proof a CLOSED window needs reads
+    another partition, so it waits until the frame has a row at the boundary.
     """
 
     column: str
@@ -361,33 +265,22 @@ class _PublicationWindowPlan:
     from_param: str
     to_param: str
     interval_semantics: IntervalSemantics = IntervalSemantics.CLOSED
-    """Which of the two request-application paths applies (Sol ruling,
-    2026-07-26) — a property of the VENDOR's OWN interval semantics, never
-    of a source name, so a future connector inherits the correct behaviour
-    by declaring which one its vendor uses:
+    """The vendor's own request interval, which picks the filter:
 
-    - ``CLOSED`` (default — Elexon): the vendor's request window is closed
-      at both ends, so a boundary row is genuinely REQUESTED by two
-      adjacent chunks and its removal needs D-3b's neighbour-durability
-      proof (:meth:`_apply_publication_window_filter`). D-3: Elexon never
-      enforces its lower bound at all (only the trailing/upper boundary is
-      genuinely shared in practice).
-    - ``HALF_OPEN`` (set only by
-      :meth:`BaseSilverTransformer._resolve_event_window_plan`, ENTSO-E):
-      the vendor's request is ``[start, end)`` but it may return rows
-      beyond it that were never part of THIS partition's request at all —
-      no ownership question, unconditionally excluded
-      (:meth:`_apply_event_window_filter`)."""
+    - ``CLOSED`` (default, Elexon): a boundary row is requested by both
+      adjacent chunks, so dropping it needs proof that the neighbour holds it
+      (:meth:`BaseSilverTransformer._apply_publication_window_filter`). The
+      lower bound is never enforced.
+    - ``HALF_OPEN`` (ENTSO-E): the request is ``[start, end)`` and rows
+      outside it were never requested by this partition, so they are always
+      dropped (:meth:`BaseSilverTransformer._apply_event_window_filter`)."""
 
 
 def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
     """Build the fixed-06:00 UTC event-time expression for a gas day.
 
-    Fixed 06:00 UTC is Gridflow's project labelling convention required by the
-    project ``CLAUDE.md``, the GIE vendor README, P0.6, and R1-F06. It
-    deliberately differs from the broader DST-aware vault page while tracked
-    follow-up P0.6-DOC-1 is unresolved. Any future convention change requires
-    another major dataset-version bump.
+    Fixed 06:00 UTC is gridflow's labelling convention for gas days and is
+    deliberately not DST-aware. Changing it needs a major dataset-version bump.
 
     Args:
         column: Name of the ``pl.Date`` gas-day column.
@@ -403,8 +296,8 @@ def gas_day_event_time_expr(column: str = "gas_day") -> pl.Expr:
 def append_only_run_stamp(available_at: datetime) -> str:
     """Format an APPEND_ONLY filename's ``run`` suffix (ADR-018), the one site.
 
-    ``_write_silver`` names a vintage file with it, and the NESO completion
-    ledger (ADR-034 P-6/P-8) derives the same name to find or claim a file.
+    ``_write_silver`` names a vintage file with it, and the NESO Data Portal
+    engine derives the same name to find or claim a file.
     """
     return available_at.isoformat().replace(":", "-").replace("+", "-")
 
@@ -426,38 +319,25 @@ class BaseSilverTransformer(ABC):
     PARTITION_SOURCE_OFFSETS: ClassVar[tuple[int, ...]] = (0,)
     """Ordered source-date offsets used by partition-owning transformers."""
     schema_cls: ClassVar[type[BaseModel] | None] = None
-    """Opt-in Pydantic schema for full-frame silver validation (VTA-SCHEMA-01).
+    """Optional Pydantic schema every ``transform()`` output row is validated against.
 
-    When set, ``run()`` validates every row of the ``transform()`` output against
-    this model, fail-soft: failures are counted into
-    ``last_validation_failure_count`` and surfaced by the CLI as
-    ``completed_with_warnings`` — never raised, never dropped. ``None`` (the
-    default) skips validation, which cleanly excludes generic/dynamic transformers
-    that have no fixed Pydantic contract (the ENTSO-G generic family incl. CMP, the
-    GIE generic JSON family). Subclasses that serve one dataset set this as a class
-    attribute; one-class-many-schemas transformers (NESO) set it per instance.
+    Fail-soft: failures are counted into ``last_validation_failure_count`` and
+    the run completes with warnings; rows are never raised on or dropped.
+    ``None`` skips validation, for generic families with no fixed contract
+    (ENTSO-G, GIE).
     """
     write_silver_csv: bool = False
-    """Opt-in for the per-date silver CSV sidecar (CH3-02 / CH-PERF-02 / C4-1).
+    """Also write the per-date silver CSV sidecar.
 
-    Default ``False``: ``run()`` writes only the canonical Parquet partition. The
-    legacy always-on ``_write_csv`` emitted an unpartitioned ``.csv`` alongside
-    every Parquet write on every run, doubling the silver write surface for a
-    sidecar no read/gold/quality consumer reads (on-demand CSV is served by the
-    ``export_csv`` CLI command). Set per-instance at the call boundary from
-    ``PipelineSettings.write_silver_csv`` — a plain instance attribute (not
-    ``ClassVar``), mirroring ``last_unmapped_count``, so the boundary assignment
-    is clean under ``mypy --strict`` and never leaks class state across runs.
+    Off by default: no reader uses it, and the ``export_csv`` command serves
+    CSV on demand. ``run_transform`` sets it per instance from
+    ``PipelineSettings.write_silver_csv``.
     """
     last_unmapped_count: int = 0
-    """Count of rows whose enum code was unmapped in the most recent ``run()``.
+    """Rows whose enum code was unmapped in the most recent ``run()`` (ADR-022).
 
-    Reset to 0 at the start of every ``run()`` and set by ``transform()`` when a
-    transformer maps an enum with an unmapped-code sentinel (ADR-022). The CLI
-    reads it after each per-date ``run()`` to thread the unmapped total into
-    ``PipelineRunTracker.complete_with_warnings``. Resetting in ``run()`` (not
-    only on ``transform()``'s happy path) keeps a date with no bronze or missing
-    columns from being charged the previous date's count.
+    Reset at the start of every ``run()``, so a date that returns early is not
+    charged the previous date's count.
     """
     last_start_time_fallback_count: int = 0
     last_publication_fallback_count: int = 0
@@ -475,316 +355,148 @@ class BaseSilverTransformer(ABC):
     last_source_exclusion_details: tuple[str, ...] = ()
     """Bounded dated source-partition exclusion diagnostics."""
     last_validation_failure_count: int = 0
-    """Count of rows that failed ``schema_cls`` validation in the most recent ``run()``.
+    """Rows that failed ``schema_cls`` validation in the most recent ``run()``.
 
-    Reset to 0 at the start of every ``run()`` (before any early return) and set by
-    the central ``_validate_against_schema`` step on the ``transform()`` output. The
-    CLI accumulates it across dates and threads the total into
-    ``PipelineRunTracker.complete_with_warnings`` (parallel to
-    ``last_unmapped_count``; VTA-SCHEMA-01). Rows that fail validation are still
-    written by ``_validate_against_schema`` — for the rows THIS counter counts,
-    the count is the only signal (fail-soft). That sentence describes the base
-    validator, not the whole of ``rows_invalid``: a transformer that EXCLUDES a
-    row it declares invalid counts it in ``last_excluded_row_count`` instead,
-    and ``run_transform`` folds both into one reported total (D-40).
+    The rows are still written, so this count is their only signal.
+    ``run_transform`` adds :attr:`last_excluded_row_count` to it, so the
+    reported ``rows_invalid`` covers rows written despite failing validation
+    and rows a transformer removed.
     """
     last_excluded_row_count: int = 0
-    """Rows a transformer DECLARED INVALID AND REMOVED in the most recent ``run()``.
+    """Rows a transformer declared invalid and removed in the most recent ``run()``.
 
-    A plain class-level attribute carrying a per-instance value -- exactly the
-    form ``last_unmapped_count`` uses, and deliberately NOT ``typing.ClassVar``:
-    this is per-run instance state, so a ``ClassVar`` annotation would both
-    misdescribe it and invite a class-level mutation leaking across every
-    transformer in the process.
-
-    Reset to 0 at the start of every ``run()`` and ACCUMULATED with ``+=``
-    inside ``transform()`` -- never assigned. The ``+=`` is not a style
-    preference: on the ``VINTAGE_PER_BRONZE_FILE`` branch ``transform()`` is
-    called once per bronze file against a single reset in ``run()``, so an
-    assignment would silently discard every earlier file's exclusions.
-
-    Exists because an excluded row is invisible to the counter that would
-    otherwise see it: the exclusion happens inside ``transform()`` and
-    ``_validate_against_schema`` runs on ``transform()``'s OUTPUT, so the
-    removed row is never seen by the thing that counts. Without this counter a
-    run can drop rows loudly in the log and still report plain ``success``.
-
-    ``run_transform`` folds it into the same per-dataset total as
-    ``last_validation_failure_count``, so an exclusion reaches
-    ``completed_with_warnings``, ``rows_skipped`` and ``rows_invalid`` through
-    the path that already exists -- no new result field, no new precedence rung.
-
-    THE CONFLATION IS DELIBERATE AND IS STATED HERE RATHER THAN LEFT TO BE
-    DISCOVERED: ``rows_invalid`` consequently carries TWO dispositions -- rows
-    that failed validation and were still WRITTEN (the base class's documented
-    fail-soft) and rows a transformer declared invalid and EXCLUDED. The
-    discriminator is the per-row WARNING the excluding transformer emits. One
-    number is the point: the operator's question is "did this run produce
-    anything the contract calls wrong", and that question has one answer.
+    Transformers add to it with ``+=`` inside ``transform()``, never assign:
+    the per-file branch calls ``transform()`` once per body against one reset.
+    It exists because the validator only sees ``transform()``'s output, so
+    without it a run could drop rows and still report ``success``.
+    ``run_transform`` folds it into the validation-failure total; the
+    excluding transformer's per-row WARNING tells the two apart.
     """
     last_partition_filter_unresolved_count: int = 0
-    """Count of source-window evaluations that could not resolve (D-7e).
+    """Request-window evaluations that could not resolve in the most recent ``run()``.
 
-    For undeclared transformers this retains the current-partition meaning.
-    Declaring transformers evaluate each prepared covering-set source: adjacent
-    destinations may count the same defective partition again. This is not a
-    distinct-partition count. Reset to 0 at every ``run()`` entry.
+    Declaring transformers evaluate each prepared covering-set source, so
+    adjacent destinations may count the same partition again.
     """
     last_partition_filter_all_dropped_count: int = 0
-    """Rows excluded by a 100%-out-of-window event-window filter drop in the
-    most recent ``run()`` (Sol re-review, 2026-07-26 — the ``all_dropped``
-    gap: performing the HALF_OPEN drop instead of D-5's CLOSED-path refusal
-    is correct, but logging it as ``ERROR`` is not a status, and a 100% drop
-    on an in-scope dataset is never a normal outcome). Reset to 0 at the
-    start of every ``run()``; incremented ONLY on the HALF_OPEN
-    (``EVENT_WINDOW_FILTER``) path when :func:`exclude_out_of_window` reports
-    ``all_dropped=True`` — never on the CLOSED (Elexon) path, which keeps
-    D-5's refusal and its ``success`` status completely unchanged. For a
-    partition-owning transformer, neighbour drops remain logged but are
-    removed from this counter so they cannot fail a healthy destination
-    (P-T13). The CLI (``pipeline/runner.py::run_transform``) treats a nonzero
-    accumulated total as a HARD FAILURE for the whole date range, distinct from and
-    taking priority over the ``completed_with_warnings`` path that
-    ``last_unmapped_count``/``last_validation_failure_count`` drive — a
-    misclassified opt-in must stop the run, not blend into a routine
-    warning. Deliberately NOT threaded together with the other
-    ``last_partition_filter_*`` counters (those stay deferred to N-10):
-    this one counter is the sole exceptional-outcome signal propagated by
-    this fix.
+    """Rows dropped because the event-window filter excluded a whole frame.
+
+    Only the HALF_OPEN (ENTSO-E) path increments it; the CLOSED (Elexon) path
+    refuses such a trim instead. A 100% drop on an in-scope dataset usually
+    means it was opted in by mistake, so ``run_transform`` fails the whole date
+    range on a nonzero total rather than reporting warnings. A partition-owning
+    transformer counts only drops from its own destination date, so a
+    neighbour's drop cannot fail a healthy destination.
     """
     last_unvouched_bronze: frozenset[tuple[Path, BronzeVouchReason]] = frozenset()
-    """Bronze bodies EXCLUDED from the most recent ``run()`` because their own
-    sidecar could not vouch for them (R2-g / ADR-028). Reset at the top of
-    every ``run()``. Populated by the ``LOCKSTEP_BRONZE_READ`` branch and — as
-    of D-41 — by the ``VINTAGE_PER_BRONZE_FILE`` branch, which previously
-    dropped a whole vintage in silence at BOTH of its skips.
+    """Bronze bodies the most recent ``run()`` excluded because their own
+    sidecar could not vouch for them, with the reason (ADR-028).
 
-    Carries the ``(path, reason)`` ASSOCIATION deliberately, rather than a
-    running integer or a path set beside a detached reason counter. Both of
-    those misreport:
-
-    - the reference ENTSO-G family rescans the whole tree on every target
-      date, so one orphan body over a 30-day range would be counted 30 times —
-      a 30x overstatement of the remediation scope in the very record whose
-      job is to size it. ``run_transform`` unions the SETS instead;
-    - once paths are deduplicated across dates, a detached ``Counter`` cannot
-      say which reason belongs to a newly-seen path, so exact per-reason
-      totals become impossible.
-
-    A path appears at most once because the classifier assigns exactly one
-    reason per file per read.
+    Pairs rather than a count, so ``run_transform`` can union them across
+    dates: a family that rescans its whole tree per date would otherwise count
+    one orphan once per date, and a separate reason counter could not say which
+    reason a newly seen path had. Each path has one reason per read.
     """
     last_unvouched_total_exclusion: bool = False
-    """``True`` when the most recent ``run()`` examined at least one bronze
-    candidate and NONE of them vouched — bronze demonstrably exists and zero
-    rows could be read from it (R2-g D-9 rung 2).
+    """``True`` when the most recent ``run()`` examined bronze and none of it vouched.
 
-    Distinct from "no bronze at all" (``examined == 0``), which is not a
-    failure. ``run_transform`` turns a nonzero accumulated total into a HARD
-    FAILURE for the whole dataset, mirroring
-    ``last_partition_filter_all_dropped_count``: under exclusion the frame is
-    empty, and only a failed dataset-level status stops a stale pre-existing
-    Parquet being treated as current.
+    Distinct from no bronze at all, which is not a failure. ``run_transform``
+    fails the dataset on it: nothing was written, so only a failed status
+    stops an older Parquet file passing as current.
     """
     last_unaccounted_empty_frames: int = 0
-    """Frames whose ``transform()`` returned EMPTY for a reason nothing counted,
-    in the most recent ``run()`` (D-42). Reset at the top of every ``run()``.
-    Declaring runs count source-read frame occurrences across covering sets, so an
-    adjacent destination may count the same body again.
+    """Frames ``transform()`` emptied without counting why, in the most recent ``run()``.
 
-    An empty ``transform()`` output has two entirely different meanings and
-    they must not share a status:
-
-    - ACCOUNTED — the transformer declined rows and counted them
-      (``last_excluded_row_count``). Correct outcome: warnings.
-    - UNACCOUNTED — the frame emptied for a reason nothing counted. Measured,
-      not hypothetical: ``silver/elexon/system_prices.py`` returns an empty
-      frame on a missing required column with only a ``logger.error``, and
-      before D-42 that run reported ``success`` with zero rows.
-
-    The base class CLASSIFIES rather than trusts: ``_process_frame`` snapshots
-    ``last_excluded_row_count`` and ``last_unmapped_count`` immediately before
-    ``transform()`` and compares immediately after — those two are the only
-    accounting a transformer can move from inside ``transform()``, since the
-    validator's counter is incremented later on a frame an empty output never
-    reaches. Neither moved means unaccounted. This is a MECHANISM, not a
-    convention: a transformer that forgets to count is detected rather than
-    believed.
-
-    "Moved" is ``!=``, never ``>``: ``last_excluded_row_count`` accumulates,
-    but ``last_unmapped_count`` is ASSIGNED by the transformers that use it
-    (``silver/entsoe/*``), so ``>`` would misread an assignment landing on the
-    previous file's value.
-
-    The increment is GATED on ``VINTAGE_PER_BRONZE_FILE`` and that gate is
-    load-bearing: ``_process_frame`` has three call sites (vintage, lockstep,
-    plain), so an ungated increment would change reported status for every
-    transformer in the repo. Closing the same hole on the other two branches is
-    its own unit with its own blast-radius review across 60+ transformers.
+    An empty output is fine when the transformer counted what it declined
+    (``last_excluded_row_count`` or ``last_unmapped_count`` moved inside
+    ``transform()``), and a silent failure when neither moved, as when
+    ``system_prices`` meets a missing required column. Only per-file and
+    partition-owning transformers count it; covering-set runs may count the
+    same body again for an adjacent destination.
     """
     last_total_unaccounted_exclusion: bool = False
-    """``True`` when the most recent ``run()`` examined at least one bronze
-    body, produced NO frame at all, and at least one of its empty frames was
-    UNACCOUNTED (D-42). Reset at the top of every ``run()``.
+    """``True`` when the most recent ``run()`` examined bronze, produced no
+    frame, and at least one of its empty frames was unaccounted.
 
-    A sibling of :attr:`last_unvouched_total_exclusion` with its own meaning,
-    deliberately not a widening of it. ``run_transform`` turns a nonzero
-    accumulated total into a hard failure for the dataset, on the argument the
-    existing rungs already make: bronze demonstrably exists, zero rows were
-    produced, ``_write_silver`` never ran, so any pre-existing Parquet is still
-    on disk and only a ``failed`` status stops it passing as current.
+    ``run_transform`` fails the dataset on it, for the same reason as
+    :attr:`last_unvouched_total_exclusion`.
     """
     LOCKSTEP_BRONZE_READ: ClassVar[bool] = False
-    """Opt in to resolving the bronze read set and the vintage from ONE scan.
+    """Resolve the bronze read set and the vintage from one scan.
 
-    When ``True``, ``run()`` calls :meth:`_bronze_candidates` exactly once and
-    threads the resulting :class:`VouchedBronzeSet` into BOTH the frame read
-    and ``available_at`` — so the set of files whose rows enter the frame and
-    the set of files whose sidecars determine the vintage are the SAME set, by
-    construction rather than by argument (R2-g I-1). It uses the same
-    :meth:`_bronze_candidates` and :meth:`_read_bronze_records` hooks as the
-    default :meth:`read_bronze`.
-
-    Per-transformer (like :attr:`VINTAGE_PER_BRONZE_FILE`), NOT source-scoped
-    like ``_EXACT_PARTITION_ONLY_SOURCES``. The honest reason, so the next
-    reader need not reconstruct it: vouching is a property of the BRONZE
-    WRITER's body-then-sidecar ordering (``bronze/writer.py``), which is
-    universal across sources — so the control is universally correct, not
-    entsog-specific. It is rolled out narrowly because every other source has
-    bronze on disk and changing their read sets is a data-semantics change on
-    live data. Generalising the rollout is N-15, which must audit every
-    ``_bronze_candidates`` override rather than point-fix known cases.
-
-    Mutually exclusive with :attr:`VINTAGE_PER_BRONZE_FILE`: they are different
-    vintage strategies over the same partition, and ``run()`` dispatches over
-    three mutually exclusive branches. A transformer setting both is a bug.
+    ``run()`` lists :meth:`_bronze_candidates` once and threads the resulting
+    :class:`VouchedBronzeSet` into both the frame read and ``available_at``,
+    so the files read and the files that stamp them are the same set.
+    Vouching depends only on the bronze writer's body-then-sidecar order, so
+    it suits every source; it is opt-in because turning it on changes which
+    existing bronze is read. ``run()`` checks :attr:`VINTAGE_PER_BRONZE_FILE`
+    first, so a transformer setting both gets the per-file branch.
     """
     EVENT_WINDOW_FILTER: ClassVar[bool] = False
-    """Opt-in, PER TRANSFORMER (D-6 — contrast with Elexon's source-scoped
-    ``_PUBLICATION_WINDOW_FILTER_SOURCES``), to the ENTSO-E event-window
-    filter (R2-A Task 4 / F-10). Default ``False``. When ``True``, ``run()``
-    resolves the CURRENT partition's own ``[periodStart, periodEnd)`` request
-    window (same D-7e all-or-nothing pairing rule as the publication-window
-    filter) and UNCONDITIONALLY excludes ``timestamp_utc`` rows outside it
-    (HALF_OPEN interval semantics, Sol ruling 2026-07-26 — see
-    ``partition_window.IntervalSemantics``). Unlike Elexon's CLOSED-interval
-    boundary row, an out-of-window ENTSO-E row was never part of THIS
-    partition's own request at all (the vendor's measured CET/CEST
-    delivery-day over-span, S1.4), so there is no ownership question and no
-    neighbour-durability proof to make before excluding it — it is always
-    dropped, counted, and logged. See ADR-026 Appendix A for each dataset's
-    verdict and citation, and ``silver/entsoe/_event_window.py`` for the
-    exemption table with reasons.
-    **B4 (N-9): the opt-in set is R2-A's original 7 plus B4's 19
-    evidence-classified FILTER_SAFE datasets (R3-RESEARCH.md Sec 1.1). A
-    `TODO`-marked minority remains genuinely unclassified, so F-10 and the
-    N-9 gate stay OPEN until that residual is resolved or accepted at a
-    milestone close (a Bobbo decision).**
+    """Opt in, per transformer, to the ENTSO-E event-window filter.
+
+    ``run()`` resolves the partition's own ``[periodStart, periodEnd)`` request
+    window and drops ``timestamp_utc`` rows outside it. ENTSO-E returns whole
+    CET/CEST delivery days beyond the request, and those rows were never
+    requested by this partition, so no neighbour proof is needed. ADR-026
+    Appendix A and ``silver/entsoe/_event_window.py`` record each dataset's
+    verdict.
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     VINTAGE_POLICY: ClassVar[VintagePolicy | None] = None
     _listed_bronze: tuple[date, list[Path]] | None = None
     """The plain ``run()``'s one listing while it reads; see :meth:`_bronze_read_set`."""
     APPEND_ONLY: ClassVar[bool] = False
-    """Per-dataset opt-in for revision-preserving silver writes.
+    """Keep every run's silver file instead of replacing one file per date (ADR-018).
 
-    Default ``False`` keeps the F0 atomic-replace behaviour: each
-    ``(dataset, target_date)`` pair maps to a single Parquet file that is
-    overwritten on each run. When ``True`` the writer emits a run-suffixed
-    filename derived from ``available_at`` so successive runs coexist in the
-    partition directory and downstream readers apply ``QUALIFY``-style
-    selection at read time. See ``docs/DECISION_LOG/ADR-018-append-only-
-    run-suffixed-files.md`` for the trade-off discussion. Only datasets that
-    keep several vintages per business key (REMIT, the forecast datasets with
-    ``published_at`` in their grain) opt in, each with a ``LATEST_VIEW_SPECS``
-    entry.
+    Each run writes a file suffixed with its ``available_at``, and readers
+    select the latest at read time. Only datasets that keep several vintages
+    per business key opt in, each with a ``LATEST_VIEW_SPECS`` entry.
     """
     VINTAGE_PER_BRONZE_FILE: ClassVar[bool] = False
-    """Opt in to assigning one availability timestamp per bronze raw file.
+    """Give each bronze body its own availability timestamp (ADR-025).
 
-    The default keeps the established whole-date read and single availability
-    timestamp. Revision feeds whose bronze fetch time is their only vintage
-    marker set this to ``True`` and implement ``read_bronze_file``.
-
-    Contract notes for opt-ins (ADR-025):
-    - Only the EXACT date partition is read — never the multi-day
-      covering-partition fallback, which would stamp a prior day's rows into a
-      wrong-dated vintage file (review finding, v0.17 PR-A).
-    - A raw file without a parseable sidecar timestamp is SKIPPED loudly: a
-      ``now()`` fallback would mint a new non-idempotent vintage filename on
-      every re-transform and poison point-in-time reads.
-    - Transformers that ASSIGN ``last_unmapped_count`` inside ``transform()``
-      (the ADR-022 enum-mapping pattern) must convert to accumulation before
-      opting in, or per-frame counts overwrite each other.
+    For revision feeds whose fetch time is their only vintage marker; opt-ins
+    implement ``read_bronze_file``. Only the exact date partition is read: the
+    covering fallback would stamp a prior day's rows into a file named for
+    this date. A body without a parseable sidecar timestamp is skipped loudly,
+    because a ``now()`` fallback would mint a new vintage on every
+    re-transform. A transformer that assigns ``last_unmapped_count`` must add
+    to it instead before opting in, or per-body counts overwrite each other.
     """
     BRONZE_BODY_GLOB: ClassVar[str] = "raw_*.json"
     """Which files in a bronze partition are bodies.
 
-    Read by the default :meth:`_bronze_candidates` (so by :meth:`read_bronze`)
-    and by the two per-file loops (``VINTAGE_PER_BRONZE_FILE``). Overridden
-    by transformers whose bodies are not JSON: ENTSO-E's ``"raw_*.xml"``
-    (``silver/entsoe/_base.py``) and the NESO Data Portal's ``"raw_*.csv"``.
-    Every reader drops ``*.meta.json`` whatever the glob -- a sidecar is
-    never a body.
-
-    Blast-radius classification: this is a READ-path symbol with WRITE-path
-    consequences, and it must not be described as "read only". The glob
-    selects which bodies are seen; for each selected body the loop reads that
-    body's OWN sidecar for ``available_at``, and ``_write_silver`` turns that
-    scalar into the run-suffixed silver FILENAME. So the symbol determines
-    which vintages are assigned and which silver files are written -- pinned
-    by tests on BOTH per-file branches (JSON and CSV) asserting written silver
-    FILENAMES, not row counts.
+    ENTSO-E overrides it with ``"raw_*.xml"`` and the NESO Data Portal with
+    ``"raw_*.csv"``. Every reader drops ``*.meta.json`` whatever the glob: a
+    sidecar is never a body. On the per-file branches it also decides which
+    vintages are written, because each body's sidecar names its silver file.
     """
     ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ()
-    """The dataset's REQUIRED entity/business key — the columns that, taken
-    together, grain the ``transform()`` output to one row per real-world
-    entity (R2-A / F-16, D-8). Consumed by the F-16 duplicate-quality-check
-    (``cli.py``) so it keys ``check_duplicates`` on the dataset's actual
-    grain instead of a hardcoded ``(settlement_date, settlement_period)`` —
-    the hardcoded pair falsely flagged every genuinely-distinct row of a
-    dataset with a finer grain (e.g. ``fuelhh``'s ``fuel_type``) as a
-    duplicate.
+    """The dataset's grain: the columns that make one ``transform()`` row per
+    real-world entity.
 
-    It is also the dedup key: :meth:`dedup_to_grain` enforces it, so it must
-    be the TRUE grain, including the vintage column (``published_at``) when
-    bronze carries several observations per business key. A column left out
-    is a row silently lost. ``system_prices`` and ``remit`` keep every
-    vintage without a dedup and declare their ``LATEST_VIEW_SPECS`` key.
-    Empty (``()``) is a bug for any registered Elexon or ENTSO-E dataset.
-
-    **D-8 order-insensitivity contract**: this is SET semantics
-    (``unique(subset=...)`` behaves as a set of columns, not an ordered
-    tuple) — ``test_unique_subset_is_order_insensitive`` pins that the golden
-    map (``tests/fixtures/entity_keys_golden.json``) and every consumer
-    compare declared keys as sets, never caring about declaration order.
+    :meth:`dedup_to_grain` and the duplicate quality check (``cli.py``) key on
+    it, so it must include the vintage column (``published_at``) when bronze
+    carries several observations per business key: a column left out is a row
+    silently lost. ``system_prices`` and ``remit`` keep every vintage without a
+    dedup and declare their ``LATEST_VIEW_SPECS`` key. Empty is a bug for any
+    registered Elexon or ENTSO-E dataset. Order does not matter: consumers
+    compare it as a set.
     """
     OPTIONAL_ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ()
-    """Key refinements included in the entity grain only when the column is
-    actually present on the frame being checked (mirrors
-    ``LatestViewSpec.optional_key_columns``, ``latest_views.py``) — e.g.
-    ``fou2t14d``'s live forecastDate-only shape has no ``settlement_period``.
-    Consumers resolve the effective key as ``ENTITY_KEY_COLUMNS + tuple(c for
-    c in OPTIONAL_ENTITY_KEY_COLUMNS if c in <the frame's columns>)`` via
-    :meth:`resolve_entity_key`.
+    """Key columns included only when present on the frame being checked, such
+    as ``fou2t14d``'s ``settlement_period``. See :meth:`resolve_entity_key`.
     """
 
     @classmethod
     def resolve_entity_key(cls, available_columns: Iterable[str]) -> tuple[str, ...] | None:
-        """Resolve the effective F-16 entity/business key for a frame with
-        the given columns.
+        """Return ``ENTITY_KEY_COLUMNS`` plus whichever optional key columns are present.
 
-        Default (this implementation): ``ENTITY_KEY_COLUMNS`` plus whichever
-        ``OPTIONAL_ENTITY_KEY_COLUMNS`` are actually present -- the additive
-        contract every dataset with a single required shape needs. Returns
-        ``None`` when ``ENTITY_KEY_COLUMNS`` is undeclared (empty).
-
-        A transformer whose ``transform()`` picks between mutually EXCLUSIVE
-        required shapes (not merely an additive optional refinement --
-        e.g. ``WindForecastTransformer``'s settlement-coordinate vs
-        ``timestamp_utc``-only fallback) overrides this classmethod to
-        mirror that exact conditional. Class-level only (no instantiation,
-        T-R2A-04) -- called by the CLI's ``_entity_key_for``.
+        ``None`` when ``ENTITY_KEY_COLUMNS`` is empty. A transformer whose
+        ``transform()`` chooses between exclusive shapes
+        (``WindForecastTransformer``) overrides it to mirror that choice. A
+        classmethod, so the CLI can resolve a key without an instance.
         """
         if not cls.ENTITY_KEY_COLUMNS:
             return None
@@ -862,34 +574,28 @@ class BaseSilverTransformer(ABC):
         )
 
     def _bronze_read_selection(self) -> BronzeReadSelection:
-        """Resolve this run's selection policy (R2-g D-6).
+        """This run's selection policy for a lockstep read.
 
-        Defaults to ``ALL``. Families whose policy depends on instance state
-        (the ENTSO-G generic family's ``reference_dataset``) override this
-        method.
+        Families whose policy depends on instance state (the ENTSO-G generic
+        family's ``reference_dataset``) override it.
         """
         return BronzeReadSelection.ALL
 
     def _bronze_candidates(self, target_date: date) -> list[Path]:
         """Resolve the ordered bronze BODY paths read for ``target_date``.
 
-        THE one listing of the files read: :meth:`read_bronze` reads exactly
-        these (through :meth:`_bronze_read_set`), a ``LOCKSTEP_BRONZE_READ`` run
-        vouches exactly these from one filesystem scan, and a plain reingest
-        stamps the frame from exactly these (:meth:`_vintage_of`). The default
-        is the bodies of the exact date partition. A transformer that picks
-        files another way overrides this, not ``read_bronze``, so anything
-        derived from the files read agrees with the read. Select by path names
-        and sidecar contents only, never by mtimes or the clock, so the same
-        bronze always gives the same listing.
+        The one listing of the files read: :meth:`read_bronze` reads these, a
+        ``LOCKSTEP_BRONZE_READ`` run vouches these, and a plain reingest stamps
+        the frame from these (:meth:`_vintage_of`). The default is the bodies of
+        the exact date partition. To pick files another way, override this, not
+        ``read_bronze``, so everything derived from the files agrees with the
+        read. Select by path names and sidecar contents only, never by mtimes
+        or the clock, so the same bronze always gives the same listing.
 
-        Under ``LOCKSTEP_BRONZE_READ`` it must return the FULL ordered list --
-        any "newest only" truncation belongs to :class:`BronzeReadSelection`,
-        applied after vouching, never before it. It must always exclude
-        ``*.meta.json``: the writer puts bodies and sidecars in the same
-        directory under names that a ``raw_*.json`` glob both match, and a
-        sidecar admitted as a body has no sidecar of its own, so it would
-        classify ``NO_SIDECAR`` and fire the hard-fail rung on every healthy run.
+        Return the full ordered list: any "newest only" choice belongs to
+        :class:`BronzeReadSelection`, after vouching. Never return
+        ``*.meta.json``: a sidecar read as a body has no sidecar of its own, so
+        it would classify ``NO_SIDECAR`` and fail every healthy run.
 
         Args:
             target_date: The date being transformed.
@@ -931,20 +637,10 @@ class BaseSilverTransformer(ABC):
         is written for the date. Any other exception is a parser bug and
         propagates as it is.
 
-        Returns PER-FILE record lists and constructs NO DataFrame, so the base
-        keeps ownership of frame construction. The per-file structure is what
-        lets the lockstep branch of ``run()`` build the row list and the stamp
-        list by parallel comprehensions over ONE object, so rows and stamps
-        cannot desync.
-
-        ``target_date`` is required, not optional: both ENTSO-G families apply
-        a row-level date filter INSIDE the read, and a hook without it would
-        strand that filter in ``read_bronze()``, which the lockstep branch
-        bypasses -- writing parseable OFF-DATE rows into the target-date silver
-        partition.
-
-        Implementations emit at most ONE record above ``DEBUG`` per call (an
-        aggregated warning or error), never one per file.
+        Returns per-file record lists and builds no frame, so the lockstep
+        branch can build its rows and stamps from one object. ``target_date``
+        is required because the ENTSO-G families filter rows by date inside the
+        read. Log at most one record above ``DEBUG`` per call.
 
         Args:
             paths: Body paths, in candidate order (vouched ones, under lockstep).
@@ -990,24 +686,18 @@ class BaseSilverTransformer(ABC):
         """Normalisation this family applies to RAW bronze column names.
 
         Used only by the lockstep branch's reserved-name collision guard.
-        Identity by default; families that fold vendor spellings together
-        (ENTSO-G's ``_camel_to_snake``) override it, because a guard that
-        tested the literal name would pass a vendor field spelled
-        ``gfBronzeVintage`` and let a datetime-castable vendor value silently
-        replace the true bronze stamp.
+        Families that fold vendor spellings together (ENTSO-G's
+        ``_camel_to_snake``) override it, so a vendor field spelled
+        ``gfBronzeVintage`` cannot replace the true bronze stamp.
         """
         return column
 
     def _reset_run_counters(self) -> None:
-        """Reset every per-run ``last_*`` counter (ADR-034 P-9).
+        """Reset every per-run ``last_*`` counter.
 
-        Called first by :meth:`run` and by the NESO generic engine's
-        ``run_captures``, so both publish their counters from one reset.
+        Called first by :meth:`run` and by the NESO Data Portal engine, before
+        any early return, so a date is never charged the previous date's counts.
         """
-        # Reset the per-run warning counters before either early-return path so a
-        # date with no bronze / missing columns is never charged a prior date's
-        # count (ADR-022 unmapped + VTA-SCHEMA-01 validation; the CLI accumulates
-        # both after each per-date run).
         self.last_unmapped_count = 0
         self.last_start_time_fallback_count = 0
         self.last_publication_fallback_count = 0
@@ -1016,16 +706,11 @@ class BaseSilverTransformer(ABC):
         self.last_partition_trim_details = ()
         self.last_source_exclusion_details = ()
         self.last_validation_failure_count = 0
-        # D-40: the SINGLE reset the transformer's `+=` accumulates against.
         self.last_excluded_row_count = 0
         self.last_partition_filter_unresolved_count = 0
         self.last_partition_filter_all_dropped_count = 0
-        # Not optional: run_transform reads these PER DATE inside its loop, so
-        # a run() returning early without resetting would charge this date the
-        # previous date's exclusions.
         self.last_unvouched_bronze = frozenset()
         self.last_unvouched_total_exclusion = False
-        # D-42's pair, reset for the same reason and in the same place.
         self.last_unaccounted_empty_frames = 0
         self.last_total_unaccounted_exclusion = False
 
@@ -1046,27 +731,22 @@ class BaseSilverTransformer(ABC):
             return self._run_partition_owned(target_date, resolved_run_id, reingest)
 
         frames: list[pl.DataFrame] = []
-        # P-9: the per-file branch keeps a running count instead of every
-        # written frame, so one date's memory is bounded by one body. `frames`
-        # still collects there only for the opt-in CSV sidecar, whose diagonal
-        # concat needs the data itself.
+        # The per-file branch counts rows instead of keeping frames, so one
+        # date's memory is bounded by one body; there `frames` collects only
+        # for the opt-in CSV sidecar.
         released_rows = 0
         released_frames = 0
         saw_bronze = False
 
-        # Mutually exclusive: a transformer is either an Elexon in-scope
-        # dataset (source-scoped, D-6) or an ENTSO-E opt-in
-        # (EVENT_WINDOW_FILTER, per-transformer, D-6) — never both, since
-        # _PUBLICATION_WINDOW_FILTER_SOURCES is elexon-only and
-        # EVENT_WINDOW_FILTER defaults False for every Elexon transformer.
+        # At most one plan applies: the publication filter is Elexon-only and
+        # no Elexon transformer sets EVENT_WINDOW_FILTER.
         window_plan = self._resolve_publication_window_plan(
             target_date
         ) or self._resolve_event_window_plan(target_date)
 
         if self.VINTAGE_PER_BRONZE_FILE:
-            # EXACT date partition only — a covering-partition fallback would
-            # stamp a prior day's rows into a file named for target_date
-            # (wrong-dated vintage; see class docstring).
+            # Exact date partition only: a covering-partition fallback would
+            # stamp a prior day's rows into a file named for target_date.
             exact_dir = (
                 self.bronze_dir
                 / str(target_date.year)
@@ -1074,21 +754,13 @@ class BaseSilverTransformer(ABC):
                 / f"{target_date.day:02d}"
             )
             date_dirs = [exact_dir] if exact_dir.exists() else []
-            # D-41: this branch had NO file-level accounting at all — both of
-            # its skips dropped a whole vintage in silence, under a `success`
-            # status. Accumulated in LOCALS and published in the `finally`
-            # below, never assigned incrementally: `last_unvouched_bronze` is a
-            # frozenset (not mutable in place), and X-08/X-09/X-10 all leave
-            # this loop by exception, so a publication after the loop would
-            # discard the exclusions recorded for files 1..N-1 at exactly the
-            # moment the record matters most.
+            # Collected in locals and published in the `finally`, so a body
+            # that raises mid-loop still leaves the earlier exclusions on record.
             unvouched: list[tuple[Path, BronzeVouchReason]] = []
             examined = 0
             try:
                 for date_dir in date_dirs:
                     for raw_path in sorted(date_dir.glob(self.BRONZE_BODY_GLOB)):
-                        # The data glob also matches sidecars (raw_*.meta.json) — skip
-                        # them. A sidecar is not a data body and is NOT examined.
                         if raw_path.name.endswith(".meta.json"):
                             continue
                         examined += 1
@@ -1096,22 +768,14 @@ class BaseSilverTransformer(ABC):
                             raw_path.with_suffix(".meta.json")
                         )
                         if available_at is None:
-                            # Skip loudly: a now() fallback would mint a fresh
-                            # non-idempotent vintage file on every re-transform.
                             logger.warning(
                                 "Skipping bronze file with no usable sidecar timestamp "
                                 "(cannot assign an honest vintage): %s",
                                 raw_path,
                             )
-                            # D-41 skip (a). The richer classifier is invoked for
-                            # the REASON ONLY -- the accept/reject decision stays
-                            # `_timestamp_from_sidecar`, unchanged. The classifier
-                            # is documented as hardened beyond it, so calling it
-                            # for the decision would also change which files are
-                            # accepted, and this change is about reporting, not
-                            # about tightening acceptance. `reason` is provably
-                            # non-None here (a None reason means it vouched); the
-                            # fallback is narrowing, not a guess.
+                            # The classifier supplies only the reason, which is
+                            # never None here; acceptance stays with
+                            # _timestamp_from_sidecar.
                             classified = self._read_sidecar_timestamp(
                                 raw_path.with_suffix(".meta.json")
                             )
@@ -1124,10 +788,6 @@ class BaseSilverTransformer(ABC):
                             continue
                         raw_df = self.read_bronze_file(raw_path)
                         if raw_df.is_empty():
-                            # D-41 skip (b): the sidecar vouched, but the
-                            # source-specific provenance the reader requires was
-                            # absent or unparseable. Master did not even log this
-                            # one.
                             logger.warning(
                                 "Skipping bronze file that read as empty (its own "
                                 "provenance is unusable): %s",
@@ -1147,62 +807,36 @@ class BaseSilverTransformer(ABC):
                                 frames.append(clean_df)
                         del raw_df, clean_df
             finally:
-                # D-42's publication rule. On the exception path the predicates
-                # are computed over what was examined BEFORE the failure, which
-                # is honest: they describe the run that actually happened.
                 self.last_unvouched_bronze = frozenset(unvouched)
-                # The predicate is over FILES declined at the two skips above —
-                # deliberately NOT over "was any frame processed". A body whose
-                # sidecar vouched, whose provenance was fine, and every row of
-                # which was row-excluded is a CONSUMED file, not an excluded
-                # one: it was read, consumed, and its rows were accounted by
-                # D-40. Since run_transform checks the total-exclusion rung
-                # BEFORE the warnings rung, the looser predicate would report
-                # `failed` for a run that must report warnings.
+                # Over declined FILES, not unprocessed frames: a body whose
+                # rows were all excluded was consumed, and its rows are counted
+                # as warnings. run_transform checks this rung before warnings,
+                # so the looser predicate would fail a run that should warn.
                 self.last_unvouched_total_exclusion = examined > 0 and len(unvouched) == examined
-                # Mirror the lockstep branch: a date whose bodies were all
-                # declined must not ALSO emit the generic "No bronze data"
-                # warning. Bronze demonstrably exists; that message would
-                # contradict the record this branch just produced.
+                # Declined bodies are bronze: skip the "No bronze data" warning.
                 saw_bronze = saw_bronze or bool(unvouched)
-                # `last_unaccounted_empty_frames` needs no publication step: it
-                # is incremented in place on the instance by `_process_frame`,
-                # so it is already durable across an exception. Only the derived
-                # FLAG is computed here.
                 self.last_total_unaccounted_exclusion = (
                     examined > 0 and released_frames == 0 and self.last_unaccounted_empty_frames > 0
                 )
         elif self.LOCKSTEP_BRONZE_READ:
-            # ONE scan, ONE sidecar read per examined candidate, threaded as a
-            # single value into BOTH the frame read and available_at. There is
-            # no second scan for the two derivations to disagree about, so the
-            # wrong-partition, borrowed-sibling-stamp, mixed-sidecar and TOCTOU
-            # failure modes are closed structurally rather than case by case.
+            # One scan and one sidecar read per candidate, used for both the
+            # rows and their stamps, so the two cannot disagree.
             candidates = self._bronze_candidates(target_date)
             vouched = self._resolve_vouched_bronze_set(candidates, self._bronze_read_selection())
             self.last_unvouched_bronze = frozenset(vouched.unvouched)
             self.last_unvouched_total_exclusion = vouched.examined > 0 and not vouched.entries
-            # Suppress master's generic "No bronze data" warning exactly when
-            # this unit's own machinery will emit a record for this date -- i.e.
-            # whenever any unvouched file was seen. Keyed on `unvouched`, never
-            # an unconditional True: `entries` is empty in TWO shapes, and only
-            # total exclusion (unvouched non-empty) should suppress it. With no
-            # candidates at all, `unvouched` is empty and the warning correctly
-            # still fires. Evaluated BEFORE the `not entries` arm below.
+            # Unvouched bodies get their own report, so skip the "No bronze
+            # data" warning; with no candidates at all it still fires.
             saw_bronze = saw_bronze or bool(vouched.unvouched)
             if vouched.entries:
                 stamp_by_path = dict(vouched.entries)
                 pairs = self._read_bronze_records(vouched.paths, target_date)
                 rows = [record for _, records in pairs for record in records]
-                # Master's rule exactly: set only on a NON-EMPTY frame. Vouched
-                # bronze holding only off-date rows must keep emitting master's
-                # warning, or this becomes a new silent zero-row path.
+                # Vouched bronze holding only off-date rows still warns.
                 saw_bronze = saw_bronze or bool(rows)
                 if rows:
-                    # The only REACHABLE way rows and stamps could desync: a
-                    # reader returning records for a path the resolver never
-                    # vouched. Fail loud rather than mis-stamp those rows with
-                    # a sibling's timestamp.
+                    # A reader returning records for a path that was never
+                    # vouched would stamp them with a sibling's timestamp.
                     smuggled = [path for path, _ in pairs if path not in stamp_by_path]
                     if smuggled:
                         raise ValueError(
@@ -1248,9 +882,6 @@ class BaseSilverTransformer(ABC):
                             available_at=live_now if live_now is not None else stamps[0],
                         )
                         frames.append(clean_df)
-            # Neither empty arm returns early: both fall through to the common
-            # tail below, so master's "nothing to read" vs "read but transformed
-            # to zero rows" distinction is preserved rather than bypassed.
         else:
             # One listing feeds both the read and the reingest stamp.
             bodies = self._bronze_candidates(target_date)
@@ -1280,7 +911,7 @@ class BaseSilverTransformer(ABC):
 
         if self.write_silver_csv:
             # Frames can differ in optional columns (e.g. run_type present in one
-            # vintage only) — diagonal concat null-fills instead of raising (CL-1).
+            # vintage only) — diagonal concat null-fills instead of raising.
             self._write_csv(pl.concat(frames, how="diagonal"), target_date)
 
         total_rows = (
@@ -1674,42 +1305,33 @@ class BaseSilverTransformer(ABC):
                 carries its own).
             window_plan: The resolved request-window filter plan, if any.
             vintage_column: Name of the transient per-row bronze-vintage
-                carrier on ``raw_df``, for ``LOCKSTEP_BRONZE_READ`` reads.
-                ``None`` (the default) leaves both existing branches
-                character-for-character unchanged. When set, the column is the
-                ingest-time source and is DROPPED before persistence --
-                it must never reach silver.
+                column on ``raw_df``, for ``LOCKSTEP_BRONZE_READ`` reads. When
+                set, it is the ingest-time source and is dropped from the
+                returned frame: it must never reach silver.
 
         Raises:
             ValueError: ``vintage_column`` was requested but ``transform()``
-                dropped it (per-row ``available_at`` could not be derived).
+                dropped it, so per-row ``available_at`` cannot be derived.
         """
         if raw_df.is_empty():
             return None
 
-        # D-42: snapshot the only two counters a transformer can move from
-        # inside transform(). The validator's counter is incremented later, on
-        # a frame an empty output never reaches, so it cannot discriminate here.
+        # The only two counters a transformer can move inside transform(); the
+        # validator's counter moves later, on a frame an empty output never reaches.
         excluded_before = self.last_excluded_row_count
         unmapped_before = self.last_unmapped_count
         clean_df = self.transform(raw_df)
         if clean_df.is_empty():
             logger.warning(f"Transform produced 0 rows for {target_date}")
-            # `!=`, never `>`: last_excluded_row_count accumulates, but
-            # last_unmapped_count is ASSIGNED by the transformers that use it
-            # (silver/entsoe/*), so `>` would misread an assignment that landed
-            # on the previous file's value.
+            # `!=`, never `>`: the ENTSO-E transformers assign
+            # last_unmapped_count rather than add to it.
             accounted = (
                 self.last_excluded_row_count != excluded_before
                 or self.last_unmapped_count != unmapped_before
             )
-            # The VINTAGE_PER_BRONZE_FILE gate is LOAD-BEARING, not caution:
-            # this method has three call sites (vintage, lockstep, plain), so an
-            # ungated increment would flip reported status for every source in
-            # the repo. Placed at THIS exit specifically — empty-from-transform()
-            # must stay distinguishable from the window-filter empty below,
-            # where last_partition_filter_all_dropped_count already drives a
-            # hard failure; counting both would double-charge one outcome.
+            # Gated: counting this for every transformer would change their
+            # reported status. A window-filter empty (below) is counted by
+            # last_partition_filter_all_dropped_count instead.
             if (self.VINTAGE_PER_BRONZE_FILE or self.PARTITION_DATE_COLUMN is not None) and not (
                 accounted
             ):
@@ -1723,25 +1345,12 @@ class BaseSilverTransformer(ABC):
                 else self._apply_publication_window_filter(clean_df, window_plan, target_date)
             )
             if clean_df.is_empty():
-                # Two routes land here, not one. CLOSED (Elexon, D-5): the
-                # trim is refused rather than emptying an otherwise
-                # non-empty frame, so an empty frame here means the
-                # ORIGINAL transform() output was already empty of the
-                # filter dimension's rows. HALF_OPEN (ENTSO-E): D-5's
-                # refusal rule does NOT apply on this path
-                # (exclude_out_of_window, TRIM ruling) -- a 100%-out-of-
-                # window drop empties a non-empty frame by design
-                # (all_dropped=True, already logged ERROR above). Either
-                # way, nothing further to write.
+                # Only the HALF_OPEN filter drops a whole frame (counted and
+                # logged there); the CLOSED filter refuses to.
                 return None
 
-        # Enforce the declared Pydantic schema on the FULL frame, fail-soft
-        # (VTA-SCHEMA-01): failures are counted + logged here and surfaced by the
-        # CLI as completed_with_warnings — never raised, never dropped (CLAUDE.md
-        # hard rule). Validated on the transform() output, before bitemporal
-        # columns are stamped (schemas do not declare those). No-op when
-        # schema_cls is None (generic/dynamic transformers, incl. ENTSO-G CMP).
-        # Accumulates across vintage frames (reset once at run() start).
+        # Validated before the bitemporal columns exist: schemas do not declare
+        # them. Fail-soft, and accumulated across a run's frames.
         self.last_validation_failure_count += self._validate_against_schema(clean_df)
         if vintage_column is not None and vintage_column not in clean_df.columns:
             raise ValueError(
@@ -1761,28 +1370,16 @@ class BaseSilverTransformer(ABC):
         return clean_df
 
     def _resolve_publication_window_plan(self, target_date: date) -> _PublicationWindowPlan | None:
-        """Resolve the CURRENT partition's request window for the publication-window filter.
+        """Resolve this partition's request window for Elexon's publication-window filter.
 
-        ``None`` (filtering disabled, no-op) for: any source not in
-        ``_PUBLICATION_WINDOW_FILTER_SOURCES``; any out-of-scope/exempt
-        dataset (logged ``DEBUG`` — D-7b); or an in-scope dataset whose own
-        partition could not be resolved (D-7e: an orphan raw body, an invalid
-        sidecar, or an unparseable bound) — counted into
-        ``last_partition_filter_unresolved_count`` and logged ``WARNING``
-        with the failing reason (D-7b/D-3e), never silently narrowed to
-        "filter what we can".
+        ``None`` disables the filter: for sources not in
+        ``_PUBLICATION_WINDOW_FILTER_SOURCES``, for out-of-scope or exempt
+        datasets, and for a partition whose window cannot be resolved (an
+        orphan body, an invalid sidecar, an unparseable bound). That last case
+        is counted and logged, never narrowed to filtering what it can.
 
-        The ``silver.elexon._publication_window`` import is deliberately
-        LOCAL (not module-level): ``silver.elexon.__init__`` eagerly imports
-        every Elexon transformer module, each of which does
-        ``from gridflow.silver.base import BaseSilverTransformer`` — a
-        module-level import here would cycle back into this half-initialised
-        module. Deferring the import to call time (after both modules have
-        fully loaded) avoids the cycle; ``partition_window`` itself carries
-        no such risk and is imported at module level above (R-8's import
-        boundary is about ``connectors.elexon``, confined to
-        ``_publication_window.py``, not about ``partition_window``, which is
-        source-agnostic).
+        ``silver.elexon._publication_window`` is imported here, not at module
+        level, because ``silver.elexon`` imports this module.
         """
         if self.source not in _PUBLICATION_WINDOW_FILTER_SOURCES:
             return None
@@ -1819,7 +1416,7 @@ class BaseSilverTransformer(ABC):
             self.last_partition_filter_unresolved_count += 1
             logger.warning(
                 "Partition-window filter unresolved for %s/%s on %s (%s); "
-                "filtering disabled for this partition (all-or-nothing, D-7e)",
+                "filtering disabled for this partition (all-or-nothing)",
                 self.source,
                 self.dataset,
                 target_date,
@@ -1840,16 +1437,12 @@ class BaseSilverTransformer(ABC):
         plan: _PublicationWindowPlan,
         target_date: date,
     ) -> pl.DataFrame:
-        """Trim ``df`` to ``plan.window`` under a per-instant durability proof (D-3b/D-3d).
+        """Trim ``df`` to ``plan.window``, dropping a boundary row only when the
+        successor partition provably holds it.
 
-        D-7(c): an absent filter column is FAIL-LOUD — a ``ValueError``
-        naming the dataset, the column, and where to declare an exemption,
-        never a silent no-op filter.
-
-        The upper-bound ownership check (extra IO against the successor
-        partition) is short-circuited entirely when no row sits at or after
-        ``plan.window.end`` (R-10) — the common case costs nothing. Elexon
-        never enforces its lower bound (D-3): ``lower_bound_ownership=None``.
+        An absent filter column raises rather than silently skipping the
+        filter. The successor partition is read only when a row sits at or
+        after the window end. The lower bound is never enforced.
         """
         if plan.column not in df.columns:
             raise ValueError(
@@ -1883,7 +1476,7 @@ class BaseSilverTransformer(ABC):
         if result.refused:
             logger.error(
                 "Partition-window filter would drop the entire %s/%s frame for "
-                "%s; keeping every row instead (D-5 refusal)",
+                "%s; keeping every row instead",
                 self.source,
                 self.dataset,
                 target_date,
@@ -1912,7 +1505,7 @@ class BaseSilverTransformer(ABC):
             logger.warning(
                 "Partition-window filter: %d row(s) below the window start were "
                 "kept for %s/%s on %s (the lower bound is not enforced for this "
-                "source, D-3)",
+                "source)",
                 result.below_window,
                 self.source,
                 self.dataset,
@@ -1932,20 +1525,12 @@ class BaseSilverTransformer(ABC):
         return result.frame
 
     def _resolve_event_window_plan(self, target_date: date) -> _PublicationWindowPlan | None:
-        """Resolve the CURRENT partition's request window for the ENTSO-E
-        event-window filter (Task 4 / F-10; HALF_OPEN semantics, Sol
-        ruling 2026-07-26).
+        """Resolve this partition's request window for the ENTSO-E event-window filter.
 
-        ``None`` (filtering disabled, no-op) when ``EVENT_WINDOW_FILTER`` is
-        ``False`` (the default — D-6, opt-in PER TRANSFORMER, unlike
-        Elexon's source-scoped constant) or when the CURRENT partition's own
-        window could not be resolved (D-7e: an orphan raw body, an invalid
-        sidecar, or an unparseable bound) — counted into
-        ``last_partition_filter_unresolved_count`` and logged ``WARNING``
-        with the failing reason, never silently narrowed to "filter what we
-        can". Params are always ``("periodStart", "periodEnd")`` and the
-        dimension is always ``timestamp_utc`` (D-1) — no per-dataset
-        overrides, unlike Elexon's ``remit`` column override.
+        ``None`` disables the filter: when ``EVENT_WINDOW_FILTER`` is off, and
+        when the partition's window cannot be resolved, which is counted and
+        logged. The params are always ``periodStart``/``periodEnd`` and the
+        column always ``timestamp_utc``.
         """
         if not self.EVENT_WINDOW_FILTER:
             return None
@@ -1968,7 +1553,7 @@ class BaseSilverTransformer(ABC):
             self.last_partition_filter_unresolved_count += 1
             logger.warning(
                 "Event-window filter unresolved for %s/%s on %s (%s); "
-                "filtering disabled for this partition (all-or-nothing, D-7e)",
+                "filtering disabled for this partition (all-or-nothing)",
                 self.source,
                 self.dataset,
                 target_date,
@@ -1990,29 +1575,13 @@ class BaseSilverTransformer(ABC):
         plan: _PublicationWindowPlan,
         target_date: date,
     ) -> pl.DataFrame:
-        """Unconditionally exclude rows outside ``plan.window`` — the
-        ENTSO-E event-window filter (Task 4 / F-10), HALF_OPEN interval
-        semantics (:class:`~gridflow.silver.partition_window.IntervalSemantics`,
-        Sol ruling 2026-07-26, amending the R2-A plan's original D-3d).
+        """Drop every row outside ``plan.window``, the ENTSO-E event-window filter.
 
-        ENTSO-E's OWN request is ``[periodStart, periodEnd)``, but the
-        vendor may return whole CET/CEST delivery days beyond it (measured,
-        ``R2-A-PLAN.md`` S1.4). Those rows were never part of THIS
-        partition's request at all — there is no ownership question to
-        settle and therefore no neighbour-durability proof to make (unlike
-        Elexon's CLOSED-interval boundary row, which genuinely IS requested
-        by two adjacent chunks — see :meth:`_apply_publication_window_filter`
-        and D-3b, untouched by this ruling). Keeping an out-of-scope row
-        would both violate this partition's own declared window and plant a
-        duplicate for whenever the owning date is properly ingested; bronze
-        remains the immutable source of truth for that row under its own
-        correctly-scoped partition, so excluding it here is "do not
-        materialise an out-of-scope row in silver", not a deletion of
-        anything durable. Always dropped, counted, and logged — never
-        silent.
-
-        D-7(c): an absent filter column is FAIL-LOUD, the same contract as
-        :meth:`_apply_publication_window_filter`.
+        ENTSO-E may return whole CET/CEST delivery days beyond the
+        ``[periodStart, periodEnd)`` request. Those rows were never requested
+        by this partition, and bronze keeps them under the partition that did,
+        so dropping them needs no neighbour proof. Every drop is counted and
+        logged. An absent filter column raises.
         """
         if plan.column not in df.columns:
             raise ValueError(
@@ -2025,17 +1594,9 @@ class BaseSilverTransformer(ABC):
         result = exclude_out_of_window(df, plan.column, plan.window)
 
         if result.all_dropped:
-            # 100% of a non-empty frame fell outside this partition's own
-            # [periodStart, periodEnd) window -- the drop is PERFORMED (TRIM
-            # ruling: out-of-scope ENTSO-E rows are always excluded,
-            # unconditionally), but this is also the exact signature of a
-            # horizon/annual dataset opted into EVENT_WINDOW_FILTER by
-            # mistake (D-5's original misclassification concern) -- logged
-            # ERROR, loud rather than silent, never retained. A log line is
-            # not a safety net (Sol re-review, 2026-07-26): this counter is
-            # what turns it into a HARD FAILURE of the whole date-range run
-            # (pipeline/runner.py::run_transform), not merely a log a nobody
-            # reads.
+            # A whole frame outside its own window usually means the dataset
+            # was opted in by mistake: the counter makes run_transform fail
+            # the date range instead of leaving only a log line.
             self.last_partition_filter_all_dropped_count += result.dropped
             logger.error(
                 "Event-window filter excluded 100%% of the %s/%s frame for %s "
@@ -2082,19 +1643,10 @@ class BaseSilverTransformer(ABC):
     def _validate_against_schema(self, df: pl.DataFrame) -> int:
         """Validate every row of the transform output against ``schema_cls``, fail-soft.
 
-        Returns the number of rows that failed Pydantic validation. **Never raises
-        and never drops a row**: invalid rows are still written to silver; the
-        returned count is the only signal, threaded by the CLI into
-        ``PipelineRunTracker.complete_with_warnings`` (the CLAUDE.md hard rule —
-        validation failures are logged, counted, and surfaced, never silently
-        dropped). A no-op returning ``0`` when ``schema_cls`` is ``None`` (generic/
-        dynamic transformers with no fixed contract) or the frame is empty.
-
-        Validates the ``transform()`` output (pre-bitemporal): the schema describes
-        exactly those columns, and ``BaseSchema``'s ``extra="ignore"`` means any
-        additional columns are tolerated. ``strict=True`` schemas will surface real
-        ``Field(ge/le)`` / tz breaches on later (non-first) rows as warnings — that
-        is the intended fail-soft behaviour, not an error.
+        Returns the number of rows that failed. Never raises and never drops a
+        row: invalid rows are still written, and the count is the only signal,
+        which ``run_transform`` reports as warnings. ``0`` when ``schema_cls``
+        is ``None`` or the frame is empty.
         """
         schema = self.schema_cls
         if schema is None or df.is_empty():
@@ -2110,13 +1662,10 @@ class BaseSilverTransformer(ABC):
                 if len(sample) < _VALIDATION_SAMPLE_LIMIT:
                     sample.append(str(exc).replace("\n", " ")[:300])
             except Exception as exc:  # noqa: BLE001
-                # Fail-soft is an ABSOLUTE guarantee — one row must never crash the
-                # whole date's transform. Pydantic v2 only wraps ValueError/
-                # AssertionError into ValidationError, so a custom field_validator
-                # raising e.g. TypeError/KeyError would otherwise escape this method
-                # and propagate out of run(). Count it like any other invalid row,
-                # but log it LOUDLY with its type so a genuine code bug stays
-                # visible (surfaced, never silently swallowed).
+                # Pydantic wraps only ValueError/AssertionError into
+                # ValidationError, so a validator raising anything else would
+                # crash the whole date. Count it as invalid and log its type
+                # loudly, so a code bug stays visible.
                 failures += 1
                 if len(sample) < _VALIDATION_SAMPLE_LIMIT:
                     sample.append(f"{type(exc).__name__}: {str(exc)[:280]}")
@@ -2153,20 +1702,10 @@ class BaseSilverTransformer(ABC):
     ) -> pl.DataFrame:
         """Add modelling lineage columns before silver output is persisted.
 
-        ``available_at = coalesce(published_at, ingest_time)`` (ADR-025 §3): when
-        the transformer emitted a ``published_at`` column (the vendor publication
-        vintage), it becomes ``available_at`` per row; rows with a null
-        ``published_at`` fall back to the ingest/reingest scalar. Datasets that
-        emit no ``published_at`` column and declare no policy keep byte-identical
-        ``available_at``.
-
-        ``vintage_column`` (keyword-only, default ``None``) makes only the
-        FALLBACK arm of that coalesce per-row, for ``LOCKSTEP_BRONZE_READ``
-        reads: the ingest stamp becomes each row's own bronze file's recorded
-        sidecar timestamp instead of a frame-level literal. With the default
-        ``None`` the emitted expression is character-for-character today's, so
-        every existing caller and every non-opted-in transformer is untouched.
-        A non-null vendor ``published_at`` still wins the coalesce either way.
+        ``available_at = coalesce(published_at, ingest_time)`` per row
+        (ADR-025): the vendor's ``published_at`` wins, and a null falls back to
+        the ingest stamp. That stamp is the ``available_at`` argument or, with
+        ``vintage_column``, each row's own bronze body stamp.
 
         With ``VINTAGE_POLICY``, ADR-031 replaces only the fallback for events
         strictly before its cutover whose event time plus lag precedes ingest.
@@ -2174,14 +1713,8 @@ class BaseSilverTransformer(ABC):
         Labels are lineage derived after measurement validation, not schema fields.
 
         Raises:
-            TypeError: F-19 — ``published_at`` present but not a ``pl.Datetime``
-                dtype (e.g. String or Int64, a transformer bug: the rename map
-                produced the column but never cast it). ``pl.coalesce`` already
-                raises loudly on a tz-naive ``Datetime`` (supertype mismatch
-                against the tz-aware ingest scalar); String/Int previously
-                passed through *silently*, mistyping ``available_at`` instead
-                of raising — same failure class, same loudness, now enforced
-                explicitly rather than left to chance.
+            TypeError: ``published_at`` is present but not a ``pl.Datetime``,
+                which ``pl.coalesce`` would let through, mistyping ``available_at``.
         """
         if available_at.tzinfo is None:
             available_at = available_at.replace(tzinfo=UTC)
@@ -2193,20 +1726,12 @@ class BaseSilverTransformer(ABC):
             if vintage_column is not None
             else pl.lit(available_at).cast(pl.Datetime("us", "UTC"))
         )
-        # ADR-025 §3: available_at = coalesce(published_at, ingest_time), ROW-WISE.
-        # pl.coalesce is per-row, so a mixed-null frame (Elexon publishTime is
-        # per-record; a date's ENTSO-E bronze can mix files with and without
-        # createdDateTime) falls back to the ingest scalar on null rows rather
-        # than writing a null available_at — which gridflow_models' fail-closed
-        # availability barrier rejects wholesale. A frame-level column swap would not.
+        # Row-wise, so a frame mixing null and non-null published_at falls back
+        # per row instead of writing a null available_at, which gridflow_models'
+        # fail-closed availability barrier would reject.
         if "published_at" in df.columns:
             published_dtype = df.schema["published_at"]
             if not isinstance(published_dtype, pl.Datetime):
-                # F-19: a String/Int published_at silently passes through
-                # pl.coalesce, mistyping available_at instead of failing. Raise
-                # explicitly — the tz-naive Datetime case already raises via
-                # Polars' own supertype check below; this closes the latent
-                # non-Datetime half of the same failure class.
                 raise TypeError(
                     f"{self.source}/{self.dataset}: published_at must be a "
                     f"pl.Datetime dtype (tz-aware UTC), got {published_dtype!r}. "
@@ -2414,12 +1939,9 @@ class BaseSilverTransformer(ABC):
         """Return the bronze partition path to read for target_date.
 
         Returns exact partition if it exists and has raw files, falls back to
-        the nearest covering partition, or None if nothing found. For sources
-        in ``_EXACT_PARTITION_ONLY_SOURCES`` (P0.8), never falls back — the
-        exact partition or nothing, since a covering-fallback hit for those
-        sources would fabricate wrong-day rows (see that constant's docstring).
-        Pass ``bronze_dir`` to resolve within another directory, such as one
-        Open-Meteo location's.
+        the nearest covering partition, or None if nothing found. Sources in
+        ``_EXACT_PARTITION_ONLY_SOURCES`` never fall back. Pass ``bronze_dir``
+        to resolve within another directory, such as one Open-Meteo location's.
         """
         base = bronze_dir if bronze_dir is not None else self.bronze_dir
         exact = base / str(target_date.year) / f"{target_date.month:02d}" / f"{target_date.day:02d}"
@@ -2436,24 +1958,12 @@ class BaseSilverTransformer(ABC):
         candidates: Sequence[Path],
         selection: BronzeReadSelection,
     ) -> VouchedBronzeSet:
-        """Classify an already-scanned candidate list into vouched/unvouched.
+        """Classify an already-listed candidate list into vouched and unvouched.
 
-        Every clause of this contract is load-bearing (R2-g D-2):
-
-        1. ``candidates`` is an already-ordered list produced by exactly ONE
-           filesystem scan, supplied by the caller. This method performs **no
-           globbing at all** -- a second scanning surface here would reopen
-           precisely the read-path/vintage-path disagreement it exists to close.
-        2. For each candidate examined, the sidecar is read **exactly once**
-           via the pure classifier, and the stamp is stored IN the returned
-           value. Nothing downstream re-reads a sidecar.
-        3. ``ALL`` examines every candidate. ``NEWEST_VOUCHED`` walks in order
-           and stops at the first vouched one, so ``unvouched`` then holds
-           exactly those STEPPED OVER, and ``examined`` records how many were
-           probed.
-        4. Emits nothing above ``DEBUG``. All aggregation is the caller's job.
-        5. Pure with respect to its inputs and the on-disk sidecar bytes -- no
-           clock, no ``now()``, no filesystem write.
+        Does no globbing, since a second scan could disagree with the caller's,
+        and reads each examined sidecar once, keeping its stamp in the result.
+        ``NEWEST_VOUCHED`` stops at the first body that vouches. Logs only at
+        ``DEBUG``: reporting is the caller's job.
 
         Args:
             candidates: Body paths, in the caller's own selection order.
@@ -2498,18 +2008,12 @@ class BaseSilverTransformer(ABC):
 
     @staticmethod
     def _read_sidecar_timestamp(meta_path: Path) -> SidecarRead:
-        """Classify one bronze sidecar. PURE (R2-g D-7).
+        """Classify one bronze sidecar, with no logging, clock, globbing or writes.
 
-        No logging at any level, no clock, no globbing, no filesystem write --
-        every emission decision belongs to the caller (D-8's layering), so the
-        lockstep read path can aggregate one bounded record per
-        ``run_transform`` invocation instead of one WARNING per file.
-
-        Hardened beyond :meth:`_timestamp_from_sidecar` in exactly one named
-        place: syntactically valid NON-OBJECT JSON is classified
-        ``UNREADABLE_SIDECAR`` here, where master raises ``AttributeError``
-        (N-18). The lockstep and plain-reingest paths use this classifier;
-        the wrapper keeps master's crash for its own per-file caller.
+        Callers decide what to log, so the lockstep path can report one
+        aggregate per ``run_transform`` instead of one WARNING per file. Unlike
+        :meth:`_timestamp_from_sidecar`, it classifies valid non-object JSON as
+        ``UNREADABLE_SIDECAR`` instead of raising.
 
         Args:
             meta_path: The sidecar path (``<body stem>.meta.json``).
@@ -2521,10 +2025,8 @@ class BaseSilverTransformer(ABC):
         try:
             meta = json.loads(meta_path.read_text())
         except (OSError, json.JSONDecodeError, UnicodeDecodeError) as exc:
-            # An ABSENT sidecar is the literal orphan (a crash between the
-            # writer's body write and its sidecar write) and is reported as
-            # such; a sidecar that exists but cannot be read is a different
-            # remediation story, so the aggregate must be able to say which.
+            # A missing sidecar (an orphan body) and an unreadable one need
+            # different repairs, so the aggregate must be able to tell them apart.
             file_level_reason = (
                 BronzeVouchReason.NO_SIDECAR
                 if isinstance(exc, FileNotFoundError)
@@ -2555,8 +2057,7 @@ class BaseSilverTransformer(ABC):
             timestamp, loggable_failure = BaseSilverTransformer._coerce_sidecar_timestamp(raw_value)
             if timestamp is not None:
                 return SidecarRead(timestamp=timestamp, reason=None, diagnostics=tuple(diagnostics))
-            # Fall through to the next key, exactly as master does: a present
-            # but unparseable key must not exclude a file master would read.
+            # Fall through: a later key can still vouch.
             reason = BronzeVouchReason.UNPARSEABLE_TIMESTAMP
             diagnostics.append(
                 SidecarDiagnostic(
@@ -2569,32 +2070,27 @@ class BaseSilverTransformer(ABC):
 
     @staticmethod
     def _timestamp_from_sidecar(meta_path: Path) -> datetime | None:
-        """Extract the most useful timestamp field from a bronze sidecar.
+        """Return a bronze sidecar's timestamp, logging each parse failure.
 
-        UNCHANGED CONTRACT (R2-g D-7): a thin logging wrapper over
-        :meth:`_read_sidecar_timestamp`. Same return value, same WARNING text
-        at the same two conditions, in the same order -- and, deliberately,
-        master's uncaught ``AttributeError`` on non-object JSON (N-18).
-        Per-file callers (``VINTAGE_PER_BRONZE_FILE``, the NESO portal engine)
-        use it; the frame-level stamps use the classifier directly.
+        A logging wrapper over :meth:`_read_sidecar_timestamp` for the
+        per-file (``VINTAGE_PER_BRONZE_FILE``) branches; the frame-level stamps
+        use the classifier directly. On valid JSON that is not an object it
+        raises ``AttributeError`` instead of returning ``None``.
         """
         read = BaseSilverTransformer._read_sidecar_timestamp(meta_path)
         BaseSilverTransformer._log_sidecar_parse_warnings(meta_path, read)
         if read.non_object_json:
-            # N-18: master lands on `meta.get(key)` with a non-dict `meta` and
-            # raises. Reproduced through the payload itself so the exception
-            # type and message stay master's, byte for byte.
+            # `.get` on the non-dict payload raises the AttributeError.
             payload: Any = read.payload
             payload.get(_SIDECAR_TIMESTAMP_KEYS[0])
         return read.timestamp
 
     @staticmethod
     def _log_sidecar_parse_warnings(meta_path: Path, read: SidecarRead) -> None:
-        """Replay the legacy parse warnings carried by a classified sidecar read."""
+        """Log the parse warnings a classified sidecar read carries."""
         for diagnostic in read.diagnostics:
             if diagnostic.detail is None:
-                # Master is silent for a present-but-non-string,
-                # non-datetime value; replaying nothing is correct.
+                # A value that is neither a string nor a datetime fails silently.
                 continue
             if diagnostic.key is None:
                 logger.warning(
@@ -2612,10 +2108,9 @@ class BaseSilverTransformer(ABC):
 
         Returns:
             ``(timestamp, loggable_failure)``. ``loggable_failure`` is ``True``
-            only for the single case master warns about: a STRING that
-            :meth:`datetime.fromisoformat` rejects. A non-string,
-            non-datetime value fails silently on master, so it yields
-            ``(None, False)`` and the wrapper replays no warning for it.
+            only for a string that :meth:`datetime.fromisoformat` rejects; any
+            other non-datetime value fails silently with ``(None, False)``. A
+            naive value is taken as UTC.
         """
         if isinstance(raw_value, datetime):
             value = raw_value
@@ -2640,22 +2135,12 @@ class BaseSilverTransformer(ABC):
     ) -> None:
         """Write DataFrame to partitioned Parquet.
 
-        Default branch (``APPEND_ONLY = False``) writes a single file per
-        ``(dataset, target_date)`` and overwrites it on each run via
-        :func:`write_parquet`'s atomic temp-then-rename. The ``APPEND_ONLY =
-        True`` branch suffixes the filename with the ISO ``available_at``
-        argument so re-ingest with a sidecar-derived value is idempotent (two
-        reingest passes produce the same path and the second cleanly replaces
-        the first), while distinct live runs produce distinct files. See
-        ``docs/DECISION_LOG/ADR-018``.
-
-        The suffix is the ``available_at`` *argument*, which is not necessarily
-        the rows' ``available_at`` column. For ``VINTAGE_PER_BRONZE_FILE``
-        sources the argument is the bronze sidecar timestamp
-        (:meth:`_timestamp_from_sidecar`; ``written_at`` for NESO CSV bodies),
-        a per-file capture stamp; the
-        column may carry a different, vendor-derived instant (NESO embedded
-        forecast: file suffix 21:43:41 vs column 21:25:03).
+        By default one file per ``(dataset, target_date)``, atomically
+        replaced on each run. With ``APPEND_ONLY`` the filename carries the
+        ``available_at`` argument (ADR-018), so a reingest with the same
+        sidecar stamp replaces its own file while distinct live runs coexist.
+        That argument is the file's capture stamp; the rows' ``available_at``
+        column may carry a different, vendor-derived instant.
         """
         out_dir = PathBuilder(self.data_dir).silver_partition_dir(
             self.source,
