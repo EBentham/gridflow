@@ -9,11 +9,13 @@ import polars as pl
 
 from gridflow.schemas.entsoe import EntsoeContractedReserves
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._enum_maps import UNMAPPED_SENTINEL
+from gridflow.silver.entsoe._enum_maps import RESERVE_TYPE, count_unmapped, map_enums
 from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
+
+_ENUMS = {"reserve_type": ("business_type", RESERVE_TYPE)}
 
 
 class ContractedReservesTransformer(EntsoeXmlTransformer):
@@ -47,15 +49,7 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
                 "value": "quantity_mw",
                 "control_area_domain": "area_code",
             }
-        ).with_columns(
-            pl.col("business_type")
-            .replace_strict(
-                {"A95": "fcr", "A96": "afrr", "A97": "mfrr", "A98": "rr"},
-                default=UNMAPPED_SENTINEL,
-                return_dtype=pl.Utf8,
-            )
-            .alias("reserve_type")
-        )
+        ).with_columns(map_enums(_ENUMS))
 
         # F-02 fix: derive published_at from document_created_at BEFORE the
         # column-dropping select below, which otherwise discards
@@ -99,23 +93,7 @@ class ContractedReservesTransformer(EntsoeXmlTransformer):
         available_cols = [c for c in output_cols if c in df.columns]
         df = df.select(available_cols)
 
-        self.last_unmapped_count = int(
-            df.filter(pl.col("reserve_type") == UNMAPPED_SENTINEL).height
-        )
-        if self.last_unmapped_count > 0:
-            raw_codes = raw_df.get_column("business_type").unique().to_list()
-            unmapped_codes = sorted(
-                str(c) for c in raw_codes if c not in {"A95", "A96", "A97", "A98"}
-            )
-            logger.warning(
-                "%s/%s: %d unmapped business_type row(s) labelled %r; unmapped raw codes: %s",
-                self.source,
-                self.dataset,
-                self.last_unmapped_count,
-                UNMAPPED_SENTINEL,
-                unmapped_codes,
-            )
-
+        self.last_unmapped_count = count_unmapped(df, raw_df, _ENUMS, dataset=self.dataset)
         return df
 
 

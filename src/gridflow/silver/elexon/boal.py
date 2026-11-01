@@ -2,21 +2,18 @@
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
-
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonBOAL
 from gridflow.silver.elexon._base import ElexonTransformer
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc_expr
-
-logger = logging.getLogger(__name__)
 
 
 class BOALTransformer(ElexonTransformer):
-    """Transform Elexon BOAL data from bronze to silver."""
+    """Transform Elexon BOAL data from bronze to silver.
+
+    An acceptance carries one row per step; ``time_from`` tells them apart.
+    """
 
     source = "elexon"
     dataset = "boal"
@@ -24,107 +21,50 @@ class BOALTransformer(ElexonTransformer):
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
     DATASET_VERSION = "2.0.0"
     OPTIONAL_ENTITY_KEY_COLUMNS = ("acceptance_number", "time_from")
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        column_mapping = {
-            "settlementDate": "settlement_date",
-            # API may return settlementPeriod or settlementPeriodFrom
-            "settlementPeriod": "settlement_period",
-            "settlementPeriodFrom": "settlement_period",
-            "bmUnit": "bm_unit_id",
-            "acceptanceNumber": "acceptance_number",
-            "acceptanceTime": "acceptance_time",
-            "deemedBoFlag": "deem_flag",
-            "soFlag": "so_flag",
-            "storProviderFlag": "stor_flag",
-            "storFlag": "stor_flag",
-            "rrFlag": "rr_flag",
-            "levelFrom": "bid_offer_level_from",
-            "levelTo": "bid_offer_level_to",
-            "timeFrom": "time_from",
-            "timeTo": "time_to",
-            "nationalGridBmUnit": "national_grid_bm_unit",
-            "amendmentFlag": "amendment_flag",
-        }
-        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
-        if rename_map:
-            raw_df = raw_df.rename(rename_map)
-
-        required = ["settlement_date", "settlement_period", "bm_unit_id"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error(f"Missing required columns in BOAL: {missing}")
-            return pl.DataFrame()
-
-        df = raw_df.with_columns(
-            [
-                pl.col("settlement_date").cast(pl.Date),
-                pl.col("settlement_period").cast(pl.Int32),
-                pl.col("bm_unit_id").cast(pl.Utf8),
-            ]
-        )
-
-        # G5 (2026-05): cast acceptance_time from ISO string to UTC datetime
-        # so it matches the ElexonBOAL schema declaration (datetime | None).
-        # The acceptance test caught this drift — string emitted, datetime
-        # declared. Pydantic's coerce-on-construction would also have caught
-        # it once contract tests added per-class coverage.
-        if "acceptance_time" in df.columns:
-            df = df.with_columns(
-                pl.col("acceptance_time")
-                .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                .dt.replace_time_zone("UTC")
-            )
-
-        # A unit-period carries one row per segment (a ramp in PN, an
-        # acceptance's steps in BOAL); time_from tells them apart.
-        for col in ("time_from", "time_to"):
-            if col in df.columns:
-                df = df.with_columns(
-                    pl.col(col)
-                    .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
-                    .dt.replace_time_zone("UTC")
-                )
-
-        df = df.with_columns(
-            settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
-                "timestamp_utc"
-            )
-        )
-
-        df = self.dedup_to_grain(df)
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("elexon").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        output_cols = [
-            "settlement_date",
-            "settlement_period",
-            "timestamp_utc",
-            "bm_unit_id",
-            "acceptance_number",
-            "acceptance_time",
-            "time_from",
-            "time_to",
-            "deem_flag",
-            "so_flag",
-            "stor_flag",
-            "rr_flag",
-            "bid_offer_level_from",
-            "bid_offer_level_to",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc", "bm_unit_id")
+    COLUMN_MAP = {
+        "settlementDate": "settlement_date",
+        # API may return settlementPeriod or settlementPeriodFrom
+        "settlementPeriod": "settlement_period",
+        "settlementPeriodFrom": "settlement_period",
+        "bmUnit": "bm_unit_id",
+        "acceptanceNumber": "acceptance_number",
+        "acceptanceTime": "acceptance_time",
+        "deemedBoFlag": "deem_flag",
+        "soFlag": "so_flag",
+        "storProviderFlag": "stor_flag",
+        "storFlag": "stor_flag",
+        "rrFlag": "rr_flag",
+        "levelFrom": "bid_offer_level_from",
+        "levelTo": "bid_offer_level_to",
+        "timeFrom": "time_from",
+        "timeTo": "time_to",
+        "nationalGridBmUnit": "national_grid_bm_unit",
+        "amendmentFlag": "amendment_flag",
+    }
+    REQUIRED = ("settlement_date", "settlement_period", "bm_unit_id")
+    CASTS = {
+        "bm_unit_id": pl.Utf8(),
+        "acceptance_time": pl.Datetime("us", "UTC"),
+        "time_from": pl.Datetime("us", "UTC"),
+        "time_to": pl.Datetime("us", "UTC"),
+    }
+    OUTPUT_COLS = (
+        "settlement_date",
+        "settlement_period",
+        "timestamp_utc",
+        "bm_unit_id",
+        "acceptance_number",
+        "acceptance_time",
+        "time_from",
+        "time_to",
+        "deem_flag",
+        "so_flag",
+        "stor_flag",
+        "rr_flag",
+        "bid_offer_level_from",
+        "bid_offer_level_to",
+    )
+    SORT = ("timestamp_utc", "bm_unit_id")
 
 
 register_transformer("elexon", "boal", BOALTransformer)
