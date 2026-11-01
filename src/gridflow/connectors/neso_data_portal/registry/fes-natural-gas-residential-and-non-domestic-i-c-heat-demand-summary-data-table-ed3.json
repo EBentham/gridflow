@@ -11,12 +11,10 @@
     {
       "key": "fes_ed3_heat_demand_sum_ed",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -459,12 +457,10 @@
     {
       "key": "fes_ed3_heat_demand_natural_gas",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -939,12 +935,10 @@
     {
       "key": "fes_ed3_heat_demand_natural_gas_sum_ed",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

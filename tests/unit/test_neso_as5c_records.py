@@ -353,7 +353,6 @@ def test_a11_the_workbook_record_is_eligible_and_its_package_stays_eligible() ->
     assert (record.latest, record.latest_partition) == ("whole_capture", "resource_id")
     assert record.entity_key == ("resource_id", "tender_ref")
     assert record.siblings == (WB_DIR,)
-    assert family.transformer is None
 
 
 def test_a5_workbook_clocks_stay_raw_and_published_at_is_the_upload() -> None:

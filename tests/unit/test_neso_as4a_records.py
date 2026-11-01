@@ -445,7 +445,7 @@ QUESTION_OF = {
 }
 
 # sha256 of disaggregated-bsad.json with line endings normalised to LF (the file is byte-unchanged).
-DISAGGREGATED_FILE_SHA256 = "466d39445f089031371886ec9f1cf47c565c35416636c40a2ff63b54424fc055"
+DISAGGREGATED_FILE_SHA256 = "820cf21f66a68654f454fd485a81c0ff468f7c3e862390e3a7627a981688f6d5"
 
 
 @dataclass(frozen=True)
@@ -988,7 +988,6 @@ def test_the_four_packages_stay_eligible_and_the_package_files_hold_the_seven_re
         document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), package
         assert all(r["disposition"]["kind"] == "SILVER" for r in document["resources"]), package
         assert all(r["disposition"]["key"] == r["family"] for r in document["resources"]), package
     assert found == set(RECORDED)
@@ -1029,7 +1028,7 @@ def test_disaggregated_bsad_has_no_record_and_its_file_is_byte_unchanged() -> No
     identity settles it); TODO: DISAGGREGATED-BSAD-COST-SIGN; the D08 encoding; the D-H2 date-format
     map (D10 ``%Y-%m-%dT%H:%M:%S``) for a future record."""
     package, entry = registry_module.load_registry().families[DIS]
-    assert entry.record is None and entry.transformer is None
+    assert entry.record is None
     assert package.package == PACKAGE_OF[DIS]
     with pytest.raises(ValueError, match="No transformer registered"):
         get_transformer(SOURCE, DIS, Path("__test__"))

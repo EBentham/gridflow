@@ -11,12 +11,10 @@
     {
       "key": "current_bsuos_ii",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -105,12 +103,10 @@
     {
       "key": "current_bsuos_rf",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -199,12 +195,10 @@
     {
       "key": "current_bsuos_sf",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -293,12 +287,10 @@
     {
       "key": "current_bsuos_historic_ii",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -543,12 +535,10 @@
     {
       "key": "current_bsuos_historic_rf",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -711,12 +701,10 @@
     {
       "key": "current_bsuos_historic_sf",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -879,22 +867,18 @@
     {
       "key": "current_bsuos_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "current_bsuos_cap_adjustments",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "xlsx",

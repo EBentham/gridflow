@@ -11,12 +11,10 @@
     {
       "key": "system_operating_plan",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -711,12 +709,10 @@
     {
       "key": "system_operating_plan_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

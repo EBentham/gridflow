@@ -118,12 +118,10 @@ def _synthetic_package(**overrides: object) -> dict[str, object]:
             {
                 "key": "synthetic_family",
                 "kind": "tabular",
-                "legacy": False,
                 "archetype": "SER",
                 "refresh": "daily",
                 "empty_allowed": False,
                 "max_download_bytes": 1024,
-                "transformer": None,
             }
         ],
         "resources": [
@@ -382,7 +380,7 @@ class TestOwnerFacts:
                         if r.family == 'embedded_wind_solar_forecast']
                 assert [r.name for r in live] == ['Embedded Solar and Wind Forecast'], live
                 _p, family = registry.families['embedded_wind_solar_forecast_archive']
-                assert family.transformer is None and not family.legacy
+                assert not family.legacy
 
                 # Unit X (ADR-037 P-8) dispositioned every X-R hold and committed
                 # the containers' child inventories; no X-R unit survives.
@@ -829,9 +827,9 @@ class TestAgreement:
 
 
 class TestRegistrations:
-    """R-10: bespoke families are exactly the registered transformers; data ships."""
+    """R-10: recorded families are exactly the registered transformers; data ships."""
 
-    def test_registered_transformers_equal_bespoke_families(self) -> None:
+    def test_registered_transformers_equal_recorded_families(self) -> None:
         _assert_ok(
             _run(
                 """
@@ -841,11 +839,11 @@ class TestRegistrations:
                 import_transformers()
                 registered = {d for _s, d in list_transformers('neso_data_portal')}
                 families = load_registry().families
-                bespoke = {k for k, (_p, f) in families.items() if f.transformer == 'bespoke'}
+                legacy = {k for k, (_p, f) in families.items() if f.legacy}
                 recorded = {k for k, (_p, f) in families.items() if f.record is not None}
-                assert registered == bespoke | recorded, (registered, bespoke, recorded)
-                assert bespoke == {'daily_wind_availability', 'historic_generation_mix',
-                                   'embedded_wind_solar_forecast'}
+                assert registered == recorded, sorted(registered ^ recorded)
+                assert legacy == {'daily_wind_availability', 'historic_generation_mix',
+                                  'embedded_wind_solar_forecast'} and legacy <= recorded
                 print('OK')
                 """
             )

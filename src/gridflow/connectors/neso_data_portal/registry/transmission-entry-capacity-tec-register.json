@@ -11,12 +11,10 @@
     {
       "key": "tec_register",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "daily",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

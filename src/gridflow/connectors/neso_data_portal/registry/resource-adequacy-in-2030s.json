@@ -11,12 +11,10 @@
     {
       "key": "resource_adequacy_2030s_peak_demand",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -76,12 +74,10 @@
     {
       "key": "resource_adequacy_2030s_portfolio",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -163,12 +159,10 @@
     {
       "key": "resource_adequacy_2030s_results",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

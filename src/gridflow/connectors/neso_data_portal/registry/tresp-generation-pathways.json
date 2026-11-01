@@ -11,12 +11,10 @@
     {
       "key": "tresp_generation_pathways_gsp",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -99,12 +97,10 @@
     {
       "key": "tresp_generation_pathways_resp_region",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -180,12 +176,10 @@
     {
       "key": "tresp_generation_pathways_la_england",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -268,12 +262,10 @@
     {
       "key": "tresp_generation_pathways_la_scotland",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -356,12 +348,10 @@
     {
       "key": "tresp_generation_pathways_la_wales",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

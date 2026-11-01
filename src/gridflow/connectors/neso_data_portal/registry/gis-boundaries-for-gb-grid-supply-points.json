@@ -11,12 +11,10 @@
     {
       "key": "gis_grid_supply_points",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "adhoc",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -178,12 +176,10 @@
     {
       "key": "gis_grid_supply_points_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "FILE",
       "refresh": "adhoc",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

@@ -11,22 +11,18 @@
     {
       "key": "odfm_market_information_results",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "odfm_market_information_instructed",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -91,12 +87,10 @@
     {
       "key": "odfm_market_information_load_factors",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -431,12 +425,10 @@
     {
       "key": "odfm_market_information_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

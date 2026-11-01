@@ -13,32 +13,26 @@
     {
       "key": "lcoh_capex_opex_input_assumptions_pem",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "lcoh_levelised_cost_blue_hydrogen",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "lcoh_levelised_cost_green_hydrogen",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

@@ -657,7 +657,7 @@ def test_the_two_dsf_families_have_no_record(key: str) -> None:
     no record means no capture is attempted, so there is no gap."""
     registry = load_registry()
     package, entry = registry.families[key]
-    assert entry.record is None and entry.kind == "tabular" and entry.transformer is None
+    assert entry.record is None and entry.kind == "tabular"
     assert not isinstance(package.eligibility, Held)
     resources = [r for _p, r in registry.resources.values() if r.family == key]
     assert len(resources) == 1

@@ -11,12 +11,10 @@
     {
       "key": "ffr_phase2_auction_phase_block_order",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -213,12 +211,10 @@
     {
       "key": "ffr_phase2_auction_phase_blockorders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -445,12 +441,10 @@
     {
       "key": "ffr_phase2_auction_phase_linear_orders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -633,12 +627,10 @@
     {
       "key": "ffr_phase2_auction_phase_linearorders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -824,32 +816,26 @@
     {
       "key": "ffr_phase2_auction_phase_results_unit",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "ffr_phase2_auction_phase_results_sum",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "ffr_phase2_auction_phase_resultsbyunit",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -973,12 +959,10 @@
     {
       "key": "ffr_phase2_auction_phase_resultsum",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1085,22 +1069,18 @@
     {
       "key": "ffr_phase2_auction_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "ffr_phase2_result_summary_archive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
@@ -1180,12 +1160,10 @@
     {
       "key": "ffr_phase2_blockorders_archive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
@@ -1381,12 +1359,10 @@
     {
       "key": "ffr_phase2_linearorders_archive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
@@ -2328,12 +2304,10 @@
     {
       "key": "ffr_phase2_results_by_unit_archive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",

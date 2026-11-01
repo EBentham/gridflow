@@ -11,22 +11,18 @@
     {
       "key": "system_frequency",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "system_frequency_dmy_csv",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "2",
         "reader": "csv",
@@ -81,12 +77,10 @@
     {
       "key": "system_frequency_offset_csv",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -137,12 +131,10 @@
     {
       "key": "system_frequency_offset_zip",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
@@ -197,12 +189,10 @@
     {
       "key": "system_frequency_gmt_zip",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "zip_member",
@@ -261,12 +251,10 @@
     {
       "key": "system_frequency_gmt_csv",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

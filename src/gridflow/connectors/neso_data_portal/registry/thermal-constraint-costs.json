@@ -11,12 +11,10 @@
     {
       "key": "thermal_constraint_costs",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "weekly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -71,22 +69,18 @@
     {
       "key": "thermal_constraint_costs_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "weekly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "thermal_constraint_costs_xlsx",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "weekly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "xlsx",

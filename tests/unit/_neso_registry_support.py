@@ -39,7 +39,6 @@ def family(
     archetype: str = "SER",
     empty_allowed: bool = False,
     max_download_bytes: int = 64 * 1024 * 1024,
-    legacy: bool = False,
     record: dict[str, Any] | None = None,
     refresh: str = "daily",
 ) -> dict[str, Any]:
@@ -47,12 +46,10 @@ def family(
     entry: dict[str, Any] = {
         "key": key,
         "kind": kind,
-        "legacy": legacy,
         "archetype": archetype,
         "refresh": refresh,
         "empty_allowed": empty_allowed,
         "max_download_bytes": max_download_bytes,
-        "transformer": "bespoke" if legacy else None,
     }
     if record is not None:
         entry["record"] = record

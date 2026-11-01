@@ -747,7 +747,6 @@ def test_the_four_packages_stay_eligible_and_hold_exactly_the_five_records() -> 
         document = package_doc(package)
         assert document["eligibility"] == {"status": "eligible"}, package
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), package
     assert found == set(RECORDED)
 
 
@@ -760,19 +759,17 @@ def test_odfm_results_have_no_record_and_the_family_and_resources_are_unchanged(
     PDFs stay ``DOC``. TODO: ODFM-RESULTS-ROW-ID, the CP1252 decoding candidate and the mixed
     report-period ``Date`` labels (non-holding)."""
     package, entry = registry_module.load_registry().families[ODR]
-    assert entry.record is None and entry.transformer is None
+    assert entry.record is None
     assert package.package == PACKAGE_OF[ODR]
     document = package_doc(PACKAGE_OF[ODR])
     (family,) = [f for f in document["families"] if f["key"] == ODR]
     assert family == {
         "key": ODR,
         "kind": "tabular",
-        "legacy": False,
         "archetype": "EVT",
         "refresh": "frozen",
         "empty_allowed": False,
         "max_download_bytes": 536870912,
-        "transformer": None,
     }
     results = [r for r in document["resources"] if r["family"] == ODR]
     assert len(results) == 2

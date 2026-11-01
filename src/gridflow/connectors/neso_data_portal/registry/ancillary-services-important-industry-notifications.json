@@ -11,12 +11,10 @@
     {
       "key": "as_industry_notifications_balancing",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -100,12 +98,10 @@
     {
       "key": "as_industry_notifications_dc_dm_dr",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -189,12 +185,10 @@
     {
       "key": "as_industry_notifications_quick_reserve",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -271,12 +265,10 @@
     {
       "key": "as_industry_notifications_sffr_important",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -352,12 +344,10 @@
     {
       "key": "as_industry_notifications_slow_reserve",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -434,12 +424,10 @@
     {
       "key": "as_industry_notifications_stor_important",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

@@ -11,12 +11,10 @@
     {
       "key": "br_auction_requirement_fc_da_archive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -118,12 +116,10 @@
     {
       "key": "br_auction_requirement_fc_da",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -220,12 +216,10 @@
     {
       "key": "br_auction_requirement_fc_medium_term",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

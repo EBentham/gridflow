@@ -11,12 +11,10 @@
     {
       "key": "demand_flexibility_industry_notification",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -96,12 +94,10 @@
     {
       "key": "demand_flexibility_service_requirement",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -316,12 +312,10 @@
     {
       "key": "demand_flexibility_utilisation_report",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -647,12 +641,10 @@
     {
       "key": "demand_flexibility_utilisation_summary",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

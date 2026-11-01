@@ -11,12 +11,10 @@
     {
       "key": "eac_results_buy_orders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -172,12 +170,10 @@
     {
       "key": "eac_results_buy_orders_fy",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -335,12 +331,10 @@
     {
       "key": "eac_results_daily_buy_orders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -496,12 +490,10 @@
     {
       "key": "eac_results_daily_by_unit",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -612,12 +604,10 @@
     {
       "key": "eac_results_daily_summary",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -709,12 +699,10 @@
     {
       "key": "eac_results_daily_sell_orders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -905,12 +893,10 @@
     {
       "key": "eac_results_by_unit",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1021,12 +1007,10 @@
     {
       "key": "eac_results_by_unit_fy",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1139,12 +1123,10 @@
     {
       "key": "eac_results_summary",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1236,12 +1218,10 @@
     {
       "key": "eac_results_summary_fy",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1335,12 +1315,10 @@
     {
       "key": "eac_results_sell_orders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

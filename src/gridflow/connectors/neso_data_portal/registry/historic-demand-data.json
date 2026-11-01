@@ -11,12 +11,10 @@
     {
       "key": "historic_demand",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -720,12 +718,10 @@
     {
       "key": "historic_demand_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

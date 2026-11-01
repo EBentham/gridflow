@@ -11,12 +11,10 @@
     {
       "key": "stor_windows",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "adhoc",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

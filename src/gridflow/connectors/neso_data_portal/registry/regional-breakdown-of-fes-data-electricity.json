@@ -11,12 +11,10 @@
     {
       "key": "fes_regional_gsp_info",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -120,12 +118,10 @@
     {
       "key": "fes_regional_demand_active_power",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -229,12 +225,10 @@
     {
       "key": "fes_regional_storage_gt_1mw",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -337,12 +331,10 @@
     {
       "key": "fes_regional_storage_lt_1mw",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -510,12 +502,10 @@
     {
       "key": "fes_regional_dsr",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -593,12 +583,10 @@
     {
       "key": "fes_regional_storage_gt_1mw_pre2023",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -697,12 +685,10 @@
     {
       "key": "fes_regional_storage_lt_1mw_pre2023",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -797,12 +783,10 @@
     {
       "key": "fes_regional_dg_gt_1mw",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1013,12 +997,10 @@
     {
       "key": "fes_regional_dg_lt_1mw",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SCN",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

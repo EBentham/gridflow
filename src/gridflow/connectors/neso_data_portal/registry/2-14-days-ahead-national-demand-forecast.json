@@ -11,12 +11,10 @@
     {
       "key": "national_demand_fc_2_14d_days_ahead",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -110,12 +108,10 @@
     {
       "key": "national_demand_fc_2_14d_days_ahead_half",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -184,12 +180,10 @@
     {
       "key": "national_demand_fc_2_14d_historic_day",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

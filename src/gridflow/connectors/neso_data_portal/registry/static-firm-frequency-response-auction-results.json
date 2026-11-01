@@ -11,12 +11,10 @@
     {
       "key": "sffr_auction_results_buy_orders",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -137,12 +135,10 @@
     {
       "key": "sffr_auction_results_main",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

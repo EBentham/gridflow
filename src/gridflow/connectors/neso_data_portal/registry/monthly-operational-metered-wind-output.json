@@ -11,12 +11,10 @@
     {
       "key": "metered_wind_output_monthly",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

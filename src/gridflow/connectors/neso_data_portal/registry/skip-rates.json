@@ -11,22 +11,18 @@
     {
       "key": "skip_rates_in_merit_psa_dsf_unit",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "skip_rates_exclusion_reasons",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -138,12 +134,10 @@
     {
       "key": "skip_rates_in_merit_all_bm",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -260,12 +254,10 @@
     {
       "key": "skip_rates_in_merit_psa",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -382,12 +374,10 @@
     {
       "key": "skip_rates_stage6_acceptance",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -481,12 +471,10 @@
     {
       "key": "skip_rates_summary",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -589,12 +577,10 @@
     {
       "key": "skip_rates_behind_constraints_bmu",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -679,12 +665,10 @@
     {
       "key": "skip_rates_behind_constraints_cons",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -754,22 +738,18 @@
     {
       "key": "skip_rates_stage5_dsf_technology",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "skip_rates_stage6_psa",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -884,12 +864,10 @@
     {
       "key": "skip_rates_stage5_psa_technology",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

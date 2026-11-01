@@ -117,12 +117,10 @@ def _install_registry(data_dir: Path, members: int) -> None:
             {
                 "key": FAMILY,
                 "kind": "tabular",
-                "legacy": False,
                 "archetype": "SER",
                 "refresh": "daily",
                 "empty_allowed": False,
                 "max_download_bytes": 128 * MIB,
-                "transformer": None,
             }
         ],
         "resources": [

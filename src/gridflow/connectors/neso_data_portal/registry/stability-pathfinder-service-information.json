@@ -11,12 +11,10 @@
     {
       "key": "stability_pathfinder_availability_report",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "weekly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -91,12 +89,10 @@
     {
       "key": "stability_pathfinder_utilisation_report",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "weekly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

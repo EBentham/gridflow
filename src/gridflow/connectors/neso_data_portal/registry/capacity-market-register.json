@@ -11,12 +11,10 @@
     {
       "key": "capacity_market_auction_cost",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -74,12 +72,10 @@
     {
       "key": "capacity_market_auction_static",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -220,12 +216,10 @@
     {
       "key": "capacity_market_de_rating_factors",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -283,12 +277,10 @@
     {
       "key": "capacity_market_unit_cmu",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -872,12 +864,10 @@
     {
       "key": "capacity_market_unit_cmu_history",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -987,12 +977,10 @@
     {
       "key": "capacity_market_component_history",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1110,12 +1098,10 @@
     {
       "key": "capacity_market_component_history_pre",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1233,12 +1219,10 @@
     {
       "key": "capacity_market_components",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "REG",
       "refresh": "weekly",
       "empty_allowed": true,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

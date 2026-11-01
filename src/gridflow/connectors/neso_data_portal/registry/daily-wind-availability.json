@@ -11,12 +11,10 @@
     {
       "key": "daily_wind_availability",
       "kind": "tabular",
-      "legacy": true,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 8388608,
-      "transformer": "bespoke",
       "record": {
         "version": "1",
         "reader": "csv",

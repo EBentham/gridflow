@@ -11,12 +11,10 @@
     {
       "key": "gtma_trades_fy",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -129,12 +127,10 @@
     {
       "key": "gtma_trades_data",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -219,12 +215,10 @@
     {
       "key": "gtma_trades_data_pre",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

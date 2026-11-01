@@ -11,12 +11,10 @@
     {
       "key": "dynamic_containment_dc_dr_dm_block",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -213,12 +211,10 @@
     {
       "key": "dynamic_containment_dc_dr_dm_linear",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -798,12 +794,10 @@
     {
       "key": "dynamic_containment_dc_dr_dm_results",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -921,12 +915,10 @@
     {
       "key": "dynamic_containment_dc_dr_dm_results_sum",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1013,12 +1005,10 @@
     {
       "key": "dynamic_containment_masterdata",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

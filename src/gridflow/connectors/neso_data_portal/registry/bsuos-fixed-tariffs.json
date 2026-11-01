@@ -11,12 +11,10 @@
     {
       "key": "bsuos_fixed_tariffs",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

@@ -190,13 +190,16 @@ class FamilyEntry(_Frozen):
 
     key: str
     kind: Literal["tabular", "files"]
-    legacy: bool
     archetype: Archetype
     refresh: Refresh
     empty_allowed: bool
     max_download_bytes: int = Field(gt=0)
-    transformer: Literal["bespoke"] | None = None
     record: SchemaRecord | None = None
+
+    @property
+    def legacy(self) -> bool:
+        """One of the :data:`LEGACY_KEYS`, admitted at fetch time by ``endpoints.DATASETS``."""
+        return self.key in LEGACY_KEYS
 
 
 class ChildEntry(_Frozen):
@@ -385,16 +388,6 @@ def _validate_package(name: str, entry: PackageEntry) -> dict[str, frozenset[tup
             )
         if family.key in family_keys:
             raise RegistryError(f"registry file {name}: family key {family.key!r} repeats")
-        if family.legacy != (family.key in LEGACY_KEYS):
-            raise RegistryError(
-                f"registry file {name}: family {family.key!r} has legacy={family.legacy}, "
-                f"but the legacy keys are exactly {list(LEGACY_KEYS)}"
-            )
-        if family.legacy != (family.transformer == "bespoke"):
-            raise RegistryError(
-                f"registry file {name}: family {family.key!r} legacy={family.legacy} "
-                f"disagrees with transformer={family.transformer!r}"
-            )
         family_keys[family.key] = family
 
     names: dict[str, set[tuple[str, str]]] = {key: set() for key in family_keys}

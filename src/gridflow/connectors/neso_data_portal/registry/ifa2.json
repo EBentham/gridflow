@@ -11,12 +11,10 @@
     {
       "key": "ifa2_ifa_da_id_weekly_itls",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -78,12 +76,10 @@
     {
       "key": "ifa2_ifa_itl",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

@@ -11,42 +11,34 @@
     {
       "key": "bsuos_monthly_forecast_including_new",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_impact_on_due",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_actual_sum",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_fc_summary",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1166,52 +1158,42 @@
     {
       "key": "bsuos_monthly_forecast_fc_summary_pct",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_sum_winter",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_summary",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_summary_pct",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     },
     {
       "key": "bsuos_monthly_forecast_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

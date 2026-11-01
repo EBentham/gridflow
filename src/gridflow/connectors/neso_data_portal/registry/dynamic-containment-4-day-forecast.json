@@ -11,12 +11,10 @@
     {
       "key": "dc_forecast_4d",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -107,12 +105,10 @@
     {
       "key": "dc_forecast_4d_history",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

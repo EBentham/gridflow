@@ -11,12 +11,10 @@
     {
       "key": "tnuos_tariffs_embedded_export",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -117,12 +115,10 @@
     {
       "key": "tnuos_tariffs_half_hourly_hh_demand",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -223,12 +219,10 @@
     {
       "key": "tnuos_tariffs_local_offshore_generator",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -315,12 +309,10 @@
     {
       "key": "tnuos_tariffs_local_substation_tariff",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -409,12 +401,10 @@
     {
       "key": "tnuos_tariffs_non_half_hourly_nhh_demand",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -508,12 +498,10 @@
     {
       "key": "tnuos_tariffs_onshore_generator",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -621,12 +609,10 @@
     {
       "key": "tnuos_tariffs_onshore_local_circuit",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -698,12 +684,10 @@
     {
       "key": "tnuos_tariffs_transmission_demand",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "TAR",
       "refresh": "adhoc",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",

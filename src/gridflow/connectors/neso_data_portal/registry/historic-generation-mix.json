@@ -11,12 +11,10 @@
     {
       "key": "historic_generation_mix",
       "kind": "tabular",
-      "legacy": true,
       "archetype": "SER",
       "refresh": "daily",
       "empty_allowed": false,
       "max_download_bytes": 268435456,
-      "transformer": "bespoke",
       "record": {
         "version": "1",
         "reader": "csv",

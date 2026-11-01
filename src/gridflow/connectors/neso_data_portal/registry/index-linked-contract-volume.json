@@ -11,12 +11,10 @@
     {
       "key": "index_linked_contract_volume",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -150,12 +148,10 @@
     {
       "key": "index_linked_contract_volume_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "EVT",
       "refresh": "frozen",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

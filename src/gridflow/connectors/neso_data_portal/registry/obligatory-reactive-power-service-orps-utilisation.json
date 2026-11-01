@@ -11,12 +11,10 @@
     {
       "key": "orps_utilisation_historic_reactive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -1953,12 +1951,10 @@
     {
       "key": "orps_utilisation_reactive_default",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -2056,12 +2052,10 @@
     {
       "key": "orps_utilisation_reactive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -3330,12 +3324,10 @@
     {
       "key": "orps_utilisation_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "SER",
       "refresh": "monthly",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [

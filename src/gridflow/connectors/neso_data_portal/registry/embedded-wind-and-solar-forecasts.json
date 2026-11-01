@@ -11,12 +11,10 @@
     {
       "key": "embedded_wind_solar_forecast",
       "kind": "tabular",
-      "legacy": true,
       "archetype": "FC",
       "refresh": "intraday",
       "empty_allowed": false,
       "max_download_bytes": 8388608,
-      "transformer": "bespoke",
       "record": {
         "version": "1",
         "reader": "csv",
@@ -110,22 +108,18 @@
     {
       "key": "embedded_wind_solar_forecast_archive",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "intraday",
       "empty_allowed": false,
-      "max_download_bytes": 805306368,
-      "transformer": null
+      "max_download_bytes": 805306368
     },
     {
       "key": "embedded_forecast_archive_upload",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "intraday",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -324,12 +318,10 @@
     {
       "key": "embedded_forecast_archive_dump",
       "kind": "tabular",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "intraday",
       "empty_allowed": false,
       "max_download_bytes": 536870912,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
@@ -441,12 +433,10 @@
     {
       "key": "embedded_wind_solar_forecast_files",
       "kind": "files",
-      "legacy": false,
       "archetype": "FC",
       "refresh": "intraday",
       "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "transformer": null
+      "max_download_bytes": 536870912
     }
   ],
   "resources": [
