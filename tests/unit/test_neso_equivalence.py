@@ -138,6 +138,7 @@ class World:
         filename: str = "file.csv",
         fmt: str = "CSV",
         extension: str = "csv",
+        empty_capture: bool = False,
     ) -> str:
         path, _sidecar = write_capture(
             self.data,
@@ -153,6 +154,7 @@ class World:
             partition=day,
             ckan_format=fmt,
             extension=extension,
+            empty_capture=empty_capture,
         )
         return path.relative_to(self.data).as_posix()
 
@@ -284,6 +286,14 @@ class TestRefusals:
         assert not result.granted
         assert "excluded 1 row(s)" in result.refusals[0]["legs"]["ii"]
 
+    def test_a_populated_capture_marked_empty_is_refused(self, world: World) -> None:
+        """Detects a grant over a capture the engine rejects (``EmptyCaptureError``)."""
+        world.covered_capture()
+        world.covering_capture(empty_capture=True)
+        result = world.prove()
+        assert not result.granted
+        assert result.refusals[0]["legs"]["ii"].endswith("empty_capture marker on a body with rows")
+
 
 class TestGrant:
     """T-X3-4, T-X3-6: a proved pair grants, installs clean and survives a recapture."""
@@ -365,7 +375,7 @@ class TestEachComponentVoids:
 
     def test_g_harness_version(self, world: World, monkeypatch: pytest.MonkeyPatch) -> None:
         _granted_world(world)
-        monkeypatch.setattr(equivalence, "HARNESS_VERSION", "2")
+        monkeypatch.setattr(equivalence, "HARNESS_VERSION", equivalence.HARNESS_VERSION + "+1")
         self._assert_voids(world, "g")
 
     def test_h_by_moved_to_an_equal_valued_resource(self, world: World) -> None:

@@ -92,7 +92,7 @@ __all__ = [
 
 SOURCE = "neso_data_portal"
 
-HARNESS_VERSION = "1"
+HARNESS_VERSION = "2"
 """Bumped on any change to how the harness reads, projects or compares; a bump
 voids every grant (field ``harness``)."""
 
@@ -391,6 +391,10 @@ def _read(entry: ScopeEntry, record: SchemaRecord, children: tuple[str, ...], ke
         tables = list(read_children(ctx.body, record, children, resource=entry.resource))
         if all(table.frame.height == 0 for table in tables):
             return _Read(capture_id, capture.body_sha256, None, "empty capture")
+        if ctx.empty_capture:
+            return _Read(
+                capture_id, capture.body_sha256, None, "empty_capture marker on a body with rows"
+            )
         typed = [type_child(table, record, ctx) for table in tables]
         tally = ExclusionTally()
         for child in typed:
