@@ -135,7 +135,7 @@ class GasStorageTransformer(BaseSilverTransformer):
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse GIE AGSI bronze file %s: %s", path, exc)
                 unparseable.append(path)
                 continue
@@ -344,7 +344,7 @@ class AgsiJsonTransformer(BaseSilverTransformer):
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
                 unparseable.append(path)
                 continue
@@ -585,7 +585,7 @@ class UnavailabilityTransformer(AgsiJsonTransformer):
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse AGSI bronze file %s: %s", path, exc)
                 unparseable.append(path)
                 continue

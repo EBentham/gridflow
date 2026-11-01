@@ -169,7 +169,7 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         for path in paths:
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", path, exc)
                 unparseable.append(path)
                 continue

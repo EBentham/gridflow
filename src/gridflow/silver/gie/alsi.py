@@ -48,7 +48,7 @@ class LNGTerminalTransformer(BaseSilverTransformer):
                 payload = json.loads(f.read_text())
                 records = payload.get("data", []) if isinstance(payload, dict) else []
                 rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse GIE ALSI bronze file %s: %s", f, exc)
                 unparseable.append(f)
         if unparseable:

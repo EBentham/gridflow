@@ -60,7 +60,7 @@ class GenericNesoJsonTransformer(BaseSilverTransformer):
         for path in self._bronze_files(target_date):
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse NESO bronze file %s: %s", path, exc)
                 unparseable.append(path)
                 continue

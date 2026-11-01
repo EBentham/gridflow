@@ -295,8 +295,15 @@ def test_reservebid_refusals_refuse_the_date(
 
 
 @pytest.mark.parametrize(
+    "body_bytes",
+    [b'{"data": [', b'{"data": ["\x81"]}'],
+    ids=["not-json", "not-text"],
+)
+@pytest.mark.parametrize(
     ("source", "dataset"),
     [
+        ("entsog", "physical_flows"),
+        ("entsog", "nominations"),
         ("gie_agsi", "storage"),
         ("gie_agsi", "news"),
         ("gie_agsi", "unavailability"),
@@ -306,11 +313,13 @@ def test_reservebid_refusals_refuse_the_date(
     ],
 )
 def test_other_vendors_refuse_an_unparseable_body(
-    tmp_path: Path, source: str, dataset: str
+    tmp_path: Path, source: str, dataset: str, body_bytes: bytes
 ) -> None:
-    """GIE, NESO carbon intensity and Open-Meteo refuse the same way.
+    """ENTSO-G, GIE, NESO carbon intensity and Open-Meteo refuse the same way.
 
-    ENTSO-G is covered in ``test_entsog_lockstep_vintage.py``.
+    Byte 0x81 is undecodable as UTF-8 and as cp1252, so ``read_text()`` raises
+    a decoding error, not a JSON one; it must refuse the date too, rather
+    than crash the dataset and skip the rest of the range.
     """
     from gridflow.pipeline.runner import import_transformers
     from gridflow.silver.base import UnparseableBronzeError
@@ -326,7 +335,7 @@ def test_other_vendors_refuse_an_unparseable_body(
     partition = bronze_dir / f"{DAY:%Y}" / f"{DAY:%m}" / f"{DAY:%d}"
     partition.mkdir(parents=True)
     body = partition / "raw_a.json"
-    body.write_text('{"data": [')
+    body.write_bytes(body_bytes)
 
     with pytest.raises(UnparseableBronzeError) as refused:
         transformer.read_bronze(DAY)

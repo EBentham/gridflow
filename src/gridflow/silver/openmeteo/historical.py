@@ -203,7 +203,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
                 try:
                     data = json.loads(f.read_text())
                     rows.extend(_pivot_openmeteo_json(data, loc.name, self.HOURLY_VARS))
-                except (json.JSONDecodeError, AttributeError, KeyError) as exc:
+                except (json.JSONDecodeError, UnicodeDecodeError, AttributeError, KeyError) as exc:
                     logger.warning("Failed to parse weather bronze file %s: %s", f, exc)
                     unparseable.append(f)
         if unparseable:

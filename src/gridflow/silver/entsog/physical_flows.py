@@ -115,7 +115,7 @@ class PhysicalFlowsTransformer(BaseSilverTransformer):
                 payload = json.loads(f.read_text())
                 records = payload.get("operationalData", []) if isinstance(payload, dict) else []
                 rows.extend(records)
-            except (json.JSONDecodeError, AttributeError) as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError, AttributeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", f, exc)
                 unparseable.append(f)
                 continue
