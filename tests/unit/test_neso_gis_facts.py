@@ -10,12 +10,9 @@ from __future__ import annotations
 import json
 import sqlite3
 import struct
-import subprocess
-import sys
-import textwrap
 import zlib
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import pytest
 from _container_support import (
@@ -26,6 +23,9 @@ from _container_support import (
 )
 
 from gridflow.connectors.neso_data_portal.gis import GisFactsError, LayerFacts, layer_facts
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 pytestmark = pytest.mark.usefixtures("forbid_zipfile_reads")
 
@@ -243,7 +243,7 @@ class TestShapefileZip:
         assert (layer.crs, layer.crs_source) == ("GCS_WGS_1984", ".prj")
 
 
-def test_t_x4_2_every_gis_resource_has_committed_facts() -> None:
+def test_t_x4_2_every_gis_resource_has_committed_facts(run_fresh: Callable[..., str]) -> None:
     """T-X4-2: the committed facts cover exactly the registry's GIS resources."""
     code = """
         import json
@@ -266,14 +266,5 @@ def test_t_x4_2_every_gis_resource_has_committed_facts() -> None:
                 assert len(layer["bbox"]) == 4, (entry["resource_id"], layer)
         print("OK")
     """
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=180,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout
+    stdout = run_fresh(code)
+    assert "OK" in stdout

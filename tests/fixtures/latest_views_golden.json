@@ -6,10 +6,6 @@
   },
   "views": [
     [
-      "silver_daily_wind_availability",
-      "CREATE VIEW silver_daily_wind_availability AS SELECT * FROM silver_neso_data_portal_daily_wind_availability;"
-    ],
-    [
       "silver_elexon_fou2t14d",
       "CREATE VIEW silver_elexon_fou2t14d AS SELECT * FROM read_parquet('<DATA>/silver/elexon/fou2t14d/**/[!.]*.parquet', (hive_partitioning = CAST('t' AS BOOLEAN)), (union_by_name = CAST('t' AS BOOLEAN)));"
     ],
@@ -36,30 +32,6 @@
     [
       "silver_elexon_system_prices_latest",
       "CREATE VIEW silver_elexon_system_prices_latest AS SELECT * FROM silver_elexon_system_prices QUALIFY (row_number() OVER (PARTITION BY settlement_date, settlement_period ORDER BY available_at DESC NULLS LAST, CASE  WHEN ((run_type = 'II')) THEN (1) WHEN ((run_type = 'SF')) THEN (2) WHEN ((run_type = 'R1')) THEN (3) WHEN ((run_type = 'R2')) THEN (4) WHEN ((run_type = 'R3')) THEN (5) WHEN ((run_type = 'RF')) THEN (6) WHEN ((run_type = 'DF')) THEN (7) ELSE 0 END DESC) = 1);"
-    ],
-    [
-      "silver_embedded_wind_solar_forecast",
-      "CREATE VIEW silver_embedded_wind_solar_forecast AS SELECT * FROM silver_neso_data_portal_embedded_wind_solar_forecast;"
-    ],
-    [
-      "silver_fou2t14d",
-      "CREATE VIEW silver_fou2t14d AS SELECT * FROM silver_elexon_fou2t14d;"
-    ],
-    [
-      "silver_historic_generation_mix",
-      "CREATE VIEW silver_historic_generation_mix AS SELECT * FROM silver_neso_data_portal_historic_generation_mix;"
-    ],
-    [
-      "silver_mid",
-      "CREATE VIEW silver_mid AS SELECT * FROM silver_elexon_mid;"
-    ],
-    [
-      "silver_remit",
-      "CREATE VIEW silver_remit AS SELECT * FROM silver_elexon_remit;"
-    ],
-    [
-      "silver_system_prices",
-      "CREATE VIEW silver_system_prices AS SELECT * FROM silver_elexon_system_prices;"
     ]
   ]
 }

@@ -13,7 +13,7 @@ from gridflow.schemas.entsoe import (
     EntsoeTransmissionMarketQuantity,
 )
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:

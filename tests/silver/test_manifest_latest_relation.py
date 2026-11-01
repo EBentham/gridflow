@@ -129,7 +129,7 @@ def test_qualified_view_is_the_base_of_its_own_relation_silver(
         # dataset-derived formula -- the public handle name does NOT appear in
         # the underlying relation.
         ("fuel_generation", "silver_elexon_fuelhh"),
-        ("weather", "silver_elexon_itsdo"),
+        ("weather", "silver_open_meteo_historical_demand"),
         # system_prices' alias row: relation_name is now the _latest name
         # (D-4), so qualified_view must still strip it correctly.
         ("system_prices", "silver_elexon_system_prices"),

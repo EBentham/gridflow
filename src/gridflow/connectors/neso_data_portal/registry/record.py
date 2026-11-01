@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import codecs
 import re
-from typing import TYPE_CHECKING, Annotated, Literal
+from typing import TYPE_CHECKING, Annotated, Any, Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -427,18 +427,39 @@ class HeaderEpoch(_Frozen):
     """One exact, ordered vendor header and its column typing.
 
     Attributes:
-        header: The vendor header, exact and ordered.
+        header: The vendor header, exact and ordered. A wide epoch may leave it
+            out: it is then the columns' sources, in order.
         columns: One :class:`ColumnSpec` per header entry, in header order; with
             ``unpivot``, one per header entry that is not a year label.
-        issue: This epoch's issue-time recipe.
+        issue: This epoch's issue-time recipe; ``none`` when left out.
         unpivot: The year columns reshaped to long rows (ADR-042); ``None``
             keeps the epoch wide.
     """
 
     header: tuple[str, ...] = Field(min_length=1)
     columns: tuple[ColumnSpec, ...]
-    issue: IssueRecipe
+    issue: IssueRecipe = IssueRecipe(kind="none")
     unpivot: UnpivotSpec | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _default_header(cls, data: Any) -> Any:
+        """Fill a wide epoch's missing header from its columns' sources.
+
+        Stored on the model, so the record's dump (and every fingerprint over
+        it) is the same whether the file spells the header out or not.
+        """
+        if not isinstance(data, dict) or "header" in data or data.get("unpivot") is not None:
+            return data
+        columns = data.get("columns")
+        if not isinstance(columns, list | tuple):
+            return data
+        header = [
+            column.source if isinstance(column, ColumnSpec) else column.get("source")
+            for column in columns
+            if isinstance(column, ColumnSpec | dict)
+        ]
+        return {**data, "header": header}
 
     @model_validator(mode="after")
     def _shape(self) -> HeaderEpoch:

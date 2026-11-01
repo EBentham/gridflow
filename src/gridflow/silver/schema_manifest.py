@@ -317,7 +317,9 @@ class SilverSchemaEntry:
             removed — never a name derived from ``dataset``. ``None`` for
             gold-backed rows, which have no silver base and were never
             vintage-stacked.
-        deprecated_alias: Legacy single-token silver alias, when unique.
+        deprecated_alias: The retired single-token ``silver_{dataset}`` name,
+            when unique. No view of that name is registered; consumers use it
+            to check they never query the old name.
         designated_date_col: Column to use for date-range filtering.
         date_col_sql_type: SQL type family for ``designated_date_col``.
         columns: Declared public columns, or ``None`` for dynamic schemas.
@@ -353,9 +355,6 @@ class _ServingAliasSpec:
     designated_date_col: str
 
 
-# ``weather`` is a pre-existing SDK-compat misnomer: GridflowClient.get_weather
-# reads silver_elexon_itsdo, which serves GB Initial Transmission System Demand
-# Outturn, not meteorological weather data.
 _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
     # R1-A shipped GridflowClient.get_system_prices reading the `_latest`
     # projection (serving/client.py:166); this row advertised the all-vintage
@@ -378,11 +377,11 @@ _SERVING_ALIASES: tuple[_ServingAliasSpec, ...] = (
     ),
     _ServingAliasSpec("gie_agsi", "gas_storage", "gold_eu_gas_storage", "gold", "gas_day"),
     _ServingAliasSpec(
-        "elexon",
+        "open_meteo",
         "weather",
-        "silver_elexon_itsdo",
+        "silver_open_meteo_historical_demand",
         "serving_alias",
-        "settlement_date",
+        "timestamp_utc",
     ),
     _ServingAliasSpec(
         None,
