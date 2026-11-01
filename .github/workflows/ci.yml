@@ -146,7 +146,8 @@ jobs:
 
   cross-platform:
     # The full suite runs on ubuntu only (lint-and-test). Windows and macOS run
-    # the settings, data-root and trust-store tests and the package smoke.
+    # the settings, data-root and trust-store tests, the notebook smoke on the
+    # sample store, and the package smoke.
     if: github.event_name == 'pull_request' || github.event_name == 'schedule'
     strategy:
       fail-fast: false
@@ -165,12 +166,12 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --extra dev
 
-      - name: Settings, data-root and trust-store tests
+      - name: Settings, data-root, trust-store and notebook tests
         shell: bash
         run: >-
           uv run --frozen pytest -v --tb=short
           tests/integration/test_data_dir_resolution.py tests/unit/test_settings*
-          tests/unit/test_ssl_context.py
+          tests/unit/test_ssl_context.py tests/notebooks
 
       - *build-wheel
       - *init-outside
