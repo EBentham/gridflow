@@ -206,7 +206,7 @@ src/gridflow/
 
 Connectors and transformers self-register on import — adding a new source means
 adding files under `connectors/<source>/` and `silver/<source>/`, then wiring
-the import in `cli._import_connectors()`. See
+the import in `runner.import_connectors()`. See
 [CONTRIBUTING.md](CONTRIBUTING.md) for the pattern.
 
 ---
