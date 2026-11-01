@@ -390,6 +390,35 @@ async def test_daily_date_path_datasets_fetch_each_requested_day() -> None:
     ]
 
 
+@pytest.mark.parametrize(
+    "dataset",
+    sorted(name for name, endpoint in ENDPOINTS.items() if "/fw" in endpoint.path_template),
+)
+@respx.mock
+@pytest.mark.asyncio
+async def test_forecast_horizon_datasets_fetch_every_day_of_a_window(dataset: str) -> None:
+    """A 24/48-hour forecast is requested from each day of the window, not once
+    per 14-day chunk, so a long window keeps every day's forecast."""
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            200, content=_body_for(dataset), headers={"content-type": "application/json"}
+        )
+
+    respx.get(re.compile(rf"^{re.escape(BASE_URL)}/.*")).mock(side_effect=handler)
+
+    async with CarbonIntensityConnector(_neso_config()) as connector:
+        responses = await connector.fetch(dataset, START, START + timedelta(days=3))
+
+    days = ["2024-01-15", "2024-01-16", "2024-01-17"]
+    assert len(requests) == len(days)
+    for request, day in zip(requests, days, strict=True):
+        assert f"/{day}T00:00Z/fw" in request.url.path
+    assert [response.data_date for response in responses] == [date.fromisoformat(d) for d in days]
+
+
 @pytest.mark.parametrize("dataset", sorted(ENDPOINTS))
 def test_fixture_response_writes_bronze_and_transforms_to_silver(
     tmp_data_dir: Path,

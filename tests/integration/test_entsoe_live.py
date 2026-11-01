@@ -338,7 +338,7 @@ class TestEntsoeCliFailurePropagation:
                 ]
 
         monkeypatch.setattr("gridflow.config.settings.load_settings", lambda: settings)
-        monkeypatch.setattr("gridflow.cli._import_connectors", lambda: None)
+        monkeypatch.setattr("gridflow.pipeline.runner.import_connectors", lambda: None)
         monkeypatch.setattr(
             "gridflow.connectors.registry.get_connector",
             lambda source, source_config: FakeConnector(),

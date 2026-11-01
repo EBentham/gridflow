@@ -360,17 +360,5 @@
     "question": "Which omitted dimension distinguishes the repeated Bioenergy / Waste / MSW, C&I (biogenic) rows of FES 2025 WS1, and can NESO publish a corrected file?",
     "evidence": "K-SCN-3-FACTS §3.1 g3 (l.387–412), K-SCN-3-SPEC; ADR-040",
     "ruling": "839"
-  },
-  {
-    "family": "system_frequency_dmy_csv",
-    "category": "failed",
-    "cause": "DuplicateEntityKeyError",
-    "captures": [
-      "bronze/neso_data_portal/system_frequency/2026/10/08/raw_20261008T112815Z_32f82531-81ad-43b9-99a4-ca42b3d7aa59_96c5213b.csv"
-    ],
-    "reason": "October 2014's labels 26/10/2014 01:00:00-01:59:59 each occur twice (3,600 extra rows); no NESO rule orders them, so the member fails (resource_id, dtm) and is not served",
-    "question": "Which of the two October 2014 rows of each repeated 01:00-01:59 label is the first (BST) hour?",
-    "evidence": "v0.22-H RESEARCH (a), (e); ADR-040",
-    "ruling": "861"
   }
 ]

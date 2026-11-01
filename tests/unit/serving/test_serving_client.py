@@ -5,7 +5,7 @@ These are characterization tests for the six public ``get_*`` query helpers on
 catalogue by hand (raw ``CREATE TABLE`` / ``INSERT`` — mirroring the ``tiny_duckdb``
 fixture in ``test_client_reopen_readonly.py``) seeded with the SOURCE-QUALIFIED
 silver/gold views each method actually queries (``silver_elexon_system_prices``,
-``silver_elexon_fuelhh``, ``silver_elexon_itsdo``, ``gold_eu_gas_storage``,
+``silver_elexon_fuelhh``, ``silver_open_meteo_historical_demand``, ``gold_eu_gas_storage``,
 ``gold_uk_imbalance_context``), then assert:
 
   - each SILVER-backed method returns the expected rows for a date range;
@@ -205,12 +205,19 @@ def catalogue(tmp_path: Path) -> Path:
         )
         _create_view(
             con,
-            "silver_elexon_itsdo",
-            [("timestamp_utc", "TIMESTAMP"), ("location", "VARCHAR"), ("demand_mw", "DOUBLE")],
+            "silver_open_meteo_historical_demand",
             [
-                ("2024-01-15 00:00:00", "GB", 30000.0),
-                ("2024-01-15 00:00:00", "LONDON", 5000.0),
-                ("2024-01-25 00:00:00", "GB", 31000.0),
+                ("timestamp_utc", "TIMESTAMPTZ"),
+                ("location", "VARCHAR"),
+                ("temperature_2m_c", "DOUBLE"),
+            ],
+            [
+                ("2024-07-14 23:00:00+00", "london", 17.0),
+                ("2024-07-15 00:00:00+00", "london", 16.5),
+                ("2024-07-15 00:00:00+00", "manchester", 14.0),
+                ("2024-07-15 23:00:00+00", "london", 18.0),
+                ("2024-07-16 00:00:00+00", "london", 17.5),
+                ("2024-07-25 00:00:00+00", "london", 20.0),
             ],
         )
         # Gold cross-source views are explicit-column SQL views with NO
@@ -285,26 +292,34 @@ def test_get_fuel_generation_returns_rows_in_range(catalogue: Path) -> None:
     assert df.height == 2
 
 
-def test_get_weather_returns_rows_in_range(catalogue: Path) -> None:
-    """get_weather reads silver_elexon_itsdo (demand-role), filtered by date."""
+def test_get_weather_returns_open_meteo_rows_for_utc_days(catalogue: Path) -> None:
+    """get_weather reads the Open-Meteo demand weather, whole UTC days inclusive.
+
+    The 23:00Z rows sit on the next calendar day in BST, so a local-time cast
+    would move them; the range is UTC either side.
+    """
     client = GridflowClient(db_path=catalogue)
     try:
-        df = client.get_weather("2024-01-15", "2024-01-15")
+        df = client.get_weather("2024-07-15", "2024-07-15")
     finally:
         client.close()
-    assert df.height == 2
-    assert sorted(df["location"].to_list()) == ["GB", "LONDON"]
+    assert df["timestamp_utc"].to_list() == [
+        datetime(2024, 7, 15, 0, tzinfo=UTC),
+        datetime(2024, 7, 15, 0, tzinfo=UTC),
+        datetime(2024, 7, 15, 23, tzinfo=UTC),
+    ]
+    assert df["location"].to_list() == ["london", "manchester", "london"]
+    assert df["temperature_2m_c"].to_list() == [16.5, 14.0, 18.0]
 
 
 def test_get_weather_location_filter(catalogue: Path) -> None:
     """The optional location filter narrows the result to one site."""
     client = GridflowClient(db_path=catalogue)
     try:
-        df = client.get_weather("2024-01-15", "2024-01-25", location="GB")
+        df = client.get_weather(date(2024, 7, 15), date(2024, 7, 25), location="manchester")
     finally:
         client.close()
-    assert df["location"].unique().to_list() == ["GB"]
-    assert df.height == 2
+    assert df["location"].to_list() == ["manchester"]
 
 
 # The gold SQL views carry no bitemporal columns; the client now excludes only

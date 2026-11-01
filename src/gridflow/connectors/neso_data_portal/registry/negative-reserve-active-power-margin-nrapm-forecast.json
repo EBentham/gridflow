@@ -11,24 +11,12 @@
     {
       "key": "nrapm_forecast_national_daily_days",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "CP",
-              "MW away from risk of System Level NRAPM_Forecast Conditions"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -49,10 +37,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -70,24 +55,12 @@
     {
       "key": "nrapm_forecast_scotland_daily_days",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "CP",
-              "MW away from risk of Scotland Level NRAPM_Forecast Conditions"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -108,10 +81,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -129,25 +99,12 @@
     {
       "key": "nrapm_forecast_weekly_week_national",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Week number",
-              "Date",
-              "Wind Load Factor required to cause a System Level NRAPM",
-              "Probability of seeing Wind load factor above"
-            ],
             "columns": [
               {
                 "source": "Week number",
@@ -174,10 +131,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -200,25 +154,12 @@
     {
       "key": "nrapm_forecast_weekly_week_scotland",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Week number",
-              "Date",
-              "Wind Load Factor required to cause a Scotland Level NRAPM",
-              "Probability of seeing Wind load factor above"
-            ],
             "columns": [
               {
                 "source": "Week number",
@@ -245,10 +186,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

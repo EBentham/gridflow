@@ -13,7 +13,7 @@ from __future__ import annotations
 import os
 import subprocess
 from functools import cache
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 # PyYAML ships no type stubs; types-PyYAML is a dev-only stub, not a runtime dependency.
@@ -89,7 +89,7 @@ class PipelineSettings(BaseSettings):
 
     Relative `data_dir`, `duckdb_path`, and `log_dir` are anchored to the
     project root (the main git worktree) by `_resolve_paths`, not to CWD.
-    See ADR-001.
+    A drive-relative Windows path such as `C:x` is refused. See ADR-001.
     """
 
     model_config = {"env_prefix": "GRIDFLOW_", "env_file": ".env", "extra": "ignore"}
@@ -140,20 +140,23 @@ class PipelineSettings(BaseSettings):
     # Flip to True only when a downstream tool genuinely needs the live sidecar.
     write_silver_csv: bool = False
 
-    # Secrets (loaded from .env)
-    elexon_api_key: str = Field(default="")
-    entsoe_api_key: str = Field(default="")
-    entsog_api_key: str = Field(default="")
-    gie_api_key: str = Field(default="")
-
     @model_validator(mode="after")
     def _resolve_paths(self) -> PipelineSettings:
-        if not self.data_dir.is_absolute():
-            object.__setattr__(self, "data_dir", (_project_root() / self.data_dir).resolve())
-        if not self.duckdb_path.is_absolute():
-            object.__setattr__(self, "duckdb_path", (_project_root() / self.duckdb_path).resolve())
-        if not self.log_dir.is_absolute():
-            object.__setattr__(self, "log_dir", (_project_root() / self.log_dir).resolve())
+        for name in ("data_dir", "duckdb_path", "log_dir"):
+            path: Path = getattr(self, name)
+            # `C:x` has a drive but no root, so it is relative and would be joined
+            # to the project root with no error; an unquoted `C:\x` loses its
+            # backslash in a POSIX shell and arrives this way. The text is read as
+            # a Windows path on every OS so the Linux CI runner exercises the
+            # refusal (Python 3.11 drops the separator when converting a PosixPath).
+            windows = PureWindowsPath(str(path))
+            if windows.drive and not windows.root:
+                raise ValueError(
+                    f"{name} {str(path)!r} is drive-relative (a drive with no root); "
+                    "write it as an absolute path with forward slashes, e.g. C:/gridflow-data"
+                )
+            if not path.is_absolute():
+                object.__setattr__(self, name, (_project_root() / path).resolve())
         return self
 
     @model_validator(mode="after")
@@ -246,10 +249,34 @@ def _load_yaml(path: Path) -> dict[str, Any]:
         return yaml.safe_load(f) or {}
 
 
+def _neso_portal_datasets() -> dict[str, DatasetConfig]:
+    """One dataset per NESO portal registry family, for a sources.yaml that lists none.
+
+    The legacy keys come first, in their historical order, then the rest
+    sorted: the order ``ingest --all`` has always walked. ``max_query_days`` is
+    0 because a window never selects anything for this source (one whole-file
+    capture per run), so the client's span notice stays quiet.
+    """
+    # Imported here: the connector package is heavy and imports nothing from settings.
+    from gridflow.connectors.neso_data_portal import registry
+
+    families = registry.load_registry().families
+    legacy = [key for key in registry.LEGACY_KEYS if key in families]
+    rest = sorted(key for key in families if key not in registry.LEGACY_KEYS)
+    return {
+        key: DatasetConfig(
+            endpoint="/api/3/action/package_show", schedule="daily", max_query_days=0
+        )
+        for key in (*legacy, *rest)
+    }
+
+
 def load_settings() -> GridflowConfig:
     """Load the complete gridflow configuration.
 
     Merges settings.yaml, sources.yaml, environment variables, and .env file.
+    The ``neso_data_portal`` datasets come from its registry unless
+    sources.yaml lists some.
     """
     config_dir = _find_config_dir()
     load_dotenv(config_dir.parent / ".env", override=False)
@@ -275,20 +302,8 @@ def load_settings() -> GridflowConfig:
     # Build source configs
     sources: dict[str, SourceConfig] = {}
     for name, src_data in sources_data.get("sources", {}).items():
+        if name == "neso_data_portal" and not src_data.get("datasets"):
+            src_data = {**src_data, "datasets": _neso_portal_datasets()}
         sources[name] = SourceConfig(**src_data)
-
-    # Resolve API keys from pipeline settings into source configs.
-    # AGSI+ and ALSI are two GIE endpoints sharing one credential, so both
-    # source configs map to the single gie_api_key field.
-    key_map = {
-        "elexon": pipeline.elexon_api_key,
-        "entsoe": pipeline.entsoe_api_key,
-        "entsog": pipeline.entsog_api_key,
-        "gie_agsi": pipeline.gie_api_key,
-        "gie_alsi": pipeline.gie_api_key,
-    }
-    for name, key in key_map.items():
-        if name in sources and key:
-            sources[name].api_key = key
 
     return GridflowConfig(pipeline=pipeline, quality=quality, sources=sources)

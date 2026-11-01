@@ -111,7 +111,7 @@ Date-windowed endpoints set `data_date = start.date()` for the whole window. Ref
 
 | Dataset | Status | Notes |
 |---|---|---|
-| `agsi_storage` (per-country) | **SAFE** | Per-gas-day calls via `build_storage_query_plan(date_mode="exact")` |
+| `agsi_storage` (per-country) | **SAFE** | Per-gas-day calls via `build_storage_query_plan` |
 | `agsi_*` non-storage endpoints | **AFFECTED (A)** | `data_date = start.date()` for windowed calls |
 | `alsi_*` (legacy `_fetch_country()`) | **AFFECTED (B)** | No `data_date` → lands in today's partition |
 | GIE unavailabilities | **MITIGATED** | Silver `UnavailabilityTransformer` has a window-scan fallback |

@@ -21,12 +21,11 @@ Design decisions this module implements (``R2-A-PLAN.md`` `S2`):
   (T3). Chunk-scoped by design: reducing the proof from "the whole
   partition materialised" to "one covering chunk materialised" is what
   keeps this a T2 change (see the plan's D-3b for the full argument).
-- **D-3d — per-instant ownership for the lower bound.** ``day_subwindows``
+- **D-3d — ownership is per instant, never per date.** ``day_subwindows``
   (``utils/time.py``) clamps sub-windows at the overall range edges, so a
-  predecessor partition can hold only part of a UTC day. Two below-bound
-  instants on the SAME UTC date can therefore have different ownership
-  results — ownership is resolved per distinct instant, memoized by
-  covering-chunk identity, never collapsed to a per-date set.
+  neighbour partition can hold only part of a UTC day: the proof asks
+  whether a chunk covers the instant itself, not its date. The lower bound
+  is never enforced (D-3), so only the upper bound asks.
 - **D-3e — ownership carries its reason.** :class:`OwnershipVerdict` always
   carries the failing :class:`WindowReason`, threaded by the caller into
   :attr:`WindowFilterResult.retained_reasons` and logged — a bare boolean
@@ -62,7 +61,6 @@ from typing import TYPE_CHECKING
 import polars as pl
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping
     from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -158,10 +156,9 @@ class WindowFilterResult:
     """Rows for which enforcement was ATTEMPTED (an ownership check was
     made against a neighbour partition) but the row was kept because
     ownership could not be proven. Equal to ``sum(n for _, n in
-    retained_reasons)`` by construction. Does NOT include below-window rows
-    when the caller passes ``lower_bound_ownership=None`` (D-3: Elexon
-    deliberately never attempts to enforce its lower bound at all) — those
-    are counted only in ``below_window``.
+    retained_reasons)`` by construction. Never includes below-window rows:
+    the lower bound is not enforced at all (D-3), so those are counted only
+    in ``below_window``.
     """
     retained_reasons: tuple[tuple[WindowReason, int], ...]
     refused: bool
@@ -417,11 +414,9 @@ def neighbour_owns(
     """``covering_chunk_is_durable()`` against the partition dir for ``instant.date()``.
 
     Resolves the bronze partition directory for the calendar date the
-    instant's UTC date falls on and delegates the proof. Used symmetrically
-    for both call sites (D-3c): Elexon's upper-bound trim (``instant ==
-    window.end``, neighbour = the successor partition) and ENTSO-E's
-    lower-bound trim (``instant`` = a below-window row's own timestamp,
-    neighbour = the predecessor partition).
+    instant's UTC date falls on and delegates the proof. Elexon's upper-bound
+    trim calls it with ``instant == window.end`` (neighbour = the successor
+    partition).
     """
     partition_dir = bronze_dir / str(instant.year) / f"{instant.month:02d}" / f"{instant.day:02d}"
     return covering_chunk_is_durable(
@@ -440,7 +435,6 @@ def filter_frame_to_window(
     window: RequestWindow,
     *,
     upper_bound_ownership: OwnershipVerdict,
-    lower_bound_ownership: Mapping[datetime, OwnershipVerdict] | None = None,
 ) -> WindowFilterResult:
     """Trim ``df`` to ``window`` under a per-instant durability proof.
 
@@ -452,13 +446,9 @@ def filter_frame_to_window(
       only one instant (``window.end``) can sit there. Enforced iff
       ``upper_bound_ownership.owned``; otherwise every such row is retained
       and counted under its failing reason.
-    - **Lower bound** (``column < window.start``): resolved PER ROW's own
-      instant (D-3d) — never collapsed to a per-date set. When
-      ``lower_bound_ownership`` is ``None`` (Elexon, D-3: the lower bound is
-      never enforced at all), every below-window row is counted into
-      ``below_window`` and kept, but NOT attributed as a proof failure
-      (nothing was attempted). When a mapping is supplied, a row whose own
-      instant is absent from it is treated as ``NOT_RESOLVED`` and retained.
+    - **Lower bound** (``column < window.start``): never enforced (D-3).
+      Every below-window row is counted into ``below_window`` and kept, but
+      NOT attributed as a proof failure (nothing was attempted).
     - **D-5**: if trimming would empty an otherwise non-empty frame, the
       trim is refused entirely (``refused=True``, frame unchanged) — the
       caller logs this as an ERROR.
@@ -495,24 +485,7 @@ def filter_frame_to_window(
             )
 
     n_below = int(below_start.sum())
-    drop_lower_flags = [False] * total
-    if n_below > 0 and lower_bound_ownership is not None:
-        column_values = values.to_list()
-        below_flags = below_start.to_list()
-        for idx in range(total):
-            if not below_flags[idx]:
-                continue
-            verdict = lower_bound_ownership.get(column_values[idx])
-            if verdict is None:
-                verdict = OwnershipVerdict(False, WindowReason.NOT_RESOLVED)
-            if verdict.owned:
-                drop_lower_flags[idx] = True
-            else:
-                reason_totals[verdict.reason] = reason_totals.get(verdict.reason, 0) + 1
-    drop_lower = pl.Series(drop_lower_flags)
-
-    drop_mask = drop_upper | drop_lower
-    dropped = int(drop_mask.sum())
+    dropped = int(drop_upper.sum())
     boundary_retained = sum(reason_totals.values())
     retained_reasons = tuple(sorted(reason_totals.items(), key=lambda kv: kv[0].value))
 
@@ -528,7 +501,7 @@ def filter_frame_to_window(
             refused=True,
         )
 
-    kept_frame = df.filter(~drop_mask)
+    kept_frame = df.filter(~drop_upper)
     return WindowFilterResult(
         frame=kept_frame,
         dropped=dropped,
