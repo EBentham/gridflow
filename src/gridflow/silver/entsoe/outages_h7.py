@@ -21,7 +21,7 @@ from gridflow.silver.entsoe._outages import (
     parse_outage_xml,
     prepare_outage_frame,
 )
-from gridflow.silver.entsoe._published_at import with_published_at
+from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
 
 if TYPE_CHECKING:

@@ -16,7 +16,8 @@ count. Two things are pinned here:
    (before P-9), via ``json.dumps(run_harness(root), indent=2, sort_keys=True)``.
    The stub's case replaced the NESO ``daily_wind_availability`` case when that
    bespoke transformer retired (ADR-034 Amendment 2); it was captured on
-   ``d7cf513`` too.
+   ``d7cf513`` too. Three write-only window-filter counters, all 0 here, were
+   later deleted from the base class and from the golden.
 2. **Release.** A weak reference to each body's written frame is dead once the
    next body is being written. On ``d7cf513`` the list kept every frame alive,
    so that assertion fails there.

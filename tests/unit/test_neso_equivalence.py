@@ -11,10 +11,8 @@ from __future__ import annotations
 import copy
 import dataclasses
 import shutil
-import tempfile
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
-from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import pytest
@@ -38,7 +36,7 @@ from gridflow.silver.neso_data_portal.equivalence import (
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from pathlib import Path
 
     from gridflow.connectors.neso_data_portal.registry import Registry
     from gridflow.silver.neso_data_portal.reconcile import Gap
@@ -76,11 +74,10 @@ CASES: dict[str, str] = {
 
 
 @pytest.fixture
-def data() -> Iterator[Path]:
+def data(short_root: Path) -> Path:
     """A short data root (output names are long; Windows paths are not)."""
     pipeline_runner.import_transformers()
-    with tempfile.TemporaryDirectory(prefix="q", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def _t(hour: int, minute: int = 0, day: date = DAY) -> datetime:
@@ -577,7 +574,7 @@ class TestWholeExemptionIsProved:
         assert len(inputs.covered_scope) == 2
 
     def test_c_a_capture_under_a_sibling_directory_is_in_scope(self, world: World) -> None:
-        world.extra_families = [family("eq_side", name_regex="Covered.*")]
+        world.extra_families = [family("eq_side")]
         world.extra_resources = [resource(SIDE, "Covered Side", "eq_side")]
         self._two_covered(world)
         world.covering_capture(
@@ -587,7 +584,10 @@ class TestWholeExemptionIsProved:
             self.TWENTY, written=_t(10), lm="2026-10-07T10:00:00.000001", day=DAY
         )
         thirty = HEADER + b"2026-10-07,1,A,30\n"
-        world.capture("eq_side", COVERED, "Covered", thirty, _t(12), "2026-10-07T12:00:00.000001")
+        # Filed under eq_side by its exact member name, it resolves to COVERED by id.
+        world.capture(
+            "eq_side", COVERED, "Covered Side", thirty, _t(12), "2026-10-07T12:00:00.000001"
+        )
         result = world.prove()
         assert not result.granted
         assert "eq_side" in result.refusals[0]["capture_id"]

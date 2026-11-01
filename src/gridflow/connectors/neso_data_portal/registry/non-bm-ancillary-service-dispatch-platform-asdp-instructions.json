@@ -11,29 +11,12 @@
     {
       "key": "asdp_instructions",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "EntryID",
-              "ServiceType",
-              "InstructionStartDateTime",
-              "MW",
-              "IndicativePrice",
-              "InstructionCeaseDateTime",
-              "DispatchDateTimeStamp",
-              "CeaseDateTimeStamp"
-            ],
             "columns": [
               {
                 "source": "EntryID",
@@ -83,25 +66,9 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "EntryID",
-              "ServiceType",
-              "InstructionStartDateTime",
-              "MW",
-              "IndicativePrice",
-              "InstructionCeaseDateTime",
-              "DispatchDateTimeStamp",
-              "CeaseDateTimeStamp",
-              "PartyID",
-              "AssetID",
-              "Tendered"
-            ],
             "columns": [
               {
                 "source": "EntryID",
@@ -169,10 +136,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

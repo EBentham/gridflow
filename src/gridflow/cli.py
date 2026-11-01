@@ -21,6 +21,8 @@ import typer
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
 
+    from gridflow.config.settings import GridflowConfig
+
 from gridflow.pipeline import runner
 from gridflow.pipeline.runner import (
     DatasetResolutionError,
@@ -206,25 +208,10 @@ def ingest(
         "revision tails still need a periodic backfill — the overlap only covers "
         "the recent window.",
     ),
-    write_watermark: bool = typer.Option(
-        True,
-        "--write-watermark/--no-write-watermark",
-        hidden=True,
-        help="Advance the ingestion watermark on success. Internal: backfill "
-        "passes --no-write-watermark so a historical chunk-ingest never moves "
-        "the forward frontier.",
-    ),
 ) -> None:
     """Ingest raw data from an API source into the bronze layer."""
-    from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     # end_dt is resolved once up front (= now for the lookback/incremental paths);
     # incremental resolves start per-dataset inside the runner loop from each
@@ -247,7 +234,7 @@ def ingest(
             default_start_dt,
             end_dt,
             incremental=use_watermark_start,
-            write_watermark=write_watermark,
+            write_watermark=True,
         )
 
     _echo_ingest_results(source, results)
@@ -275,15 +262,8 @@ def transform(
     ),
 ) -> None:
     """Transform bronze data to silver (normalised, validated, deduplicated)."""
-    from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
@@ -314,15 +294,8 @@ def build(
     all_datasets: bool = typer.Option(False, "--all", "-all", help="Build all gold datasets"),
 ) -> None:
     """Build gold-layer modelling-ready datasets from silver."""
-    from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
 
@@ -365,16 +338,9 @@ def backfill(
     # resolves by string.
     runner.assert_backfillable(source)
 
-    from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
     from gridflow.utils.time import window_dates
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
     start_dt, end_dt = _resolve_dates(start, end, None, 0)
@@ -422,16 +388,9 @@ def export_csv(
     ),
 ) -> None:
     """Export silver Parquet data to CSV files."""
-    from gridflow.config.settings import load_settings
     from gridflow.storage.parquet import read_parquet_dir
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
 
@@ -483,15 +442,8 @@ def pipeline(
     dates 2-3x across separate sub-command calls. A bronze, silver or gold
     failure exits 1 without the completion marker.
     """
-    from gridflow.config.settings import load_settings
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     start_dt, end_dt = _resolve_dates(start, end, last, settings.pipeline.default_lookback_hours)
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
@@ -669,7 +621,6 @@ def quality(
     all_sources: bool = typer.Option(False, "--all", help="Run for all sources"),
 ) -> None:
     """Run quality checks and write report."""
-    from gridflow.config.settings import load_settings
     from gridflow.quality.checks import (
         check_duplicates,
         check_null_rate,
@@ -681,14 +632,8 @@ def quality(
     from gridflow.silver.owned_relations import RegisteredRelationsTransformer
     from gridflow.silver.registry import get_transformer_class
     from gridflow.storage.parquet import scan_parquet_dir
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     # F-16 follow-up: without this, a fresh process's silver registry is empty,
     # `_entity_key_for` always falls back to the legacy (settlement_date,
@@ -770,13 +715,23 @@ def quality(
                 and set(entity_key) <= set(df.columns)
                 and df["settlement_period"].n_unique() > 1
             ):
+                # After the latest-vintage selection a series is the latest
+                # view's key: the publication column an append-only entity key
+                # carries would split one revised forecast into a broken series
+                # per publication.
+                series_key = entity_key
+                if spec is not None and spec.mode == "key_latest":
+                    series_key = [
+                        *spec.key_columns,
+                        *(c for c in spec.optional_key_columns if c in df.columns),
+                    ]
                 reporter.add_result(
                     check_time_series_gaps(
                         df,
                         source=src,
                         dataset=ds,
                         expected_freq_minutes=settings.quality.expected_freq_minutes,
-                        group_by=[c for c in entity_key if c not in _SETTLEMENT_TIME_COLUMNS],
+                        group_by=[c for c in series_key if c not in _SETTLEMENT_TIME_COLUMNS],
                     )
                 )
 
@@ -929,40 +884,14 @@ def reset(
     deleted_files = 0
     deleted_dirs = 0
 
-    def _wipe_dir(root: Path) -> None:
-        nonlocal deleted_files, deleted_dirs
-        if not root.exists():
-            return
-        for f in root.rglob("*"):
-            if f.is_file():
-                # rglob descends Windows junctions (is_symlink() == False); a
-                # junction pointing outside the data tree would otherwise have
-                # its external targets unlinked. Skip anything whose real path
-                # escapes data_dir.
-                if not _realpath_within(f, data_dir):
-                    typer.echo(f"  Skipping (resolves outside data dir): {f}", err=True)
-                    continue
-                try:
-                    f.unlink()
-                    deleted_files += 1
-                except OSError as e:
-                    typer.echo(f"  Warning: could not delete {f}: {e}", err=True)
-        # Remove empty dirs bottom-up
-        for d in sorted(root.rglob("*"), reverse=True):
-            if d.is_dir():
-                try:
-                    if not any(d.iterdir()):
-                        d.rmdir()
-                        deleted_dirs += 1
-                except OSError:
-                    pass
-
     if wipe_gold and (source or dataset):
         # Gold is not organised by source — warn if scoping doesn't apply.
         typer.echo("  Note: gold layer is not source-scoped; wiping entire gold directory.")
 
     for root in dir_targets:
-        _wipe_dir(root)
+        files, dirs = _wipe_tree(root, data_dir, remove_root=False)
+        deleted_files += files
+        deleted_dirs += dirs
 
     if wipe_duckdb and settings.pipeline.duckdb_path.exists():
         try:
@@ -1144,41 +1073,54 @@ def prune(
     deleted_files = 0
     deleted_dirs = 0
     for part in targets:
-        # Containment guard 3: rglob descends Windows junctions (is_symlink() ==
-        # False); a junction inside the partition pointing outside the data tree
-        # would otherwise have its external targets unlinked. Skip any file whose
-        # real path escapes data_dir, mirroring reset's _wipe_dir.
-        for f in part.rglob("*"):
-            if f.is_file():
-                if not _realpath_within(f, data_dir):
-                    typer.echo(f"  Skipping (resolves outside data dir): {f}", err=True)
-                    continue
-                try:
-                    f.unlink()
-                    deleted_files += 1
-                except OSError as e:
-                    typer.echo(f"  Warning: could not delete {f}: {e}", err=True)
-        # Remove now-empty dirs bottom-up (the partition dir and its children).
-        for d in sorted(part.rglob("*"), reverse=True):
-            if d.is_dir():
-                try:
-                    if not any(d.iterdir()):
-                        d.rmdir()
-                        deleted_dirs += 1
-                except OSError:
-                    pass
-        try:
-            if part.is_dir() and not any(part.iterdir()):
-                part.rmdir()
-                deleted_dirs += 1
-        except OSError:
-            pass
+        files, dirs = _wipe_tree(part, data_dir, remove_root=True)
+        deleted_files += files
+        deleted_dirs += dirs
         typer.echo(f"  pruned: {part.relative_to(data_dir)}")
 
     typer.echo(
         f"Prune complete — {deleted_files} files and {deleted_dirs} directories removed "
         f"({scope}, older than {cutoff.isoformat()})."
     )
+
+
+def _wipe_tree(root: Path, data_dir: Path, *, remove_root: bool) -> tuple[int, int]:
+    """Delete every file under ``root``, then its empty directories bottom-up.
+
+    ``rglob`` descends Windows junctions (``is_symlink()`` is False), so a
+    junction pointing outside the data tree would otherwise have its external
+    targets unlinked: any file whose real path escapes ``data_dir`` is skipped.
+    ``remove_root`` also removes ``root`` itself once empty (prune removes the
+    partition; reset keeps the layer directory).
+
+    Returns:
+        The number of files and directories removed.
+    """
+    files = dirs = 0
+    if not root.exists():
+        return files, dirs
+    for f in root.rglob("*"):
+        if f.is_file():
+            if not _realpath_within(f, data_dir):
+                typer.echo(f"  Skipping (resolves outside data dir): {f}", err=True)
+                continue
+            try:
+                f.unlink()
+                files += 1
+            except OSError as e:
+                typer.echo(f"  Warning: could not delete {f}: {e}", err=True)
+    candidates = sorted(root.rglob("*"), reverse=True)
+    if remove_root:
+        candidates.append(root)
+    for d in candidates:
+        if d.is_dir():
+            try:
+                if not any(d.iterdir()):
+                    d.rmdir()
+                    dirs += 1
+            except OSError:
+                pass
+    return files, dirs
 
 
 def _iter_partition_dirs(root: Path, layer: str) -> Iterator[Path]:
@@ -1220,16 +1162,9 @@ def _iter_partition_dirs(root: Path, layer: str) -> Iterator[Path]:
 @app.command()
 def init() -> None:
     """Initialise DuckDB catalogue and register views."""
-    from gridflow.config.settings import load_settings
     from gridflow.storage.duckdb import init_catalogue
-    from gridflow.utils.logging import setup_logging
 
-    settings = load_settings()
-    setup_logging(
-        settings.pipeline.log_dir,
-        settings.pipeline.log_level,
-        settings.pipeline.console_log_level,
-    )
+    settings = _load_and_log()
 
     settings.pipeline.data_dir.mkdir(parents=True, exist_ok=True)
     init_catalogue(settings.pipeline.duckdb_path, settings.pipeline.data_dir)
@@ -1266,31 +1201,36 @@ def _resolve_dates(
         raise typer.BadParameter(str(e)) from e
 
 
+def _load_and_log() -> GridflowConfig:
+    """Load settings and start logging, the first step of every pipeline command."""
+    from gridflow.config.settings import load_settings
+    from gridflow.utils.logging import setup_logging
+
+    settings = load_settings()
+    setup_logging(
+        settings.pipeline.log_dir,
+        settings.pipeline.log_level,
+        settings.pipeline.console_log_level,
+    )
+    return settings
+
+
 def _resolve_datasets(
     source: str,
     dataset: str | None,
     all_flag: bool,
-    settings: object,
+    settings: GridflowConfig,
 ) -> list[str]:
     """Resolve which datasets to process.
 
     Delegates to :func:`gridflow.pipeline.runner.resolve_datasets`, translating
     the runner's :class:`~gridflow.pipeline.runner.DatasetResolutionError` into a
-    ``typer.BadParameter``. A ``TypeError`` (non-``GridflowConfig`` settings)
-    propagates unchanged, preserving ``test_invalid_settings_type``.
+    ``typer.BadParameter``.
     """
     try:
         return runner.resolve_datasets(source, dataset, all_flag, settings)
     except DatasetResolutionError as e:
         raise typer.BadParameter(str(e)) from e
-
-
-# Re-exported for the two unit tests that import them directly from the cli and
-# for any historical caller. The runner is the single implementation.
-_resolve_incremental_start = runner.resolve_incremental_start
-_safe_error_message = runner.safe_error_message
-_import_connectors = runner.import_connectors
-_import_transformers = runner.import_transformers
 
 
 # --- Adapter output helpers (RunReport -> echo) ---

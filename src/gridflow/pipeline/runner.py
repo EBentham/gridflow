@@ -342,6 +342,57 @@ class DatasetResult:
         return self.status != "failed"
 
 
+@dataclass
+class _TransformTotals:
+    """One dataset's counters, folded across the dates of a ``run_transform`` call."""
+
+    rows: int = 0
+    unmapped: int = 0
+    start_time_fallback: int = 0
+    publication_fallback: int = 0
+    partition_trimmed: int = 0
+    partition_trim_unrecoverable: int = 0
+    partition_windows_unresolved: int = 0
+    partition_retouch_warnings: int = 0
+    validation_failures: int = 0
+    bronze_unvouched: int = 0
+    all_dropped: int = 0
+    unvouched_total_exclusion: int = 0
+    unaccounted_exclusion: int = 0
+    # D-42. A FRAME count, deliberately never folded into rows_skipped or
+    # rows_invalid: those are ROW counts, and inflating a row count with a
+    # frame count is the overloading this layer already rejects for
+    # excluded FILES (see bronze_unvouched).
+    unaccounted_empty_frames: int = 0
+
+    @property
+    def rows_skipped(self) -> int:
+        """The warning-accounting sum; excluded FILES are never in it (no row count)."""
+        return self.unmapped + self.start_time_fallback + self.validation_failures
+
+    def result(
+        self, source: str, dataset: str, status: str, error: str | None = None
+    ) -> DatasetResult:
+        return DatasetResult(
+            source=source,
+            dataset=dataset,
+            operation="transform",
+            status=status,
+            rows_out=self.rows,
+            rows_skipped=self.rows_skipped,
+            rows_unmapped=self.unmapped,
+            rows_invalid=self.validation_failures,
+            bronze_unvouched=self.bronze_unvouched,
+            rows_start_time_fallback=self.start_time_fallback,
+            rows_publication_fallback=self.publication_fallback,
+            rows_partition_trimmed=self.partition_trimmed,
+            rows_partition_trim_unrecoverable=self.partition_trim_unrecoverable,
+            partition_windows_unresolved=self.partition_windows_unresolved,
+            partition_retouch_warnings=self.partition_retouch_warnings,
+            error=error,
+        )
+
+
 @dataclass(frozen=True)
 class RunReport:
     """Aggregate outcome of a run (one or more dataset steps).
@@ -515,7 +566,7 @@ def resolve_datasets(
     source: str,
     dataset: str | None,
     all_flag: bool,
-    settings: object,
+    settings: GridflowConfig,
 ) -> list[str]:
     """Resolve which datasets to process for a source.
 
@@ -523,20 +574,14 @@ def resolve_datasets(
         source: Data source name.
         dataset: A dataset name, the literal ``"all"`` (case-insensitive), or None.
         all_flag: The ``--all`` flag.
-        settings: A :class:`~gridflow.config.settings.GridflowConfig`.
+        settings: The loaded config, whose source entry lists ``--all``'s datasets.
 
     Returns:
         The list of dataset names to process.
 
     Raises:
-        TypeError: If ``settings`` is not a ``GridflowConfig``.
         DatasetResolutionError: If neither a dataset name nor ``--all`` is given.
     """
-    from gridflow.config.settings import GridflowConfig
-
-    if not isinstance(settings, GridflowConfig):
-        raise TypeError("Expected GridflowConfig")
-
     if all_flag or (dataset is not None and dataset.lower() == "all"):
         source_config = settings.get_source_config(source)
         return list(source_config.datasets.keys())
@@ -1323,15 +1368,7 @@ def run_transform(
                 )
             )
             continue
-        total_rows = 0
-        total_unmapped = 0
-        total_start_time_fallback = 0
-        total_publication_fallback = 0
-        total_partition_trimmed = 0
-        total_partition_trim_unrecoverable = 0
-        total_partition_windows_unresolved = 0
-        total_validation_failures = 0
-        total_all_dropped = 0
+        totals = _TransformTotals()
         # A UNION of (path, reason) pairs, not a running integer: the ENTSO-G
         # reference family rescans the whole tree on every target date, so one
         # orphan body over a 30-day range would otherwise be reported as 30 --
@@ -1340,26 +1377,13 @@ def run_transform(
         # deduplication across dates (a detached Counter could not attribute a
         # newly-seen path to its reason). See ADR-028.
         unvouched_bronze: set[tuple[Path, BronzeVouchReason]] = set()
-        total_unvouched_total_exclusion = 0
-        # D-42. A FRAME count, deliberately never folded into rows_skipped or
-        # rows_invalid: those are ROW counts, and inflating a row count with a
-        # frame count is the overloading this layer already rejects for
-        # excluded FILES (see bronze_unvouched).
-        total_unaccounted_empty_frames = 0
-        total_unaccounted_exclusion = 0
-        partition_retouch_warnings = 0
         source_exclusion_details: list[str] = []
-        # `None` until `get_transformer` returns, so the `except` handler below
-        # can tell "never constructed this date" apart from "constructed, then
-        # `run()` raised" without risking a `transformer` left over from a
-        # PRIOR dataset in this loop (plain `for` loops don't scope locals).
-        transformer = None
         try:
             transformer = get_transformer(source, ds, settings.pipeline.data_dir)
             positive_offsets, missing_owner_dates = _assess_partition_retouch_window(
                 transformer, dates, dates[-1]
             )
-            partition_retouch_warnings = int(bool(missing_owner_dates))
+            totals.partition_retouch_warnings = int(bool(missing_owner_dates))
             if missing_owner_dates:
                 logger.warning(
                     "Transform window re-touch heuristic for %s/%s: effective_dates=%s "
@@ -1382,7 +1406,7 @@ def run_transform(
                         run_id=tracker.run_id,
                         reingest=reingest,
                     )
-                    total_rows += rows
+                    totals.rows += rows
                 except UnparseableBronzeError as exc:
                     # Refuse this date and carry on: nothing was written for
                     # it, so the old Parquet stays and the rung below fails
@@ -1390,19 +1414,19 @@ def run_transform(
                     unvouched_bronze |= {
                         (path, BronzeVouchReason.UNPARSEABLE_BODY) for path in exc.paths
                     }
-                    total_unvouched_total_exclusion += 1
+                    totals.unvouched_total_exclusion += 1
                 finally:
                     # Every attempted destination is folded exactly once,
                     # including a run() that raises after partial preparation.
-                    total_unmapped += transformer.last_unmapped_count
-                    total_start_time_fallback += transformer.last_start_time_fallback_count
-                    total_publication_fallback += transformer.last_publication_fallback_count
-                    total_partition_trimmed += transformer.last_partition_trimmed_count
-                    total_partition_trim_unrecoverable += (
+                    totals.unmapped += transformer.last_unmapped_count
+                    totals.start_time_fallback += transformer.last_start_time_fallback_count
+                    totals.publication_fallback += transformer.last_publication_fallback_count
+                    totals.partition_trimmed += transformer.last_partition_trimmed_count
+                    totals.partition_trim_unrecoverable += (
                         transformer.last_partition_trim_unrecoverable_count
                     )
                     if transformer.PARTITION_DATE_COLUMN is not None:
-                        total_partition_windows_unresolved += (
+                        totals.partition_windows_unresolved += (
                             transformer.last_partition_filter_unresolved_count
                         )
                         logger.info(
@@ -1419,193 +1443,103 @@ def run_transform(
                             transformer.last_partition_trim_details,
                             transformer.last_source_exclusion_details,
                         )
-                    total_validation_failures += (
+                    totals.validation_failures += (
                         transformer.last_validation_failure_count
                         + transformer.last_excluded_row_count
                     )
-                    total_all_dropped += transformer.last_partition_filter_all_dropped_count
+                    totals.all_dropped += transformer.last_partition_filter_all_dropped_count
                     unvouched_bronze |= transformer.last_unvouched_bronze
                     remaining_detail_slots = 50 - len(source_exclusion_details)
                     if remaining_detail_slots > 0:
                         source_exclusion_details.extend(
                             transformer.last_source_exclusion_details[:remaining_detail_slots]
                         )
-                    total_unvouched_total_exclusion += int(
+                    totals.unvouched_total_exclusion += int(
                         transformer.last_unvouched_total_exclusion
                     )
-                    total_unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
-                    total_unaccounted_exclusion += int(transformer.last_total_unaccounted_exclusion)
+                    totals.unaccounted_empty_frames += transformer.last_unaccounted_empty_frames
+                    totals.unaccounted_exclusion += int(
+                        transformer.last_total_unaccounted_exclusion
+                    )
 
             # Deduplicate PATHS first, then derive the per-reason totals from
             # the surviving pairs, so both numbers describe distinct files.
-            bronze_unvouched = len({path for path, _ in unvouched_bronze})
+            totals.bronze_unvouched = len({path for path, _ in unvouched_bronze})
             unvouched_detail = _describe_unvouched_bronze(unvouched_bronze, dates)
-            frames_detail = _describe_unaccounted_frames(total_unaccounted_empty_frames)
+            frames_detail = _describe_unaccounted_frames(totals.unaccounted_empty_frames)
             source_detail = (
                 " Source partition diagnostics (no output came from each listed "
                 f"partition/body): {'; '.join(source_exclusion_details)}."
                 if source_exclusion_details
                 else ""
             )
-            if total_all_dropped:
-                # Preparation returns None for an all-dropped frame, so run()
-                # performs no write for that frame. Any PRE-EXISTING Parquet
-                # from an earlier, correctly-classified run is left on disk
-                # untouched. Failing the WHOLE dataset-level result here
-                # (rather than reporting success/warnings for the date range)
-                # is what keeps that stale file from silently passing as
-                # "current": the run's status and exit code now say
-                # otherwise, so a scheduler or operator relying on either
-                # sees the failure instead of a quiet success.
-                error_message = safe_error_message(
+            # Hard-fail rungs in precedence order; the first nonzero count fails
+            # the dataset. In each case run() wrote nothing for the affected
+            # date(s), so any pre-existing Parquet is still on disk, and only a
+            # FAILED dataset-level status (and exit code) stops a scheduler or
+            # operator treating that stale file as current.
+            hard_fail_rungs = (
+                # An all-dropped frame: preparation returned None, so no write.
+                (
+                    totals.all_dropped,
                     f"{source}/{ds}: event-window filter excluded 100% of "
-                    f"{total_all_dropped} row(s) across the requested date "
+                    f"{totals.all_dropped} row(s) across the requested date "
                     "range -- no in-window rows for at least one date. This "
                     "is never a normal outcome for an in-scope dataset; "
                     "verify EVENT_WINDOW_FILTER classification and window "
                     "semantics before re-running. No silver was written for "
                     "the affected date(s); any pre-existing Parquet there is "
-                    "unchanged and must not be treated as current."
-                    + unvouched_detail
-                    + frames_detail
-                    + source_detail
-                    # This rung wins the STATUS and the MESSAGE, but it must
-                    # not swallow the unvouched COUNT: a scheduler reads the
-                    # highest-precedence failure first, and a permanent orphan
-                    # hidden there would break the visibility contract on
-                    # exactly the path that matters most. The unaccounted-frame
-                    # count is appended for the identical reason -- it has no
-                    # result field at all, so this text is its ONLY exposure.
-                )
-                tracker.fail(error_message)
-                logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="transform",
-                        status="failed",
-                        rows_out=total_rows,
-                        rows_skipped=(
-                            total_unmapped + total_start_time_fallback + total_validation_failures
-                        ),
-                        rows_unmapped=total_unmapped,
-                        rows_invalid=total_validation_failures,
-                        bronze_unvouched=bronze_unvouched,
-                        rows_start_time_fallback=total_start_time_fallback,
-                        rows_publication_fallback=total_publication_fallback,
-                        rows_partition_trimmed=total_partition_trimmed,
-                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
-                        partition_windows_unresolved=total_partition_windows_unresolved,
-                        partition_retouch_warnings=partition_retouch_warnings,
-                        error=error_message,
-                    )
-                )
-            elif total_unvouched_total_exclusion:
-                # Every examined candidate for at least one date was unvouched:
-                # bronze demonstrably exists and ZERO rows could be read from
-                # it. Under master that state is invisible -- read_bronze never
-                # inspects sidecars, so those rows are read and (on reingest)
-                # stamped now(). Under exclusion the frame is empty, and the
-                # only other signal would be a generic warning nobody reads.
-                # A date refused for an unparseable body lands here too.
-                # Same argument as the all_dropped rung above: a stale
-                # pre-existing Parquet is left on disk untouched, and only a
-                # FAILED dataset-level status stops it passing as current.
-                error_message = safe_error_message(
+                    "unchanged and must not be treated as current.",
+                ),
+                # Bronze exists and ZERO rows could be read from it: every
+                # examined body was unvouched, or one could not be parsed.
+                (
+                    totals.unvouched_total_exclusion,
                     f"{source}/{ds}: bronze could not be used for "
-                    f"{total_unvouched_total_exclusion} date(s) in the requested range "
+                    f"{totals.unvouched_total_exclusion} date(s) in the requested range "
                     "-- bronze exists, but every examined body was unvouched (no "
                     "sidecar could establish an honest availability timestamp) or a "
                     "body could not be parsed. No "
                     "silver was written for the affected date(s); any pre-existing "
                     "Parquet there is unchanged and must not be treated as current. "
-                    "Bronze is left exactly as found (never repaired, never deleted)."
-                    + unvouched_detail
-                    + frames_detail
-                    + source_detail
-                )
-                tracker.fail(error_message)
-                logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="transform",
-                        status="failed",
-                        rows_out=total_rows,
-                        rows_skipped=(
-                            total_unmapped + total_start_time_fallback + total_validation_failures
-                        ),
-                        rows_unmapped=total_unmapped,
-                        rows_invalid=total_validation_failures,
-                        bronze_unvouched=bronze_unvouched,
-                        rows_start_time_fallback=total_start_time_fallback,
-                        rows_publication_fallback=total_publication_fallback,
-                        rows_partition_trimmed=total_partition_trimmed,
-                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
-                        partition_windows_unresolved=total_partition_windows_unresolved,
-                        partition_retouch_warnings=partition_retouch_warnings,
-                        error=error_message,
-                    )
-                )
-            elif total_unaccounted_exclusion:
-                # D-42's rung, immediately after the unvouched-total rung and
-                # with the same message shape. Every bronze body examined for at
-                # least one date was read, and NONE produced a frame, with at
-                # least one emptying for a reason nothing counted -- the case
-                # `elexon/system_prices` hits today on a missing required
-                # column, where it reported `success` with zero rows. Same
-                # argument as the two rungs above: _write_silver never ran, so
-                # any pre-existing Parquet is still on disk and only a FAILED
-                # status stops it passing as current.
-                error_message = safe_error_message(
-                    f"{source}/{ds}: bronze was read for {total_unaccounted_exclusion} "
+                    "Bronze is left exactly as found (never repaired, never deleted).",
+                ),
+                # D-42: bronze was read but produced no frame, at least one
+                # emptying for a reason nothing counted (e.g. system_prices
+                # missing a required column, once reported as success).
+                (
+                    totals.unaccounted_exclusion,
+                    f"{source}/{ds}: bronze was read for {totals.unaccounted_exclusion} "
                     "date(s) in the requested range but produced NO frame at all, and "
                     "at least one transform() returned empty for a reason nothing "
                     "counted. No silver was written for the affected date(s); any "
                     "pre-existing Parquet there is unchanged and must not be treated "
-                    "as current. Bronze is left exactly as found."
-                    + unvouched_detail
-                    + frames_detail
-                    + source_detail
+                    "as current. Bronze is left exactly as found.",
+                ),
+            )
+            hard_fail = next((message for count, message in hard_fail_rungs if count), None)
+            if hard_fail is not None:
+                # The winning rung keeps the unvouched and unaccounted-frame
+                # detail: a scheduler reads the highest-precedence failure
+                # first, and the frame count has no result field at all.
+                error_message = safe_error_message(
+                    hard_fail + unvouched_detail + frames_detail + source_detail
                 )
                 tracker.fail(error_message)
                 logger.error("Transform hard-failed for %s/%s: %s", source, ds, error_message)
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="transform",
-                        status="failed",
-                        rows_out=total_rows,
-                        rows_skipped=(
-                            total_unmapped + total_start_time_fallback + total_validation_failures
-                        ),
-                        rows_unmapped=total_unmapped,
-                        rows_invalid=total_validation_failures,
-                        bronze_unvouched=bronze_unvouched,
-                        rows_start_time_fallback=total_start_time_fallback,
-                        rows_publication_fallback=total_publication_fallback,
-                        rows_partition_trimmed=total_partition_trimmed,
-                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
-                        partition_windows_unresolved=total_partition_windows_unresolved,
-                        partition_retouch_warnings=partition_retouch_warnings,
-                        error=error_message,
-                    )
-                )
+                results.append(totals.result(source, ds, "failed", error_message))
             elif (
-                total_unmapped
-                or total_start_time_fallback
-                or total_publication_fallback
-                or total_validation_failures
-                or bronze_unvouched
-                or total_unaccounted_empty_frames
-                or total_partition_trim_unrecoverable
-                or total_partition_windows_unresolved
-                or partition_retouch_warnings
+                totals.unmapped
+                or totals.start_time_fallback
+                or totals.publication_fallback
+                or totals.validation_failures
+                or totals.bronze_unvouched
+                or totals.unaccounted_empty_frames
+                or totals.partition_trim_unrecoverable
+                or totals.partition_windows_unresolved
+                or totals.partition_retouch_warnings
             ):
-                if bronze_unvouched or total_unaccounted_empty_frames:
+                if totals.bronze_unvouched or totals.unaccounted_empty_frames:
                     # THE one aggregated record per (source, dataset) per
                     # run_transform invocation, whatever the file count or the
                     # date-range length.
@@ -1614,65 +1548,25 @@ def run_transform(
                         unvouched_detail + frames_detail + source_detail,
                     )
                 tracker.complete_with_warnings(
-                    rows_out=total_rows,
-                    rows_skipped=(
-                        total_unmapped + total_start_time_fallback + total_validation_failures
-                    ),
+                    rows_out=totals.rows, rows_skipped=totals.rows_skipped
                 )
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="transform",
-                        status="completed_with_warnings",
-                        rows_out=total_rows,
-                        # rows_skipped keeps its ROW meaning -- excluded FILES
-                        # are never summed into it (they have no known row
-                        # count) and live in bronze_unvouched instead.
-                        rows_skipped=(
-                            total_unmapped + total_start_time_fallback + total_validation_failures
-                        ),
-                        rows_unmapped=total_unmapped,
-                        rows_invalid=total_validation_failures,
-                        bronze_unvouched=bronze_unvouched,
-                        rows_start_time_fallback=total_start_time_fallback,
-                        rows_publication_fallback=total_publication_fallback,
-                        rows_partition_trimmed=total_partition_trimmed,
-                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
-                        partition_windows_unresolved=total_partition_windows_unresolved,
-                        partition_retouch_warnings=partition_retouch_warnings,
-                    )
-                )
+                results.append(totals.result(source, ds, "completed_with_warnings"))
             else:
-                tracker.complete(rows_out=total_rows)
-                results.append(
-                    DatasetResult(
-                        source=source,
-                        dataset=ds,
-                        operation="transform",
-                        status="success",
-                        rows_out=total_rows,
-                        rows_start_time_fallback=total_start_time_fallback,
-                        rows_publication_fallback=total_publication_fallback,
-                        rows_partition_trimmed=total_partition_trimmed,
-                        rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
-                        partition_windows_unresolved=total_partition_windows_unresolved,
-                        partition_retouch_warnings=partition_retouch_warnings,
-                    )
-                )
+                tracker.complete(rows_out=totals.rows)
+                results.append(totals.result(source, ds, "success"))
         except Exception as e:  # noqa: BLE001 — surfaced as a failed DatasetResult, never swallowed
             error_message = describe_exception(e)
             # Per-date ``finally`` has already folded a raising run exactly
             # once. Construction failures never enter that block and therefore
             # cannot reuse stale instance counters.
-            bronze_unvouched = len({path for path, _ in unvouched_bronze})
+            totals.bronze_unvouched = len({path for path, _ in unvouched_bronze})
             # The frame count has NO result field, so folding it without
             # rendering it would leave it exactly as invisible as before the
             # fold. One renderer, both paths. The unvouched detail too: a date
             # refused before this crash would otherwise lose its file paths.
             # All of it goes in before the tracker stores the message.
             error_message += _describe_unvouched_bronze(unvouched_bronze, dates)
-            error_message += _describe_unaccounted_frames(total_unaccounted_empty_frames)
+            error_message += _describe_unaccounted_frames(totals.unaccounted_empty_frames)
             if source_exclusion_details:
                 error_message += (
                     " Source partition diagnostics (no output came from each listed "
@@ -1680,28 +1574,7 @@ def run_transform(
                 )
             tracker.fail(error_message)
             logger.error("Transform failed for %s/%s: %s", source, ds, error_message)
-            results.append(
-                DatasetResult(
-                    source=source,
-                    dataset=ds,
-                    operation="transform",
-                    status="failed",
-                    rows_out=total_rows,
-                    rows_skipped=(
-                        total_unmapped + total_start_time_fallback + total_validation_failures
-                    ),
-                    rows_unmapped=total_unmapped,
-                    rows_invalid=total_validation_failures,
-                    bronze_unvouched=bronze_unvouched,
-                    rows_start_time_fallback=total_start_time_fallback,
-                    rows_publication_fallback=total_publication_fallback,
-                    rows_partition_trimmed=total_partition_trimmed,
-                    rows_partition_trim_unrecoverable=total_partition_trim_unrecoverable,
-                    partition_windows_unresolved=total_partition_windows_unresolved,
-                    partition_retouch_warnings=partition_retouch_warnings,
-                    error=error_message,
-                )
-            )
+            results.append(totals.result(source, ds, "failed", error_message))
 
     return results
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from datetime import date, datetime, timedelta
 from typing import TYPE_CHECKING, Any
@@ -15,13 +14,10 @@ from gridflow.connectors.elexon.parsers import (
     record_count_from,
 )
 from gridflow.connectors.registry import register_connector
-from gridflow.utils.retry import RETRY_POLICY
 from gridflow.utils.time import settlement_periods_in_day, window_dates
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
-
-    import httpx
 
     from gridflow.config.settings import SourceConfig
     from gridflow.connectors.elexon.endpoints import ElexonEndpoint
@@ -45,14 +41,8 @@ class ElexonConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch raw data for a date range from Elexon."""
-        # Reset the partial-fetch counter at the top of the public entry point so
-        # a reused connector never inherits a prior call's count (CC-4 / matches
-        # GIE). Elexon is raise-on-any, so it stays 0 — the explicit reset
-        # documents that invariant rather than relying on it.
-        self.last_skipped_units = 0
         if dataset not in ENDPOINTS:
             raise ValueError(
                 f"Unknown Elexon dataset: {dataset}. Available: {list(ENDPOINTS.keys())}"
@@ -68,212 +58,119 @@ class ElexonConnector(BaseConnector):
             return responses
 
         # Each date (or publish-datetime chunk) is an independent unit: no chunk
-        # reads another chunk's result. Build one per-unit coroutine, then fetch
-        # them concurrently (CH3-03 / C2-7). Paging *within* a unit — and the
-        # DST-calendar-bounded settlement-period iteration with period-local
-        # empty handling (F-22) — stays sequential inside the ``_fetch_date*``
-        # helpers; only the
-        # across-date loop is parallel. The ``rate_limit_per_second`` semaphore
-        # inside ``_request`` keeps in-flight HTTP bounded, and ``gather``
-        # preserves input order so the flattened list matches the sequential one.
+        # reads another chunk's result, so they fetch concurrently (CH3-03 /
+        # C2-7). Paging within a unit, and PN's settlement-period loop, stay
+        # sequential. A failing unit fails the whole run (raise-on-any).
         tasks: list[Coroutine[Any, Any, list[RawResponse]]] = []
 
-        if endpoint.param_style == ParamStyle.SETTLEMENT_DATE:
-            for current_date in window_dates(start, end):
-                tasks.append(self._fetch_date(dataset, endpoint, current_date))
-
-        elif endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
+        if endpoint.param_style == ParamStyle.SETTLEMENT_DATE_PERIOD:
             for current_date in window_dates(start, end):
                 tasks.append(self._fetch_date_period(dataset, endpoint, current_date))
 
         elif endpoint.param_style == ParamStyle.DATE_PATH:
             for current_date in window_dates(start, end):
-                tasks.append(self._fetch_date_path(dataset, endpoint, current_date))
+                path = f"{endpoint.path}/{current_date.isoformat()}"
+                tasks.append(self._fetch_pages(dataset, endpoint, path, current_date))
 
         elif endpoint.param_style == ParamStyle.PUBLISH_DATETIME:
             chunk_delta = timedelta(hours=endpoint.max_chunk_hours)
             current = start
             while current < end:
                 chunk_end = min(current + chunk_delta, end)
-                tasks.append(self._fetch_datetime_range(dataset, endpoint, current, chunk_end))
+                unit = self._fetch_pages(
+                    dataset, endpoint, endpoint.path, current.date(), start=current, end=chunk_end
+                )
+                tasks.append(unit)
                 current = chunk_end
 
-        # Elexon has no per-unit tolerance: a failing date fails the whole run
-        # (raise-on-any). ``return_exceptions=True`` collects every result, then
-        # the first exception is re-raised in input order — matching the
-        # sequential loop's first-in-iteration failure.
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        responses = []
-        for result in results:
-            if isinstance(result, BaseException):
-                raise result
-            responses.extend(result)
+        responses = await self._gather_units(tasks)
 
         logger.info(
             f"Fetched {len(responses)} responses for elexon/{dataset} from {start} to {end}"
         )
         return responses
 
-    async def _fetch_date(
-        self,
-        dataset: str,
-        endpoint: ElexonEndpoint,
-        settlement_date: Any,
-    ) -> list[RawResponse]:
-        """Fetch all pages for a single settlement date."""
-        responses: list[RawResponse] = []
-        page = 1
-
-        while True:
-            query_params = build_params(endpoint, settlement_date=settlement_date, page=page)
-            raw = await self._request(endpoint.path, query_params)
-
-            # D-18: parse ONCE, derive both pagination and the C-8 record count.
-            parsed = parse_json_response(raw.content)
-            current_page, total_pages = pagination_from(parsed)
-            responses.append(
-                RawResponse(
-                    body=raw.content,
-                    content_type=raw.headers.get("content-type", "application/json"),
-                    source="elexon",
-                    dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params=dict(query_params),
-                    api_version="v1",
-                    page=page,
-                    total_pages=total_pages,
-                    http_status=raw.status_code,
-                    data_date=settlement_date,
-                    record_count=record_count_from(parsed),
-                )
-            )
-
-            if page >= total_pages:
-                break
-            page += 1
-
-        return responses
-
     async def _fetch_date_period(
-        self,
-        dataset: str,
-        endpoint: ElexonEndpoint,
-        settlement_date: Any,
-        max_periods: int | None = None,
-    ) -> list[RawResponse]:
-        """Fetch all pages for each settlement period on a given date.
-
-        Iterates through periods 1..N, fetching paginated data for each. N
-        defaults to ``settlement_periods_in_day(settlement_date)`` (46/48/50
-        by the UK DST calendar); pass ``max_periods`` to override (tests only
-        -- production call sites rely on the calendar default). A page-one
-        empty ``data`` array is local to that period, while an empty later
-        page is a fatal pagination-integrity failure. HTTP errors always
-        propagate after the configured retry policy is exhausted.
-
-        R2-B / F-22: bounding by the calendar is a request-count reduction,
-        not a crash fix -- probed 2026-07-27 against the live PN dataset, the
-        vendor's ``settlementPeriod`` parameter validates statically against
-        1..50 for every date and returns HTTP 200 with an empty ``data``
-        array for a period outside that date's own DST calendar (e.g. SP 49
-        on a 48-period day), never a 4xx. The existing page-1-empty branch
-        below already handled that response cleanly; this only stops asking
-        for periods that can never carry data.
-        """
-        responses: list[RawResponse] = []
-        period_count = (
-            max_periods if max_periods is not None else settlement_periods_in_day(settlement_date)
-        )
-
-        for period in range(1, period_count + 1):
-            page = 1
-            while True:
-                query_params = build_params(
-                    endpoint,
-                    settlement_date=settlement_date,
-                    settlement_period=period,
-                    page=page,
-                )
-                raw = await self._request(endpoint.path, query_params)
-
-                # D-18: parse ONCE (net two parses -> one at this site); the
-                # page-1-empty early-stop check and pagination/record-count
-                # all derive from this same parsed body. A JSONDecodeError (or
-                # any unexpected shape) is swallowed inside
-                # ``parse_json_response`` and yields ``{}`` -- `.get("data")`
-                # is then None, so the check below falls through to "treat as
-                # real data", matching the prior try/except's behaviour.
-                parsed = parse_json_response(raw.content)
-                data = parsed.get("data") if isinstance(parsed, dict) else None
-                if isinstance(data, list) and not data:
-                    if page > 1:
-                        raise RuntimeError(
-                            "Elexon pagination truncated for "
-                            f"{dataset} on {settlement_date}: period {period}, page {page} "
-                            "returned empty data after an earlier populated page"
-                        )
-                    logger.debug(
-                        "PN period %d on %s returned empty data; continuing to the next period",
-                        period,
-                        settlement_date,
-                    )
-                    break
-
-                current_page, total_pages = pagination_from(parsed)
-                responses.append(
-                    RawResponse(
-                        body=raw.content,
-                        content_type=raw.headers.get("content-type", "application/json"),
-                        source="elexon",
-                        dataset=dataset,
-                        request_url=str(raw.url),
-                        request_params=dict(query_params),
-                        api_version="v1",
-                        page=page,
-                        total_pages=total_pages,
-                        http_status=raw.status_code,
-                        data_date=settlement_date,
-                        record_count=record_count_from(parsed),
-                    )
-                )
-
-                if page >= total_pages:
-                    break
-                page += 1
-
-        return responses
-
-    async def _fetch_date_path(
         self,
         dataset: str,
         endpoint: ElexonEndpoint,
         settlement_date: date,
     ) -> list[RawResponse]:
-        """Fetch all pages for a date embedded in the URL path (DATE_PATH style)."""
+        """Fetch every page of every settlement period of one date (PN).
+
+        Periods run 1..``settlement_periods_in_day`` (46/48/50 by the UK clock
+        calendar). The vendor accepts 1..50 on any date and answers a period
+        outside the day's own calendar with an empty page (probed 2026-07-27,
+        R2-B / F-22), so the bound saves requests rather than errors.
+        """
+        responses: list[RawResponse] = []
+        for period in range(1, settlement_periods_in_day(settlement_date) + 1):
+            responses.extend(
+                await self._fetch_pages(
+                    dataset, endpoint, endpoint.path, settlement_date, period=period
+                )
+            )
+        return responses
+
+    async def _fetch_pages(
+        self,
+        dataset: str,
+        endpoint: ElexonEndpoint,
+        path: str,
+        data_date: date,
+        *,
+        period: int | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> list[RawResponse]:
+        """Fetch every page of one request, parsing each body once (D-18).
+
+        For a settlement ``period`` an empty first page means the period has no
+        data, and an empty later page is a truncated pagination, which raises
+        (F-22). HTTP errors propagate once the retry policy is exhausted.
+        """
         responses: list[RawResponse] = []
         page = 1
-        path = f"{endpoint.path}/{settlement_date.isoformat()}"
 
         while True:
-            query_params = build_params(endpoint, page=page)
-            raw = await self._request(path, query_params)
-
-            # D-18: parse ONCE, derive both pagination and the C-8 record count.
+            query_params = build_params(
+                endpoint,
+                settlement_date=data_date,
+                settlement_period=period,
+                start=start,
+                end=end,
+                page=page,
+            )
+            raw = await self._get(path, query_params)
+            # A body that fails to parse yields {} and is kept as real data.
             parsed = parse_json_response(raw.content)
-            current_page, total_pages = pagination_from(parsed)
+
+            if period is not None:
+                data = parsed.get("data") if isinstance(parsed, dict) else None
+                if isinstance(data, list) and not data:
+                    if page > 1:
+                        raise RuntimeError(
+                            "Elexon pagination truncated for "
+                            f"{dataset} on {data_date}: period {period}, page {page} "
+                            "returned empty data after an earlier populated page"
+                        )
+                    logger.debug(
+                        "PN period %d on %s returned empty data; continuing to the next period",
+                        period,
+                        data_date,
+                    )
+                    break
+
+            _, total_pages = pagination_from(parsed)
             responses.append(
-                RawResponse(
-                    body=raw.content,
-                    content_type=raw.headers.get("content-type", "application/json"),
+                RawResponse.from_httpx(
+                    raw,
                     source="elexon",
                     dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params=dict(query_params),
-                    api_version="v1",
+                    params=query_params,
                     page=page,
                     total_pages=total_pages,
-                    http_status=raw.status_code,
-                    data_date=settlement_date,
+                    data_date=data_date,
                     record_count=record_count_from(parsed),
                 )
             )
@@ -287,74 +184,8 @@ class ElexonConnector(BaseConnector):
     async def _fetch_single(self, dataset: str, endpoint: ElexonEndpoint) -> list[RawResponse]:
         """Fetch a single-request endpoint (e.g., reference data)."""
         query_params = build_params(endpoint)
-        raw = await self._request(endpoint.path, query_params)
-        return [
-            RawResponse(
-                body=raw.content,
-                content_type=raw.headers.get("content-type", "application/json"),
-                source="elexon",
-                dataset=dataset,
-                request_url=str(raw.url),
-                request_params=dict(query_params),
-                api_version="v1",
-                http_status=raw.status_code,
-            )
-        ]
-
-    async def _fetch_datetime_range(
-        self,
-        dataset: str,
-        endpoint: ElexonEndpoint,
-        start: datetime,
-        end: datetime,
-    ) -> list[RawResponse]:
-        """Fetch paginated data using publishDateTimeFrom/To."""
-        responses: list[RawResponse] = []
-        page = 1
-        data_date = start.date() if isinstance(start, datetime) else start
-
-        while True:
-            query_params = build_params(endpoint, start=start, end=end, page=page)
-            raw = await self._request(endpoint.path, query_params)
-
-            # D-18: parse ONCE, derive both pagination and the C-8 record count.
-            parsed = parse_json_response(raw.content)
-            current_page, total_pages = pagination_from(parsed)
-            responses.append(
-                RawResponse(
-                    body=raw.content,
-                    content_type=raw.headers.get("content-type", "application/json"),
-                    source="elexon",
-                    dataset=dataset,
-                    request_url=str(raw.url),
-                    request_params=dict(query_params),
-                    api_version="v1",
-                    page=page,
-                    total_pages=total_pages,
-                    http_status=raw.status_code,
-                    data_date=data_date,
-                    record_count=record_count_from(parsed),
-                )
-            )
-
-            if page >= total_pages:
-                break
-            page += 1
-
-        return responses
-
-    @RETRY_POLICY
-    async def _request(self, path: str, params: dict[str, Any]) -> httpx.Response:
-        """Make a rate-limited, retried HTTP request."""
-        if self._client is None:
-            raise RuntimeError("Connector not initialized. Use 'async with' context manager.")
-        if self._semaphore is None:
-            raise RuntimeError("Semaphore not initialized. Use 'async with' context manager.")
-
-        async with self._semaphore:
-            resp = await self._client.get(path, params=params)
-            resp.raise_for_status()
-            return resp
+        raw = await self._get(endpoint.path, query_params)
+        return [RawResponse.from_httpx(raw, source="elexon", dataset=dataset, params=query_params)]
 
 
 # Register this connector

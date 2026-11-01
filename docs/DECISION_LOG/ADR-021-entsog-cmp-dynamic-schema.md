@@ -145,7 +145,8 @@ partition.
 - The two datasets remain `TODO_HUMAN_FILL_COLUMNS` in
   `docs/CANONICAL_SCHEMA.yaml`; the alignment test continues to skip
   them. This ADR records *why* they are deferred, for the future
-  curator.
+  curator. (2026-11-01: the YAML and that test were retired; a future
+  pin belongs on the silver schema manifest, ADR-024.)
 - A new regression test pins the intended behaviour (drift expected;
   tolerant readers unify it), so a future drift scan does not get
   "fixed" by fabricating a contract, and the `union_by_name=true` /

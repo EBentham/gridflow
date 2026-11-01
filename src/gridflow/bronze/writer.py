@@ -40,7 +40,6 @@ class BronzeWriter:
     """Writes raw API responses to the bronze layer with metadata sidecars."""
 
     def __init__(self, data_dir: Path):
-        self.bronze_dir = data_dir / "bronze"
         self._paths = PathBuilder(data_dir)
 
     def write(self, response: RawResponse) -> Path:
@@ -48,22 +47,11 @@ class BronzeWriter:
 
         Returns the path to the written data file.
         """
-        body_hash = hashlib.sha256(response.body).hexdigest()[:8]
+        body_sha256 = hashlib.sha256(response.body).hexdigest()
+        body_hash = body_sha256[:8]
         ts = response.fetched_at.strftime("%Y%m%dT%H%M%SZ")
         ext = self._extension(response.content_type)
-
-        # Build directory path — partition by data date when known, else ingestion date
-        partition = (
-            response.data_date if response.data_date is not None else response.fetched_at.date()
-        )
-        dir_path = (
-            self.bronze_dir
-            / response.source
-            / response.dataset
-            / str(partition.year)
-            / f"{partition.month:02d}"
-            / f"{partition.day:02d}"
-        )
+        dir_path = self._partition_dir(response)
         dir_path.mkdir(parents=True, exist_ok=True)
 
         # Write data file atomically (temp + os.replace), then the sidecar.
@@ -81,25 +69,7 @@ class BronzeWriter:
         written_at = datetime.now(UTC)
         self._atomic_write_bytes(data_path, response.body)
 
-        # Write metadata sidecar
-        meta = {
-            "source": response.source,
-            "dataset": response.dataset,
-            "fetched_at": response.fetched_at.isoformat(),
-            "written_at": written_at.isoformat(),
-            "data_date": response.data_date.isoformat() if response.data_date is not None else None,
-            # Mask credentials before they reach the irreproducible sidecar; the
-            # key is kept (presence recorded), only the value is redacted.
-            "request_url": sanitize_url(response.request_url),
-            "request_params": sanitize_params(response.request_params),
-            "api_version": response.api_version,
-            "http_status": response.http_status,
-            "content_type": response.content_type,
-            "body_sha256": hashlib.sha256(response.body).hexdigest(),
-            "body_size_bytes": len(response.body),
-            "page": response.page,
-            "total_pages": response.total_pages,
-        }
+        meta = self._sidecar(response, written_at, body_sha256)
         meta_path = dir_path / f"raw_{ts}_{body_hash}.meta.json"
         self._atomic_write_text(meta_path, json.dumps(meta, indent=2, default=str))
 
@@ -146,32 +116,14 @@ class BronzeWriter:
 
         body_sha256 = hashlib.sha256(response.body).hexdigest()
         ts = response.fetched_at.strftime("%Y%m%dT%H%M%SZ")
-        partition = (
-            response.data_date if response.data_date is not None else response.fetched_at.date()
-        )
-        dir_path = self._paths.bronze_date_dir(response.source, response.dataset, partition)
+        dir_path = self._partition_dir(response)
         dir_path.mkdir(parents=True, exist_ok=True)
 
         data_path = dir_path / f"raw_{ts}_{resource_id}_{body_sha256[:8]}.{extension}"
         self._publish_no_clobber(data_path, response.body)
         # Stamped after the body's link, so it marks when the body became durable.
         written_at = datetime.now(UTC)
-        meta: dict[str, Any] = {
-            "source": response.source,
-            "dataset": response.dataset,
-            "fetched_at": response.fetched_at.isoformat(),
-            "written_at": written_at.isoformat(),
-            "data_date": response.data_date.isoformat() if response.data_date is not None else None,
-            "request_url": sanitize_url(response.request_url),
-            "request_params": sanitize_params(response.request_params),
-            "api_version": response.api_version,
-            "http_status": response.http_status,
-            "content_type": response.content_type,
-            "body_sha256": body_sha256,
-            "body_size_bytes": len(response.body),
-            "page": response.page,
-            "total_pages": response.total_pages,
-        }
+        meta = self._sidecar(response, written_at, body_sha256)
         meta_path = data_path.with_suffix(".meta.json")
         self._publish_no_clobber(meta_path, json.dumps(meta, indent=2, default=str).encode("utf-8"))
 
@@ -183,6 +135,35 @@ class BronzeWriter:
             len(response.body),
         )
         return data_path
+
+    def _partition_dir(self, response: RawResponse) -> Path:
+        """The date directory: the data date when known, else the fetch date."""
+        partition = (
+            response.data_date if response.data_date is not None else response.fetched_at.date()
+        )
+        return self._paths.bronze_date_dir(response.source, response.dataset, partition)
+
+    @staticmethod
+    def _sidecar(response: RawResponse, written_at: datetime, body_sha256: str) -> dict[str, Any]:
+        """The metadata sidecar both publish paths write beside a body."""
+        return {
+            "source": response.source,
+            "dataset": response.dataset,
+            "fetched_at": response.fetched_at.isoformat(),
+            "written_at": written_at.isoformat(),
+            "data_date": response.data_date.isoformat() if response.data_date is not None else None,
+            # Mask credentials before they reach the irreproducible sidecar; the
+            # key is kept (presence recorded), only the value is redacted.
+            "request_url": sanitize_url(response.request_url),
+            "request_params": sanitize_params(response.request_params),
+            "api_version": response.api_version,
+            "http_status": response.http_status,
+            "content_type": response.content_type,
+            "body_sha256": body_sha256,
+            "body_size_bytes": len(response.body),
+            "page": response.page,
+            "total_pages": response.total_pages,
+        }
 
     @staticmethod
     def _publish_no_clobber(path: Path, data: bytes) -> None:

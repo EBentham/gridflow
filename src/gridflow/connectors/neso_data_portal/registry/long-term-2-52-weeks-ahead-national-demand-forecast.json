@@ -11,29 +11,12 @@
     {
       "key": "demand_forecast_2_52w",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "calendar_year",
-              "financial_year",
-              "ESIWK",
-              "CDATE_peak",
-              "tsd_peak",
-              "tsd_min",
-              "day_min",
-              "night_min"
-            ],
             "columns": [
               {
                 "source": "calendar_year",
@@ -84,10 +67,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
