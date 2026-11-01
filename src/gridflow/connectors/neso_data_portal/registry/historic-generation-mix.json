@@ -11,55 +11,13 @@
     {
       "key": "historic_generation_mix",
       "kind": "tabular",
-      "legacy": true,
-      "archetype": "SER",
-      "refresh": "daily",
-      "empty_allowed": false,
       "max_download_bytes": 268435456,
-      "name_regex": null,
-      "transformer": "bespoke",
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "DATETIME",
-              "GAS",
-              "COAL",
-              "NUCLEAR",
-              "WIND",
-              "WIND_EMB",
-              "HYDRO",
-              "IMPORTS",
-              "BIOMASS",
-              "OTHER",
-              "SOLAR",
-              "STORAGE",
-              "GENERATION",
-              "CARBON_INTENSITY",
-              "LOW_CARBON",
-              "ZERO_CARBON",
-              "RENEWABLE",
-              "FOSSIL",
-              "GAS_perc",
-              "COAL_perc",
-              "NUCLEAR_perc",
-              "WIND_perc",
-              "WIND_EMB_perc",
-              "HYDRO_perc",
-              "IMPORTS_perc",
-              "BIOMASS_perc",
-              "OTHER_perc",
-              "SOLAR_perc",
-              "STORAGE_perc",
-              "GENERATION_perc",
-              "LOW_CARBON_perc",
-              "ZERO_CARBON_perc",
-              "RENEWABLE_perc",
-              "FOSSIL_perc"
-            ],
             "columns": [
               {
                 "source": "DATETIME",
@@ -267,10 +225,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

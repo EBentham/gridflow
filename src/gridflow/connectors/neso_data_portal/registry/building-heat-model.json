@@ -11,37 +11,12 @@
     {
       "key": "building_heat_model_example_output_half",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "run_id",
-              "building_archetype",
-              "month",
-              "hh_period",
-              "start_of_hh_period",
-              "heater_output_space_heat",
-              "gas_space_heat",
-              "avg_COP_space_heat",
-              "electricity_space_heat",
-              "heater_output_dhw",
-              "gas_dhw",
-              "avg_COP_dhw",
-              "electricity_dhw",
-              "total_heater_output",
-              "total_gas",
-              "total_electricity"
-            ],
             "columns": [
               {
                 "source": "run_id",
@@ -139,10 +114,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -165,25 +137,11 @@
     },
     {
       "key": "building_heat_model_list_input",
-      "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "tabular"
     },
     {
       "key": "building_heat_model_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

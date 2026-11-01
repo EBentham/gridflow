@@ -11,45 +11,12 @@
     {
       "key": "fes_la_heat_model_domestic",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "CODE_x",
-              "Local_Authority",
-              "Year",
-              "Scenario",
-              "Sector",
-              "stock ASHP",
-              "stock Community",
-              "stock DH",
-              "stock Electric resistive",
-              "stock Electric storage",
-              "stock GSHP",
-              "stock Gas boiler",
-              "stock Oil boiler",
-              "stock Total",
-              "stock TotalHPs",
-              "stock_proportion ASHP",
-              "stock_proportion Community",
-              "stock_proportion DH",
-              "stock_proportion Electric resistive",
-              "stock_proportion Electric storage",
-              "stock_proportion GSHP",
-              "stock_proportion Gas boiler",
-              "stock_proportion Oil boiler",
-              "stock_proportion TotalHPs"
-            ],
             "columns": [
               {
                 "source": "CODE_x",
@@ -195,46 +162,9 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "CODE_x",
-              "Local_Authority",
-              "Year",
-              "Scenario",
-              "Sector",
-              "stock ASHP",
-              "stock BioLPG boiler",
-              "stock Biomass boiler",
-              "stock Community",
-              "stock DH",
-              "stock Electric resistive",
-              "stock Electric storage",
-              "stock GSHP",
-              "stock Gas boiler",
-              "stock Hybrid (ASHP + BioLPG boiler)",
-              "stock Hybrid (ASHP + Electric resistive)",
-              "stock Oil boiler",
-              "stock Total",
-              "stock TotalHPs",
-              "stock_proportion ASHP",
-              "stock_proportion BioLPG boiler",
-              "stock_proportion Biomass boiler",
-              "stock_proportion Community",
-              "stock_proportion DH",
-              "stock_proportion Electric resistive",
-              "stock_proportion Electric storage",
-              "stock_proportion GSHP",
-              "stock_proportion Gas boiler",
-              "stock_proportion Hybrid (ASHP + BioLPG boiler)",
-              "stock_proportion Hybrid (ASHP + Electric resistive)",
-              "stock_proportion Oil boiler",
-              "stock_proportion TotalHPs"
-            ],
             "columns": [
               {
                 "source": "CODE_x",
@@ -428,50 +358,9 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "CODE_x",
-              "Local_Authority",
-              "Year",
-              "Scenario",
-              "Sector",
-              "stock ASHP",
-              "stock BioLPG boiler",
-              "stock Biomass boiler",
-              "stock Community",
-              "stock DH",
-              "stock Electric resistive",
-              "stock Electric storage",
-              "stock GSHP",
-              "stock Gas boiler",
-              "stock Hybrid (ASHP + BioLPG boiler)",
-              "stock Hybrid (ASHP + Electric resistive)",
-              "stock Hybrid (ASHP + Hydrogen boiler)",
-              "stock Hydrogen boiler",
-              "stock Oil boiler",
-              "stock Total",
-              "stock TotalHPs",
-              "stock_proportion ASHP",
-              "stock_proportion BioLPG boiler",
-              "stock_proportion Biomass boiler",
-              "stock_proportion Community",
-              "stock_proportion DH",
-              "stock_proportion Electric resistive",
-              "stock_proportion Electric storage",
-              "stock_proportion GSHP",
-              "stock_proportion Gas boiler",
-              "stock_proportion Hybrid (ASHP + BioLPG boiler)",
-              "stock_proportion Hybrid (ASHP + Electric resistive)",
-              "stock_proportion Hybrid (ASHP + Hydrogen boiler)",
-              "stock_proportion Hydrogen boiler",
-              "stock_proportion Oil boiler",
-              "stock_proportion TotalHPs"
-            ],
             "columns": [
               {
                 "source": "CODE_x",
@@ -689,10 +578,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -749,40 +635,12 @@
     {
       "key": "fes_la_heat_model_residential",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SCN",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "la_code",
-              "Local_Authority",
-              "Year",
-              "Pathway",
-              "Sector",
-              "stock ASHP",
-              "stock Biofuel boiler",
-              "stock Biomass boiler",
-              "stock Community",
-              "stock DH",
-              "stock Electric resistive",
-              "stock Electric storage",
-              "stock GSHP",
-              "stock Gas boiler",
-              "stock Hybrid (ASHP + Biofuel boiler)",
-              "stock Hybrid (ASHP + Electric resistive)",
-              "stock Hybrid (ASHP + Hydrogen boiler)",
-              "stock Hydrogen boiler",
-              "stock Oil boiler"
-            ],
             "columns": [
               {
                 "source": "la_code",
@@ -898,33 +756,9 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "la_code",
-              "Local_Authority",
-              "Year",
-              "Pathway",
-              "Sector",
-              "stock ASHP",
-              "stock BioLPG boiler",
-              "stock Biomass boiler",
-              "stock Electric resistive",
-              "stock Electric storage",
-              "stock Fossil fuel communal heating",
-              "stock GSHP",
-              "stock Gas boiler",
-              "stock Hybrid (ASHP + BioLPG boiler)",
-              "stock Hybrid (ASHP + Electric resistive)",
-              "stock Hybrid (ASHP + Hydrogen boiler)",
-              "stock Hydrogen boiler",
-              "stock Low carbon district heating",
-              "stock Oil boiler"
-            ],
             "columns": [
               {
                 "source": "la_code",
@@ -1040,10 +874,7 @@
                 "dtype": "float64",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

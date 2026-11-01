@@ -26,9 +26,8 @@ import polars as pl
 import pytest
 
 # Registry side-effects: importing each silver sub-package triggers
-# register_transformer() for its datasets (Pitfall 1 — same as the canonical
-# alignment test). Without this, get_transformer("entsoe", ...) fails when this
-# module runs in isolation.
+# register_transformer() for its datasets (Pitfall 1). Without this,
+# get_transformer("entsoe", ...) fails when this module runs in isolation.
 import gridflow.silver.entsoe  # noqa: F401
 import gridflow.silver.entsog  # noqa: F401
 import gridflow.silver.gie  # noqa: F401

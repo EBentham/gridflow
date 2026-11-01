@@ -16,7 +16,7 @@ from typing import TYPE_CHECKING, Any
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import install_generated, query, write_capture
 from _neso_registry_support import column, epoch, family, package, record, resource, sp_columns
 
 from gridflow.silver.latest_views import (
@@ -449,14 +449,6 @@ def _capture(
     return path.relative_to(data).as_posix()
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def _ids(frame: pl.DataFrame) -> list[str]:
     return sorted(frame["bronze_capture_id"].to_list())
 
@@ -465,11 +457,11 @@ def _sql_as_of(db: Path, key: str, as_of: datetime | None) -> list[str]:
     """``_latest`` when ``as_of`` is None, else P-10's parameterised select."""
     view = f"silver_{SOURCE}_{key}"
     if as_of is None:
-        return _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
-    columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        return _ids(query(db, f'SELECT * FROM "{view}_latest"'))
+    columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
     select = latest_select_sql(view, LATEST_VIEW_SPECS[(SOURCE, key)], columns, as_of_param=True)
     assert select is not None
-    return _ids(_query(db, select, {"as_of": as_of.isoformat()}))
+    return _ids(query(db, select, {"as_of": as_of.isoformat()}))
 
 
 def _polars_as_of(data: Path, key: str, as_of: datetime | None) -> list[str]:
@@ -557,7 +549,7 @@ class TestNoRunTypeColumn:
         generated.transformers["gen"](data).run(DAY, run_id="r")
         db = data / "cat.duckdb"
         init_catalogue(db, data)
-        latest = _query(db, f'SELECT * FROM "silver_{SOURCE}_gen_latest"')
+        latest = query(db, f'SELECT * FROM "silver_{SOURCE}_gen_latest"')
         assert latest.height == 2
         files = sorted((data / "silver" / SOURCE / "gen").rglob("*.parquet"))
         polars = select_latest_vintage(pl.scan_parquet(files, hive_partitioning=False), spec)
@@ -619,14 +611,14 @@ class TestEmptyCaptureAsOf:
 
 def _relations(db: Path) -> set[str]:
     return set(
-        _query(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'")[
+        query(db, "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'")[
             "table_name"
         ].to_list()
     )
 
 
 def _described(db: Path, relation: str) -> list[tuple[str, str]]:
-    frame = _query(
+    frame = query(
         db,
         "SELECT column_name, data_type FROM information_schema.columns "
         "WHERE table_schema = 'main' AND table_name = $name ORDER BY ordinal_position",
@@ -745,7 +737,7 @@ class TestRelationExistence:
         self._run(generated, data)
         refresh_views(db, data)
         for relation in relations:
-            assert _query(db, f'SELECT count(*) AS n FROM "{relation}"')["n"][0] > 0
+            assert query(db, f'SELECT count(*) AS n FROM "{relation}"')["n"][0] > 0
             assert _described(db, relation) == empty[relation], relation
 
 
@@ -769,7 +761,7 @@ class TestQualityCli:
         monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(data / "logs"))
         result = CliRunner().invoke(app, ["quality", "--source", SOURCE])
         assert result.exit_code == 0, result.output
-        report = _query(
+        report = query(
             db,
             "SELECT metric FROM quality_reports WHERE dataset = 'whole' "
             "AND check_name = 'row_count'",

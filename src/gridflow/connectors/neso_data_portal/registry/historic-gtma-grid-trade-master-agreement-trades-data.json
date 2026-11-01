@@ -11,31 +11,12 @@
     {
       "key": "gtma_trades_fy",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "ID",
-              "StartTime",
-              "EndTime",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO_Flag",
-              "Reason",
-              "Note",
-              "Last_Updated"
-            ],
             "columns": [
               {
                 "source": "ID",
@@ -103,10 +84,7 @@
                 "nullable": true,
                 "zone": "UTC"
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -130,28 +108,12 @@
     {
       "key": "gtma_trades_data",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Trade ID",
-              "Start Time",
-              "End Time",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO Flag"
-            ],
             "columns": [
               {
                 "source": "Trade ID",
@@ -199,10 +161,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -221,28 +180,12 @@
     {
       "key": "gtma_trades_data_pre",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Trade ID",
-              "Start Time",
-              "End Time",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO Flag"
-            ],
             "columns": [
               {
                 "source": "Trade ID",
@@ -290,10 +233,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -12,7 +12,7 @@ because the point is the status, not a counter.
 from __future__ import annotations
 
 import json
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -120,7 +120,8 @@ def _transform(source: str, dataset: str, first: date, last: date | None = None)
             source,
             [dataset],
             datetime(first.year, first.month, first.day, tzinfo=UTC),
-            datetime(last.year, last.month, last.day, tzinfo=UTC),
+            # ``last`` is the last date to transform; the runner's window is half-open.
+            datetime(last.year, last.month, last.day, tzinfo=UTC) + timedelta(days=1),
         )
     finally:
         con.close()
