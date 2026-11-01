@@ -1,7 +1,9 @@
 """Unit tests for settlement period / UTC conversion utilities."""
 
+import itertools
 from datetime import UTC, date, datetime, timedelta
 
+import polars as pl
 import pytest
 
 from gridflow.utils.time import (
@@ -9,6 +11,7 @@ from gridflow.utils.time import (
     day_subwindows,
     parse_lookback,
     settlement_period_to_utc,
+    settlement_period_to_utc_expr,
     settlement_periods_in_day,
     utc_to_settlement_period,
     window_dates,
@@ -372,3 +375,80 @@ class TestSettlementPeriodsInDay:
 
     def test_ordinary_summer_day_2024_is_48(self):
         assert settlement_periods_in_day(date(2024, 7, 15)) == 48
+
+
+class TestSettlementPeriodToUtcExpr:
+    """The vector form stamps the same instants as the scalar converter.
+
+    Expected instants are hardcoded UTC, so a shared zone error cannot hide.
+    """
+
+    @staticmethod
+    def _stamp(settlement_date: date, periods: list[int]) -> list[datetime]:
+        frame = pl.DataFrame(
+            {"d": [settlement_date] * len(periods), "p": periods},
+            schema={"d": pl.Date, "p": pl.Int32},
+        )
+        return frame.select(settlement_period_to_utc_expr("d", "p")).to_series().to_list()
+
+    def test_gmt_day(self):
+        assert self._stamp(date(2024, 1, 15), [1, 2, 48]) == [
+            datetime(2024, 1, 15, 0, 0, tzinfo=UTC),
+            datetime(2024, 1, 15, 0, 30, tzinfo=UTC),
+            datetime(2024, 1, 15, 23, 30, tzinfo=UTC),
+        ]
+
+    def test_bst_day(self):
+        assert self._stamp(date(2024, 7, 15), [1, 2, 48]) == [
+            datetime(2024, 7, 14, 23, 0, tzinfo=UTC),
+            datetime(2024, 7, 14, 23, 30, tzinfo=UTC),
+            datetime(2024, 7, 15, 22, 30, tzinfo=UTC),
+        ]
+
+    def test_spring_day_has_46_real_half_hours(self):
+        day = date(2024, 3, 31)
+        assert settlement_periods_in_day(day) == 46
+        stamps = self._stamp(day, list(range(1, 47)))
+        assert stamps[0] == datetime(2024, 3, 31, 0, 0, tzinfo=UTC)
+        assert stamps[2] == datetime(2024, 3, 31, 1, 0, tzinfo=UTC)
+        assert stamps[-1] == datetime(2024, 3, 31, 22, 30, tzinfo=UTC)
+        assert {(b - a).total_seconds() for a, b in itertools.pairwise(stamps)} == {1800}
+
+    def test_autumn_day_has_50_real_half_hours(self):
+        day = date(2024, 10, 27)
+        assert settlement_periods_in_day(day) == 50
+        stamps = self._stamp(day, list(range(1, 51)))
+        assert stamps[0] == datetime(2024, 10, 26, 23, 0, tzinfo=UTC)
+        assert stamps[4] == datetime(2024, 10, 27, 1, 0, tzinfo=UTC)
+        assert stamps[6] == datetime(2024, 10, 27, 2, 0, tzinfo=UTC)
+        assert stamps[-1] == datetime(2024, 10, 27, 23, 30, tzinfo=UTC)
+        assert {(b - a).total_seconds() for a, b in itertools.pairwise(stamps)} == {1800}
+
+    @pytest.mark.parametrize(
+        "settlement_date,expected",
+        [
+            (date(2024, 1, 15), datetime(2024, 1, 15, 0, 0, tzinfo=UTC)),
+            (date(2024, 7, 15), datetime(2024, 7, 14, 23, 0, tzinfo=UTC)),
+            (date(2024, 3, 31), datetime(2024, 3, 31, 0, 0, tzinfo=UTC)),
+            (date(2024, 10, 27), datetime(2024, 10, 26, 23, 0, tzinfo=UTC)),
+        ],
+    )
+    def test_date_alone_stamps_the_start_of_period_1(self, settlement_date, expected):
+        frame = pl.DataFrame({"d": [settlement_date]})
+        stamped = frame.select(settlement_period_to_utc_expr("d")).item()
+        assert stamped == expected == settlement_period_to_utc(settlement_date, 1)
+
+    def test_dtype_is_utc_microseconds(self):
+        frame = pl.DataFrame({"d": [date(2024, 1, 15)], "p": [1]})
+        out = frame.select(settlement_period_to_utc_expr(pl.col("d"), pl.col("p")))
+        assert out.dtypes == [pl.Datetime("us", "UTC")]
+
+    def test_null_date_or_period_gives_null(self):
+        frame = pl.DataFrame(
+            {"d": [None, date(2024, 1, 15)], "p": [1, None]},
+            schema={"d": pl.Date, "p": pl.Int32},
+        )
+        assert frame.select(settlement_period_to_utc_expr("d", "p")).to_series().to_list() == [
+            None,
+            None,
+        ]

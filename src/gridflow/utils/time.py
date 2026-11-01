@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
+import polars as pl
+
 UK_TZ = ZoneInfo("Europe/London")
 
 
@@ -40,6 +42,31 @@ def settlement_period_to_utc(settlement_date: date, period: int) -> datetime:
     """
     sp1_utc = _settlement_day_start_utc(settlement_date)
     return sp1_utc + timedelta(minutes=30 * (period - 1))
+
+
+def settlement_period_to_utc_expr(
+    settlement_date: str | pl.Expr, period: str | pl.Expr | int = 1
+) -> pl.Expr:
+    """Vector form of :func:`settlement_period_to_utc`, as a ``Datetime("us", "UTC")``.
+
+    Column names or expressions are accepted. With no ``period`` it stamps the
+    start of settlement period 1, 00:00 UK local, which is where every
+    date-only Elexon row sits. UK local midnight is never inside a clock
+    change, so the zone lookup cannot hit a gap or a fold, and the period
+    offset is real elapsed time from that instant, as in the scalar form.
+
+    A null date or period gives a null instant; the scalar raises instead.
+    """
+    if isinstance(settlement_date, str):
+        settlement_date = pl.col(settlement_date)
+    if isinstance(period, str):
+        period = pl.col(period)
+    day_start = (
+        settlement_date.cast(pl.Datetime("us"))
+        .dt.replace_time_zone(UK_TZ.key)
+        .dt.convert_time_zone("UTC")
+    )
+    return day_start + pl.duration(minutes=30 * (period - 1))
 
 
 def settlement_periods_in_day(settlement_date: date) -> int:
