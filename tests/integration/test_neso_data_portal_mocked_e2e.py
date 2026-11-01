@@ -24,6 +24,7 @@ import io
 import json
 import logging
 import sys
+import tempfile
 import tracemalloc
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
@@ -166,7 +167,7 @@ def _silver_dir(data_dir: Path, day: Any) -> Path:
 @pytest.mark.asyncio
 async def test_fetch_writes_bronze_and_the_real_transformer_reads_it(
     router: respx.MockRouter,
-    tmp_data_dir: Path,
+    short_data_dir: Path,
 ) -> None:
     """The whole path, with the row count asserted as a NUMBER.
 
@@ -179,7 +180,7 @@ async def test_fetch_writes_bronze_and_the_real_transformer_reads_it(
     start, end = _window()
 
     response = await _fetch_one(_source_config(), start, end)
-    bronze_path = BronzeWriter(tmp_data_dir).write(response)
+    bronze_path = BronzeWriter(short_data_dir).write(response)
 
     # D-13: the partition is the resolved window END, which is by construction
     # the last date `run_transform` iterates for that window.
@@ -193,12 +194,12 @@ async def test_fetch_writes_bronze_and_the_real_transformer_reads_it(
     assert _partition_parts(bronze_path) == _expected_partition(end.date())
     assert bronze_path.with_suffix(".meta.json").exists()
 
-    transformer = get_transformer(SOURCE, DATASET, tmp_data_dir)
+    transformer = get_transformer(SOURCE, DATASET, short_data_dir)
     rows_written = transformer.run(end.date(), run_id="t15")
 
     assert rows_written == EXPECTED_ROWS
 
-    written = sorted(_silver_dir(tmp_data_dir, end.date()).glob("*.parquet"))
+    written = sorted(_silver_dir(short_data_dir, end.date()).glob("*.parquet"))
     assert len(written) == 1
     assert written[0].name.startswith(f"{DATASET}_{end.date():%Y%m%d}_run"), (
         "APPEND_ONLY must suffix the silver filename with the vintage scalar"
@@ -211,7 +212,7 @@ async def test_fetch_writes_bronze_and_the_real_transformer_reads_it(
     assert frame.schema["event_time"] == pl.Datetime("us", "UTC")
     assert frame.schema["available_at"] == pl.Datetime("us", "UTC")
     assert frame["source_run_id"].unique().to_list() == ["t15"]
-    assert frame["dataset_version"].unique().to_list() == ["1.0.0"]
+    assert frame["dataset_version"].unique().to_list() == ["1+e1"]
 
     # D-22: NESO's publication instant is the vintage axis, not our capture
     # instant. Asserted row-wise, and against the CKAN value the mocked
@@ -224,27 +225,28 @@ async def test_fetch_writes_bronze_and_the_real_transformer_reads_it(
 @pytest.mark.asyncio
 async def test_re_running_the_transform_is_idempotent(
     router: respx.MockRouter,
-    tmp_data_dir: Path,
+    short_data_dir: Path,
 ) -> None:
     """D-21: the run suffix comes from the bronze sidecar, so it is stable.
 
     On the plain ``read_bronze`` branch the scalar would be ``datetime.now(UTC)``
     and every re-transform would mint a NEW Parquet file, quietly duplicating
-    every row in the base view. ``VINTAGE_PER_BRONZE_FILE`` is what makes the
-    second run replace the first at a byte-identical path.
+    every row in the base view. The engine's completion record makes the second
+    run a no-op (P-7 skip-if-valid), and the output path is a function of the
+    capture, so nothing moves.
     """
     _wire_all_three_legs(router)
     start, end = _window()
 
     response = await _fetch_one(_source_config(), start, end)
-    BronzeWriter(tmp_data_dir).write(response)
+    BronzeWriter(short_data_dir).write(response)
 
-    transformer = get_transformer(SOURCE, DATASET, tmp_data_dir)
+    transformer = get_transformer(SOURCE, DATASET, short_data_dir)
     assert transformer.run(end.date(), run_id="t15-first") == EXPECTED_ROWS
-    first = sorted(_silver_dir(tmp_data_dir, end.date()).glob("*.parquet"))
+    first = sorted(_silver_dir(short_data_dir, end.date()).glob("*.parquet"))
 
-    assert transformer.run(end.date(), run_id="t15-second") == EXPECTED_ROWS
-    second = sorted(_silver_dir(tmp_data_dir, end.date()).glob("*.parquet"))
+    assert transformer.run(end.date(), run_id="t15-second") == 0
+    second = sorted(_silver_dir(short_data_dir, end.date()).glob("*.parquet"))
 
     assert len(second) == 1, f"a re-transform minted a second silver file: {second}"
     assert first == second, "the silver path moved between two runs over the same bronze"
@@ -254,7 +256,7 @@ async def test_re_running_the_transform_is_idempotent(
 @pytest.mark.asyncio
 async def test_a_download_crossing_utc_midnight_still_lands_where_transform_looks(
     router: respx.MockRouter,
-    tmp_data_dir: Path,
+    short_data_dir: Path,
 ) -> None:
     """FM-13, the hazard that changed D-13 in revision 2.
 
@@ -299,13 +301,13 @@ async def test_a_download_crossing_utc_midnight_still_lands_where_transform_look
     )
     assert response.fetched_at.date() != end.date()
 
-    bronze_path = BronzeWriter(tmp_data_dir).write(response)
+    bronze_path = BronzeWriter(short_data_dir).write(response)
 
     assert _partition_parts(bronze_path) == _expected_partition(end.date()), (
         "bronze followed the wall clock instead of the resolved window end"
     )
 
-    transformer = get_transformer(SOURCE, DATASET, tmp_data_dir)
+    transformer = get_transformer(SOURCE, DATASET, short_data_dir)
     assert transformer.run(end.date(), run_id="t15-midnight") == EXPECTED_ROWS, (
         "the transform leg, working from the same window, did not find the capture"
     )
@@ -356,22 +358,22 @@ _B3A_DATASETS: dict[str, tuple[str, bytes, int]] = {
 
 
 @pytest.fixture
-def short_data_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+def short_data_dir() -> Iterator[Path]:
     """`tmp_data_dir`, but rooted somewhere deliberately SHORT.
 
-    Windows MAX_PATH, a harness limit rather than a product one.
-    `embedded_wind_solar_forecast`'s silver filename is 74 characters and
+    Windows MAX_PATH, a harness limit rather than a product one. The generic
+    engine's silver filename for `embedded_wind_solar_forecast` is 114
+    characters (the run stamp plus a 32-hex capture digest) and
     `storage.parquet.write_parquet` appends a 21-character `.tmp_<16 hex>`
-    before `os.replace`, so under the standard `tmp_path` fixture -- whose
-    directory embeds the test's own name -- the temporary path crosses 260 and
-    the rename fails with WinError 3. The real data root (`C:\\gridflow-data`)
-    is ~90 characters clear. Same reasoning, and same fix, as
-    `tests/unit/test_neso_data_portal.py::short_tmp_path`.
+    before `os.replace`, so under pytest's `tmp_path` -- whose directory embeds
+    the test's own name -- the temporary path crosses 260 and the rename fails
+    with WinError 3. The real data root (`C:\\gridflow-data`) is well clear.
     """
-    root = tmp_path_factory.mktemp("e")
-    for layer in ("bronze", "silver", "gold"):
-        (root / layer).mkdir()
-    return root
+    with tempfile.TemporaryDirectory(prefix="e", ignore_cleanup_errors=True) as name:
+        root = Path(name)
+        for layer in ("bronze", "silver", "gold"):
+            (root / layer).mkdir()
+        yield root
 
 
 def _package_show_for(dataset: str) -> dict[str, Any]:
@@ -510,7 +512,7 @@ async def test_re_running_each_b3a_transform_is_idempotent(
     On the plain `read_bronze` branch the scalar would be `datetime.now(UTC)`
     and every re-transform would mint a NEW Parquet file, quietly duplicating
     every row in the base view -- which for `historic_generation_mix` means a
-    second full copy of 2009-present.
+    second full copy of 2009-present. The second run is a no-op (P-7).
     """
     expected_rows = _B3A_DATASETS[dataset][2]
     _wire_dataset_legs(router, dataset)
@@ -523,7 +525,7 @@ async def test_re_running_each_b3a_transform_is_idempotent(
     assert transformer.run(end.date(), run_id="t27-first") == expected_rows
     first = _silver_files(short_data_dir, dataset, end.date())
 
-    assert transformer.run(end.date(), run_id="t27-second") == expected_rows
+    assert transformer.run(end.date(), run_id="t27-second") == 0
     second = _silver_files(short_data_dir, dataset, end.date())
 
     assert len(second) == 1, f"a re-transform minted a second silver file: {second}"
@@ -561,13 +563,12 @@ async def test_the_embedded_forecasts_issue_time_survives_the_whole_path(
 
     assert frame.schema["issue_time"] == pl.Datetime("us", "UTC")
     assert frame["issue_time"].unique().to_list() == [EMB_ISSUE_TIME]
-    assert "timestamp_utc" not in frame.columns, (
-        "D-26: emitting one would take event_time off the DST-fold-safe branch"
-    )
     assert frame["event_time"].to_list() == [
         settlement_period_to_utc(row["settlement_date"], row["settlement_period"])
         for row in frame.iter_rows(named=True)
     ]
+    # The engine's sp_pair timestamp_utc is the same DST-safe instant (D-26 holds).
+    assert frame["timestamp_utc"].equals(frame["event_time"], check_names=False)
 
 
 # --------------------------------------------------------------------------- #
@@ -1439,11 +1440,11 @@ def _run_transform_for(
 
 
 def _warnings_naming(caplog: pytest.LogCaptureFixture, path: Path) -> list[str]:
-    """Every WARNING-or-above record whose message names `path`."""
+    """Every WARNING-or-above record whose message names `path` (by file name)."""
     return [
         record.getMessage()
         for record in caplog.records
-        if record.levelno >= logging.WARNING and str(path) in record.getMessage()
+        if record.levelno >= logging.WARNING and path.name in record.getMessage()
     ]
 
 
@@ -1490,7 +1491,7 @@ async def test_a_body_whose_sidecar_vanished_is_skipped_loudly_and_reaches_the_s
 @respx.mock
 @pytest.mark.asyncio
 @pytest.mark.parametrize("dataset", list(_ALL_DATASETS))
-async def test_a_sidecar_without_ckan_last_modified_is_skipped_and_fabricates_nothing(
+async def test_a_sidecar_without_ckan_last_modified_fails_and_fabricates_nothing(
     router: respx.MockRouter,
     short_data_dir: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1499,22 +1500,21 @@ async def test_a_sidecar_without_ckan_last_modified_is_skipped_and_fabricates_no
 ) -> None:
     """FM-05: the sidecar vouches on `written_at`, but has no vendor vintage.
 
-    This one gets PAST the base class's sidecar-timestamp rung -- `written_at`
-    is still there -- and is declined by the source's own provenance rule
-    instead. The assertion that matters most is the negative one: not one row
+    The record's `ckan_last_modified` vintage cannot apply, so the capture fails
+    (a failure record and a reconcile `failed` gap) while its healthy sibling is
+    written. The assertion that matters most is the negative one: not one row
     is emitted carrying a fetch-clock `published_at`. A substituted vintage
     looks exactly like a real one once it is in silver.
     """
-    expected_rows = _ALL_DATASETS[dataset][2]
     _, broken, day = await _two_identical_captures(router, short_data_dir, dataset)
     _rewrite_request_params(broken, lambda params: params.pop("ckan_last_modified"))
 
     with caplog.at_level(logging.WARNING):
         result = _run_transform_for(short_data_dir, dataset, day, monkeypatch)
 
-    assert result.status == "completed_with_warnings"
-    assert result.bronze_unvouched == 1
-    assert result.rows_out == expected_rows
+    assert result.status == "failed"
+    assert "CaptureContextError" in (result.error or "")
+    assert broken.name in (result.error or ""), result.error
     assert _warnings_naming(caplog, broken), f"nothing above DEBUG named {broken}"
 
     written = _silver_files(short_data_dir, dataset, day)
@@ -1533,7 +1533,7 @@ async def test_a_sidecar_without_ckan_last_modified_is_skipped_and_fabricates_no
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_an_embedded_sidecar_without_an_issue_token_is_skipped(
+async def test_an_embedded_sidecar_without_an_issue_token_fails(
     router: respx.MockRouter,
     short_data_dir: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -1541,12 +1541,10 @@ async def test_an_embedded_sidecar_without_an_issue_token_is_skipped(
 ) -> None:
     """FM-05, this dataset's extra requirement: `issue_time` is part of the key.
 
-    `_bronze.provenance_for` parses the 12-digit token wherever one exists and
-    takes no view on which datasets must have one -- requiredness belongs to
-    the caller, and this is the caller that requires it. A fabricated
-    `issue_time` would mint a forecast vintage that never existed AND outrank
-    the real ones in the `_latest` projection, which is why the body is
-    declined rather than defaulted.
+    The record's `filename_token` issue recipe requires the 12-digit token. A
+    fabricated `issue_time` would mint a forecast vintage that never existed
+    AND outrank the real ones in the `_latest` projection, which is why the
+    capture fails rather than defaulting, while its healthy sibling is written.
     """
     _, broken, day = await _two_identical_captures(router, short_data_dir, EMB_DATASET)
     _rewrite_request_params(
@@ -1557,9 +1555,8 @@ async def test_an_embedded_sidecar_without_an_issue_token_is_skipped(
     with caplog.at_level(logging.WARNING):
         result = _run_transform_for(short_data_dir, EMB_DATASET, day, monkeypatch)
 
-    assert result.status == "completed_with_warnings"
-    assert result.bronze_unvouched == 1
-    assert result.rows_out == EMB_EXPECTED_ROWS
+    assert result.status == "failed"
+    assert "IssueTimeError" in (result.error or "")
     assert _warnings_naming(caplog, broken), f"nothing above DEBUG named {broken}"
 
     written = _silver_files(short_data_dir, EMB_DATASET, day)
@@ -1583,10 +1580,11 @@ async def test_a_date_whose_every_sidecar_is_unusable_reports_failed(
     A vintage that vanishes ENTIRELY must not be reported as a successful run
     with zero rows: no silver was written, so any pre-existing Parquet for that
     date is still on disk, and only a FAILED status stops it passing as
-    current. Both routes to the state are asserted independently -- the base
-    class's sidecar rung (no sidecar at all) and this source's own provenance
-    rung (sidecar present, vendor vintage gone) -- because they reach the
-    failure through different code and either could regress alone.
+    current. Both routes to the state are asserted independently -- the
+    capture scan's orphan rung (no sidecar at all) and the record's vintage
+    rung (sidecar present, vendor vintage gone, every capture failed) --
+    because they reach the failure through different code and either could
+    regress alone.
     """
     first, second, day = await _two_identical_captures(router, short_data_dir, dataset)
     for body in (first, second):
@@ -1601,12 +1599,16 @@ async def test_a_date_whose_every_sidecar_is_unusable_reports_failed(
         "every candidate body for this date was excluded and the run still did "
         "not report failed -- a whole vintage disappeared quietly"
     )
-    assert "every examined bronze body was unvouched" in (result.error or ""), (
-        "the run failed for some OTHER reason -- an exception out of run() also "
-        "reports `failed`, so without this the case could pass while D-41's "
-        "total-exclusion rung was never reached: "
-        f"{result.error}"
-    )
-    assert result.bronze_unvouched == 2
+    if breakage == "every-sidecar-deleted":
+        assert "every examined bronze body was unvouched" in (result.error or ""), (
+            "the run failed for some OTHER reason -- an exception out of run() also "
+            "reports `failed`, so without this the case could pass while D-41's "
+            "total-exclusion rung was never reached: "
+            f"{result.error}"
+        )
+        assert result.bronze_unvouched == 2
+    else:
+        assert "2 capture(s) failed" in (result.error or ""), result.error
+        assert (result.error or "").count("CaptureContextError") == 2, result.error
     assert result.rows_out == 0
     assert _silver_files(short_data_dir, dataset, day) == []

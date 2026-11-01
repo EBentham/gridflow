@@ -201,26 +201,23 @@ def test_reference_dataset_reads_newest_body_regardless_of_date(tmp_data_dir: Pa
     assert transformer._bronze_files(date(2020, 1, 1)) == [newer]
 
 
-def test_neso_data_portal_uses_vintage_per_bronze_file() -> None:
-    """D-4's structural pin: NDP's immunity depends on this staying ``True``.
+def test_neso_data_portal_reads_capture_by_capture() -> None:
+    """D-4's structural pin: NDP's immunity depends on the engine's exact-partition scan.
 
-    A future refactor that drops ``VINTAGE_PER_BRONZE_FILE`` from any of the
-    three NDP transformers re-opens the covering-fallback exposure this
-    ticket exists to close -- this must fail loudly, not silently.
+    The generic engine reads each capture of the target partition only
+    (``run_captures``), never a covering partition; a former bespoke key routed
+    anywhere else re-opens the covering-fallback exposure this ticket closed.
     """
-    from gridflow.silver.neso_data_portal.daily_wind_availability import (
-        DailyWindAvailabilityTransformer,
-    )
-    from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
-        EmbeddedWindSolarForecastTransformer,
-    )
-    from gridflow.silver.neso_data_portal.historic_generation_mix import (
-        HistoricGenerationMixTransformer,
-    )
+    from gridflow.silver.neso_data_portal.generic import GenericNesoTransformer
+    from gridflow.silver.registry import get_transformer_class
 
-    assert DailyWindAvailabilityTransformer.VINTAGE_PER_BRONZE_FILE is True
-    assert EmbeddedWindSolarForecastTransformer.VINTAGE_PER_BRONZE_FILE is True
-    assert HistoricGenerationMixTransformer.VINTAGE_PER_BRONZE_FILE is True
+    for key in (
+        "daily_wind_availability",
+        "embedded_wind_solar_forecast",
+        "historic_generation_mix",
+    ):
+        cls = get_transformer_class("neso_data_portal", key)
+        assert cls is not None and issubclass(cls, GenericNesoTransformer), key
 
 
 def test_covered_but_not_owned_date_warns_and_names_the_owner(

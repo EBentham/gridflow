@@ -2,9 +2,8 @@
 
 A registry family with a frozen schema record (``registry/record.py``) is
 transformed here, capture by capture, into one append-only output per
-(capture, family) plus one completion record (P-6, P-7). A non-legacy family
-without a record is registered ingest-only and skipped loudly by transform
-(P-13). The three legacy keys keep their bespoke transformers.
+(capture, family) plus one completion record (P-6, P-7). A family without a
+record is registered ingest-only and skipped loudly by transform (P-13).
 
 **Generation (P-15).** :func:`register_generated` runs at import, looks the
 registry up through ``registry.load_registry`` at call time (unit A's test
@@ -31,10 +30,7 @@ import polars as pl
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
-from gridflow.connectors.neso_data_portal.registry import (
-    LEGACY_KEYS,
-    SilverDisposition,
-)
+from gridflow.connectors.neso_data_portal.registry import SilverDisposition
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
 from gridflow.silver import registry as silver_registry
 from gridflow.silver.base import BronzeVouchReason, append_only_run_stamp
@@ -206,7 +202,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
     @classmethod
     def versions(cls) -> Versions:
         """The versions this family's completion records must carry."""
-        return Versions(cls.RECORD.version, ENGINE_VERSION, cls.DATASET_VERSION, generic=True)
+        return Versions(cls.RECORD.version, ENGINE_VERSION, cls.DATASET_VERSION)
 
     @classmethod
     def output_columns(cls) -> list[tuple[str, str]]:
@@ -581,12 +577,10 @@ def generated_registrations(registry: Registry) -> GeneratedSet:
 
     Returns:
         The transformer classes and specs of every recorded family, and the
-        ingest-only reason of every other non-legacy family.
+        ingest-only reason of every other family.
     """
     generated = GeneratedSet()
     for key in sorted(registry.families):
-        if key in LEGACY_KEYS:
-            continue
         _package, family = registry.families[key]
         if family.record is not None:
             generated.transformers[key] = make_generic_transformer(key, family.record)

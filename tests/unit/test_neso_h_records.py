@@ -831,7 +831,6 @@ def test_v22_an_occurrence_column_outside_its_rule_is_refused(
             broken,
             key=DMY,
             kind="tabular",
-            legacy=False,
             package_families={f.key: f.record is not None for f in package.families},
             family_url_types=frozenset({"upload"}),
         )

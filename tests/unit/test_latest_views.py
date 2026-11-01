@@ -359,11 +359,11 @@ _PIN_SPECS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
     ("elexon", "fou2t14d"),
-    ("neso_data_portal", "daily_wind_availability"),
-    ("neso_data_portal", "historic_generation_mix"),
-    ("neso_data_portal", "embedded_wind_solar_forecast"),
 )
-"""The ``LATEST_VIEW_SPECS`` keys that existed at master ``d7cf513``."""
+"""The hand-written ``LATEST_VIEW_SPECS`` keys that existed at master ``d7cf513``.
+
+The three NESO legacy keys' hand specs left with their bespoke transformers; their
+views are generated from their records now (ADR-034 P-8 superseded)."""
 _BUILTIN_VIEW_PREFIXES = ("duckdb_", "sqlite_", "pragma_")
 
 

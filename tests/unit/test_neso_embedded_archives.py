@@ -38,6 +38,7 @@ checkout with ``core.autocrlf`` rewrites line endings:
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -55,8 +56,7 @@ from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.captures import scan_dataset
 from gridflow.pipeline import runner as pipeline_runner
 from gridflow.silver.latest_views import LATEST_VIEW_SPECS, latest_select_sql, select_latest_vintage
-from gridflow.silver.neso_data_portal import embedded_wind_solar_forecast as bespoke_module
-from gridflow.silver.neso_data_portal._bronze import _ISSUE_TOKEN_PATTERN
+from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import TypedChild, type_child
 from gridflow.silver.neso_data_portal.completion import (
     CaptureContextError,
@@ -66,12 +66,10 @@ from gridflow.silver.neso_data_portal.completion import (
     read_failure,
     scan_completions,
 )
-from gridflow.silver.neso_data_portal.embedded_wind_solar_forecast import (
-    EmbeddedWindSolarForecastTransformer,
-)
 from gridflow.silver.neso_data_portal.generic import families_of, output_columns
 from gridflow.silver.neso_data_portal.readers import read_csv_body
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
+from gridflow.silver.registry import get_transformer_class
 from gridflow.storage.duckdb import init_catalogue
 from gridflow.storage.paths import PathBuilder
 
@@ -197,7 +195,7 @@ DUMP_ID = {DUMP_ID!r}
 
 def test_ef1_every_csv_resource_routes_to_one_owner_or_a_hold() -> None:
     """Detects an archive CSV resource left unrouted, routed to two owners, routed into
-    the bespoke family, or a record drifting from P-3/P-4 (criterion 1)."""
+    the live family, or a record drifting from P-3/P-4 (criterion 1)."""
     code = (
         _CONSTANTS
         + """
@@ -245,12 +243,13 @@ assert upload.vintage == "ckan_last_modified" and dump.vintage == "capture_fallb
 assert tuple(e.header for e in upload.epochs) == (H9, H10)
 assert tuple(e.header for e in dump.epochs) == (H9,)
 
-live = families[LIVE].model_dump(mode="json")
+live = families[LIVE].model_dump(mode="json", exclude={"record"})
 assert live == {
     "key": LIVE, "kind": "tabular", "legacy": True, "archetype": "FC",
     "refresh": "intraday", "empty_allowed": False, "max_download_bytes": 8388608,
-    "name_regex": None, "transformer": "bespoke", "record": None,
+    "name_regex": None, "transformer": "bespoke",
 }, live
+assert families[LIVE].record is not None and families[LIVE].record.siblings == ()
 live_res = csv[LIVE_ID].model_dump(mode="json")
 assert live_res == {
     "id": LIVE_ID, "name": "Embedded Solar and Wind Forecast", "format": "CSV",
@@ -628,8 +627,8 @@ class TestEf4The2019ArchiveIsHeld:
         assert held not in scan_completions(data).collect()["bronze_capture_id"].to_list()
 
 
-class TestEf5ArchiveBodiesNeverReachTheBespoke:
-    """T-EF5 (criterion 3): the bespoke live transformer reads its own directory only."""
+class TestEf5ArchiveBodiesNeverReachTheLiveFamily:
+    """T-EF5 (criterion 3): the live family's transformer reads its own directory only."""
 
     LIVE_FILENAME = "202610080725_embedded_forecast.csv"
 
@@ -659,26 +658,22 @@ class TestEf5ArchiveBodiesNeverReachTheBespoke:
         _dump_capture(data, _fixture("dump_2026.csv"))
 
     def test_a_functional_isolation(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        """Detects an archive body reaching the bespoke reader or its provenance
-        site, or changing the bespoke output, when both live on one partition date."""
+        """Detects an archive body reaching the live family's reader, or changing
+        its output, when both live on one partition date."""
         seen: list[Path] = []
-        real_read = bespoke_module.read_csv_bronze_body
-        real_provenance = bespoke_module.provenance_for
+        real_read = generic.read_children
 
-        def spy_read(raw: bytes, **kwargs: Any) -> pl.DataFrame:
-            seen.append(Path(kwargs["source_label"]))
-            return real_read(raw, **kwargs)
+        def spy_read(path: Path, *args: Any, **kwargs: Any) -> Any:
+            seen.append(Path(path))
+            return real_read(path, *args, **kwargs)
 
-        def spy_provenance(raw_path: Path) -> Any:
-            seen.append(Path(raw_path))
-            return real_provenance(raw_path)
-
-        monkeypatch.setattr(bespoke_module, "read_csv_bronze_body", spy_read)
-        monkeypatch.setattr(bespoke_module, "provenance_for", spy_provenance)
+        monkeypatch.setattr(generic, "read_children", spy_read)
+        live = get_transformer_class(SOURCE, LIVE)
+        assert live is not None
 
         self._live(data)
         self._archives(data)
-        EmbeddedWindSolarForecastTransformer(data).run(DAY, run_id="r")
+        live(data).run(DAY, run_id="r")
         assert seen
         live_dir = PathBuilder(data).bronze_dir(SOURCE, LIVE)
         assert all(path.is_relative_to(live_dir) for path in seen), seen
@@ -688,20 +683,12 @@ class TestEf5ArchiveBodiesNeverReachTheBespoke:
         with tempfile.TemporaryDirectory(prefix="ef", ignore_cleanup_errors=True) as other:
             alone = Path(other)
             self._live(alone)
-            EmbeddedWindSolarForecastTransformer(alone).run(DAY, run_id="r")
-            assert_same_output(
-                mixed,
-                snapshot(alone, LIVE),
-                EmbeddedWindSolarForecastTransformer.ENTITY_KEY_COLUMNS,
-            )
+            live(alone).run(DAY, run_id="r")
+            assert_same_output(mixed, snapshot(alone, LIVE), live.ENTITY_KEY_COLUMNS)
 
-    def test_b_the_bespoke_reads_no_sibling(self) -> None:
-        """Detects a sibling bronze directory added to the bespoke's read surface."""
-        assert EmbeddedWindSolarForecastTransformer.BRONZE_SIBLING_DATASETS == ()
-
-    def test_c_registry_routes_only_the_live_resource_to_the_bespoke(self) -> None:
-        """Detects an archive resource disposed into the bespoke family, a record
-        reading the bespoke's directory, or the legacy selector widened."""
+    def test_c_registry_routes_only_the_live_resource_to_the_live_family(self) -> None:
+        """Detects an archive resource disposed into the live family, a record
+        reading the live family's directory, or the legacy selector widened."""
         code = (
             _CONSTANTS
             + """
@@ -728,9 +715,14 @@ print("OK")
     def test_d_the_issue_token_matches_live_files_only(self) -> None:
         """16b: detects the live token pattern matching an archive filename, or no
         longer matching the current and newer live filenames."""
-        assert _ISSUE_TOKEN_PATTERN.match("202610061925_embedded_forecast.csv")
-        assert _ISSUE_TOKEN_PATTERN.match("202610080725_embedded_forecast.csv")
-        assert not _ISSUE_TOKEN_PATTERN.match("embedded_archive_2025.csv")
+        record = registry_module.load_registry().families[LIVE][1].record
+        assert record is not None
+        (epoch,) = record.epochs
+        pattern = epoch.issue.pattern
+        assert pattern is not None
+        assert re.fullmatch(pattern, "202610061925_embedded_forecast.csv")
+        assert re.fullmatch(pattern, "202610080725_embedded_forecast.csv")
+        assert not re.fullmatch(pattern, "embedded_archive_2025.csv")
 
 
 def test_ef6_vintage_guards_hold_under_the_owners(

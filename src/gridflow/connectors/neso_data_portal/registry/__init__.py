@@ -86,8 +86,9 @@ __all__ = [
 
 KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,39}$")
 
-# The three keys onboarded before the registry existed. They keep their bespoke
-# transformers and their in-code header contracts (endpoints.DATASETS).
+# The three keys onboarded before the registry existed. ``legacy`` now means only
+# fetch-time admission through their in-code header contracts (endpoints.DATASETS);
+# their silver runs through the generic engine on frozen records like any other.
 LEGACY_KEYS: frozenset[str] = frozenset(
     {"daily_wind_availability", "historic_generation_mix", "embedded_wind_solar_forecast"}
 )
@@ -473,7 +474,6 @@ def _validate_records(name: str, entry: PackageEntry) -> None:
                 family.record,
                 key=family.key,
                 kind=family.kind,
-                legacy=family.legacy,
                 package_families=with_record,
                 family_url_types=url_types,
             )
@@ -835,10 +835,9 @@ def key_collisions(registry: Registry, registered: Iterable[tuple[str, str]]) ->
     """Return registry keys that collide with registered silver datasets (P-3).
 
     A key collides only when **another source** registers the same dataset
-    name. Every registry key may appear under ``neso_data_portal``: the legacy
-    three through their bespoke transformers, a recorded family through its
-    generated transformer (ADR-034 P-15). Which keys are registered there is
-    pinned separately.
+    name. Every registry key may appear under ``neso_data_portal``: a recorded
+    family through its generated transformer (ADR-034 P-15). Which keys are
+    registered there is pinned separately.
 
     Args:
         registry: The loaded registry.

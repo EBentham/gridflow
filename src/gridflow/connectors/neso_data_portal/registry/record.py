@@ -813,7 +813,6 @@ def validate_record(
     *,
     key: str,
     kind: str,
-    legacy: bool,
     package_families: dict[str, bool],
     family_url_types: frozenset[str],
 ) -> None:
@@ -823,7 +822,6 @@ def validate_record(
         record: The family's record.
         key: The family key.
         kind: The family kind (``tabular``/``files``).
-        legacy: Whether the family is one of the three legacy keys.
         package_families: Every family key of the package -> whether it has a
             record.
         family_url_types: The ``url_type`` of every resource the family holds
@@ -832,8 +830,8 @@ def validate_record(
     Raises:
         RecordError: The first rule broken, named ``V-n``.
     """
-    if kind != "tabular" or legacy:
-        raise _fail("V-9", "a record is allowed only on a tabular, non-legacy family")
+    if kind != "tabular":
+        raise _fail("V-9", "a record is allowed only on a tabular family")
 
     dtypes: dict[str, str] = {}
     for index, epoch in enumerate(record.epochs):
