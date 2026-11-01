@@ -85,7 +85,10 @@ stable query date for downstream consumers is still the ingestion
 timestamp until a reviewed event-date contract is added.
 
 `CANONICAL_SCHEMA.yaml` remains subordinate documentation and test
-input. It is not the source for the runtime manifest.
+input. It is not the source for the runtime manifest. (2026-11-01: the
+YAML, 155 of whose 161 entries were never curated, and its seed script were
+deleted. Its six Open-Meteo column sets are now checked against this
+manifest, which is the only schema authority.)
 
 **Amended 2026-08-03 (v0.18 N-5).** `relation_name` for an APPEND_ONLY
 dataset with a registered `LATEST_VIEW_SPECS` entry (see
