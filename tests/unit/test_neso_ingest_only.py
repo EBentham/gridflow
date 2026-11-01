@@ -64,5 +64,5 @@ def test_t_b1_13_every_configured_key_transforms_without_failure(
     assert failed == []
     families = load_registry().families
     recorded = {key for key, (_package, family) in families.items() if family.record is not None}
-    assert sum(r.skip_reason is not None for r in results) == 326 - 3 - len(recorded)
+    assert sum(r.skip_reason is not None for r in results) == 326 - len(recorded)
     assert not [r.dataset for r in results if r.dataset in recorded and r.skip_reason is not None]

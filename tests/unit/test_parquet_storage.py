@@ -19,7 +19,6 @@ from polars.testing import assert_frame_equal
 from gridflow.storage.parquet import (
     _is_link_or_junction,
     is_reserved_temp_path,
-    read_parquet,
     read_parquet_dir,
     scan_parquet_dir,
     scan_parquet_range,
@@ -208,20 +207,16 @@ def test_read_surfaces_ignore_reserved_temps(tmp_path: Path) -> None:
     legacy.write_bytes(b"corrupt")
     suffix.write_bytes(b"corrupt")
 
-    assert read_parquet(str(part / "*.parquet"))["value"].to_list() == [1]
     assert read_parquet_dir(tmp_path / "ds")["value"].to_list() == [1]
     assert scan_parquet_range(tmp_path / "ds", date(2024, 1, 1), date(2024, 1, 31)).collect()[
         "value"
     ].to_list() == [1]
-    with pytest.raises(ValueError, match="reserved temporary"):
-        read_parquet(legacy)
 
 
 def test_reserved_only_reads_are_empty(tmp_path: Path) -> None:
     part = tmp_path / "ds" / "year=2024" / "month=01"
     _write_parquet(pl.DataFrame({"value": [1]}), part / ".tmp_only.parquet")
 
-    assert read_parquet(str(part / ".tmp_*.parquet")).is_empty()
     assert read_parquet_dir(tmp_path / "ds").is_empty()
     assert (
         scan_parquet_range(tmp_path / "ds", date(2024, 1, 1), date(2024, 1, 31))
@@ -435,25 +430,6 @@ def test_read_parquet_dir_tolerates_mixed_pre_and_post_f0_schemas(
     assert df["available_at"].to_list() == [None, "2024-01-16T00:00:00Z"]
 
 
-def test_read_parquet_glob_tolerates_mixed_schemas(tmp_path: Path) -> None:
-    """read_parquet(glob) null-fills within-glob drift (narrow-then-wide order).
-
-    Same load-bearing ordering as the tree test above: ``a_narrow`` (no extra
-    column) MUST sort before ``b_wide`` so the unfixed single-glob read resolves
-    the schema from the narrow file and raises on the wide file's extra column.
-    """
-    _write_parquet(pl.DataFrame({"value": [1]}), tmp_path / "a_narrow.parquet")
-    _write_parquet(
-        pl.DataFrame({"value": [2], "source_run_id": ["run-xyz"]}),
-        tmp_path / "b_wide.parquet",
-    )
-
-    df = read_parquet(str(tmp_path / "*.parquet")).sort("value")
-
-    assert df["value"].to_list() == [1, 2]
-    assert df["source_run_id"].to_list() == [None, "run-xyz"]
-
-
 def test_read_parquet_dir_returns_empty_when_no_files(tmp_path: Path) -> None:
     df = read_parquet_dir(tmp_path / "does_not_exist")
     assert df.is_empty()
@@ -496,9 +472,8 @@ def test_scan_parquet_dir_skips_transient_tmp_writes(tmp_path: Path) -> None:
 
     ``write_parquet`` writes to a ``.tmp_<name>`` sibling then ``os.replace``s it
     into place, so a ``.tmp_`` parquet is always an in-flight or torn write that
-    a concurrent read must not pick up. Glob-based ``read_parquet`` already skips
-    dotfiles; ``scan_parquet_dir`` must agree (the file is a valid parquet here so
-    the assertion isolates the skip, not a parse error).
+    a concurrent read must not pick up. ``scan_parquet_dir`` must skip it (the file is a
+    valid parquet here so the assertion isolates the skip, not a parse error).
     """
     part = tmp_path / "ds" / "year=2024" / "month=02"
     _write_parquet(

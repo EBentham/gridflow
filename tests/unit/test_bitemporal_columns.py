@@ -16,7 +16,7 @@ from gridflow.silver.elexon.indo import INDOTransformer
 from gridflow.silver.elexon.remit import REMITTransformer
 from gridflow.silver.elexon.wind_forecast import WindForecastTransformer
 from gridflow.silver.openmeteo.historical import HistoricalDemandWeather
-from gridflow.storage.parquet import read_parquet
+from gridflow.storage.parquet import scan_parquet_dir
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 TARGET_DATE = date(2024, 1, 15)
@@ -198,8 +198,7 @@ def _write_openmeteo_historical_bronze(
 
 
 def _read_single_silver(data_dir: Path, source: str, dataset: str) -> pl.DataFrame:
-    pattern = data_dir / "silver" / source / dataset / "**" / "*.parquet"
-    return read_parquet(pattern)
+    return scan_parquet_dir(data_dir / "silver" / source / dataset).collect()
 
 
 def _assert_base_bitemporal_columns(df: pl.DataFrame, expected_version: str = "1.0.0") -> None:

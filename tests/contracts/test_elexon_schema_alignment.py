@@ -31,7 +31,6 @@ from gridflow.schemas.elexon import (
     ElexonATL,
     ElexonBMUnit,
     ElexonBOAL,
-    ElexonBOD,
     ElexonDemandForecast,
     ElexonDISBSAD,
     ElexonFOU2T14D,
@@ -65,7 +64,6 @@ from gridflow.silver.elexon.agws import AGWSTransformer
 from gridflow.silver.elexon.atl import ATLTransformer
 from gridflow.silver.elexon.bmunits import BMUnitsTransformer
 from gridflow.silver.elexon.boal import BOALTransformer
-from gridflow.silver.elexon.bod import BODTransformer
 from gridflow.silver.elexon.demand_forecast import DemandForecastTransformer
 from gridflow.silver.elexon.disbsad import DISBSADTransformer
 from gridflow.silver.elexon.fou2t14d import FOU2T14DTransformer
@@ -124,7 +122,6 @@ SCHEMA_FIXTURE_MAP: dict[type[BaseModel], tuple[type, str]] = {
     ElexonFuelInst: (FuelInstTransformer, "fuelinst_response.json"),
     ElexonFuelHH: (FuelHHTransformer, "fuelhh_response.json"),
     ElexonBOAL: (BOALTransformer, "boal_response.json"),
-    ElexonBOD: (BODTransformer, "bod_response.json"),
     ElexonMID: (MIDTransformer, "mid_response_v2.json"),
     ElexonFrequency: (FreqTransformer, "freq_response.json"),
     ElexonDemandForecast: (DemandForecastTransformer, "ndf_response.json"),

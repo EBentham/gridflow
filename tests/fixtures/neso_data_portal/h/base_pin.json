@@ -30408,7 +30408,10 @@
           "columns": [
             {
               "dtype": "date",
-              "format": "%Y-%m-%dT%H:%M:%S ",
+              "file_formats": [
+                "%Y-%m-%dT%H:%M:%S ",
+                "%d-%m-%Y "
+              ],
               "name": "settlement_date",
               "null_tokens": [],
               "nullable": false,
@@ -30497,7 +30500,10 @@
           "columns": [
             {
               "dtype": "date",
-              "format": "%Y-%m-%dT%H:%M:%S ",
+              "file_formats": [
+                "%Y-%m-%dT%H:%M:%S ",
+                "%d-%m-%Y "
+              ],
               "name": "settlement_date",
               "null_tokens": [],
               "nullable": false,
@@ -30586,7 +30592,10 @@
           "columns": [
             {
               "dtype": "date",
-              "format": "%Y-%m-%dT%H:%M:%S ",
+              "file_formats": [
+                "%Y-%m-%dT%H:%M:%S ",
+                "%d-%m-%Y "
+              ],
               "name": "settlement_date",
               "null_tokens": [],
               "nullable": false,

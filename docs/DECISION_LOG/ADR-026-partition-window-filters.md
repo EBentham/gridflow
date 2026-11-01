@@ -209,7 +209,7 @@ delete rows.
 |---|---|---|---|
 | `elexon` (23 of 24 in-scope datasets) | a **publication** window | `published_at` | `publishDateTimeFrom`/`publishDateTimeTo` |
 | `elexon/remit` (D-1b) | same, but `remit` derives `timestamp_utc` deterministically from `published_at` and drops the source column at select | `timestamp_utc` | same |
-| `entsoe` (opted-in per `EVENT_WINDOW_CLASSIFICATION`, D-9) | a **UTC delivery day** | `timestamp_utc` | `periodStart`/`periodEnd` |
+| `entsoe` (opted in per transformer, D-6/D-9) | a **UTC delivery day** | `timestamp_utc` | `periodStart`/`periodEnd` |
 
 For ENTSO-E, `[periodStart, periodEnd)` is DST-invariant because CET/CEST never enters the
 computation (D-2) — the window is a UTC instant range, not a calendar-local one.
@@ -247,8 +247,8 @@ counted (`last_partition_filter_dropped_count`), and logged
 
 **The mechanism this replaces.** An earlier revision of this design applied the CLOSED-interval
 neighbour-durability proof to ENTSO-E's lower bound too (a per-instant, never-per-date resolution
-against a predecessor partition — sound in isolation, and its underlying primitive machinery
-remains correct, tested, and available for any future CLOSED-interval connector that needs it).
+against a predecessor partition — sound in isolation; that lower-bound machinery was deleted on
+2026-11-01, see D-3b).
 Sol confirmed this was the wrong semantics for a HALF_OPEN vendor interval: it treated
 genuinely-out-of-scope vendor over-return as if it were a genuinely-requested, jointly-owned
 boundary row, and its stated justification ("ENTSO-E enforces both bounds because a trimmed row
@@ -288,14 +288,16 @@ group's verdict.
 
 This proof, and its retention-on-unproven behaviour, is **exclusively a CLOSED-interval (Elexon)
 mechanism** — `exclude_out_of_window` (ENTSO-E's HALF_OPEN path) takes no ownership-verdict
-argument and calls none of this machinery. The per-instant (never per-date) resolution this
-proof's lower-bound variant used is still correct, tested primitive machinery
-(`filter_frame_to_window`'s `lower_bound_ownership` parameter) — simply not currently exercised by
-any live call site, since Elexon never enforces its own lower bound (D-3) and ENTSO-E no longer
-uses a durability proof at all. A future CLOSED-interval connector needing a lower-bound proof
-would reuse it unchanged; the underlying per-instant-not-per-date regression stays pinned at
-`tests/unit/test_partition_window_filter.py::TestNeighbourOwns::
-test_lower_bound_ownership_is_resolved_per_instant_not_per_date`.
+argument and calls none of this machinery. The proof resolves ownership per instant, never per
+date; that regression stays pinned at `tests/unit/test_partition_window_filter.py::
+TestNeighbourOwns::test_ownership_is_resolved_per_instant_not_per_date`.
+
+**Amended 2026-11-01: the lower-bound ownership mapping is deleted.** `filter_frame_to_window`
+used to take a per-instant `lower_bound_ownership` mapping, built for ENTSO-E and kept for a
+future CLOSED-interval connector after ENTSO-E moved to `exclude_out_of_window`. Its only call
+site passed `None`, so the parameter and its per-row loop are gone: the lower bound is never
+enforced (D-3), and below-window rows are kept and counted in `below_window`. A connector that
+needs a lower-bound proof can restore it from git history.
 
 ### D-7(e) — all-or-nothing for the partition being filtered (deliberate asymmetry with D-3b)
 
@@ -361,12 +363,14 @@ research (CLAUDE.md: "Do not invent rate limits, endpoints, or schemas... write 
 **B4 (2026-08, milestone v0.18) landed the N-9 research verdict** (`R3-RESEARCH.md` Sec 1.1): 19
 of the 28 TODO datasets are evidence-classified FILTER_SAFE and now opted in (26 opted-in total),
 4 are evidence-classified EXEMPT with a cited reason, and 5 remain genuinely `TODO`-marked
-UNKNOWN (never observed populated-and-window-compared, or unwired — N-22). The full dataset ->
-verdict -> citation -> transformer-family map lives in
-`silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION`, the audit surface F-10's closure
-and the N-9 gate check against. **F-10 and the N-9 gate remain OPEN**: they close only when the
-5 UNKNOWN entries are resolved by a future pass, or their residual is accepted at a milestone
-close (a Bobbo decision, not this ADR's to make).
+UNKNOWN (never observed populated-and-window-compared, or unwired — N-22). The evidence behind
+each of the 28 verdicts is in Appendix A, the audit surface F-10's closure and the N-9 gate check
+against. It lived in `silver/entsoe/_event_window.py::EVENT_WINDOW_CLASSIFICATION` until
+2026-10-31, when it moved here because no runtime code read it; the runtime gate is each
+transformer's own `EVENT_WINDOW_FILTER`, and `EVENT_WINDOW_FILTER_EXEMPT` (same module) still
+records a reason for every dataset not opted in. **F-10 and the N-9 gate remain OPEN**: they
+close only when the 5 UNKNOWN entries are resolved by a future pass, or their residual is accepted
+at a milestone close (a Bobbo decision, not this ADR's to make).
 
 ## Residuals (accepted, not pursued here)
 
@@ -397,8 +401,7 @@ close (a Bobbo decision, not this ADR's to make).
   earlier revision of this design specified — the primitive doesn't expose chunk-window bounds
   without full recomputation, so a strict chunk-level cache isn't buildable as a black-box
   consumer. Flagged as a performance note, not a correctness gap, when this design was reviewed;
-  now moot on the ENTSO-E path (no ownership resolution happens there at all) and retained only as
-  a note for whichever future CLOSED-interval path exercises the lower bound.
+  moot since the lower-bound machinery was deleted (2026-11-01, see D-3b).
 
 ## Consequences
 
@@ -417,3 +420,230 @@ close (a Bobbo decision, not this ADR's to make).
   affected silver from immutable bronze. Per the plan's A-15b, once ENTSO-E bronze exists on disk,
   the R2-exit sweep additionally asserts every opted-in dataset's silver rows satisfy their own
   recorded window — zero out-of-window rows, by construction of this design.
+
+## Appendix A — ENTSO-E event-window evidence (B4 / N-9)
+
+One entry per dataset of B4's 28-dataset research population: document type, verdict, the evidence
+and what it does not establish, moved verbatim from `silver/entsoe/_event_window.py` on
+2026-10-31. The 20 datasets R2-A classified are listed under D-9. `R3-RESEARCH.md` and the
+`probes/` files sit under `.planning/phases/R3-test-integrity/`, which is not tracked in git.
+
+- **`cross_border_flows`** (A11, FILTER_SAFE). Evidence: Live probe
+  probes/entsoe_A11_cross_border_flows_FR_BE_20260801.xml: FR-BE 2026-08-01, period.timeInterval =
+  [2026-08-01T00:00Z, 2026-08-02T00:00Z), matching the request exactly (R3-RESEARCH.md:50).
+  Limitation: Confirms one zone pair (FR-BE) and one day; other zone pairs and days are not
+  independently observed.
+  Probes: `entsoe_A11_cross_border_flows_FR_BE_20260801.xml`.
+- **`commercial_schedules`** (A09, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/commercial_schedules.md, live GB-FR 2026-05-06:
+  Publication_MarketDocument, 2 TimeSeries, hourly points (research verdict FILTER_SAFE,
+  R3-RESEARCH.md:51).
+  Limitation: Vault-recorded prior live validation, not re-probed this session; no local probe
+  artifact exists, and the vault artifact records TimeSeries/point counts only - the response
+  interval was never compared against the request bounds (Sec 5a).
+- **`total_nominated_capacity`** (A26/B08, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/total_nominated_capacity.md, live GB-FR 2026-05-06: 3
+  TimeSeries, period.timeInterval matches the request exactly, PT60M points (PASS,
+  R3-RESEARCH.md:52).
+  Limitation: Vault-recorded prior live validation, not re-probed this session; rests on a prior
+  real live validation quoted in the vault page, not a fresh probe (Sec 5a).
+- **`net_transfer_capacity`** (A61, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/net_transfer_capacity.md, live GB-FR: 1 TimeSeries,
+  window-bounded single Point (curveType A03) (PASS, R3-RESEARCH.md:53).
+  Limitation: Vault-recorded prior live validation, not re-probed this session; single-Point sample,
+  other zone pairs/days unobserved (Sec 5a).
+- **`net_positions`** (A25/B09, FILTER_SAFE). Evidence: Live probe
+  probes/entsoe_A25_net_positions_FR_20260601.xml: FR single-zone 2026-06-01, period.timeInterval
+  exactly the requested day, PT15M points with real quantities (R3-RESEARCH.md:54).
+  Limitation: Confirms one zone (FR) and one day; other zones/days unobserved.
+  Probes: `entsoe_A25_net_positions_FR_20260601.xml`.
+- **`procured_balancing_capacity`** (A15/A51, FILTER_SAFE). Evidence: Live probe
+  probes/entsoe_A15_procured_balancing_capacity_DE_20260601.xml (ZIP-extraction companion:
+  probes/entsoe_A15_extracted.xml): DE-LU 2026-06-01, period.timeInterval = [2026-05-31T22:00Z,
+  2026-06-01T02:00Z) -- crosses the lower request bound (starts 2h early, B-7), the same
+  CET-boundary over-span shape as the already-proven A44 case (R3-RESEARCH.md:55).
+  Limitation: The upper request-window relation is unobserved (B-7): the response ends about 22h
+  short of the requested day's end, so only the over-span lower edge is confirmed, not a full-window
+  comparison.
+  Probes: `entsoe_A15_procured_balancing_capacity_DE_20260601.xml`, `entsoe_A15_extracted.xml`.
+- **`balancing_energy_bids`** (A37/A47/B74, FILTER_SAFE). Evidence: Live probe
+  probes/entsoe_A37_balancing_energy_bids_DE_20260601.xml (ZIP-extraction companion:
+  probes/entsoe_A37_extracted.xml): DE-LU 2026-06-01, real 144KB payload,
+  reserveBid_Period.timeInterval = [2026-06-01T00:00Z, 2026-06-01T00:15Z) -- the lower edge
+  coincides exactly with the request start (B-7), resolution PT15M (R3-RESEARCH.md:56).
+  Limitation: N-21 fixed the envelope handling: parse_timeseries_xml now accepts
+  ReserveBid_MarketDocument/Bid_TimeSeries (root-scoped, _SERIES_TAGS_BY_DOC_ROOT) rather than
+  matching only the literal Balancing_MarketDocument/TimeSeries shape, so the live A37 payload no
+  longer parses to zero rows. The filter has now been exercised against real A37 rows: 100 rows at
+  2026-06-01T00:00Z, all retained at the recorded window's lower edge under HALF_OPEN (N-21 F-5).
+  The upper request-window relation remains untested: the response ends far short of the request end
+  (B-7), so only the lower boundary is confirmed.
+  Probes: `entsoe_A37_balancing_energy_bids_DE_20260601.xml`, `entsoe_A37_extracted.xml`.
+- **`dc_link_intraday_transfer_limits`** (A93, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/dc_link_intraday_transfer_limits.md, live GB-FR: real EMPTY
+  (Reason 999, no revision published), never observed populated. Structural analogy: same
+  _H6QuantityTransformer code path and zone_pair shape as
+  total_nominated_capacity/total_capacity_allocated, both directly verified day-bound
+  (R3-RESEARCH.md:57).
+  Limitation: EMPTY probe only -- no populated payload observed for this dataset itself; the verdict
+  rides the structural analogy to a directly-verified sibling, not an own-payload window comparison.
+- **`redispatching_cross_border`** (A63/A46, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/redispatching_cross_border.md, live GB-FR and NL-DE sanity
+  check, both real EMPTY (event-driven, rare). Same _H6QuantityTransformer code path as the
+  directly-verified quantity family (R3-RESEARCH.md:58).
+  Limitation: EMPTY probes only; the verdict rides structural analogy, not an own populated-payload
+  comparison.
+- **`redispatching_internal`** (A63/A85, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/redispatching_internal.md, live: real EMPTY. Same code path
+  as redispatching_cross_border; sister dataset differing only by businessType (R3-RESEARCH.md:59).
+  Limitation: EMPTY probe only; the verdict rides structural analogy to its sister dataset and the
+  quantity family, not an own populated-payload comparison.
+- **`countertrading`** (A91, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/countertrading.md, live: real EMPTY. Same
+  _H6QuantityTransformer code path (R3-RESEARCH.md:60).
+  Limitation: EMPTY probe only; the verdict rides structural analogy, not an own populated-payload
+  comparison.
+- **`offered_transfer_capacity_continuous`** (A31, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/offered_transfer_capacity_continuous.md, live: real EMPTY
+  (daily + 30-day retry). Same code path/schema family as net_transfer_capacity (A61, directly
+  verified day-bound) (R3-RESEARCH.md:61).
+  Limitation: EMPTY probes only across a daily retry and a 30-day retry; the verdict rides
+  structural analogy, not an own populated-payload comparison.
+- **`offered_transfer_capacity_implicit`** (A31, FILTER_SAFE). Evidence: Vault (live 2026-05-08)
+  plus this session's live probe probes/entsoe_A31_offered_implicit_FR_BE_20260601.xml, FR-BE, also
+  real EMPTY. Never observed populated across 3 independent probes; same structural family as
+  A61/A11 (R3-RESEARCH.md:62).
+  Limitation: EMPTY across all 3 probes; the verdict rides structural analogy, not an own
+  populated-payload comparison.
+  Probes: `entsoe_A31_offered_implicit_FR_BE_20260601.xml`.
+- **`offered_transfer_capacity_explicit`** (A31, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/offered_transfer_capacity_explicit.md, live: real EMPTY.
+  Same family (R3-RESEARCH.md:63).
+  Limitation: EMPTY probe only; the verdict rides structural analogy, not an own populated-payload
+  comparison.
+- **`transfer_capacity_use`** (A25/B05, FILTER_SAFE). Evidence: Vault (live 2026-05-08) plus this
+  session's live probes probes/entsoe_A25_transfer_capacity_use_FR_BE_20260601.xml and
+  probes/entsoe_A25_transfer_capacity_use_NO1_SE1_20180115.xml (2 pairs/eras, both real EMPTY).
+  MW-quantity schema (EntsoeTransmissionMarketQuantity, _H6QuantityTransformer), distinct from the
+  EUR/amount family proved monthly (Sec 1.4); deliberately re-probed given that discovery, still
+  resolves to the quantity family (R3-RESEARCH.md:64).
+  Limitation: EMPTY across both probes; the verdict rides structural analogy to the quantity family,
+  not an own populated-payload comparison.
+  Probes: `entsoe_A25_transfer_capacity_use_FR_BE_20260601.xml`,
+  `entsoe_A25_transfer_capacity_use_NO1_SE1_20180115.xml`.
+- **`total_capacity_allocated`** (A26/A29, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/total_capacity_allocated.md, live: real EMPTY. Sister to
+  total_nominated_capacity (A26/B08, directly verified day-bound with real populated data); same
+  document type, same _H6QuantityTransformer code path (R3-RESEARCH.md:65).
+  Limitation: EMPTY probe only; the verdict rides structural analogy to its sister dataset, not an
+  own populated-payload comparison.
+- **`activated_balancing_prices`** (A84/A16/A96, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/activated_balancing_prices.md, live NL 2025-04-01: real
+  populated Balancing_MarketDocument, 2 TimeSeries, processType=A16 (Realised, not forecast)
+  (R3-RESEARCH.md:66).
+  Limitation: Window-bound comparison not shown in the abridged vault text -- populated real data
+  observed, but not compared against the request window.
+- **`imbalance_prices`** (A85, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/imbalance_prices.md, live FR 2025-04-01: real populated
+  data, PT15M (R3-RESEARCH.md:67).
+  Limitation: Window-bound comparison not shown in the abridged vault text -- populated real data
+  observed, but not compared against the request window.
+- **`imbalance_volume`** (A86/A19, FILTER_SAFE). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/imbalance_volume.md, live FR 2025-04-01: real populated
+  data, PT15M (R3-RESEARCH.md:68).
+  Limitation: Same caveat as imbalance_prices: window-bound comparison not shown in the abridged
+  vault text.
+- **`congestion_management_costs`** (A92, EXEMPT). Evidence: Live probe
+  probes/entsoe_A92_congestion_costs_FR_20260601.xml: FR single-zone 2026-06-01, real populated
+  TransmissionNetwork_MarketDocument, resolution P1M, Period.timeInterval = [2026-05-31T22:00Z,
+  2026-06-30T22:00Z) -- the whole month of June, not the requested day. A day-exact trim would
+  delete this row on every day except the one containing the period start (R3-RESEARCH.md:69).
+  Limitation: Confirms one zone (FR) and one month; other zones/months not independently observed,
+  though the P1M resolution is a stable document property, not a per-instance one.
+  Probes: `entsoe_A92_congestion_costs_FR_20260601.xml`.
+- **`balancing_financial_expenses_income`** (A87, EXEMPT). Evidence: Live probe
+  probes/entsoe_A87_balancing_financial_FR_20260601.xml (ZIP-extraction companion:
+  probes/entsoe_A87_extracted_001-FINANCIAL_EXPENSES_AND_INCOME_FOR_BALANCING_R3202605312200-202606302200.xml):
+  FR control area 2026-06-01, real populated ZIP -> Balancing_MarketDocument, resolution P1M,
+  Period.timeInterval = [2026-05-31T22:00Z, 2026-06-30T22:00Z), Financial_Price.amount at position 1
+  only (one point per month). Independently confirms the same monthly-aggregate pattern as A92 from
+  a structurally independent code family (h8_balancing.py, not h6_market.py) (R3-RESEARCH.md:70).
+  Limitation: Confirms one control area (FR) and one month; other areas/months not independently
+  observed.
+  Probes: `entsoe_A87_balancing_financial_FR_20260601.xml`,
+  `entsoe_A87_extracted_001-FINANCIAL_EXPENSES_AND_INCOME_FOR_BALANCING_R3202605312200-202606302200.xml`.
+- **`auction_revenue`** (A25/B07, EXEMPT). Evidence: Shares the literal _H6AmountTransformer class
+  (h6_market.py) and EntsoeTransmissionMarketAmount schema with the directly-probed,
+  confirmed-monthly congestion_management_costs (A92, same class). The verdict rides the
+  12.1.A/12.1.E article-class sibling inference (A92/A87 P1M live-confirmed, B-4) -- A92/A87 are TSO
+  financial-reporting articles that settle over accounting periods, not delivery days. No populated
+  live payload was obtained for B07 itself despite 2 probe attempts this session
+  (probes/entsoe_A25_auction_revenue_FR_BE_20260601.xml,
+  probes/entsoe_A25_auction_revenue_NO1_SE1_20180115.xml -- both real EMPTY, a modern SDAC pair and
+  a pre-coupling Nordic pair) (R3-RESEARCH.md:71).
+  Limitation: Own probes are real EMPTY, not populated -- the EXEMPT verdict rides the 12.1.A/12.1.E
+  article-class sibling inference (B-4), not an own populated payload. Flagged for Bobbo: inferred,
+  not independently confirmed.
+  Probes: `entsoe_A25_auction_revenue_FR_BE_20260601.xml`,
+  `entsoe_A25_auction_revenue_NO1_SE1_20180115.xml`.
+- **`congestion_income`** (A25/B10, EXEMPT). Evidence: Same
+  _H6AmountTransformer/EntsoeTransmissionMarketAmount reasoning as auction_revenue, riding the same
+  12.1.A/12.1.E article-class sibling inference (A92/A87 P1M live-confirmed, B-4). 1 probe attempt
+  this session (probes/entsoe_A25_congestion_income_FR_BE_20260601.xml, real EMPTY)
+  (R3-RESEARCH.md:72).
+  Limitation: Own probe is real EMPTY, not populated -- the EXEMPT verdict rides the 12.1.A/12.1.E
+  article-class sibling inference (B-4), not an own populated payload. Flagged for Bobbo: inferred,
+  not independently confirmed.
+  Probes: `entsoe_A25_congestion_income_FR_BE_20260601.xml`.
+- **`contracted_reserves`** (A81/A52/B95, UNKNOWN). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/contracted_reserves.md records a live FR
+  Balancing_MarketDocument from an older window (2025-04-01) -- populated, request-shape validation
+  only, never window-compared (contracted_reserves.md:198-202). This session's live probe
+  probes/entsoe_A81_contracted_reserves_DE_20260601.xml (DE-LU) returned real EMPTY, and GB is EMPTY
+  per vault. The bronze fixture sample (tests/fixtures/entsoe/contracted_reserves_gb.xml) is
+  hand-built, not vendor-observed (R3-RESEARCH.md:73).
+  Limitation: Two-sided record: an older populated FR observation never compared against a request
+  window, plus this session's real-EMPTY DE probe. Together they still support no window verdict --
+  never observed populated AND window-compared in the same sample.
+  Probes: `entsoe_A81_contracted_reserves_DE_20260601.xml`.
+- **`current_balancing_state`** (A86/B33, UNKNOWN). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/current_balancing_state.md cites
+  tests/fixtures/entsoe/current_balancing_state_gb.xml (fixture only, not vendor-observed) as its
+  bronze evidence. This session's live probe
+  probes/entsoe_A86_current_balancing_state_DE_20260601.xml (DE-LU) returned real EMPTY, and GB is
+  EMPTY per vault (R3-RESEARCH.md:74).
+  Limitation: Superseded in part (2026-10-24): bronze for 2026-08-01..05 is populated for FR, NL and
+  BE (A03 PT1M curves, area at document level). On 2026-08-01 every point fell inside the UTC
+  request day (00:00-23:59). That is one day, not a window review, so the verdict stays UNKNOWN and
+  the filter stays off.
+  Probes: `entsoe_A86_current_balancing_state_DE_20260601.xml`.
+- **`aggregated_balancing_energy_bids`** (A24/A51, UNKNOWN). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/aggregated_balancing_energy_bids.md cites
+  tests/fixtures/entsoe/aggregated_balancing_energy_bids_gb.xml (fixture only). This session's live
+  probe probes/entsoe_A24_aggregated_balancing_energy_bids_DE_20260601.xml (DE-LU) returned real
+  EMPTY, and GB is EMPTY per vault (R3-RESEARCH.md:75). N-21 (Sec 0 correction) confirmed the A24
+  probe is a 967-byte Acknowledgement_MarketDocument, Reason/code 999 ("No matching data found"),
+  zero TimeSeries-like elements of any name -- a real-EMPTY response, not an envelope mismatch like
+  the A37 sibling dataset (N-21).
+  Limitation: Never observed populated; fixture-only prior evidence is not trusted alone (Sec
+  1.4/5). The record supports no window verdict. The concrete class subclasses
+  BalancingEnergyBidsTransformer (C-5) -- EVENT_WINDOW_FILTER is explicitly False on this class, not
+  inherited (I-6), so this UNKNOWN verdict cannot leak in via the parent's True.
+  Probes: `entsoe_A24_aggregated_balancing_energy_bids_DE_20260601.xml`.
+- **`cross_zonal_balancing_capacity`** (A38/A51, UNKNOWN). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/cross_zonal_balancing_capacity.md cites
+  tests/fixtures/entsoe/cross_zonal_balancing_capacity_gb_fr.xml (fixture only). This session's live
+  probe probes/entsoe_A38_cross_zonal_balancing_capacity_DE_FR_20260601.xml (DE-FR) returned real
+  EMPTY, and GB-FR is EMPTY per vault (R3-RESEARCH.md:76).
+  Limitation: Never observed populated; fixture-only prior evidence is not trusted alone (Sec
+  1.4/5). The record supports no window verdict.
+  Probes: `entsoe_A38_cross_zonal_balancing_capacity_DE_FR_20260601.xml`.
+- **`activated_balancing_qty`** (A83/A16, UNKNOWN). Evidence: Vault
+  quant-vault/30-vendors/entsoe/datasets/activated_balancing_qty.md is the only reference; not wired
+  into connectors/entsoe/endpoints.py::DOC_TYPES or config/sources.yaml (confirmed absent from both
+  by grep this session) -- no live fetch path exists at all for this dataset. The only reference
+  shape is tests/fixtures/entsoe/activated_balancing_qty_gb.xml (fixture only) (R3-RESEARCH.md:77).
+  Limitation: Unwired (N-22): no live probe was possible for this dataset regardless of
+  classification; the record supports no window verdict. Its unreachability is not fixed, wired, or
+  removed in B4 (out of scope). The transformer was deleted on 2026-11-01, so the dataset no longer
+  needs a verdict.

@@ -217,18 +217,18 @@ def parse_timeseries_xml(
         step fields above when ``a03_as_steps`` is set. Fields absent
         from a given TimeSeries element are returned as empty strings
         (backward-compatible).
+
+    Raises:
+        ValueError: The body is not well-formed XML, or the document is one
+            this parser refuses to read ambiguously (N-21 D-10 and D-11). An
+            Acknowledgement "no data" reply is valid XML and returns ``[]``.
     """
-    try:
-        from lxml import etree
-    except ImportError:
-        logger.error("lxml not installed; cannot parse ENTSO-E XML")
-        return []
+    from lxml import etree
 
     try:
         root = etree.fromstring(xml_bytes, parser=_hardened_parser())
     except etree.XMLSyntaxError as exc:
-        logger.error("XML parse error: %s", exc)
-        return []
+        raise ValueError(f"not well-formed XML: {exc}") from exc
 
     records: list[dict[str, Any]] = []
     document_metadata = _root_document_metadata(root)
@@ -274,15 +274,18 @@ def parse_timeseries_xml(
     if len(present_series_tags) > 1:
         logger.error(
             "N-21: ENTSO-E document %s (root %s) presents multiple accepted "
-            "series element names %s; refusing to parse it ambiguously and "
-            "returning 0 records. Merging them would silently inflate or "
+            "series element names %s; refusing to parse it ambiguously. "
+            "Merging them would silently inflate or "
             "reorder silver rows (N-21/D-10). Record the real envelope and "
             "extend _SERIES_TAGS_BY_DOC_ROOT deliberately",
             document_metadata["document_mrid"] or "<no mRID>",
             root_name,
             sorted(present_series_tags),
         )
-        return []
+        raise ValueError(
+            f"N-21/D-10: refused a document presenting several series element names "
+            f"{sorted(present_series_tags)}"
+        )
 
     matched_series = 0  # D-9
 
@@ -566,7 +569,7 @@ def parse_timeseries_xml(
                     logger.error(
                         "N-21/D-11: ENTSO-E document %s (root %s) has a <Point> presenting "
                         "more than one accepted value tag for value_tag=%r (accepted: %s); "
-                        "refusing to parse it ambiguously and returning 0 records. The value "
+                        "refusing to parse it ambiguously. The value "
                         "would otherwise be decided by element order. Record the real payload "
                         "and narrow _VALUE_TAG_ALIASES_BY_DOC_ROOT deliberately",
                         document_metadata["document_mrid"] or "<no mRID>",
@@ -574,7 +577,10 @@ def parse_timeseries_xml(
                         value_tag,
                         sorted(accepted_value_tags),
                     )
-                    return []
+                    raise ValueError(
+                        f"N-21/D-11: refused a <Point> presenting more than one accepted "
+                        f"value tag {sorted(accepted_value_tags)}"
+                    )
 
                 if position is None or value is None:
                     continue
@@ -777,18 +783,16 @@ def parse_generation_units_master_data_xml(xml_bytes: bytes) -> list[dict[str, A
     The Transparency Platform's master-data documents are reference data rather
     than point time series. This parser stays namespace-agnostic and extracts the
     fields the silver layer needs while tolerating small document-shape changes.
+
+    Raises:
+        ValueError: The body is not well-formed XML.
     """
-    try:
-        from lxml import etree
-    except ImportError:
-        logger.error("lxml not installed; cannot parse ENTSO-E XML")
-        return []
+    from lxml import etree
 
     try:
         root = etree.fromstring(xml_bytes, parser=_hardened_parser())
     except etree.XMLSyntaxError as exc:
-        logger.error("XML parse error: %s", exc)
-        return []
+        raise ValueError(f"not well-formed XML: {exc}") from exc
 
     area_code = ""
     implementation_datetime = None

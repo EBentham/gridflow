@@ -10,37 +10,17 @@
   "families": [
     {
       "key": "odfm_market_information_results",
-      "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "tabular"
     },
     {
       "key": "odfm_market_information_instructed",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Period",
-              "ODFM Instructed MW",
-              "Time",
-              "Date"
-            ],
             "columns": [
               {
                 "source": "Settlement Period",
@@ -69,10 +49,7 @@
                 "format": "%d/%m/%Y",
                 "nullable": false
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -93,64 +70,12 @@
     {
       "key": "odfm_market_information_load_factors",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Datetime",
-              "Scottish Hydro Wind",
-              "Scottish Power Wind",
-              "Electricity North West Wind",
-              "NPG North East Wind",
-              "NPG Yorkshire Wind",
-              "SP Manweb Wind",
-              "WPD West Midlands Wind",
-              "WPD East Midlands Wind",
-              "UKPN East Anglia Wind",
-              "UKPN London Wind",
-              "WPD South Wales Wind",
-              "WPD South West Wind",
-              "SSE South Wind",
-              "UKPN South East Wind",
-              "Scottish Hydro Solar",
-              "Scottish Power Solar",
-              "Electricity North West Solar",
-              "NPG North East Solar",
-              "NPG Yorkshire Solar",
-              "SP Manweb Solar",
-              "WPD West Midlands Solar",
-              "WPD East Midlands Solar",
-              "UKPN East Anglia Solar",
-              "UKPN London Solar",
-              "WPD South Wales Solar",
-              "WPD South West Solar",
-              "SSE South Solar",
-              "UKPN South East Solar",
-              "Scottish Hydro Other",
-              "Scottish Power Other",
-              "Electricity North West Other",
-              "NPG North East Other",
-              "NPG Yorkshire Other",
-              "SP Manweb Other",
-              "WPD West Midlands Other",
-              "WPD East Midlands Other",
-              "UKPN East Anglia Other",
-              "UKPN London Other",
-              "WPD South Wales Other",
-              "WPD South West Other",
-              "SSE South Other",
-              "UKPN South East Other"
-            ],
             "columns": [
               {
                 "source": "Datetime",
@@ -410,10 +335,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -433,14 +355,7 @@
     },
     {
       "key": "odfm_market_information_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "frozen",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     }
   ],
   "resources": [

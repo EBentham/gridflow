@@ -20,6 +20,7 @@ from gridflow.silver.base import (
     _BRONZE_VINTAGE_COLUMN,
     BaseSilverTransformer,
     BronzeReadSelection,
+    UnparseableBronzeError,
 )
 from gridflow.silver.entsog.datetime import (
     gas_day_stamp,
@@ -164,11 +165,13 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
         """
         pairs: list[tuple[Path, list[dict[str, Any]]]] = []
         undated_total = 0
+        unparseable: list[Path] = []
         for path in paths:
             try:
                 payload = json.loads(path.read_text())
-            except json.JSONDecodeError as exc:
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
                 logger.warning("Failed to parse ENTSO-G bronze file %s: %s", path, exc)
+                unparseable.append(path)
                 continue
             records = _extract_records(payload, self.response_key)
             if self.date_window_dataset and records and self.validity_window_dataset:
@@ -191,6 +194,8 @@ class GenericEntsogJsonTransformer(BaseSilverTransformer):
                 )
                 undated_total += undated
             pairs.append((path, records))
+        if unparseable:
+            raise UnparseableBronzeError(unparseable)
         log_undated_records(undated_total, target_date, source=self.source, dataset=self.dataset)
         return tuple(pairs)
 

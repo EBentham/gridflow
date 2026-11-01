@@ -11,24 +11,12 @@
     {
       "key": "thermal_constraint_costs",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Date",
-              "Constraint Group",
-              "Daily Cost (GBP)"
-            ],
             "columns": [
               {
                 "source": "Settlement Date",
@@ -49,10 +37,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -71,36 +56,17 @@
     },
     {
       "key": "thermal_constraint_costs_files",
-      "kind": "files",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null
+      "kind": "files"
     },
     {
       "key": "thermal_constraint_costs_xlsx",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "xlsx",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Date",
-              "Constraint Group",
-              "Daily Cost (GBP)"
-            ],
             "columns": [
               {
                 "source": "Settlement Date",
@@ -121,10 +87,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

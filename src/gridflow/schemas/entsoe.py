@@ -395,6 +395,7 @@ class EntsoeImbalancePrices(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str  # control area EIC mRID
+    business_type: str | None = None  # raw code, the grain (ADR-022)
     direction: str  # "long" | "short"
     price_eur_mwh: float
     currency: str = "EUR"
@@ -420,34 +421,9 @@ class EntsoeImbalanceVolume(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    flow_direction: str | None = None  # raw code, the grain (ADR-022)
     direction: str  # "long" | "short"
     volume_mwh: float
-    resolution: str = ""
-    published_at: datetime | None = None
-    data_provider: str = Field(default="entsoe")
-    ingested_at: datetime | None = None
-
-    @field_validator("timestamp_utc")
-    @classmethod
-    def must_be_utc(cls, v: datetime) -> datetime:
-        if v.tzinfo is None:
-            raise ValueError("timestamp_utc must be timezone-aware (UTC)")
-        return v
-
-
-class EntsoeActivatedBalancingQty(BaseSchema):
-    """Silver-layer schema for ENTSO-E activated balancing energy quantity (A83/A16).
-
-    reserve_type: "fcr"(A95) | "afrr"(A96) | "mfrr"(A97) | "rr"(A98).
-    direction: "up"(A01=upward activation) | "down"(A02=downward activation).
-    quantity_mwh: Activated quantity in MWh.
-    """
-
-    timestamp_utc: datetime
-    area_code: str
-    reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
-    direction: str  # "up" | "down"
-    quantity_mwh: float
     resolution: str = ""
     published_at: datetime | None = None
     data_provider: str = Field(default="entsoe")
@@ -476,6 +452,8 @@ class EntsoeActivatedBalancingPrices(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    business_type: str | None = None  # raw code, the grain (ADR-022)
+    flow_direction: str | None = None  # raw code, the grain (ADR-022)
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     direction: str  # "up" | "down"
     price_eur_mwh: float
@@ -502,6 +480,7 @@ class EntsoeContractedReserves(BaseSchema):
 
     timestamp_utc: datetime
     area_code: str
+    business_type: str | None = None  # raw code, the grain (ADR-022)
     reserve_type: str  # "fcr" | "afrr" | "mfrr" | "rr"
     quantity_mw: float
     resolution: str = ""
