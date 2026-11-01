@@ -22,14 +22,11 @@ import polars as pl
 import pytest
 import yaml
 
-# Registry side-effects (Pitfall 1: must import sub-packages explicitly)
-import gridflow.silver.elexon  # noqa: F401
-import gridflow.silver.entsoe  # noqa: F401
-import gridflow.silver.entsog  # noqa: F401
-import gridflow.silver.gie  # noqa: F401
-import gridflow.silver.neso  # noqa: F401
-import gridflow.silver.openmeteo  # noqa: F401
+from gridflow.pipeline.runner import import_transformers
 from gridflow.silver.registry import get_transformer, list_transformers
+
+# The registry fills only on import; the runner's list keeps every subpackage in.
+import_transformers()
 
 _CANONICAL_PATH = Path(__file__).resolve().parent.parent.parent / "docs" / "CANONICAL_SCHEMA.yaml"
 _CANONICAL: dict[str, Any] = yaml.safe_load(_CANONICAL_PATH.read_text(encoding="utf-8"))
