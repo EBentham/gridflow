@@ -59,6 +59,66 @@ jobs:
       - name: Test
         run: uv run --frozen pytest tests/ -v --tb=short -x -m "not live and not slow"
 
+  package-smoke:
+    # The wheel, installed into a clean venv and run outside the checkout, must
+    # find its gold views and sources and write only under the data root.
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Build and install the wheel
+        run: |
+          uv build --wheel --out-dir "$RUNNER_TEMP/dist"
+          uv venv "$RUNNER_TEMP/venv"
+          uv pip install --python "$RUNNER_TEMP/venv/bin/python" "$RUNNER_TEMP"/dist/*.whl
+
+      - name: Init and load settings outside the checkout
+        working-directory: ${{ runner.temp }}
+        env:
+          GRIDFLOW_DATA_DIR: ${{ runner.temp }}/data
+        run: |
+          venv/bin/gridflow init
+          venv/bin/python - <<'EOF'
+          import importlib.resources as resources
+          import os
+          from pathlib import Path
+
+          import yaml
+
+          from gridflow.config.settings import load_settings
+
+          # Gold views need silver to bind, so an empty root registers none;
+          # what the wheel must carry is the SQL itself.
+          repo = Path(os.environ["GITHUB_WORKSPACE"]) / "src" / "gridflow"
+          shipped = sorted(p.name for p in (resources.files("gridflow.gold") / "views").iterdir())
+          expected = sorted(p.name for p in (repo / "gold" / "views").iterdir())
+          print("views:", shipped)
+          assert shipped == expected, f"wheel views {shipped} != repo views {expected}"
+
+          catalogue = Path(os.environ["GRIDFLOW_DATA_DIR"]) / "gridflow.duckdb"
+          assert catalogue.is_file(), f"init wrote no catalogue at {catalogue}"
+
+          sources = load_settings().sources
+          declared = yaml.safe_load((repo / "config" / "sources.yaml").read_text())["sources"]
+          print("sources:", len(sources))
+          assert set(sources) == set(declared), sorted(sources)
+          EOF
+          # Logs go under the data root, not the current folder.
+          test -d data/logs && test ! -e logs
+
+      - name: Init with the default data root
+        working-directory: ${{ runner.temp }}
+        run: |
+          HOME="$RUNNER_TEMP/home" venv/bin/gridflow init
+          test -f "$RUNNER_TEMP/home/gridflow-data/gridflow.duckdb"
+
   slow-tests:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
