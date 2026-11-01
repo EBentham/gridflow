@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 from datetime import UTC, datetime
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import polars as pl
 
@@ -12,6 +12,9 @@ from gridflow.schemas.entsoe import EntsoeLoadForecast
 from gridflow.silver.entsoe._base import EntsoeXmlTransformer
 from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
+
+if TYPE_CHECKING:
+    from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +24,7 @@ class LoadForecastTransformer(EntsoeXmlTransformer):
 
     source = "entsoe"
     dataset = "load_forecast"
-    schema_cls = EntsoeLoadForecast
+    schema_cls: ClassVar[type[BaseModel]] = EntsoeLoadForecast
     APPEND_ONLY = True
     DATASET_VERSION = "2.0.0"
     ENTITY_KEY_COLUMNS = ("timestamp_utc", "area_code", "published_at")
