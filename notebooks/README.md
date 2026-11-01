@@ -54,8 +54,7 @@ Bootstrap cell.
   prints `skipped: <view> not ingested (gridflow backfill ...)`, naming the API
   key the command needs, instead of failing. A fresh clone runs every notebook
   to the end.
-- **Polars only.** Notebooks never import pandas; plotly takes Polars frames as
-  they are.
+- **Polars only, never pandas.** plotly takes Polars frames as they are.
 - **No pipeline logic in notebooks.** A function a notebook needs goes into
   `src/` with tests first.
 - **Run cells top to bottom.** Later cells use what earlier cells defined.
