@@ -1,7 +1,8 @@
 """``runner.run_backfill``: each chunk is one half-open ``[start, end)`` window.
 
 The chunk is handed to ingest and transform unchanged, so a final chunk that
-ends mid-day still transforms its last day.
+ends mid-day still transforms its last day, and a failed ingest is never
+followed by a transform of the partial bronze it left behind.
 """
 
 from __future__ import annotations
@@ -83,6 +84,42 @@ def test_each_chunk_transforms_exactly_the_days_it_ingested(
     assert [window_dates(*chunk) for chunk in calls["transform"]] == [
         [date(2024, 1, 15), date(2024, 1, 16)],
         [date(2024, 1, 17)],
+    ]
+
+
+def test_a_failed_ingest_skips_that_chunks_transform(
+    sample_config: GridflowConfig,
+    calls: dict[str, list[tuple[datetime, datetime]]],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A transform of partial bronze writes silver, and a caller that counts
+    silver rows as "done" would then never retry the chunk's ingest."""
+
+    def _ingest(
+        _ctx: object,
+        source: str,
+        datasets: list[str],
+        start: datetime,
+        end: datetime,
+        **_kwargs: Any,
+    ) -> list[DatasetResult]:
+        calls["ingest"].append((start, end))
+        if start == D:
+            return [DatasetResult(source, datasets[0], "ingest", "failed", error="boom")]
+        return [DatasetResult(source, datasets[0], "ingest", "success")]
+
+    monkeypatch.setattr(runner, "run_ingest", _ingest)
+
+    report = runner.run_backfill(
+        sample_config, "elexon", ["system_prices"], D, D + timedelta(days=2)
+    )
+
+    assert len(calls["ingest"]) == 2
+    assert calls["transform"] == [(D + timedelta(days=1), D + timedelta(days=2))]
+    assert [(r.operation, r.status) for r in report.results] == [
+        ("ingest", "failed"),
+        ("ingest", "success"),
+        ("transform", "success"),
     ]
 
 
