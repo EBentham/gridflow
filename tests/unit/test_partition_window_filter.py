@@ -1,7 +1,7 @@
 """Unit tests for the sidecar request-window filter primitive (R2-A Task 1).
 
 Covers D-7(a) sidecar validation, D-7(e) all-or-nothing partition pairing,
-D-3b's chunk-scoped durability proof, D-3d's per-instant lower-bound
+D-3b's chunk-scoped durability proof, D-3d's per-instant (never per-date)
 ownership, D-3e's reason propagation, D-5's drop-all refusal, and (Sol
 ruling, 2026-07-26) ``exclude_out_of_window``'s HALF_OPEN interval
 semantics -- unconditional exclusion, no neighbour proof at all.
@@ -503,15 +503,13 @@ class TestNeighbourOwns:
         )
         assert verdict == OwnershipVerdict(True, WindowReason.OK)
 
-    def test_lower_bound_ownership_is_resolved_per_instant_not_per_date(
-        self, tmp_path: Path
-    ) -> None:
-        """D-3d / S4-1: a predecessor chunk clamped at [D T06:00, D+1 00:00)
+    def test_ownership_is_resolved_per_instant_not_per_date(self, tmp_path: Path) -> None:
+        """D-3d / S4-1: a neighbour chunk clamped at [D T06:00, D+1 00:00)
         (as ``day_subwindows`` produces at a range edge) owns an instant
         inside it but NOT an earlier instant on the same UTC date."""
-        predecessor = tmp_path / "2026" / "07" / "11"
+        neighbour = tmp_path / "2026" / "07" / "11"
         _write_raw(
-            predecessor,
+            neighbour,
             "raw_1",
             source="entsoe",
             dataset="day_ahead_prices",
@@ -612,9 +610,9 @@ class TestFilterFrameToWindow:
         assert result.boundary_retained == 1
         assert result.retained_reasons == ((WindowReason.INCOMPLETE_PAGE_SET, 1),)
 
-    def test_below_window_rows_kept_and_counted_when_lower_bound_none(self) -> None:
-        """D-3: Elexon never enforces the lower bound at all -- kept, counted
-        into below_window, but NOT attributed as a proof failure."""
+    def test_below_window_rows_are_kept_and_counted(self) -> None:
+        """D-3: the lower bound is never enforced -- kept, counted into
+        below_window, but NOT attributed as a proof failure."""
         window = RequestWindow(
             start=datetime(2026, 7, 11, tzinfo=UTC),
             end=datetime(2026, 7, 12, tzinfo=UTC),
@@ -626,79 +624,11 @@ class TestFilterFrameToWindow:
             "published_at",
             window,
             upper_bound_ownership=OwnershipVerdict(False, WindowReason.NOT_RESOLVED),
-            lower_bound_ownership=None,
         )
         assert result.dropped == 0
         assert result.below_window == 1
         assert result.boundary_retained == 0
         assert result.retained_reasons == ()
-
-    def test_below_window_row_dropped_when_owned(self) -> None:
-        window = RequestWindow(
-            start=datetime(2026, 7, 11, tzinfo=UTC),
-            end=datetime(2026, 7, 12, tzinfo=UTC),
-            param_names=("periodStart", "periodEnd"),
-        )
-        instant = datetime(2026, 7, 10, 23, tzinfo=UTC)
-        df = self._frame([instant, datetime(2026, 7, 11, 12, tzinfo=UTC)])
-        result = filter_frame_to_window(
-            df,
-            "published_at",
-            window,
-            upper_bound_ownership=OwnershipVerdict(False, WindowReason.NOT_RESOLVED),
-            lower_bound_ownership={instant: OwnershipVerdict(True, WindowReason.OK)},
-        )
-        assert result.dropped == 1
-        assert len(result.frame) == 1
-        assert result.below_window == 1
-        assert result.boundary_retained == 0
-
-    def test_unresolved_instant_defaults_to_retained_with_NOT_RESOLVED(self) -> None:  # noqa: N802
-        window = RequestWindow(
-            start=datetime(2026, 7, 11, tzinfo=UTC),
-            end=datetime(2026, 7, 12, tzinfo=UTC),
-            param_names=("periodStart", "periodEnd"),
-        )
-        instant = datetime(2026, 7, 10, 23, tzinfo=UTC)
-        df = self._frame([instant])
-        result = filter_frame_to_window(
-            df,
-            "published_at",
-            window,
-            upper_bound_ownership=OwnershipVerdict(False, WindowReason.NOT_RESOLVED),
-            lower_bound_ownership={},  # instant absent from the mapping
-        )
-        assert result.dropped == 0
-        assert result.boundary_retained == 1
-        assert result.retained_reasons == ((WindowReason.NOT_RESOLVED, 1),)
-
-    def test_retained_reasons_attribute_every_unenforced_bound(self) -> None:
-        """A-3: every boundary_retained event is attributed by reason, not
-        just counted."""
-        window = RequestWindow(
-            start=datetime(2026, 7, 11, tzinfo=UTC),
-            end=datetime(2026, 7, 12, tzinfo=UTC),
-            param_names=("periodStart", "periodEnd"),
-        )
-        below_a = datetime(2026, 7, 10, 20, tzinfo=UTC)
-        below_b = datetime(2026, 7, 10, 22, tzinfo=UTC)
-        df = self._frame([below_a, below_b, datetime(2026, 7, 12, tzinfo=UTC)])
-        result = filter_frame_to_window(
-            df,
-            "published_at",
-            window,
-            upper_bound_ownership=OwnershipVerdict(False, WindowReason.INCOMPLETE_PAGE_SET),
-            lower_bound_ownership={
-                below_a: OwnershipVerdict(False, WindowReason.NO_COVERING_CHUNK),
-                below_b: OwnershipVerdict(False, WindowReason.ORPHAN_BODY),
-            },
-        )
-        assert result.boundary_retained == 3
-        assert dict(result.retained_reasons) == {
-            WindowReason.INCOMPLETE_PAGE_SET: 1,
-            WindowReason.NO_COVERING_CHUNK: 1,
-            WindowReason.ORPHAN_BODY: 1,
-        }
 
     def test_unclassified_null_rows_are_kept_and_counted(self) -> None:
         window = RequestWindow(
@@ -783,11 +713,10 @@ class TestExcludeOutOfWindow:
 
     def test_no_neighbour_bronze_needed_no_ownership_verdict_argument_exists(self) -> None:
         """The function signature itself proves the point: there is no
-        ``upper_bound_ownership``/``lower_bound_ownership`` parameter to
-        pass, unlike ``filter_frame_to_window``."""
+        ``upper_bound_ownership`` parameter to pass, unlike
+        ``filter_frame_to_window``."""
         params = inspect.signature(exclude_out_of_window).parameters
         assert "upper_bound_ownership" not in params
-        assert "lower_bound_ownership" not in params
 
     def test_unclassified_null_rows_are_kept_and_counted(self) -> None:
         window = RequestWindow(

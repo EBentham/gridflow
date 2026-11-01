@@ -20,6 +20,8 @@ class EntsoeDocType:
     # "control_area" -> controlArea_Domain query param
     domain_style: str = "zone"
     extra_params: dict[str, str] = field(default_factory=dict)
+    # The vendor's documented optional filters, kept as a catalogue: none is
+    # sent, and "offset" in it switches paging on (connectors/entsoe/client.py).
     optional_params: tuple[str, ...] = ()
     domain_params: tuple[str, ...] = ()
     date_param: str | None = None
@@ -308,10 +310,9 @@ DOC_TYPES: dict[str, EntsoeDocType] = {
         "A16",
         "Activated balancing energy prices",
         domain_style="control_area",
-        # G9 ENTSOE-05: `businessType` defaults to A96 (aFRR) but is also in
-        # optional_params so callers can override to A95 (FCR), A97 (mFRR),
-        # or A98 (RR). The silver transformer already maps all four codes
-        # via replace_strict to fcr/afrr/mfrr/rr reserve_type strings.
+        # G9 ENTSOE-05: `businessType` is fixed at A96 (aFRR); the vendor also
+        # accepts A95 (FCR), A97 (mFRR) and A98 (RR), and the silver
+        # transformer maps all four codes to fcr/afrr/mfrr/rr reserve_type.
         extra_params={"businessType": "A96"},
         optional_params=("businessType",),
     ),

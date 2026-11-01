@@ -177,13 +177,12 @@ class TestOptedInTransformersProduceFilterableTimestamp:
 # question and no neighbour-durability proof to make -- they are always
 # excluded, with or without any neighbour bronze existing. This supersedes
 # the per-instant NEIGHBOUR-durability-gated lower bound this file
-# originally pinned for ENTSO-E; that mechanism remains correct and
-# untouched for Elexon's CLOSED-interval boundary (D-3b,
-# tests/silver/test_elexon_publication_window.py), and the underlying
-# per-instant-not-per-date primitive (the S4-1 regression) stays pinned at
-# the primitive level, unaffected by this ruling, in
+# originally pinned for ENTSO-E; the durability proof remains for Elexon's
+# CLOSED-interval upper boundary (D-3b,
+# tests/silver/test_elexon_publication_window.py), and its per-instant,
+# never per-date, resolution (the S4-1 regression) stays pinned in
 # tests/unit/test_partition_window_filter.py::TestNeighbourOwns::
-# test_lower_bound_ownership_is_resolved_per_instant_not_per_date.
+# test_ownership_is_resolved_per_instant_not_per_date.
 # ---------------------------------------------------------------------------
 
 

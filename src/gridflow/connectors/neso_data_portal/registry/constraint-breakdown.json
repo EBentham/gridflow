@@ -11,30 +11,12 @@
     {
       "key": "constraint_breakdown",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Date",
-              "Reducing largest loss cost",
-              "Increasing system inertia cost",
-              "Voltage constraints cost",
-              "Thermal constraints cost",
-              "Reducing largest loss volume",
-              "Increasing system inertia volume",
-              "Voltage constraints volume",
-              "Thermal constraints volume"
-            ],
             "columns": [
               {
                 "source": "Date",
@@ -91,10 +73,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

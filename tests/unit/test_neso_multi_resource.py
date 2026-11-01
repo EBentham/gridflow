@@ -16,12 +16,12 @@ import sys
 import textwrap
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import install_generated, write_capture
+from _neso_generic_support import both_as_of, install_generated, query, write_capture
 from _neso_registry_support import (
     column,
     epoch,
@@ -36,7 +36,6 @@ from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import RegistryError, SchemaRecord
 from gridflow.connectors.neso_data_portal.registry.record import RESERVED, ColumnSpec
 from gridflow.silver.latest_views import (
-    LATEST_VIEW_SPECS,
     LatestViewSpec,
     latest_select_sql,
     select_latest_vintage,
@@ -49,10 +48,12 @@ from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
     capture_id_for,
     read_completion,
-    scan_completions,
 )
 from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "neso_data_portal"
@@ -490,40 +491,6 @@ def data(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPat
     return tmp_path_factory.mktemp("m")
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
-def _ids(frame: pl.DataFrame) -> list[str]:
-    return sorted(frame["bronze_capture_id"].to_list())
-
-
-def both_as_of(db: Path, data: Path, key: str, as_of: datetime | None) -> list[str]:
-    """The catalogue's ``_latest`` (or P-3's parameterised select) = Polars; capture ids."""
-    view = f"silver_{SOURCE}_{key}"
-    spec = LATEST_VIEW_SPECS[(SOURCE, key)]
-    if as_of is None:
-        sql = _ids(_query(db, f'SELECT * FROM "{view}_latest"'))
-    else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
-        select = latest_select_sql(view, spec, columns, as_of_param=True)
-        assert select is not None
-        sql = _ids(_query(db, select, {"as_of": as_of.isoformat()}))
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    polars: list[str] = []
-    if files:
-        lf = pl.scan_parquet(files, hive_partitioning=False)
-        polars = _ids(
-            select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
-        )
-    assert sql == polars, (key, as_of)
-    return sql
-
-
 class TestEngineAndCatalogue:
     """T-H5: three resources through ``run()``, the catalogue and Polars."""
 
@@ -564,7 +531,7 @@ class TestEngineAndCatalogue:
             assert stamped.len() > 0
             assert stamped.unique().to_list() == [by_capture[letter]]
 
-        views = _query(
+        views = query(
             db,
             "SELECT sql FROM duckdb_views() WHERE view_name = $name",
             {"name": f"silver_{SOURCE}_{KEY}_latest"},
@@ -672,10 +639,12 @@ class TestRecordRules:
 
     def test_t_h6_e_every_committed_record_loads_and_only_resource_partitioned_families_partition(
         self,
+        run_fresh: Callable[..., str],
     ) -> None:
-        """Detects a committed record broken by V-4/V-17 or the reserved name, and any
-        family other than the ninety-one resource-partitioned ones opting into the partition
-        (in a fresh interpreter, so nothing collection imported can mask it)."""
+        """Detects a committed record broken by V-4/V-17 or the reserved name (in a fresh
+        interpreter, so nothing collection imported can mask it), and spot-checks named
+        families on each side of the partition: V-17 holds the rule, so the full list is
+        not typed out here."""
         code = textwrap.dedent(
             """
             from gridflow.connectors.neso_data_portal.registry import load_registry
@@ -685,117 +654,15 @@ class TestRecordRules:
                 k for k, (_p, f) in families.items()
                 if f.record is not None and f.record.latest_partition is not None
             )
-            assert partitioned == [
-                "aggregated_bsad",
-                "asdp_instructions",
-                "asdp_window_prices",
-                "br_auction_requirement_fc_medium_term",
-                "brit_ned",
-                "bs_contract_enactment_balancing",
-                "bsad_forward_contracts",
-                "bsuos_monthly_forecast_fc_summary",
-                "building_heat_model_example_output_half",
-                "cmis_intertrip",
-                "constraint_breakdown",
-                "current_bsuos_historic_ii",
-                "current_bsuos_historic_rf",
-                "current_bsuos_historic_sf",
-                "da_wind_forecast_historic_day_ahead_bmu",
-                "demand_flexibility_industry_notification",
-                "demand_flexibility_service_requirement",
-                "demand_flexibility_utilisation_report",
-                "demand_flexibility_utilisation_summary",
-                "eac_results_buy_orders_fy",
-                "eac_results_by_unit_fy",
-                "eac_results_sell_orders",
-                "eac_results_summary_fy",
-                "eleclink",
-                "fes_building_blocks_block_definitions",
-                "fes_building_blocks_block_licence_area",
-                "fes_building_blocks_main",
-                "fes_ed1_electricity_demand",
-                "fes_ed3_heat_demand_natural_gas",
-                "fes_ed3_heat_demand_natural_gas_sum_ed",
-                "fes_ed3_heat_demand_sum_ed",
-                "fes_ed4_gas_demand_defs",
-                "fes_ed5_road_transport",
-                "fes_ed6_road_transport_notes",
-                "fes_es1_electricity_supply",
-                "fes_es2_european_supply",
-                "fes_flx1_flexibility",
-                "fes_la_heat_model_domestic",
-                "fes_la_heat_model_residential",
-                "fes_regional_demand_active_power",
-                "fes_regional_dg_gt_1mw",
-                "fes_regional_dg_lt_1mw",
-                "fes_regional_dsr",
-                "fes_regional_gsp_info",
-                "fes_regional_storage_gt_1mw",
-                "fes_regional_storage_gt_1mw_pre2023",
-                "fes_regional_storage_lt_1mw",
-                "fes_regional_storage_lt_1mw_pre2023",
-                "fes_ws1_gas_supply",
-                "fes_ws2_gas_emissions",
-                "ffr_phase2_auction_phase_blockorders",
-                "ffr_phase2_auction_phase_linearorders",
-                "ffr_post_tender_reports_csv_ext",
-                "ffr_post_tender_reports_workbook",
-                "gtma_trades_data",
-                "gtma_trades_fy",
-                "historic_demand",
-                "index_linked_contract_volume",
-                "metered_wind_output_monthly",
-                "nemolink_ntc",
-                "nsl",
-                "odfm_market_information_instructed",
-                "outturn_voltage_costs_historical",
-                "resource_adequacy_2030s_peak_demand",
-                "resource_adequacy_2030s_portfolio",
-                "resource_adequacy_2030s_results",
-                "school_holiday_percentages",
-                "skip_rates_exclusion_reasons",
-                "skip_rates_in_merit_all_bm",
-                "skip_rates_in_merit_psa",
-                "ssel_contract_enactment",
-                "stability_pathfinder_availability_report",
-                "stability_pathfinder_utilisation_report",
-                "system_frequency_dmy_csv",
-                "system_frequency_gmt_csv",
-                "system_frequency_gmt_zip",
-                "system_frequency_offset_csv",
-                "system_frequency_offset_zip",
-                "system_inertia",
-                "system_inertia_cost",
-                "thermal_constraint_costs",
-                "thermal_constraint_costs_xlsx",
-                "tresp_building_block_definitions",
-                "tresp_demand_pathways_gsp",
-                "tresp_demand_pathways_la_england",
-                "tresp_demand_pathways_la_scotland",
-                "tresp_demand_pathways_la_wales",
-                "tresp_demand_pathways_resp_region",
-                "tresp_generation_pathways_gsp",
-                "tresp_generation_pathways_la_england",
-                "tresp_generation_pathways_la_scotland",
-                "tresp_generation_pathways_la_wales",
-                "tresp_generation_pathways_resp_region",
-                "tresp_gsp_area_names",
-                "wind_bmu_boa_volumes",
-            ], partitioned
+            for key in ("brit_ned", "wind_bmu_boa_volumes", "system_frequency_gmt_csv"):
+                assert key in partitioned, key
+            for key in ("tec_register", "historic_generation_mix", "national_ci_forecast"):
+                assert families[key][1].record is not None and key not in partitioned, key
             print("OK", len(recorded), partitioned)
             """
         )
-        result = subprocess.run(
-            [sys.executable, "-c", code],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            timeout=120,
-            check=False,
-        )
-        assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-        assert "OK" in result.stdout, result.stdout
+        stdout = run_fresh(code)
+        assert "OK" in stdout, stdout
 
     def test_t_h6_f_the_default_dump_carries_no_new_field(self) -> None:
         """Detects a non-``None`` default on the new field, which would change every

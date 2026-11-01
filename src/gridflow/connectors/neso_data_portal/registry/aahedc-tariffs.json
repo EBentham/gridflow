@@ -11,27 +11,12 @@
     {
       "key": "aahedc_tariffs",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "TAR",
-      "refresh": "adhoc",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Publication Type",
-              "Year FY",
-              "Published Date",
-              "Total Scheme Tariff in p/kwh",
-              "Shetland Tariff in p/kwh",
-              "AAHEDC tariff excluding the Shetland Assistance Amount in p/kwh"
-            ],
             "columns": [
               {
                 "source": "Publication Type",
@@ -70,10 +55,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

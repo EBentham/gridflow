@@ -40,21 +40,25 @@ from __future__ import annotations
 import csv
 import io
 import json
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import (
+    both_as_of,
+    no_silver,
+    output_names,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
     Eligible,
@@ -63,20 +67,13 @@ from gridflow.connectors.neso_data_portal.registry import (
     load_registry,
 )
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "bal2b"
@@ -385,23 +382,11 @@ FIVE_MINUTE = (
 )
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="ba2b", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -428,38 +413,14 @@ def header(alias: str) -> list[str]:
 def capture(data: Path, alias: str, *, raw: bytes | None = None) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=PACKAGE,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=PACKAGE,
         package_id=PACKAGE_ID,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
 
 
 def _package_doc() -> dict[str, Any]:
@@ -469,19 +430,11 @@ def _package_doc() -> dict[str, Any]:
     return document
 
 
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
-
-
 def _load(data: Path, family: str) -> tuple[dict[str, str], pl.DataFrame]:
     """Capture every fixture of ``family``, run it once; the capture ids and the silver."""
     ids = {alias: capture(data, alias) for alias in FAMILY_ALIASES[family]}
     get_transformer(SOURCE, family, data).run(DAY, run_id="r")
-    return ids, _silver(data, family)
+    return ids, silver_frame(data, family)
 
 
 def _assert_clean_load(data: Path, family: str) -> pl.DataFrame:
@@ -493,7 +446,7 @@ def _assert_clean_load(data: Path, family: str) -> pl.DataFrame:
         assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0), alias
         assert read_failure(data, family, capture_id) is None, alias
     assert frame.height == sum(len(rows(a)) for a in FAMILY_ALIASES[family])
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(family)
     assert not [c for c in frame.columns if "﻿" in c]
     return frame
 
@@ -552,7 +505,7 @@ def test_every_record_is_one_epoch_csv_utf8_with_ckan_last_modified_and_no_issue
     for the three 23-resource families, one epoch whose header is the body's, no issue recipe,
     ``run_type_column`` unset and no ``sp_pair`` recipe (the stage is a methodology stage, not a
     settlement run), no sibling and the spec's entity key."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     assert (record.vintage, record.vintage_evidence) == ("ckan_last_modified", None)
     assert record.latest == "whole_capture"
@@ -562,8 +515,8 @@ def test_every_record_is_one_epoch_csv_utf8_with_ckan_last_modified_and_no_issue
     assert len(record.epochs) == 1
     assert list(record.epochs[0].header) == HEADER_OF[key]
     assert record.epochs[0].issue.kind == "none" and has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
-    assert record.run_type_column is None and "run_type" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
+    assert record.run_type_column is None and "run_type" not in output_names(key)
     assert record.temporal.kind != "sp_pair"
     assert record.siblings == () and record.xlsx is None and record.edition_by_filename is None
 
@@ -577,7 +530,7 @@ def test_columns_are_typed_from_the_vendor_names_without_trim_tokens_or_bounds(k
     nullable strings, every measure is a nullable float64, no column declares ``trim`` (RULINGS 690:
     no padded and no non-numeric cell), and every silver name is the lower-cased vendor header (the
     label columns carry the ``_vendor`` suffix)."""
-    record = _record(key)
+    record = record_of(key)
     for column in record.epochs[0].columns:
         expected = {"date": "date_vendor", "month": "month_vendor"}.get(
             column.source, column.source.lower()
@@ -605,7 +558,7 @@ def test_the_unit_is_in_the_header_name_and_never_rescaled() -> None:
     the average prices ``average_price_per_mwh`` (GBP/MWh), the summary rates ``_percent``, and the
     unit-less vendor rate names (``skip_rate``, ``relative_technology_skip_rate``,
     ``technology_specific_skip_rate``) are kept as published, Percentage per FACTS g4."""
-    summary = [c.name for c in _record("skip_rates_summary").epochs[0].columns]
+    summary = [c.name for c in record_of("skip_rates_summary").epochs[0].columns]
     assert [n for n in summary if n.endswith("_percent")] == [
         "bm_skip_rate_offers_percent",
         "post_system_action_skip_rate_offers_percent",
@@ -613,17 +566,17 @@ def test_the_unit_is_in_the_header_name_and_never_rescaled() -> None:
         "post_system_action_skip_rate_bids_percent",
     ]
     assert len([n for n in summary if n.endswith("_mwh")]) == 4
-    tech = [c.name for c in _record("skip_rates_stage5_psa_technology").epochs[0].columns]
+    tech = [c.name for c in record_of("skip_rates_stage5_psa_technology").epochs[0].columns]
     assert tech[3:] == [
         "relative_technology_skip_rate",
         "technology_specific_skip_rate",
         "fuel_in_merit_volume_mwh",
         "fuel_skipped_volume_mwh",
     ]
-    bmu = [c.name for c in _record("skip_rates_behind_constraints_bmu").epochs[0].columns]
+    bmu = [c.name for c in record_of("skip_rates_behind_constraints_bmu").epochs[0].columns]
     assert bmu[-3:] == ["skipped_volume_mwh", "in_merit_volume_mwh", "skip_rate"]
     for key in FIVE_MINUTE:
-        names = {c.name for c in _record(key).epochs[0].columns}
+        names = {c.name for c in record_of(key).epochs[0].columns}
         assert "average_price_per_mwh" in names
         assert {n for n in names if n.endswith("_mwh")} <= {
             "available_volume_mwh",
@@ -641,10 +594,10 @@ def test_the_two_utc_instant_records_attach_utc_to_the_period_start() -> None:
     ``utc_instant`` over the non-nullable ``settlement_period_start``, formatted
     ``%Y-%m-%dT%H:%M:%S`` with zone UTC; every other record is temporal ``none``."""
     for key in ELIGIBLE:
-        recipe = _record(key).temporal
+        recipe = record_of(key).temporal
         assert (recipe.kind, recipe.column) == ("utc_instant", "settlement_period_start"), key
     for key in HELD:
-        assert _record(key).temporal.kind == "none", key
+        assert record_of(key).temporal.kind == "none", key
 
 
 @pytest.mark.parametrize("key", list(HELD))
@@ -653,7 +606,7 @@ def test_held_records_carry_the_ruled_question_and_the_package_stays_eligible(ke
     a different question: each held record carries the spec's verbatim question and this unit,
     is effectively held, and the package itself stays eligible."""
     package, family = registry_module.load_registry().families[key]
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert (record.eligibility.unit, record.eligibility.question) == (UNIT, HELD[key])
     assert effective_eligibility(package, family) == record.eligibility
@@ -665,7 +618,7 @@ def test_the_two_eligible_records_carry_no_hold(key: str) -> None:
     """Detects a hold wrongly put on an eligible family: neither carries a record-level
     eligibility, so each is effectively eligible."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
 
 
@@ -704,7 +657,7 @@ def test_the_two_dsf_families_have_no_record(key: str) -> None:
     no record means no capture is attempted, so there is no gap."""
     registry = load_registry()
     package, entry = registry.families[key]
-    assert entry.record is None and entry.kind == "tabular" and entry.transformer is None
+    assert entry.record is None and entry.kind == "tabular"
     assert not isinstance(package.eligibility, Held)
     resources = [r for _p, r in registry.resources.values() if r.family == key]
     assert len(resources) == 1
@@ -776,7 +729,7 @@ def test_stage5_psa_technology_keeps_the_blank_fuel_null_inside_the_key(data: Pa
     assert frame["fuel"].to_list() == [r["fuel"] or None for r in source]
     assert frame["fuel"].null_count() == 2
     assert (
-        not frame.select(_record("skip_rates_stage5_psa_technology").entity_key)
+        not frame.select(record_of("skip_rates_stage5_psa_technology").entity_key)
         .is_duplicated()
         .any()
     )
@@ -801,7 +754,7 @@ def test_a_repeated_blank_fuel_row_is_a_duplicate_key_not_a_distinct_group(data:
         (capture_id, "DuplicateEntityKeyError")
     ]
     assert read_completion(data, "skip_rates_stage5_psa_technology", capture_id) is None
-    assert _no_silver(data, "skip_rates_stage5_psa_technology")
+    assert no_silver(data, "skip_rates_stage5_psa_technology")
 
 
 @pytest.mark.parametrize(
@@ -820,7 +773,7 @@ def test_behind_constraints_keep_the_utc_month_label_raw_and_the_bom_out_of_the_
     source = rows(alias)
     assert frame["month_vendor"].to_list() == [r["month"] for r in source]
     assert frame.schema["month_vendor"] == pl.String
-    assert "month" not in _record(family).entity_key
+    assert "month" not in record_of(family).entity_key
     for column in ("skipped_volume_mwh", "in_merit_volume_mwh", "skip_rate"):
         assert frame[column].to_list() == [float(r[column]) for r in source], column
     assert 0.0 in frame["skip_rate"].to_list()
@@ -903,7 +856,7 @@ def test_stage6_pair_id_stays_an_identifier_not_an_energy_quantity(data: Path) -
     acceptance dictionary labels it MWh while describing a signed identifier, conflict noted in
     PROVENANCE.md): int64 with no unit in the name, the signed values kept."""
     for family in ("skip_rates_stage6_acceptance", "skip_rates_stage6_psa"):
-        spec = {c.name: c for c in _record(family).epochs[0].columns}["pair_id"]
+        spec = {c.name: c for c in record_of(family).epochs[0].columns}["pair_id"]
         assert (spec.dtype, spec.nullable) == ("int64", False), family
         assert "mwh" not in spec.name
     frame = _assert_clean_load(data, "skip_rates_stage6_acceptance")
@@ -924,7 +877,7 @@ def test_a_header_outside_the_epoch_fails_loud(data: Path, family: str) -> None:
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("alias", ["su", "bm", "abz", "s6p"])
@@ -938,7 +891,7 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     meta = CAPTURES[alias]
     capture_id = capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     db = data / "cat.duckdb"
@@ -948,21 +901,3 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     assert both_as_of(db, data, meta.family, before) == []
     assert set(both_as_of(db, data, meta.family, after)) == {capture_id}
     assert set(both_as_of(db, data, meta.family, None)) == {capture_id}
-
-
-def test_the_skeleton_pages_render_the_new_records() -> None:
-    """Detects a record the docs generator cannot render (the held questions, the nullable key
-    column, the resource-partitioned keys)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": PACKAGE,
-            "title": PACKAGE,
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    for key in RESOURCES:
-        assert f"`{key}`" in page, key

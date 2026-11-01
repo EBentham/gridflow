@@ -3,8 +3,8 @@
 Three classes of silent-failure bug this guards against:
 
 - A broken CORE connector/transformer module import is currently swallowed by
-  ``contextlib.suppress(ImportError)`` in ``cli._import_connectors`` /
-  ``_import_transformers``. A genuine bug then masquerades as a missing
+  ``contextlib.suppress(ImportError)`` in ``runner.import_connectors`` /
+  ``import_transformers``. A genuine bug then masquerades as a missing
   registration ("unknown source"). It must be LOGGED with the module name.
 - ``PipelineRunTracker``'s status writes swallow to a bare ``logger.warning``.
   A failed status write can leave a run stuck at ``'running'``; that must be
@@ -40,7 +40,7 @@ def test_broken_connector_import_is_logged_with_module_name(
 
     RED before fix: ``contextlib.suppress(ImportError)`` swallows it silently.
     """
-    from gridflow import cli
+    from gridflow.pipeline import runner
 
     broken = "gridflow.connectors.gie"
     real_import = builtins.__import__
@@ -52,8 +52,8 @@ def test_broken_connector_import_is_logged_with_module_name(
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
 
-    with caplog.at_level(logging.WARNING, logger="gridflow.cli"):
-        cli._import_connectors()
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        runner.import_connectors()
 
     warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
     assert any(broken in r.getMessage() for r in warnings), (
@@ -65,7 +65,7 @@ def test_broken_transformer_import_is_logged_with_module_name(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
     """A core transformer module that fails to import must WARN with its name."""
-    from gridflow import cli
+    from gridflow.pipeline import runner
 
     broken = "gridflow.silver.neso"
     real_import = builtins.__import__
@@ -77,8 +77,8 @@ def test_broken_transformer_import_is_logged_with_module_name(
 
     monkeypatch.setattr(builtins, "__import__", fake_import)
 
-    with caplog.at_level(logging.WARNING, logger="gridflow.cli"):
-        cli._import_transformers()
+    with caplog.at_level(logging.WARNING, logger="gridflow.pipeline.runner"):
+        runner.import_transformers()
 
     warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
     assert any(broken in r.getMessage() for r in warnings), (

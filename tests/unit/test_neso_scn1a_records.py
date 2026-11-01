@@ -35,19 +35,21 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import (
+    both_as_of,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_capture,
+    write_recorded_capture,
+)
 
-from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import (
@@ -67,11 +69,6 @@ from gridflow.silver.neso_data_portal.containers import open_container
 from gridflow.silver.neso_data_portal.readers import XlsxBlockError, read_sheet
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "scn1a"
@@ -296,23 +293,11 @@ BB_HEADER = [
 GSP_HEADER = ["tresp_gsp_area", "tresp_gsp_area_name"]
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -332,21 +317,15 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=meta.package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=meta.package,
         package_id=meta.package_id,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
     )
-    return capture_id_for(path, data)
 
 
 def capture_workbook(data: Path, raw: bytes | None = None) -> str:
@@ -368,17 +347,6 @@ def capture_workbook(data: Path, raw: bytes | None = None) -> str:
         extension="xlsx",
     )
     return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
 
 
 def _key(alias: str) -> list[str]:
@@ -425,7 +393,7 @@ def test_record_shape_matches_the_unit_spec(alias: str) -> None:
     whole-capture selection per ``resource_id``, ``ckan_last_modified`` vintage, and the
     entity key ``resource_id`` + block + geography code + pathway + year."""
     meta = CAPTURES[alias]
-    record = _record(meta.family)
+    record = record_of(meta.family)
     assert (record.version, record.reader, record.encoding) == ("1", "csv", "utf-8")
     assert len(record.epochs) == 1
     epoch = record.epochs[0]
@@ -468,7 +436,7 @@ def test_demand_is_held_on_the_annual_interval_and_generation_is_eligible() -> N
         assert effective_eligibility(package, family).status == "eligible", key
     # the record model has no free text on an eligible family: nothing hides a demand question
     for alias in GENERATION:
-        assert _record(CAPTURES[alias].family).eligibility is None
+        assert record_of(CAPTURES[alias].family).eligibility is None
 
 
 def test_the_workbook_children_are_two_references_and_the_old_sheet_stays_held() -> None:
@@ -514,7 +482,7 @@ def test_the_workbook_children_are_two_references_and_the_old_sheet_stays_held()
         (BB_FAMILY, XlsxSpec(header_row=1, columns="A:E", last_row=36), "fes_bb_id_number"),
         (GSP_FAMILY, XlsxSpec(header_row=1, columns="A:B", last_row=232), "tresp_gsp_area"),
     ):
-        record = _record(key)
+        record = record_of(key)
         assert record.reader == "xlsx"
         assert record.xlsx == xlsx
         assert record.siblings == ("tresp_demand_pathways_files",)
@@ -527,7 +495,7 @@ def test_the_workbook_children_are_two_references_and_the_old_sheet_stays_held()
         assert record.vintage == "ckan_last_modified"
         assert record.edition_by_filename is None
         assert all(c.dtype == "string" for c in record.epochs[0].columns)
-    bb = {c.name: c.nullable for c in _record(BB_FAMILY).epochs[0].columns}
+    bb = {c.name: c.nullable for c in record_of(BB_FAMILY).epochs[0].columns}
     assert bb == {
         "demand_generation_storage": False,
         "technology": False,
@@ -535,8 +503,8 @@ def test_the_workbook_children_are_two_references_and_the_old_sheet_stays_held()
         "technology_detail": True,
         "units": False,
     }
-    assert [c.source for c in _record(BB_FAMILY).epochs[0].columns] == BB_HEADER
-    assert [c.source for c in _record(GSP_FAMILY).epochs[0].columns] == GSP_HEADER
+    assert [c.source for c in record_of(BB_FAMILY).epochs[0].columns] == BB_HEADER
+    assert [c.source for c in record_of(GSP_FAMILY).epochs[0].columns] == GSP_HEADER
 
 
 # --------------------------------------------------------------------------- #
@@ -562,8 +530,8 @@ def test_fixture_types_with_no_exclusion(data: Path, alias: str) -> None:
     assert completion["row_count"] == len(rows(alias))
     assert completion["rows_excluded"] == 0
 
-    frame = _silver(data, meta.family)
-    expected = [name for name, _type in generic.output_columns(_record(meta.family))]
+    frame = silver_frame(data, meta.family)
+    expected = [name for name, _type in generic.output_columns(record_of(meta.family))]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected if c not in ("year", "month")
     ]
@@ -582,7 +550,7 @@ def test_identifiers_units_zeros_and_values_survive_byte_identical(data: Path, a
     meta = CAPTURES[alias]
     capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     source = rows(alias)
     assert frame.height == len(source)
     for header in meta.header:
@@ -607,7 +575,7 @@ def test_the_shared_boundary_year_is_kept_once_per_pathway(data: Path, alias: st
     meta = CAPTURES[alias]
     capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     boundary = frame.filter(pl.col("projection_year") == 2035)
     geo = GEO_KEY[meta.geo]
     per_cell = boundary.group_by("building_block_id", geo).agg(pl.col("pathway").sort())
@@ -624,7 +592,7 @@ def test_demand_keeps_a_unit_per_row_and_each_block_has_one_unit(data: Path) -> 
     FACTS g4)."""
     capture(data, "d_lae")
     get_transformer(SOURCE, CAPTURES["d_lae"].family, data).run(DAY, run_id="r")
-    frame = _silver(data, CAPTURES["d_lae"].family)
+    frame = silver_frame(data, CAPTURES["d_lae"].family)
     per_block = frame.group_by("building_block_id").agg(pl.col("unit").unique())
     units = {r["building_block_id"]: r["unit"] for r in per_block.to_dicts()}
     assert all(len(v) == 1 for v in units.values())
@@ -695,7 +663,7 @@ def test_a_blank_cell_is_excluded_and_counted_never_written_as_null(
     completion = read_completion(data, meta.family, capture_id)
     assert completion is not None
     assert (completion["row_count"], completion["rows_excluded"]) == (written, 1)
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     assert frame[SILVER_NAMES[header]].null_count() == 0
 
 
@@ -733,7 +701,7 @@ def test_the_vintage_is_the_ckan_last_modified_and_as_of_is_bounded_by_it(
     meta = CAPTURES[alias]
     capture_id = capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     assert set(frame["timestamp_utc"].to_list()) == {datetime.fromisoformat(meta.written)}
@@ -789,7 +757,7 @@ def test_the_workbook_children_read_with_their_recipes(data: Path) -> None:
         completion = read_completion(data, key, capture_id)
         assert completion is not None and completion["rows_excluded"] == 0, key
 
-    bb = _silver(data, BB_FAMILY)
+    bb = silver_frame(data, BB_FAMILY)
     assert bb.height == 35
     assert set(bb["child_id"].to_list()) == {"tRESP Building Blocks"}
     assert bb["fes_bb_id_number"].n_unique() == 35
@@ -816,7 +784,7 @@ def test_the_workbook_children_read_with_their_recipes(data: Path) -> None:
     ]
     assert bb.select("resource_id").unique().to_series().to_list() == [WORKBOOK_RESOURCE]
 
-    gsp = _silver(data, GSP_FAMILY)
+    gsp = silver_frame(data, GSP_FAMILY)
     assert gsp.height == 231
     assert set(gsp["child_id"].to_list()) == {"tRESP GSP Areas with Names"}
     assert gsp["tresp_gsp_area"].n_unique() == 231
@@ -832,7 +800,7 @@ def test_gsp_area_ids_of_both_gsp_csvs_resolve_in_the_workbook(data: Path) -> No
     fixtures is a workbook ``tresp_gsp_area`` key, byte for byte."""
     capture_workbook(data)
     get_transformer(SOURCE, GSP_FAMILY, data).run(DAY, run_id="r")
-    known = set(_silver(data, GSP_FAMILY)["tresp_gsp_area"].to_list())
+    known = set(silver_frame(data, GSP_FAMILY)["tresp_gsp_area"].to_list())
     for alias in ("d_gsp", "g_gsp"):
         ids = {r["tRESP_GSP_area"] for r in rows(alias)}
         assert len(ids) >= 2
