@@ -1470,7 +1470,6 @@ class BaseSilverTransformer(ABC):
             plan.column,
             plan.window,
             upper_bound_ownership=upper_bound_ownership,
-            lower_bound_ownership=None,
         )
 
         if result.refused:

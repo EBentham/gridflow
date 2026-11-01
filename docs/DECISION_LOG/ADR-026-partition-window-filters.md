@@ -247,8 +247,8 @@ counted (`last_partition_filter_dropped_count`), and logged
 
 **The mechanism this replaces.** An earlier revision of this design applied the CLOSED-interval
 neighbour-durability proof to ENTSO-E's lower bound too (a per-instant, never-per-date resolution
-against a predecessor partition — sound in isolation, and its underlying primitive machinery
-remains correct, tested, and available for any future CLOSED-interval connector that needs it).
+against a predecessor partition — sound in isolation; that lower-bound machinery was deleted on
+2026-11-01, see D-3b).
 Sol confirmed this was the wrong semantics for a HALF_OPEN vendor interval: it treated
 genuinely-out-of-scope vendor over-return as if it were a genuinely-requested, jointly-owned
 boundary row, and its stated justification ("ENTSO-E enforces both bounds because a trimmed row
@@ -288,14 +288,16 @@ group's verdict.
 
 This proof, and its retention-on-unproven behaviour, is **exclusively a CLOSED-interval (Elexon)
 mechanism** — `exclude_out_of_window` (ENTSO-E's HALF_OPEN path) takes no ownership-verdict
-argument and calls none of this machinery. The per-instant (never per-date) resolution this
-proof's lower-bound variant used is still correct, tested primitive machinery
-(`filter_frame_to_window`'s `lower_bound_ownership` parameter) — simply not currently exercised by
-any live call site, since Elexon never enforces its own lower bound (D-3) and ENTSO-E no longer
-uses a durability proof at all. A future CLOSED-interval connector needing a lower-bound proof
-would reuse it unchanged; the underlying per-instant-not-per-date regression stays pinned at
-`tests/unit/test_partition_window_filter.py::TestNeighbourOwns::
-test_lower_bound_ownership_is_resolved_per_instant_not_per_date`.
+argument and calls none of this machinery. The proof resolves ownership per instant, never per
+date; that regression stays pinned at `tests/unit/test_partition_window_filter.py::
+TestNeighbourOwns::test_ownership_is_resolved_per_instant_not_per_date`.
+
+**Amended 2026-11-01: the lower-bound ownership mapping is deleted.** `filter_frame_to_window`
+used to take a per-instant `lower_bound_ownership` mapping, built for ENTSO-E and kept for a
+future CLOSED-interval connector after ENTSO-E moved to `exclude_out_of_window`. Its only call
+site passed `None`, so the parameter and its per-row loop are gone: the lower bound is never
+enforced (D-3), and below-window rows are kept and counted in `below_window`. A connector that
+needs a lower-bound proof can restore it from git history.
 
 ### D-7(e) — all-or-nothing for the partition being filtered (deliberate asymmetry with D-3b)
 
@@ -399,8 +401,7 @@ at a milestone close (a Bobbo decision, not this ADR's to make).
   earlier revision of this design specified — the primitive doesn't expose chunk-window bounds
   without full recomputation, so a strict chunk-level cache isn't buildable as a black-box
   consumer. Flagged as a performance note, not a correctness gap, when this design was reviewed;
-  now moot on the ENTSO-E path (no ownership resolution happens there at all) and retained only as
-  a note for whichever future CLOSED-interval path exercises the lower bound.
+  moot since the lower-bound machinery was deleted (2026-11-01, see D-3b).
 
 ## Consequences
 
