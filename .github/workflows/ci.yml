@@ -61,7 +61,8 @@ jobs:
 
   package-smoke:
     # The wheel, installed into a clean venv and run outside the checkout, must
-    # find its gold views and sources and write only under the data root.
+    # find its gold views and sources and write only under the data root. The
+    # anchored steps run unchanged on Windows and macOS in cross-platform.
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
@@ -73,19 +74,30 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Build and install the wheel
+      - &build-wheel
+        name: Build and install the wheel
+        shell: bash
+        working-directory: ${{ runner.temp }}
         run: |
-          uv build --wheel --out-dir "$RUNNER_TEMP/dist"
-          uv venv "$RUNNER_TEMP/venv"
-          uv pip install --python "$RUNNER_TEMP/venv/bin/python" "$RUNNER_TEMP"/dist/*.whl
+          uv build --wheel --out-dir dist "$GITHUB_WORKSPACE"
+          uv venv venv
+          uv pip install --python venv dist/*.whl
+          # Later steps run the installed gridflow and python by name on every OS.
+          if [ "$RUNNER_OS" = Windows ]; then
+            echo "$RUNNER_TEMP\venv\Scripts" >> "$GITHUB_PATH"
+          else
+            echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
+          fi
 
-      - name: Init and load settings outside the checkout
+      - &init-outside
+        name: Init and load settings outside the checkout
+        shell: bash
         working-directory: ${{ runner.temp }}
         env:
           GRIDFLOW_DATA_DIR: ${{ runner.temp }}/data
         run: |
-          venv/bin/gridflow init
-          venv/bin/python - <<'EOF'
+          gridflow init
+          python - <<'EOF'
           import importlib.resources as resources
           import os
           from pathlib import Path
@@ -106,18 +118,54 @@ jobs:
           assert catalogue.is_file(), f"init wrote no catalogue at {catalogue}"
 
           sources = load_settings().sources
-          declared = yaml.safe_load((repo / "config" / "sources.yaml").read_text())["sources"]
+          sources_yaml = (repo / "config" / "sources.yaml").read_text(encoding="utf-8")
+          declared = yaml.safe_load(sources_yaml)["sources"]
           print("sources:", len(sources))
           assert set(sources) == set(declared), sorted(sources)
           EOF
           # Logs go under the data root, not the current folder.
           test -d data/logs && test ! -e logs
 
-      - name: Init with the default data root
+      - &init-default
+        name: Init with the default data root
+        shell: bash
         working-directory: ${{ runner.temp }}
         run: |
-          HOME="$RUNNER_TEMP/home" venv/bin/gridflow init
+          # Path.home() reads USERPROFILE on Windows and HOME elsewhere.
+          HOME="$RUNNER_TEMP/home" USERPROFILE="$RUNNER_TEMP/home" gridflow init
           test -f "$RUNNER_TEMP/home/gridflow-data/gridflow.duckdb"
+
+  cross-platform:
+    # The full suite runs on ubuntu only (lint-and-test). Windows and macOS run
+    # the settings, data-root and trust-store tests and the package smoke.
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install dependencies
+        run: uv sync --locked --extra dev
+
+      - name: Settings, data-root and trust-store tests
+        shell: bash
+        run: >-
+          uv run --frozen pytest -v --tb=short
+          tests/integration/test_data_dir_resolution.py tests/unit/test_settings*
+          tests/unit/test_ssl_context.py
+
+      - *build-wheel
+      - *init-outside
+      - *init-default
 
   slow-tests:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
