@@ -290,7 +290,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
         _package, family = registry.families[self.dataset]
         record = self.RECORD
         paths = PathBuilder(self.data_dir)
-        candidates: list[tuple[Capture, str, tuple[str, ...]]] = []
+        candidates: list[tuple[Capture, str, tuple[str, ...], ResourceEntry | None]] = []
         unvouched: list[tuple[Path, BronzeVouchReason]] = []
         failures: list[tuple[str, str, str]] = []
         released_rows = 0
@@ -316,17 +316,18 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
                         continue
                     if only is not None and capture_id_for(capture.body, self.data_dir) not in only:
                         continue
-                    candidates.append((capture, dir_key, children))
+                    resource = resource_of(capture, dir_key, registry)
+                    candidates.append((capture, dir_key, children, resource))
 
             versions = self.versions()
-            for capture, dir_key, children in candidates:
+            for capture, dir_key, children, resource in candidates:
                 capture_id = capture_id_for(capture.body, self.data_dir)
                 existing = read_completion(self.data_dir, self.dataset, capture_id)
                 if existing is not None and is_valid(existing, self.data_dir, versions):
                     continue
                 try:
                     released_rows += self._run_capture(
-                        capture, dir_key, children, target_date, run_id, family, versions
+                        capture, dir_key, children, resource, target_date, run_id, family, versions
                     )
                 except Exception as exc:  # noqa: BLE001 - one capture never stops the next
                     from gridflow.pipeline.runner import describe_exception
@@ -373,6 +374,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
         capture: Capture,
         dir_key: str,
         children: tuple[str, ...],
+        resource: ResourceEntry | None,
         target_date: date,
         run_id: str,
         family: FamilyEntry,
@@ -380,7 +382,7 @@ class GenericNesoTransformer(RegisteredRelationsTransformer):
     ) -> int:
         record = self.RECORD
         ctx = capture_context(capture, record, self.data_dir)
-        tables = list(read_children(ctx.body, record, children))
+        tables = list(read_children(ctx.body, record, children, resource=resource))
         common: dict[str, Any] = {
             "family": self.dataset,
             "capture_id": ctx.capture_id,

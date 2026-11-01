@@ -25,7 +25,7 @@ from _container_support import (  # noqa: F401 - forbid_zipfile_reads is a fixtu
     workbook,
 )
 from _neso_generic_support import write_capture
-from _neso_registry_support import record
+from _neso_registry_support import record, resource_entry
 
 from gridflow.connectors.neso_data_portal.registry import SchemaRecord
 from gridflow.connectors.neso_data_portal.registry.record import XlsxBlock
@@ -335,7 +335,12 @@ class TestDispatch:
         block = _block(document)
         path = _capture(root, body, block.resource_id)
         other = XlsxBlock(**{**block.model_dump(), "resource_id": "other", "data_last": 99})
-        (table,) = read_xlsx_body(path, _block_record(other, block), (block.sheet,))
+        (table,) = read_xlsx_body(
+            path,
+            _block_record(other, block),
+            (block.sheet,),
+            resource=resource_entry(block.resource_id),
+        )
         assert table.child_id == block.sheet and table.frame.height == 3
 
     def test_unlisted_resource_fails(self, root: Path) -> None:
@@ -344,7 +349,14 @@ class TestDispatch:
         path = _capture(root, body, block.resource_id)
         other = XlsxBlock(**{**block.model_dump(), "resource_id": "other"})
         with pytest.raises(XlsxBlockError, match="has no declared xlsx block"):
-            list(read_xlsx_body(path, _block_record(other), (block.sheet,)))
+            list(
+                read_xlsx_body(
+                    path,
+                    _block_record(other),
+                    (block.sheet,),
+                    resource=resource_entry(block.resource_id),
+                )
+            )
 
     def test_another_child_fails(self, root: Path) -> None:
         body, document = lineage_workbook("tr122")
@@ -352,14 +364,28 @@ class TestDispatch:
         path = _capture(root, body, block.resource_id)
         moved = XlsxBlock(**{**block.model_dump(), "sheet": "Sheet9"})
         with pytest.raises(XlsxBlockError, match="not the declared block sheet"):
-            list(read_xlsx_body(path, _block_record(moved), (block.sheet,)))
+            list(
+                read_xlsx_body(
+                    path,
+                    _block_record(moved),
+                    (block.sheet,),
+                    resource=resource_entry(block.resource_id),
+                )
+            )
 
     def test_member_child_fails(self, root: Path) -> None:
         body, document = lineage_workbook("tr122")
         block = _block(document)
         path = _capture(root, body, block.resource_id)
         with pytest.raises(ContainerInventoryError, match="names a member"):
-            list(read_xlsx_body(path, _block_record(block), ("a::b",)))
+            list(
+                read_xlsx_body(
+                    path,
+                    _block_record(block),
+                    ("a::b",),
+                    resource=resource_entry(block.resource_id),
+                )
+            )
 
     def test_i10_format_by_body(self, root: Path) -> None:
         """A-10 (I-10): a macro-enabled body labelled XLSX and a plain body labelled XLSM read the
@@ -371,8 +397,9 @@ class TestDispatch:
         second = root / "two"
         a = _capture(first, macro, block.resource_id, ckan_format="XLSX", extension="xlsx")
         b = _capture(second, body, block.resource_id, ckan_format="XLSM", extension="xlsm")
-        (left,) = read_xlsx_body(a, _block_record(block), (block.sheet,))
-        (right,) = read_xlsx_body(b, _block_record(block), (block.sheet,))
+        resource = resource_entry(block.resource_id)
+        (left,) = read_xlsx_body(a, _block_record(block), (block.sheet,), resource=resource)
+        (right,) = read_xlsx_body(b, _block_record(block), (block.sheet,), resource=resource)
         assert left.frame.equals(right.frame) and left.header == right.header
 
 

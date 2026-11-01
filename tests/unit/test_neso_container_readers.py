@@ -24,7 +24,14 @@ from _container_support import (  # noqa: F401 - forbid_zipfile_reads is a fixtu
     zip_bytes,
 )
 from _neso_generic_support import write_capture
-from _neso_registry_support import family, install_registry, package, resource, write_registry
+from _neso_registry_support import (
+    family,
+    install_registry,
+    package,
+    resource,
+    resource_entry,
+    write_registry,
+)
 
 from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord, XlsxSpec
 from gridflow.silver.neso_data_portal import readers
@@ -318,7 +325,7 @@ class TestZipOfCsv:
         _install(tmp_path, monkeypatch, RS_ID, list(RS_MEMBERS), fmt="ZIP")
         path = _capture(tmp_path, RS_ID, _fixture("result_summary.zip"), "zip")
         record = SchemaRecord.model_validate(rs_record())
-        tables = list(read_children(path, record, RS_MEMBERS))
+        tables = list(read_children(path, record, RS_MEMBERS, resource=resource_entry(RS_ID)))
         assert [t.child_id for t in tables] == list(RS_MEMBERS)
         assert [t.frame.height for t in tables] == [84, 84]
         assert [t.crc32 for t in tables] == [2362721365, 4128616702]
@@ -332,7 +339,7 @@ class TestZipOfCsv:
         path = _capture(tmp_path, RS_ID, body, "zip")
         record = SchemaRecord.model_validate(rs_record())
         with pytest.raises(ContainerInventoryError, match="does not match"):
-            list(read_children(path, record, ("other.csv",)))
+            list(read_children(path, record, ("other.csv",), resource=resource_entry(RS_ID)))
 
     def test_nested_zip_member_is_refused(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -343,7 +350,7 @@ class TestZipOfCsv:
         path = _capture(tmp_path, RS_ID, body, "zip")
         record = SchemaRecord.model_validate(rs_record())
         with pytest.raises(ContainerReadError, match="not a CSV member"):
-            list(read_children(path, record, (name,)))
+            list(read_children(path, record, (name,), resource=resource_entry(RS_ID)))
 
 
 class TestInventoryCheck:
@@ -354,20 +361,20 @@ class TestInventoryCheck:
         path = _capture(tmp_path, RS_ID, _fixture("result_summary.zip"), "zip")
         record = SchemaRecord.model_validate(rs_record())
         with pytest.raises(ContainerInventoryError, match="unlisted"):
-            list(read_children(path, record, (RS_MEMBERS[0],)))
+            list(read_children(path, record, (RS_MEMBERS[0],), resource=resource_entry(RS_ID)))
 
     def test_missing_sheet(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         _install(tmp_path, monkeypatch, CMP_ID, ["II Output", "Prior Comms", "Ghost"], fmt="XLSX")
         path = _capture(tmp_path, CMP_ID, _fixture("cmp381_ii.xlsx"), "xlsx")
         record = SchemaRecord.model_validate(cmp_record())
         with pytest.raises(ContainerInventoryError, match=r"missing \['Ghost'\]"):
-            list(read_children(path, record, ("II Output",)))
+            list(read_children(path, record, ("II Output",), resource=resource_entry(CMP_ID)))
 
     def test_unresolvable_resource(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
         _install(tmp_path, monkeypatch, "someone-else", ["II Output"], fmt="XLSX")
         path = _capture(tmp_path, CMP_ID, _fixture("cmp381_ii.xlsx"), "xlsx")
         record = SchemaRecord.model_validate(cmp_record())
-        with pytest.raises(ContainerInventoryError, match="not a registry resource"):
+        with pytest.raises(ContainerInventoryError, match="no registry resource resolved"):
             list(read_children(path, record, ("II Output",)))
 
 
@@ -380,7 +387,7 @@ class TestStrictTyping:
         _install(tmp_path, monkeypatch, CMP_ID, ["II Output", "Prior Comms"], fmt="XLSX")
         path = _capture(tmp_path, CMP_ID, _fixture("cmp381_ii.xlsx"), "xlsx")
         record = SchemaRecord.model_validate(cmp_record())
-        (table,) = read_children(path, record, ("II Output",))
+        (table,) = read_children(path, record, ("II Output",), resource=resource_entry(CMP_ID))
         typed = type_child(table, record, _ctx(path))
         frame = typed.frame
         assert frame.schema["settlement_day"] == pl.Date
