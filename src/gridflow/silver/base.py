@@ -155,6 +155,22 @@ class BronzeVouchReason(StrEnum):
     A NEW reason rather than reusing ``NO_TIMESTAMP_KEY``, which would be
     false: the timestamp key was present and fine. The exclusion is one level
     further in -- the vouching succeeded and the READ did not."""
+    UNPARSEABLE_BODY = "UNPARSEABLE_BODY"
+    """The body itself could not be parsed, so its whole date was refused."""
+
+
+class UnparseableBronzeError(ValueError):
+    """Bronze bodies for one date could not be parsed, so the date is refused.
+
+    Raised by :meth:`BaseSilverTransformer._read_bronze_records` once every
+    body of the date has been tried, so the error names all of them. It is
+    raised before anything is written for that date, which is what lets the
+    runner keep the old silver file and carry on with the next date.
+    """
+
+    def __init__(self, paths: Sequence[Path]) -> None:
+        self.paths = tuple(paths)
+        super().__init__("unparseable bronze bodies: " + ", ".join(map(str, self.paths)))
 
 
 class BronzeReadSelection(StrEnum):
@@ -415,7 +431,7 @@ class BaseSilverTransformer(ABC):
     Subclasses implement:
     - source: the data source name
     - dataset: the dataset name
-    - read_bronze(): read and parse raw bronze files
+    - _parse_bronze_body() (the vendor bases do this), or read_bronze() itself
     - transform(): apply normalisation, validation, deduplication
     """
 
@@ -668,8 +684,9 @@ class BaseSilverTransformer(ABC):
     threads the resulting :class:`VouchedBronzeSet` into BOTH the frame read
     and ``available_at`` — so the set of files whose rows enter the frame and
     the set of files whose sidecars determine the vintage are the SAME set, by
-    construction rather than by argument (R2-g I-1). Opt-ins must implement
-    :meth:`_bronze_candidates` AND :meth:`_read_bronze_records`.
+    construction rather than by argument (R2-g I-1). It uses the same
+    :meth:`_bronze_candidates` and :meth:`_read_bronze_records` hooks as the
+    default :meth:`read_bronze`.
 
     Per-transformer (like :attr:`VINTAGE_PER_BRONZE_FILE`), NOT source-scoped
     like ``_EXACT_PARTITION_ONLY_SOURCES``. The honest reason, so the next
@@ -748,31 +765,23 @@ class BaseSilverTransformer(ABC):
       opting in, or per-frame counts overwrite each other.
     """
     BRONZE_BODY_GLOB: ClassVar[str] = "raw_*.json"
-    """Which bronze bodies the ``VINTAGE_PER_BRONZE_FILE`` per-file loop sees.
+    """Which files in a bronze partition are bodies.
 
-    Overridden by transformers whose bronze bodies are not JSON (the NESO
-    Data Portal family captures CSV: ``"raw_*.csv"``). The ``.meta.json``
-    guard in the loop stays correct under any glob -- a sidecar is never a
-    body.
-
-    Caller enumeration (required before touching a shared symbol): the single
-    read site is the per-file glob inside ``if self.VINTAGE_PER_BRONZE_FILE:``,
-    and the sole opt-in in the repo is
-    ``silver/elexon/system_prices.py:32`` (grep-verified), which inherits this
-    unchanged default -- so its behaviour is byte-identical. Every other
-    ``raw_*.json`` literal in the repo is a per-transformer local glob in that
-    transformer's own ``read_bronze`` and is untouched.
+    Read by the default :meth:`_bronze_candidates` (so by :meth:`read_bronze`)
+    and by the two per-file loops (``VINTAGE_PER_BRONZE_FILE``). Overridden
+    by transformers whose bodies are not JSON: ENTSO-E's ``"raw_*.xml"``
+    (``silver/entsoe/_base.py``) and the NESO Data Portal's ``"raw_*.csv"``.
+    Every reader drops ``*.meta.json`` whatever the glob -- a sidecar is
+    never a body.
 
     Blast-radius classification: this is a READ-path symbol with WRITE-path
     consequences, and it must not be described as "read only". The glob
     selects which bodies are seen; for each selected body the loop reads that
     body's OWN sidecar for ``available_at``, and ``_write_silver`` turns that
     scalar into the run-suffixed silver FILENAME. So the symbol determines
-    which vintages are assigned and which silver files are written. What makes
-    the change safe is not its reach but its default: unchanged, with the sole
-    inheritor enumerated above, so no existing dataset's vintage assignment or
-    filename can move -- a claim pinned by tests on BOTH branches (JSON and
-    CSV) asserting written silver FILENAMES, not row counts.
+    which vintages are assigned and which silver files are written -- pinned
+    by tests on BOTH per-file branches (JSON and CSV) asserting written silver
+    FILENAMES, not row counts.
     """
     ENTITY_KEY_COLUMNS: ClassVar[tuple[str, ...]] = ()
     """The dataset's REQUIRED entity/business key — the columns that, taken
@@ -842,11 +851,19 @@ class BaseSilverTransformer(ABC):
         self.bronze_dir = data_dir / "bronze" / self.source / self.dataset
         self.silver_dir = data_dir / "silver" / self.source / self.dataset
 
-    @abstractmethod
     def read_bronze(self, target_date: date) -> pl.DataFrame:
-        """Read and parse all bronze files for a given date.
-        Returns a raw DataFrame before validation."""
-        ...
+        """Read and parse all bronze bodies for a date into one raw frame.
+
+        Reads :meth:`_bronze_candidates` through :meth:`_read_bronze_records`,
+        so a body that cannot be parsed refuses the whole date
+        (:class:`UnparseableBronzeError`) instead of vanishing while its
+        siblings overwrite the partition. Override this only to change how the
+        frame is built from the records; choose files in
+        :meth:`_bronze_candidates`, so "the files read" stays one listing.
+        """
+        pairs = self._read_bronze_records(self._bronze_candidates(target_date), target_date)
+        rows = [record for _, records in pairs for record in records]
+        return pl.DataFrame(rows) if rows else pl.DataFrame()
 
     @abstractmethod
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
@@ -875,14 +892,21 @@ class BaseSilverTransformer(ABC):
         return self.BRONZE_READ_SELECTION
 
     def _bronze_candidates(self, target_date: date) -> list[Path]:
-        """Resolve the ordered bronze BODY paths to consider for ``target_date``.
+        """Resolve the ordered bronze BODY paths read for ``target_date``.
 
-        THE one filesystem scan of a ``LOCKSTEP_BRONZE_READ`` run. Must return
-        the FULL ordered candidate list -- any "newest only" truncation belongs
-        to :class:`BronzeReadSelection`, applied after vouching, never before
-        it. Must exclude ``*.meta.json``: the writer puts bodies and sidecars in
-        the same directory under names that a ``raw_*.json`` glob both match,
-        and a sidecar admitted as a body has no sidecar of its own, so it would
+        THE one listing of the files read: :meth:`read_bronze` reads exactly
+        these, and a ``LOCKSTEP_BRONZE_READ`` run vouches exactly these from one
+        filesystem scan. The default is the bodies of the exact date partition.
+        A transformer that picks files another way overrides this, not
+        ``read_bronze``, so anything derived from the files read agrees with
+        the read.
+
+        Under ``LOCKSTEP_BRONZE_READ`` it must return the FULL ordered list --
+        any "newest only" truncation belongs to :class:`BronzeReadSelection`,
+        applied after vouching, never before it. It must always exclude
+        ``*.meta.json``: the writer puts bodies and sidecars in the same
+        directory under names that a ``raw_*.json`` glob both match, and a
+        sidecar admitted as a body has no sidecar of its own, so it would
         classify ``NO_SIDECAR`` and fire the hard-fail rung on every healthy run.
 
         Args:
@@ -891,9 +915,11 @@ class BaseSilverTransformer(ABC):
         Returns:
             Body paths in the family's own selection order.
         """
-        raise NotImplementedError(
-            f"{type(self).__name__} sets LOCKSTEP_BRONZE_READ but does not implement "
-            "_bronze_candidates + _read_bronze_records"
+        day = PathBuilder(self.data_dir).bronze_date_dir(
+            self.source, self.dataset, target_date, dataset_dir=self.bronze_dir
+        )
+        return sorted(
+            path for path in day.glob(self.BRONZE_BODY_GLOB) if not path.name.endswith(".meta.json")
         )
 
     def _read_bronze_records(
@@ -901,33 +927,68 @@ class BaseSilverTransformer(ABC):
         paths: Sequence[Path],
         target_date: date,
     ) -> tuple[tuple[Path, list[dict[str, Any]]], ...]:
-        """Parse each vouched bronze body and apply this family's date filter.
+        """Parse each bronze body and apply this family's date filter.
+
+        The default parses every path with :meth:`_parse_bronze_body`. A body
+        that raises ``OSError`` or ``ValueError`` (bad JSON or UTF-8, malformed
+        XML, a refused envelope) does not vanish: once every path has been
+        tried, :class:`UnparseableBronzeError` names them all, before anything
+        is written for the date. Any other exception is a parser bug and
+        propagates as it is.
 
         Returns PER-FILE record lists and constructs NO DataFrame, so the base
-        keeps ownership of frame construction and the merged frame stays
-        byte-identical to the non-lockstep path's. The per-file structure is
-        what lets ``run()`` build the row list and the stamp list by parallel
-        comprehensions over ONE object, so rows and stamps cannot desync.
+        keeps ownership of frame construction. The per-file structure is what
+        lets the lockstep branch of ``run()`` build the row list and the stamp
+        list by parallel comprehensions over ONE object, so rows and stamps
+        cannot desync.
 
         ``target_date`` is required, not optional: both ENTSO-G families apply
         a row-level date filter INSIDE the read, and a hook without it would
         strand that filter in ``read_bronze()``, which the lockstep branch
         bypasses -- writing parseable OFF-DATE rows into the target-date silver
-        partition, the exact fabrication class this unit exists to stop.
+        partition.
 
-        Implementations emit at most ONE record above ``DEBUG`` per call (the
-        aggregated undated-record warning), never one per file.
+        Implementations emit at most ONE record above ``DEBUG`` per call (an
+        aggregated warning or error), never one per file.
 
         Args:
-            paths: Vouched body paths, in candidate order.
+            paths: Body paths, in candidate order (vouched ones, under lockstep).
             target_date: The date being transformed.
 
         Returns:
             ``(path, records)`` pairs in the same order as ``paths``.
         """
+        pairs: list[tuple[Path, list[dict[str, Any]]]] = []
+        failures: list[tuple[Path, Exception]] = []
+        for path in paths:
+            try:
+                pairs.append((path, self._parse_bronze_body(path)))
+            except (OSError, ValueError) as exc:
+                failures.append((path, exc))
+        if failures:
+            logger.error(
+                "%s/%s %s: refusing the date, %d bronze body(ies) could not be parsed: %s",
+                self.source,
+                self.dataset,
+                target_date,
+                len(failures),
+                "; ".join(f"{path}: {exc}" for path, exc in failures),
+            )
+            raise UnparseableBronzeError([path for path, _ in failures])
+        return tuple(pairs)
+
+    def _parse_bronze_body(self, path: Path) -> list[dict[str, Any]]:
+        """Parse one bronze body into its raw records.
+
+        Raise ``ValueError`` (or let ``OSError`` through) when the body is not
+        valid for this vendor; :meth:`_read_bronze_records` turns that into a
+        refusal of the date. The vendor bases implement it
+        (``silver/elexon/_base.py``, ``silver/entsoe/_base.py``). A caller that
+        writes as it goes, such as a ``VINTAGE_PER_BRONZE_FILE`` reader, must
+        catch the error itself: earlier bodies' vintages are already written.
+        """
         raise NotImplementedError(
-            f"{type(self).__name__} sets LOCKSTEP_BRONZE_READ but does not implement "
-            "_bronze_candidates + _read_bronze_records"
+            f"{type(self).__name__} must implement _parse_bronze_body or read_bronze"
         )
 
     def _normalise_raw_column_name(self, column: str) -> str:

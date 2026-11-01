@@ -190,7 +190,7 @@ def _describe_unvouched_bronze(
         window = f"destinations {dates[0]}..{dates[-1]}" if dates else "the examined range"
     return (
         f" Excluded {len(reasons_by_path)} unvouched bronze body(ies) across {window} "
-        "(body present, sidecar missing or unusable) -- their rows are NOT in this "
+        "(body present but unusable) -- their rows are NOT in this "
         "silver partition and their stamps did NOT contribute to available_at. "
         f"Reasons: {reasons}. Examples: {samples}."
     )
@@ -1288,6 +1288,7 @@ def run_transform(
         One :class:`DatasetResult` per dataset, in input order.
     """
     from gridflow.observability import PipelineRunTracker
+    from gridflow.silver.base import BronzeVouchReason, UnparseableBronzeError
     from gridflow.silver.registry import get_transformer, ingest_only_reason, post_run_hooks
     from gridflow.utils.time import date_range
 
@@ -1384,6 +1385,14 @@ def run_transform(
                     # fails the dataset exactly as a raising run() does.
                     for hook in post_run_hooks(source, ds):
                         hook(transformer, target_date)
+                except UnparseableBronzeError as exc:
+                    # Refuse this date and carry on: nothing was written for
+                    # it, so the old Parquet stays and the rung below fails
+                    # the dataset rather than let that file pass as current.
+                    unvouched_bronze |= {
+                        (path, BronzeVouchReason.UNPARSEABLE_BODY) for path in exc.paths
+                    }
+                    total_unvouched_total_exclusion += 1
                 finally:
                     # Every attempted destination is folded exactly once,
                     # including a run() that raises after partial preparation.
@@ -1501,14 +1510,16 @@ def run_transform(
                 # inspects sidecars, so those rows are read and (on reingest)
                 # stamped now(). Under exclusion the frame is empty, and the
                 # only other signal would be a generic warning nobody reads.
+                # A date refused for an unparseable body lands here too.
                 # Same argument as the all_dropped rung above: a stale
                 # pre-existing Parquet is left on disk untouched, and only a
                 # FAILED dataset-level status stops it passing as current.
                 error_message = safe_error_message(
-                    f"{source}/{ds}: every examined bronze body was unvouched for "
+                    f"{source}/{ds}: bronze could not be used for "
                     f"{total_unvouched_total_exclusion} date(s) in the requested range "
-                    "-- bronze exists but no row could be read from it, because no "
-                    "sidecar could establish an honest availability timestamp. No "
+                    "-- bronze exists, but every examined body was unvouched (no "
+                    "sidecar could establish an honest availability timestamp) or a "
+                    "body could not be parsed. No "
                     "silver was written for the affected date(s); any pre-existing "
                     "Parquet there is unchanged and must not be treated as current. "
                     "Bronze is left exactly as found (never repaired, never deleted)."
@@ -1661,7 +1672,9 @@ def run_transform(
             bronze_unvouched = len({path for path, _ in unvouched_bronze})
             # The frame count has NO result field, so folding it without
             # rendering it would leave it exactly as invisible as before the
-            # fold. One renderer, both paths.
+            # fold. One renderer, both paths. The unvouched detail too: a date
+            # refused before this crash would otherwise lose its file paths.
+            error_message += _describe_unvouched_bronze(unvouched_bronze, dates)
             error_message += _describe_unaccounted_frames(total_unaccounted_empty_frames)
             if source_exclusion_details:
                 error_message += (

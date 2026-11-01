@@ -1601,7 +1601,7 @@ async def test_a_date_whose_every_sidecar_is_unusable_reports_failed(
         "every candidate body for this date was excluded and the run still did "
         "not report failed -- a whole vintage disappeared quietly"
     )
-    assert "every examined bronze body was unvouched" in (result.error or ""), (
+    assert "every examined body was unvouched" in (result.error or ""), (
         "the run failed for some OTHER reason -- an exception out of run() also "
         "reports `failed`, so without this the case could pass while D-41's "
         "total-exclusion rung was never reached: "
