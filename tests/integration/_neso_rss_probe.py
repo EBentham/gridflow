@@ -102,7 +102,6 @@ class _LazyCsv(httpx.AsyncByteStream):
 
 
 def _install_registry(data_dir: Path, members: int) -> None:
-    from gridflow.connectors.neso_data_portal import endpoints
     from gridflow.connectors.neso_data_portal import registry as registry_module
 
     directory = data_dir / "registry"
@@ -146,7 +145,6 @@ def _install_registry(data_dir: Path, members: int) -> None:
     registry_module.load_registry = lambda path=None: (  # type: ignore[assignment]
         loaded if path is None else real_load(path)
     )
-    endpoints.FAMILIES = endpoints.build_families(loaded)
 
 
 def main() -> int:

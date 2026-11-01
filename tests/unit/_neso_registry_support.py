@@ -2,7 +2,7 @@
 
 Not a test module (no ``test_`` prefix). Tests substitute a registry through
 P-1's one seam: :func:`install_registry` monkeypatches
-``registry.load_registry`` and ``endpoints.FAMILIES`` together.
+``registry.load_registry``.
 """
 
 from __future__ import annotations
@@ -13,7 +13,6 @@ import json
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any
 
-from gridflow.connectors.neso_data_portal import endpoints
 from gridflow.connectors.neso_data_portal import registry as registry_module
 
 if TYPE_CHECKING:
@@ -237,7 +236,6 @@ def install_registry(monkeypatch: pytest.MonkeyPatch, directory: Path) -> Regist
         return loaded if path is None else _REAL_LOAD(path)
 
     monkeypatch.setattr(registry_module, "load_registry", _load)
-    monkeypatch.setattr(endpoints, "FAMILIES", endpoints.build_families(loaded))
     return loaded
 
 

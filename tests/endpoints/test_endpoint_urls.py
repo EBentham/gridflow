@@ -869,8 +869,10 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 # negative control substitutes a drifted sources.yaml.
 _DRIFT_PROBE = """
 from gridflow.config.settings import load_settings
-from gridflow.connectors.neso_data_portal.endpoints import DATASETS, FAMILIES
+from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+from gridflow.connectors.neso_data_portal.registry import load_registry
 
+FAMILIES = load_registry().families
 configured = set(load_settings().get_source_config("neso_data_portal").datasets)
 drift = sorted(set(FAMILIES) ^ configured)
 assert not drift, (

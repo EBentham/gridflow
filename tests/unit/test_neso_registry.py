@@ -644,24 +644,32 @@ class TestGeneratedDatasets:
             )
         )
 
-    def test_negative_control_a_legacy_family_with_two_members_is_refused(self) -> None:
+    def test_negative_control_a_legacy_family_with_two_members_is_refused(
+        self, tmp_path: Path
+    ) -> None:
+        directory = _copy_registry(tmp_path)
+        document = json.loads(
+            (directory / "daily-wind-availability.json").read_text(encoding="utf-8")
+        )
+        (member,) = [r for r in document["resources"] if r["family"] == "daily_wind_availability"]
+        twin = dict(member, id="00000000-0000-4000-8000-0000000000aa")
+        document["resources"].append(dict(twin, name="Daily Wind Availability 2"))
+        _write_package(directory, document)
         _assert_ok(
             _run(
                 """
-                import dataclasses
+                import sys
+                from pathlib import Path
                 from gridflow.connectors.neso_data_portal import endpoints
-                families = dict(endpoints.FAMILIES)
-                dwa = families["daily_wind_availability"]
-                families["daily_wind_availability"] = dataclasses.replace(
-                    dwa, names=dwa.names | {("Daily Wind Availability 2", "CSV")}
-                )
+                from gridflow.connectors.neso_data_portal.registry import load_registry
                 try:
-                    endpoints.build_datasets(families)
+                    endpoints.build_datasets(load_registry(Path(sys.argv[1])))
                 except RuntimeError:
                     print('OK')
                 else:
                     raise AssertionError('a two-member legacy family generated a CkanDataset')
-                """
+                """,
+                str(directory),
             )
         )
 
@@ -805,8 +813,9 @@ class TestAgreement:
             _run(
                 """
                 from gridflow.config.settings import load_settings
-                from gridflow.connectors.neso_data_portal.endpoints import FAMILIES
+                from gridflow.connectors.neso_data_portal.registry import load_registry
                 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
+                FAMILIES = load_registry().families
                 config = load_settings().get_source_config('neso_data_portal')
                 configured = set(config.datasets)
                 assert len(FAMILIES) == 326, len(FAMILIES)

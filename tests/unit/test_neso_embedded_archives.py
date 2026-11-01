@@ -264,10 +264,9 @@ def test_ef8_the_raised_cap_is_this_family_only(run_fresh: Callable[..., str]) -
     code = (
         _CONSTANTS
         + """
-from gridflow.connectors.neso_data_portal.endpoints import build_families
 from gridflow.connectors.neso_data_portal.registry import load_registry
 
-families = build_families(load_registry())
+families = {key: family for key, (_package, family) in load_registry().families.items()}
 cap = families[ARCHIVE].max_download_bytes
 assert cap == 805306368 and cap > 645655728, cap
 above = sorted(k for k, f in families.items() if f.max_download_bytes > 536870912)
