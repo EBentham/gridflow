@@ -130,15 +130,13 @@ def entsoe_source_config() -> SourceConfig:
 
 
 def _silver_path(data_dir: Path, dataset: str, target_date: date) -> Path:
-    return (
-        data_dir
-        / "silver"
-        / "entsoe"
-        / dataset
-        / f"year={target_date.year}"
-        / f"month={target_date.month:02d}"
-        / f"{dataset}_{target_date:%Y%m%d}.parquet"
-    )
+    """The partition's one silver file; an APPEND_ONLY name carries a run suffix."""
+    partition = (
+        data_dir / "silver" / "entsoe" / dataset / f"year={target_date.year}"
+    ) / f"month={target_date.month:02d}"
+    name = f"{dataset}_{target_date:%Y%m%d}"
+    matches = [*partition.glob(f"{name}.parquet"), *partition.glob(f"{name}_run*.parquet")]
+    return matches[0] if len(matches) == 1 else partition / f"{name}.parquet"
 
 
 def _write_fixture_to_bronze(tmp_data_dir: Path, dataset: str, fixture_name: str) -> Path:

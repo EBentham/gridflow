@@ -21,10 +21,9 @@ class LOLPDRMTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "lolpdrm"
     schema_cls = ElexonLOLPDRM
-    ENTITY_KEY_COLUMNS = (
-        "settlement_date",
-        "settlement_period",
-    )  # D-8
+    APPEND_ONLY = True
+    DATASET_VERSION = "2.0.0"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "published_at")  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

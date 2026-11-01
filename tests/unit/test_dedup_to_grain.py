@@ -20,6 +20,7 @@ from pydantic import BaseModel
 
 import gridflow.silver.elexon
 import gridflow.silver.entsoe  # noqa: F401 -- registers every ENTSO-E transformer
+from gridflow.schemas.elexon import ElexonUOU2T14D
 from gridflow.silver.base import BaseSilverTransformer
 from gridflow.silver.elexon.boal import BOALTransformer
 from gridflow.silver.elexon.imbalngc import ImbalNGCTransformer
@@ -165,6 +166,19 @@ def _ngc_rows(value_field: str) -> list[dict[str, object]]:
     ]
 
 
+def _uou_rows() -> list[dict[str, object]]:
+    base = {
+        "publishTime": "2026-09-15T08:00:00Z",
+        "forecastDate": "2026-09-17",
+        "fuelType": "WIND",
+        "bmUnit": None,
+    }
+    return [
+        {**base, "nationalGridBmUnit": "ABC-1", "outputUsable": 10},
+        {**base, "nationalGridBmUnit": "ABC-2", "outputUsable": 20},
+    ]
+
+
 def _soso_rows() -> list[dict[str, object]]:
     base = {
         "publishTime": "2026-09-16T19:03:11Z",
@@ -183,9 +197,15 @@ def _soso_rows() -> list[dict[str, object]]:
     [
         (ImbalNGCTransformer, _ngc_rows("imbalance"), "boundary"),
         (MelNGCTransformer, _ngc_rows("margin"), "boundary"),
+        (UOU2T14DTransformer, _uou_rows(), "national_grid_bm_unit"),
         (SOSOTransformer, _soso_rows(), "trader_unit"),
     ],
-    ids=["imbalngc-boundary", "melngc-boundary", "soso-trader_unit"],
+    ids=[
+        "imbalngc-boundary",
+        "melngc-boundary",
+        "uou2t14d-null-bmunit",
+        "soso-trader_unit",
+    ],
 )
 def test_grain_columns_preserved(
     cls: type[BaseSilverTransformer], rows: list[dict[str, object]], column: str
@@ -201,6 +221,13 @@ def test_grain_columns_preserved(
     assert transformer.schema_cls is not None
     for row in out.iter_rows(named=True):
         transformer.schema_cls(**row)
+
+
+def test_null_bm_unit_row_validates() -> None:
+    row = UOU2T14DTransformer.__new__(UOU2T14DTransformer).transform(
+        pl.DataFrame(_uou_rows())
+    )
+    ElexonUOU2T14D(**row.row(0, named=True))
 
 
 @pytest.mark.parametrize(

@@ -21,8 +21,12 @@ class UOU2T14DTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "uou2t14d"
     schema_cls = ElexonUOU2T14D
-    ENTITY_KEY_COLUMNS = ("settlement_date", "bm_unit_id")  # D-8
-    OPTIONAL_ENTITY_KEY_COLUMNS = ("settlement_period",)
+    APPEND_ONLY = True
+    DATASET_VERSION = "2.0.0"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "bm_unit_id", "published_at")  # D-8
+    # bm_unit_id is null on about 26,000 rows a day; the National Grid unit,
+    # one-to-one with it where both exist, keeps those rows apart.
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("national_grid_bm_unit", "settlement_period")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

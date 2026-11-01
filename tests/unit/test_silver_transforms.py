@@ -1319,25 +1319,17 @@ class TestImbalNGCTransformer:
         assert "indicated_imbalance" in result.columns
         assert result["data_provider"][0] == "elexon"
 
-    def test_dedup_on_settlement_period(self):
-        raw = pl.DataFrame(
-            [
-                {
-                    "settlementDate": "2024-01-15",
-                    "settlementPeriod": 1,
-                    "publishDateTime": "2024-01-15T00:15:00Z",
-                    "indicatedImbalance": -250.0,
-                },
-                {
-                    "settlementDate": "2024-01-15",
-                    "settlementPeriod": 1,
-                    "publishDateTime": "2024-01-15T00:20:00Z",
-                    "indicatedImbalance": -240.0,
-                },
-            ]
-        )
-        result = self.t.transform(raw)
-        assert len(result) == 1
+    def test_keeps_each_publication_of_a_period(self):
+        """Every publication is a vintage; only an exact repeat collapses."""
+        first = {
+            "settlementDate": "2024-01-15",
+            "settlementPeriod": 1,
+            "publishDateTime": "2024-01-15T00:15:00Z",
+            "indicatedImbalance": -250.0,
+        }
+        later = {**first, "publishDateTime": "2024-01-15T00:20:00Z", "indicatedImbalance": -240.0}
+        result = self.t.transform(pl.DataFrame([first, later, first]))
+        assert sorted(result["indicated_imbalance"].to_list()) == [-250.0, -240.0]
 
     def test_empty_input(self):
         assert self.t.transform(pl.DataFrame()).is_empty()

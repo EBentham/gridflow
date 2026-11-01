@@ -20,7 +20,9 @@ class TSDFDTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "tsdfd"
     schema_cls = ElexonTSDFD
-    ENTITY_KEY_COLUMNS = ("forecast_date",)  # D-8
+    APPEND_ONLY = True
+    DATASET_VERSION = "2.0.0"
+    ENTITY_KEY_COLUMNS = ("forecast_date", "published_at")  # D-8
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

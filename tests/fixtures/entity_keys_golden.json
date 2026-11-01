@@ -41,15 +41,15 @@
     "optional": []
   },
   "elexon/imbalngc": {
-    "required": ["settlement_date", "settlement_period"],
+    "required": ["settlement_date", "settlement_period", "published_at"],
     "optional": ["boundary"]
   },
   "elexon/inddem": {
-    "required": ["settlement_date", "settlement_period"],
+    "required": ["settlement_date", "settlement_period", "published_at"],
     "optional": ["boundary"]
   },
   "elexon/indgen": {
-    "required": ["settlement_date", "settlement_period"],
+    "required": ["settlement_date", "settlement_period", "published_at"],
     "optional": ["boundary"]
   },
   "elexon/indo": {
@@ -65,7 +65,7 @@
     "optional": []
   },
   "elexon/lolpdrm": {
-    "required": ["settlement_date", "settlement_period"],
+    "required": ["settlement_date", "settlement_period", "published_at"],
     "optional": []
   },
   "elexon/market_depth": {
@@ -73,7 +73,7 @@
     "optional": []
   },
   "elexon/melngc": {
-    "required": ["settlement_date", "settlement_period"],
+    "required": ["settlement_date", "settlement_period", "published_at"],
     "optional": ["boundary"]
   },
   "elexon/mid": {
@@ -117,16 +117,16 @@
     "optional": []
   },
   "elexon/tsdf": {
-    "required": ["settlement_date", "settlement_period"],
+    "required": ["settlement_date", "settlement_period", "published_at"],
     "optional": ["boundary"]
   },
   "elexon/tsdfd": {
-    "required": ["forecast_date"],
+    "required": ["forecast_date", "published_at"],
     "optional": []
   },
   "elexon/uou2t14d": {
-    "required": ["settlement_date", "bm_unit_id"],
-    "optional": ["settlement_period"]
+    "required": ["settlement_date", "bm_unit_id", "published_at"],
+    "optional": ["national_grid_bm_unit", "settlement_period"]
   },
   "elexon/windfor": {
     "required": ["settlement_date", "settlement_period"],

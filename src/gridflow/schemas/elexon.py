@@ -477,7 +477,7 @@ class ElexonIndGen(BaseSchema):
 class ElexonTSDFD(BaseSchema):
     """Silver schema: 2-14 Day Ahead Transmission System Demand Forecast (TSDFD).
 
-    Daily forecast; one row per forecast_date. timestamp_utc is midnight
+    Daily forecast; one row per forecast_date and publication. timestamp_utc is midnight
     UTC of forecast_date. Unlike most Elexon datasets this one emits
     published_at via the rename map (publishTime → published_at).
     """
@@ -661,7 +661,7 @@ class ElexonUOU2T14D(BaseSchema):
     settlement_date: date
     settlement_period: int | None = Field(default=None, ge=1, le=50)
     timestamp_utc: datetime
-    bm_unit_id: str
+    bm_unit_id: str | None = None
     national_grid_bm_unit: str | None = None
     fuel_type: str | None = None
     output_usable_mw: float

@@ -21,10 +21,9 @@ class TSDFTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "tsdf"
     schema_cls = ElexonTSDF
-    ENTITY_KEY_COLUMNS = (
-        "settlement_date",
-        "settlement_period",
-    )  # D-8
+    APPEND_ONLY = True
+    DATASET_VERSION = "2.0.0"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "published_at")  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("boundary",)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:

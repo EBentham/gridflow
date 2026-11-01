@@ -76,7 +76,8 @@ from gridflow.silver.schema_manifest import (
 # fifty-eight with v0.22-K-SCN-3's Building Heat Model example output, WS1, WS2, local-authority
 # heat model and Resource Adequacy 2030s records, then to two hundred and fifty-nine with
 # v0.22-K-FILE's GSP / Gnode / Direct Connect / Region lookup record, then to two hundred and
-# sixty-four with v0.22-H's five system frequency rendering records.
+# sixty-four with v0.22-H's five system frequency rendering records, then to two hundred and
+# seventy-eight with the eight Elexon and six ENTSO-E forecasts that keep every vintage.
 _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
@@ -342,6 +343,20 @@ _APPEND_ONLY_DATASETS: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "system_frequency_offset_zip"),
     ("neso_data_portal", "system_frequency_gmt_zip"),
     ("neso_data_portal", "system_frequency_gmt_csv"),
+    ("elexon", "uou2t14d"),
+    ("elexon", "inddem"),
+    ("elexon", "indgen"),
+    ("elexon", "tsdf"),
+    ("elexon", "tsdfd"),
+    ("elexon", "lolpdrm"),
+    ("elexon", "imbalngc"),
+    ("elexon", "melngc"),
+    ("entsoe", "load_forecast"),
+    ("entsoe", "load_forecast_weekly"),
+    ("entsoe", "load_forecast_monthly"),
+    ("entsoe", "load_forecast_yearly"),
+    ("entsoe", "generation_forecast"),
+    ("entsoe", "wind_solar_forecast"),
 )
 
 
@@ -535,9 +550,9 @@ def test_append_only_set_equals_latest_spec_set() -> None:
     spec_set = set(LATEST_VIEW_SPECS)
 
     # Non-vacuity guard: this invariant must never pass because both sides are
-    # empty (F16) -- two hundred and sixty-four APPEND_ONLY datasets are registered today.
+    # empty (F16) -- two hundred and seventy-eight APPEND_ONLY datasets are registered today.
     assert len(append_only) > 0
-    assert len(append_only) == 264
+    assert len(append_only) == 278
 
     missing_specs = append_only - spec_set
     extra_specs = spec_set - append_only
@@ -1154,6 +1169,20 @@ _EXPECTED_APPEND_ONLY_DEPRECATED_ALIASES: dict[tuple[str, str], str | None] = {
     ("neso_data_portal", "system_frequency_offset_zip"): "silver_system_frequency_offset_zip",
     ("neso_data_portal", "system_frequency_gmt_zip"): "silver_system_frequency_gmt_zip",
     ("neso_data_portal", "system_frequency_gmt_csv"): "silver_system_frequency_gmt_csv",
+    ("elexon", "uou2t14d"): "silver_uou2t14d",
+    ("elexon", "inddem"): "silver_inddem",
+    ("elexon", "indgen"): "silver_indgen",
+    ("elexon", "tsdf"): "silver_tsdf",
+    ("elexon", "tsdfd"): "silver_tsdfd",
+    ("elexon", "lolpdrm"): "silver_lolpdrm",
+    ("elexon", "imbalngc"): "silver_imbalngc",
+    ("elexon", "melngc"): "silver_melngc",
+    ("entsoe", "load_forecast"): "silver_load_forecast",
+    ("entsoe", "load_forecast_weekly"): "silver_load_forecast_weekly",
+    ("entsoe", "load_forecast_monthly"): "silver_load_forecast_monthly",
+    ("entsoe", "load_forecast_yearly"): "silver_load_forecast_yearly",
+    ("entsoe", "generation_forecast"): "silver_generation_forecast",
+    ("entsoe", "wind_solar_forecast"): "silver_wind_solar_forecast",
 }
 
 
