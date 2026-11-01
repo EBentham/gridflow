@@ -11,24 +11,13 @@
     {
       "key": "daily_wind_availability",
       "kind": "tabular",
-      "legacy": true,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
       "max_download_bytes": 8388608,
-      "name_regex": null,
-      "transformer": "bespoke",
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "BMU_ID",
-              "Date",
-              "MW"
-            ],
             "columns": [
               {
                 "source": "BMU_ID",
@@ -49,10 +38,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

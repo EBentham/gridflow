@@ -24,7 +24,6 @@ import io
 import json
 import logging
 import sys
-import tempfile
 import tracemalloc
 from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
@@ -358,7 +357,7 @@ _B3A_DATASETS: dict[str, tuple[str, bytes, int]] = {
 
 
 @pytest.fixture
-def short_data_dir() -> Iterator[Path]:
+def short_data_dir(short_root: Path) -> Path:
     """`tmp_data_dir`, but rooted somewhere deliberately SHORT.
 
     Windows MAX_PATH, a harness limit rather than a product one. The generic
@@ -369,11 +368,9 @@ def short_data_dir() -> Iterator[Path]:
     the test's own name -- the temporary path crosses 260 and the rename fails
     with WinError 3. The real data root (`C:\\gridflow-data`) is well clear.
     """
-    with tempfile.TemporaryDirectory(prefix="e", ignore_cleanup_errors=True) as name:
-        root = Path(name)
-        for layer in ("bronze", "silver", "gold"):
-            (root / layer).mkdir()
-        yield root
+    for layer in ("bronze", "silver", "gold"):
+        (short_root / layer).mkdir()
+    return short_root
 
 
 def _package_show_for(dataset: str) -> dict[str, Any]:

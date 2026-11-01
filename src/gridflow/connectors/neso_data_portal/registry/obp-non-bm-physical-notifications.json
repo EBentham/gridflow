@@ -11,27 +11,12 @@
     {
       "key": "obp_physical_notifications",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Data",
-              "Unit ID",
-              "Time From",
-              "Level From",
-              "Time To",
-              "Level To"
-            ],
             "columns": [
               {
                 "source": "Data",
@@ -73,10 +58,7 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

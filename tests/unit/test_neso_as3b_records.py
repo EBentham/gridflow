@@ -40,43 +40,40 @@ from __future__ import annotations
 
 import csv
 import io
-import json
 import re
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import (
+    both_as_of,
+    no_silver,
+    output_names,
+    package_doc,
+    point_settings,
+    record_of,
+    silver_frame,
+    write_recorded_capture,
+)
 
 from gridflow.connectors.neso_data_portal import client as client_module
 from gridflow.connectors.neso_data_portal import eligibility as eligibility_module
 from gridflow.connectors.neso_data_portal import registry as registry_module
-from gridflow.connectors.neso_data_portal import skeleton
 from gridflow.connectors.neso_data_portal.client import NesoEmptyResourceError
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
 from gridflow.connectors.neso_data_portal.registry import Eligible, Held, load_registry
 from gridflow.connectors.neso_data_portal.registry.record import has_issue_time
-from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
-
-    from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "as3b"
@@ -480,23 +477,11 @@ BOM_ALIASES = {"r1", "r3", "r4"}
 CRLF_ALIASES = {"r1", "r2", "r3", "r4"}
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="as3b", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -523,51 +508,16 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        meta.family,
-        body=raw if raw is not None else body(alias),
-        written_at=datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=meta.package,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=meta.package,
         package_id=PACKAGE_IDS[meta.package],
         resource_id=resource_id or meta.resource_id,
-        resource_name=meta.name,
-        resource_filename=meta.filename,
-        ckan_last_modified=meta.modified,
         url_type=meta.url_type,
-        ckan_format="CSV",
-        extension="csv",
     )
-    return capture_id_for(path, data)
-
-
-def _record(key: str) -> SchemaRecord:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _no_silver(data: Path, key: str) -> bool:
-    return not list((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-
-
-def _package_doc(slug: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads((REGISTRY_DIR / f"{slug}.json").read_text("utf-8"))
-    return document
-
-
-def _columns(key: str) -> list[str]:
-    return [
-        c
-        for c in (name for name, _t in generic.output_columns(_record(key)))
-        if c not in ("year", "month")
-    ]
 
 
 def _utc(cell: str) -> datetime:
@@ -610,9 +560,9 @@ def _load_clean(data: Path, *aliases: str) -> pl.DataFrame:
         assert completion is not None, alias
         assert (completion["outcome"], completion["rows_excluded"]) == ("populated", 0)
         assert read_failure(data, family, capture_id) is None
-    frame = _silver(data, family)
+    frame = silver_frame(data, family)
     assert frame.height == written
-    assert [c for c in frame.columns if c not in ("year", "month")] == _columns(family)
+    assert [c for c in frame.columns if c not in ("year", "month")] == output_names(family)
     assert frame.schema["timestamp_utc"] == pl.Datetime("us", "UTC")
     return frame
 
@@ -672,7 +622,7 @@ def test_every_record_is_utf8_csv_with_the_spec_key_vintage_and_no_issue(key: st
     the historic ORPS table), ``capture_fallback`` for the four mock tables (their sidecars carry no
     last-modified) and ``ckan_last_modified`` for the upload-only ORPS and OBP families, with
     exactly one epoch whose header is the vendor body's and ``issue: none``."""
-    record = _record(key)
+    record = record_of(key)
     assert (record.version, record.encoding, record.reader) == ("1", "utf-8", "csv")
     assert record.latest == "whole_capture" and record.latest_partition is None
     assert record.vintage == ("ckan_last_modified" if key in UPLOAD_ONLY else "capture_fallback")
@@ -681,12 +631,12 @@ def test_every_record_is_utf8_csv_with_the_spec_key_vintage_and_no_issue(key: st
     epoch = record.epochs[0]
     assert list(epoch.header) == header(FIRST_OF[key])
     assert list(record.entity_key) == key_of(key, header(FIRST_OF[key]))
-    assert record.run_type_column is None and "run_type" not in _columns(key)
+    assert record.run_type_column is None and "run_type" not in output_names(key)
     assert record.siblings == () and record.xlsx is None and record.edition_by_filename is None
     assert record.zip_member is None
     assert epoch.issue.kind == "none" and epoch.unpivot is None
     assert has_issue_time(record) is False
-    assert "issue_time" not in record.entity_key and "issue_time" not in _columns(key)
+    assert "issue_time" not in record.entity_key and "issue_time" not in output_names(key)
 
 
 @pytest.mark.parametrize("key", RECORDED)
@@ -699,7 +649,7 @@ def test_columns_are_typed_without_trim_tokens_or_bounds(key: str) -> None:
     the temporal input are ``nullable: false`` (the historic value columns, 11,418 blanks, are
     not), and no column declares ``trim``, ``null_tokens``, ``formats_by_filename``, a bound or a
     zone rule other than ``UTC``."""
-    record = _record(key)
+    record = record_of(key)
     expected = cols_of(key, header(FIRST_OF[key]))
     columns = record.epochs[0].columns
     assert [c.source for c in columns] == [s[0] for s in expected]
@@ -725,7 +675,7 @@ def test_mock_and_historic_values_are_strings_where_the_meaning_is_open(key: str
     historic ORPS comma numeral / padded dash cast or cleaned: the mock delivery / submission
     columns and all 234 historic monthly value columns are ``string``, and the historic record
     declares no trim, token map or number format."""
-    record = _record(key)
+    record = record_of(key)
     types = {c.name: c.dtype for c in record.epochs[0].columns}
     if key in MOCKS:
         present = {"delivery_start", "delivery_end", "order_entry_time"} & set(types)
@@ -741,7 +691,7 @@ def test_the_temporal_recipe_is_none_on_the_seven_held_records(key: str) -> None
     the ORPS months live in header text (historic, reactive) or in separate ``Year`` / ``Month``
     integers (default), and nothing composes a date, so the temporal recipe is ``none`` and
     ``timestamp_utc`` is the capture time."""
-    recipe = _record(key).temporal
+    recipe = record_of(key).temporal
     assert (recipe.kind, recipe.column, recipe.date_column) == ("none", None, None)
 
 
@@ -749,7 +699,7 @@ def test_the_temporal_recipe_is_none_on_the_seven_held_records(key: str) -> None
 def test_obp_events_are_anchored_on_the_utc_window_start_or_instruction_point(key: str) -> None:
     """Detects an OBP table anchored on the wrong instant: PN and availability on ``time_from``, the
     instruction table on ``point_datetime``, all ``utc_instant``."""
-    recipe = _record(key).temporal
+    recipe = record_of(key).temporal
     assert (recipe.kind, recipe.column) == ("utc_instant", TEMPORAL_COLUMN[key])
 
 
@@ -758,7 +708,7 @@ def test_the_instruction_issue_datetime_is_a_nullable_data_column_not_an_issue_r
     and ``issue_time`` would have to join the key) or made ``nullable: false`` (which would exclude
     the 259 VP / SPP / STOP points): it is a nullable UTC datetime column and the epoch's issue kind
     is ``none``."""
-    record = _record(INSTR)
+    record = record_of(INSTR)
     columns = {c.name: c for c in record.epochs[0].columns}
     issue = columns["issue_datetime"]
     assert (issue.dtype, issue.nullable, issue.zone) == ("datetime", True, "UTC")
@@ -779,7 +729,7 @@ def test_seven_records_are_held_with_the_verbatim_question(key: str) -> None:
     data hold wins, rule 1), the three ORPS ones by their own record and their package stays
     eligible."""
     package, family = registry_module.load_registry().families[key]
-    record = _record(key)
+    record = record_of(key)
     assert isinstance(record.eligibility, Held)
     assert (record.eligibility.unit, record.eligibility.question) == (UNIT, HELD_QUESTIONS[key])
     if key in MOCKS:
@@ -794,7 +744,7 @@ def test_three_records_are_eligible(key: str) -> None:
     """Detects a hold or a per-record override on a clean OBP family: the three carry no
     eligibility override, each is effectively eligible and so is its package."""
     package, family = registry_module.load_registry().families[key]
-    assert _record(key).eligibility is None
+    assert record_of(key).eligibility is None
     assert effective_eligibility(package, family) == Eligible(status="eligible")
     assert package.eligibility == Eligible(status="eligible")
 
@@ -822,7 +772,7 @@ def test_the_four_daily_mock_families_are_empty_allowed_and_have_no_record() -> 
     for key in DAILY_MOCKS:
         package, entry = registry.families[key]
         assert entry.empty_allowed is True, key
-        assert entry.record is None and entry.transformer is None, key
+        assert entry.record is None, key
         assert package.package == MOCK_PKG
         with pytest.raises(ValueError, match="No transformer registered"):
             get_transformer(SOURCE, key, Path("__test__"))
@@ -876,7 +826,7 @@ def test_the_reactive_record_has_one_wide_epoch_and_the_long_table_is_a_resource
     column wide archive, ``id`` first), the long table's header is not frozen, resource
     ``528b03d2`` is a ``HOLD`` with the verbatim question and this unit while the wide archive
     stays ``SILVER``, and the reconcile ledger names neither."""
-    record = _record(REACT)
+    record = record_of(REACT)
     assert len(record.epochs) == 1 and len(record.epochs[0].header) == 176
     assert record.epochs[0].header[0] == "id"
     assert "Month-Year" not in record.epochs[0].header
@@ -923,14 +873,13 @@ def test_the_package_files_carry_exactly_the_ten_records_and_no_ledger_entry() -
     the ten."""
     found: set[str] = set()
     for slug in PACKAGE_IDS:
-        document = _package_doc(slug)
+        document = package_doc(slug)
         assert document["package_id"] == PACKAGE_IDS[slug]
         found |= {f["key"] for f in document["families"] if "record" in f}
-        assert all(f["transformer"] is None for f in document["families"]), slug
         if slug != ORPS_PKG:
             assert all(r["disposition"]["kind"] == "SILVER" for r in document["resources"]), slug
     assert found == set(RECORDED)
-    assert len([f for f in _package_doc(MOCK_PKG)["families"] if "record" in f]) == 4
+    assert len([f for f in package_doc(MOCK_PKG)["families"] if "record" in f]) == 4
     entries = registry_module.load_reconcile_adjudications()
     assert {e.family for e in entries} & {*RECORDED, *DAILY_MOCKS, FILES} == set()
 
@@ -958,7 +907,7 @@ def test_ten_are_reported_as_silver_outputs_three_eligible_and_seven_held() -> N
 def test_every_family_is_generic_tabular_silver_with_its_own_record(key: str) -> None:
     """Detects a family wired to a bespoke transformer instead of the generic engine."""
     _package, entry = load_registry().families[key]
-    assert entry.record is not None and entry.transformer is None
+    assert entry.record is not None
     assert entry.kind == "tabular"
 
 
@@ -1095,7 +1044,7 @@ def test_a_long_table_body_under_the_wide_archive_fails_loud(data: Path) -> None
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, REACT, data).run(DAY, run_id="r")
     assert read_completion(data, REACT, capture_id) is None
-    assert _no_silver(data, REACT)
+    assert no_silver(data, REACT)
 
 
 def test_the_held_long_table_resource_is_not_read_beside_the_wide_archive(data: Path) -> None:
@@ -1106,7 +1055,7 @@ def test_the_held_long_table_resource_is_not_read_beside_the_wide_archive(data: 
     capture(data, "r2")
     written = get_transformer(SOURCE, REACT, data).run(DAY, run_id="r")
     assert written == len(rows("r1"))
-    frame = _silver(data, REACT)
+    frame = silver_frame(data, REACT)
     assert frame.height == len(rows("r1"))
     assert "month_year" not in frame.columns
 
@@ -1186,7 +1135,7 @@ def test_a_header_outside_the_epoch_fails_loud(data: Path, family: str) -> None:
     with pytest.raises(NesoCaptureFailedError):
         get_transformer(SOURCE, family, data).run(DAY, run_id="r")
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("family", RECORDED)
@@ -1205,7 +1154,7 @@ def test_a_repeated_key_fails_the_capture_as_a_duplicate(data: Path, family: str
         (capture_id, DuplicateEntityKeyError.__name__)
     ]
     assert read_completion(data, family, capture_id) is None
-    assert _no_silver(data, family)
+    assert no_silver(data, family)
 
 
 @pytest.mark.parametrize("alias", ["r1", "r3", "r4", "p1", "i1", "a1"])
@@ -1217,7 +1166,7 @@ def test_an_upload_family_is_stamped_with_the_ckan_last_modified(data: Path, ali
     assert meta.modified is not None
     capture_id = capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     vintage = datetime.fromisoformat(meta.modified).replace(tzinfo=UTC)
     assert set(frame["available_at"].to_list()) == {vintage}
     db = data / "cat.duckdb"
@@ -1237,28 +1186,10 @@ def test_a_mock_datastore_family_is_stamped_with_the_capture_time(data: Path, al
     meta = CAPTURES[alias]
     capture_id = capture(data, alias)
     get_transformer(SOURCE, meta.family, data).run(DAY, run_id="r")
-    frame = _silver(data, meta.family)
+    frame = silver_frame(data, meta.family)
     written = datetime.fromisoformat(meta.written).astimezone(UTC)
     assert set(frame["available_at"].to_list()) == {written}
     db = data / "cat.duckdb"
     init_catalogue(db, data)
     assert both_as_of(db, data, meta.family, written - timedelta(microseconds=1)) == []
     assert set(both_as_of(db, data, meta.family, written)) == {capture_id}
-
-
-@pytest.mark.parametrize("key", RECORDED)
-def test_the_skeleton_page_renders_the_new_records(key: str) -> None:
-    """Detects a record the docs generator cannot render (the held questions, the em dashes and
-    backticks, the 238-column key, the two-vintage mix)."""
-    page = skeleton.render_package(
-        load_registry(),
-        {
-            "name": PACKAGE_OF[key],
-            "title": PACKAGE_OF[key],
-            "organization": {"title": "NESO"},
-            "license_title": "NESO Open Data Licence",
-            "extras": [],
-        },
-        None,
-    )
-    assert f"`{key}`" in page

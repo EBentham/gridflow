@@ -11,25 +11,12 @@
     {
       "key": "system_inertia",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "SER",
-      "refresh": "weekly",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Settlement Date",
-              "Settlement Period",
-              "Outturn Inertia",
-              "Market Provided Inertia"
-            ],
             "columns": [
               {
                 "source": "Settlement Date",
@@ -58,10 +45,7 @@
                 "dtype": "int64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

@@ -20,7 +20,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from gridflow.connectors.neso_data_portal.client import NesoDataPortalConnector
-from gridflow.connectors.neso_data_portal.endpoints import DATASETS, FAMILIES
+from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+from gridflow.connectors.neso_data_portal.registry import load_registry
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -37,13 +38,13 @@ async def capture_legacy(
     connector: NesoDataPortalConnector, dataset: str, start: datetime, end: datetime
 ) -> list[RawResponse]:
     """Capture ``dataset``'s one member on an entered connector; a one-element list."""
-    family = FAMILIES[dataset]
+    package, family = load_registry().families[dataset]
     spec = DATASETS[dataset]
     connector._assert_window_admissible(dataset, start, end)
-    payload = await connector._package_show(family.package)
+    payload = await connector._package_show(package.package)
     resource, _redirector = connector._select_resource(payload, spec, dataset)
     response, _extension = await connector._capture_member(
-        payload, resource, family, spec, dataset, end
+        payload, resource, package, family, spec, dataset, end
     )
     return [response]
 

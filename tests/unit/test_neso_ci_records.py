@@ -16,15 +16,13 @@ from __future__ import annotations
 
 import csv
 import io
-import os
-import tempfile
 from datetime import UTC, date, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import record_of, silver_frame, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.registry import Held
@@ -37,9 +35,6 @@ from gridflow.silver.neso_data_portal.completion import (
 )
 from gridflow.silver.registry import get_transformer
 from gridflow.utils.time import settlement_period_to_utc
-
-if TYPE_CHECKING:
-    from collections.abc import Iterator
 
 SOURCE = "neso_data_portal"
 CI_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "neso_data_portal" / "ci"
@@ -216,20 +211,10 @@ POLARS_DTYPES: dict[str, Any] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (a 38-character family key plus the engine's run-id names
-    pass MAX_PATH under the long per-user temp directory); the system temp elsewhere."""
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data() -> Iterator[Path]:
+def data(short_root: Path) -> Path:
     """A data root with a short path (ADR-036: the engine's names pass MAX_PATH below tmp_path)."""
-    with tempfile.TemporaryDirectory(
-        prefix="ci", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def _records(raw: bytes) -> int:
@@ -266,21 +251,10 @@ def _capture(data: Path, key: str, body: bytes, *, written_at: datetime = WRITTE
     return capture_id_for(path, data)
 
 
-def _silver(data: Path, key: str) -> pl.DataFrame:
-    files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
-    return pl.concat([pl.read_parquet(f, hive_partitioning=False) for f in files])
-
-
-def _record(key: str) -> Any:
-    record = registry_module.load_registry().families[key][1].record
-    assert record is not None, key
-    return record
-
-
 def _run_one(data: Path, key: str, body: bytes | None = None) -> pl.DataFrame:
     _capture(data, key, body if body is not None else ci_body(key))
     get_transformer(SOURCE, key, data).run(DAY, run_id="r")
-    return _silver(data, key)
+    return silver_frame(data, key)
 
 
 def _naive_utc(stamp: str) -> datetime:
@@ -308,8 +282,8 @@ def test_every_ci_family_types_its_vendor_body(data: Path, key: str) -> None:
     assert completion["row_count"] == _rows(body)
     assert completion["rows_excluded"] == 0
 
-    record = _record(key)
-    frame = _silver(data, key)
+    record = record_of(key)
+    frame = silver_frame(data, key)
     expected = [name for name, _type in generic.output_columns(record)]
     assert [c for c in frame.columns if c not in ("year", "month")] == [
         c for c in expected if c not in ("year", "month")
@@ -339,7 +313,7 @@ def test_ci_record_shapes_match_the_unit_table() -> None:
     selection, temporal recipe, or eligibility (held questions are the FACTS TODOs).
     """
     for key in CI_KEYS:
-        record = _record(key)
+        record = record_of(key)
         assert record.reader == "csv", key
         assert len(record.epochs) == 1, key
         assert record.epochs[0].issue.kind == "none", key
@@ -359,7 +333,7 @@ def test_ci_record_shapes_match_the_unit_table() -> None:
         "capacity_market_component_history",
         "capacity_market_component_history_pre",
     ):
-        record = _record(key)
+        record = record_of(key)
         assert record.temporal.date_column == "change_date", key
         assert set(record.entity_key) == {c.name for c in record.epochs[0].columns}, key
 
@@ -368,8 +342,8 @@ def test_component_history_pre_and_post_stay_separate_owners() -> None:
     """Detects the pre-aggregation and post-aggregation histories being merged under one
     owner: identical headers must not collapse the 2026-07-22 aggregation boundary (CI-3).
     """
-    pre = _record("capacity_market_component_history_pre")
-    post = _record("capacity_market_component_history")
+    pre = record_of("capacity_market_component_history_pre")
+    post = record_of("capacity_market_component_history")
     assert pre.epochs[0].header == post.epochs[0].header
     assert pre.siblings == () and post.siblings == ()
     families = registry_module.load_registry().families
@@ -441,7 +415,7 @@ def test_regional_keeps_fourteen_wide_columns_and_signed_values(data: Path) -> N
     negative intensity or zero being bounded away.
     """
     frame = _run_one(data, "regional_ci_forecast")
-    names = [c.name for c in _record("regional_ci_forecast").epochs[0].columns]
+    names = [c.name for c in record_of("regional_ci_forecast").epochs[0].columns]
     assert names[0] == "datetime" and len(names) == 15
     assert "north_wales_and_merseyside" in names and "yorkshire" in names
     assert -1.0 in frame["london"].to_list()

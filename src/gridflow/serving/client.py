@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import warnings
+from datetime import UTC, date, datetime, time, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,7 +13,6 @@ from gridflow.silver.schema_manifest import BITEMPORAL_EXCLUDE
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from datetime import date
 
     import polars as pl
 
@@ -53,9 +53,15 @@ _VINTAGE_VISIBLE: tuple[str, ...] = ("available_at", "vintage_policy")
 _REL_SYSTEM_PRICES = "silver_elexon_system_prices_latest"  # _SERVING_ALIASES["system_prices"]
 _REL_FUEL_GENERATION = "silver_elexon_fuelhh"  # _SERVING_ALIASES["fuel_generation"]
 _REL_GAS_STORAGE = "gold_eu_gas_storage"  # _SERVING_ALIASES["gas_storage"]
-_REL_WEATHER = "silver_elexon_itsdo"  # _SERVING_ALIASES["weather"]
+_REL_WEATHER = "silver_open_meteo_historical_demand"  # _SERVING_ALIASES["weather"]
 _REL_IMBALANCE_CONTEXT = "gold_uk_imbalance_context"  # _SERVING_ALIASES["imbalance_context"]
 _REL_GB_DAY_AHEAD_BENCHMARK = "gold_gb_day_ahead_benchmark"
+
+
+def _utc_midnight(day: str | date) -> datetime:
+    """The UTC instant a calendar day starts, from a date or an ISO date string."""
+    as_date = day if isinstance(day, date) else date.fromisoformat(day)
+    return datetime.combine(as_date, time.min, tzinfo=UTC)
 
 
 class GridflowClient:
@@ -166,10 +172,9 @@ class GridflowClient:
         cutoff, not historical point-in-time selection**: an ``as_of`` that
         falls between vintages returns nothing for that key rather than the
         value that was current then (ADR-025:117-120). A consumer needing
-        genuine historical PIT must query the **all-vintage** surface —
-        ``silver_elexon_system_prices``, or the deprecated
-        ``silver_system_prices`` alias, both of which still return every
-        vintage by design — and apply ``available_at <= as_of`` **then
+        genuine historical PIT must query the **all-vintage** surface,
+        ``silver_elexon_system_prices``, which returns every vintage by
+        design, and apply ``available_at <= as_of`` **then
         latest-of-survivors**. That primitive is consumer-side
         (gridflow_models) and is not built here.
 
@@ -299,18 +304,24 @@ class GridflowClient:
         end: str | date,
         location: str | None = None,
     ) -> pl.DataFrame:
-        """Get Elexon ITSDO (Initial Transmission System Demand Outturn).
+        """Get hourly Open-Meteo weather at the GB population centres.
 
-        Despite the method name, this reads ``silver_elexon_itsdo`` — the GB
-        transmission-system DEMAND outturn (MW), not weather. The name is a
-        pre-existing misnomer kept for SDK compatibility.
+        Reads ``silver_open_meteo_historical_demand``: ERA5 archive temperature,
+        wind, humidity, precipitation, radiation, pressure and snow, with the
+        derived degree days and air density, one row per hour and location.
 
-        Returns a Polars DataFrame with the live ``silver_elexon_itsdo`` public
-        schema (bitemporal / partitioning columns excluded). The ``location``
-        filter and ordering are retained for backward compatibility; new columns
-        added to the silver layer surface here automatically.
+        Args:
+            start: First UTC day, inclusive.
+            end: Last UTC day, inclusive.
+            location: Optional centre name, e.g. ``"london"``.
+
+        Returns:
+            The relation's public columns (bitemporal and partitioning columns
+            excluded), ordered by ``timestamp_utc`` then ``location``.
         """
-        params: list[str] = [str(start), str(end)]
+        # Whole UTC days: casting timestamp_utc to DATE would use the session's
+        # local time zone and move the late-evening hours in BST.
+        params: list[object] = [_utc_midnight(start), _utc_midnight(end) + timedelta(days=1)]
         location_filter = ""
         if location:
             location_filter = " AND location = ?"
@@ -319,7 +330,7 @@ class GridflowClient:
         sql = (
             "SELECT *" + exclude + " "
             f"FROM {_REL_WEATHER} "
-            "WHERE timestamp_utc::DATE BETWEEN ? AND ?" + location_filter + " "
+            "WHERE timestamp_utc >= ? AND timestamp_utc < ?" + location_filter + " "
             "ORDER BY timestamp_utc, location"
         )
         return self._require_con().execute(sql, params).pl()

@@ -24,18 +24,15 @@ import json
 import shutil
 import subprocess
 import sys
-import tempfile
-import textwrap
 import zipfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import duckdb
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
+from _neso_generic_support import query, write_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.eligibility import effective_eligibility
@@ -56,7 +53,7 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Callable
 
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
@@ -153,22 +150,11 @@ MEMBERS: dict[str, Member] = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (ADR-036: engine names pass MAX_PATH there); tmp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root; gold views are out of scope for this catalogue."""
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(
-        prefix="h1", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        yield Path(root)
+    return short_root
 
 
 def fixture(name: str) -> bytes:
@@ -263,25 +249,17 @@ def overlap_gaps(report: Any) -> list[Any]:
     return [gap for gap in report.gaps if gap.category == "overlap"]
 
 
-def _query(db: Path, sql: str, params: dict[str, Any] | None = None) -> pl.DataFrame:
-    con = duckdb.connect(str(db), read_only=True)
-    try:
-        return con.execute(sql, params).pl() if params else con.execute(sql).pl()
-    finally:
-        con.close()
-
-
 def both_as_of(db: Path, data: Path, key: str, as_of: datetime | None) -> pl.DataFrame:
     """``_latest`` (or the parameterised select) = Polars ``select_latest_vintage``; rows."""
     view = f"silver_{SOURCE}_{key}"
     spec = LATEST_VIEW_SPECS[(SOURCE, key)]
     if as_of is None:
-        sql = _query(db, f'SELECT * FROM "{view}_latest"')
+        sql = query(db, f'SELECT * FROM "{view}_latest"')
     else:
-        columns = set(_query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
+        columns = set(query(db, f'SELECT * FROM "{view}" LIMIT 0').columns)
         select = latest_select_sql(view, spec, columns, as_of_param=True)
         assert select is not None
-        sql = _query(db, select, {"as_of": as_of.isoformat()})
+        sql = query(db, select, {"as_of": as_of.isoformat()})
     files = sorted((data / "silver" / SOURCE / key).rglob("[!.]*.parquet"))
     lf = pl.scan_parquet(files, hive_partitioning=False)
     polars = select_latest_vintage(lf, spec, as_of, completions=scan_completions(data)).collect()
@@ -348,7 +326,7 @@ class TestRevisedMonth:
         assert sorted(before["bronze_capture_id"].to_list()) == sorted(
             [original] * 3 + [february] * 2
         )
-        views = _query(
+        views = query(
             db,
             "SELECT sql FROM duckdb_views() WHERE view_name = $name",
             {"name": f"silver_{SOURCE}_{GMT_CSV}_latest"},
@@ -612,28 +590,16 @@ class TestFailureAccounting:
 # --------------------------------------------------------------------------- #
 
 
-def _assert_ok(code: str) -> None:
-    result = subprocess.run(
-        [sys.executable, "-c", textwrap.dedent(code)],
-        cwd=PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        timeout=300,
-        check=False,
-    )
-    assert result.returncode == 0, f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}"
-    assert "OK" in result.stdout, result.stdout
-
-
 class TestRegistryPins:
-    def test_t_f11_the_package_layout_records_and_ledger(self) -> None:
+    def test_t_f11_the_package_layout_records_and_ledger(
+        self, run_fresh: Callable[..., str]
+    ) -> None:
         """Detects any drift from P-1/P-2/P-6: the bronze home record-less, the five
         sibling-fed records exactly as specified, each resource on its rendering family by
         name month (12/48/12/27/53, all SILVER), the ZIP families holding exactly the 39
         child-bearing resources with each child on the same key, and P-6's entry verbatim
         and backed (in a fresh interpreter)."""
-        _assert_ok(
+        stdout = run_fresh(
             f"""
             import re
             from gridflow.connectors.neso_data_portal.registry import (
@@ -715,24 +681,21 @@ class TestRegistryPins:
             print('OK')
             """
         )
+        assert "OK" in stdout, stdout
 
     def test_t_f11_generated_artefacts_are_current_and_show_the_hold(self) -> None:
-        """Detects a registry commit without regenerated ``sources.yaml`` or eligibility
-        report, and the report not showing the 2014 family held with its question."""
-        for module in (
-            ["gridflow.connectors.neso_data_portal.eligibility", "--check"],
-            ["gridflow.connectors.neso_data_portal.registry", "yaml", "--check"],
-        ):
-            result = subprocess.run(
-                [sys.executable, "-m", *module],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                timeout=300,
-                check=False,
-            )
-            assert result.returncode == 0, (module, result.stdout, result.stderr)
+        """Detects a registry commit without a regenerated eligibility report, and the
+        report not showing the 2014 family held with its question."""
+        result = subprocess.run(
+            [sys.executable, "-m", "gridflow.connectors.neso_data_portal.eligibility", "--check"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=300,
+            check=False,
+        )
+        assert result.returncode == 0, (result.stdout, result.stderr)
         report = (PROJECT_ROOT / "docs" / "neso_data_portal" / "eligibility.md").read_text(
             encoding="utf-8"
         )
