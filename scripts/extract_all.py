@@ -134,9 +134,6 @@ N17_UNCHARTABLE = {
     ("entsog", "aggregate_interconnections"),
 }
 
-# N-22: absent from both DOC_TYPES and sources.yaml, so no fetch path exists.
-UNWIRED = {("entsoe", "activated_balancing_qty")}
-
 
 def log(msg: str) -> None:
     print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
@@ -228,17 +225,6 @@ def fetch_all(scope: set[tuple[str, str]] | None = None) -> None:
                         "source": s,
                         "dataset": ds,
                         "status": "SKIPPED_VENDOR_PARKED",
-                    }
-                )
-                continue
-            if (s, ds) in UNWIRED:
-                checkpoint(
-                    {
-                        "phase": "fetch",
-                        "source": s,
-                        "dataset": ds,
-                        "status": "UNWIRED",
-                        "detail": "N-22: no fetch path in DOC_TYPES or sources.yaml",
                     }
                 )
                 continue

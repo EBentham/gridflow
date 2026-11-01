@@ -21,7 +21,6 @@ from gridflow.connectors.entsoe.parsers import (
 )
 from gridflow.schemas.entsoe import (
     EntsoeActivatedBalancingPrices,
-    EntsoeActivatedBalancingQty,
     EntsoeActualGeneration,
     EntsoeActualGenerationUnits,
     EntsoeActualLoad,
@@ -55,7 +54,6 @@ from gridflow.schemas.entsoe import (
 )
 from gridflow.silver.entsoe._outages import parse_outage_xml
 from gridflow.silver.entsoe.activated_balancing_prices import ActivatedBalancingPricesTransformer
-from gridflow.silver.entsoe.activated_balancing_qty import ActivatedBalancingQtyTransformer
 from gridflow.silver.entsoe.actual_generation import ActualGenerationTransformer
 from gridflow.silver.entsoe.actual_generation_units import ActualGenerationUnitsTransformer
 from gridflow.silver.entsoe.actual_load import ActualLoadTransformer
@@ -2319,9 +2317,6 @@ class TestPhase3Endpoints:
         assert iv.domain_style == "control_area"
         assert iv.extra_params == {"businessType": "A19"}
 
-    def test_activated_balancing_qty_doc_type(self):
-        assert "activated_balancing_qty" not in DOC_TYPES
-
     def test_activated_balancing_prices_doc_type(self):
         ab = DOC_TYPES["activated_balancing_prices"]
         assert ab.document_type == "A84"
@@ -2500,82 +2495,6 @@ class TestImbalanceVolumeTransformer:
         """F-02: the column-dropping select must not precede with_published_at
         — value-level check, not just column presence."""
         raw = _make_df_from_xml("imbalance_volume_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert "published_at" in result.columns
-        assert result["published_at"].dtype == pl.Datetime("us", "UTC")
-        assert result["published_at"].null_count() == 0
-        assert set(result["published_at"].to_list()) == {_VINTAGE}
-        assert result["published_at"].to_list() != result["ingested_at"].to_list()
-
-
-# ---------------------------------------------------------------------------
-# Phase 3 — ActivatedBalancingQtyTransformer
-# ---------------------------------------------------------------------------
-
-
-class TestActivatedBalancingQtyTransformer:
-    def setup_method(self):
-        self.t = _make_entsoe_transformer(ActivatedBalancingQtyTransformer)
-
-    def test_transform_basic(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert not result.is_empty()
-        assert "quantity_mwh" in result.columns
-        assert "reserve_type" in result.columns
-        assert "direction" in result.columns
-
-    def test_four_records(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert len(result) == 4
-
-    def test_reserve_type_values(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        rtypes = set(result["reserve_type"].to_list())
-        assert "fcr" in rtypes
-        assert "afrr" in rtypes
-
-    def test_direction_values(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        dirs = set(result["direction"].to_list())
-        assert "up" in dirs
-        assert "down" in dirs
-
-    def test_fcr_up_qty_values(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = (
-            self.t.transform(raw)
-            .filter((pl.col("reserve_type") == "fcr") & (pl.col("direction") == "up"))
-            .sort("timestamp_utc")
-        )
-        assert abs(result["quantity_mwh"][0] - 320) < 0.1
-
-    def test_timestamp_dtype(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert result["timestamp_utc"].dtype == pl.Datetime("us", "UTC")
-
-    def test_ingested_at_present(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        result = self.t.transform(raw)
-        assert "ingested_at" in result.columns
-
-    def test_dedup(self):
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
-        doubled = pl.concat([raw, raw])
-        result = self.t.transform(doubled)
-        assert len(result) == 4
-
-    def test_empty_input(self):
-        assert self.t.transform(pl.DataFrame()).is_empty()
-
-    def test_published_at_equals_document_vintage(self):
-        """F-02: the column-dropping select must not precede with_published_at
-        — value-level check, not just column presence."""
-        raw = _make_df_from_xml("activated_balancing_qty_gb.xml", "quantity")
         result = self.t.transform(raw)
         assert "published_at" in result.columns
         assert result["published_at"].dtype == pl.Datetime("us", "UTC")
@@ -2789,34 +2708,6 @@ class TestEntsoeImbalanceVolumeSchema:
                 area_code="10YGB----------A",
                 direction="long",
                 volume_mwh=150.0,
-            )
-
-
-class TestEntsoeActivatedBalancingQtySchema:
-    _TS = datetime(2024, 1, 15, 0, 0, tzinfo=UTC)
-
-    def test_valid_record(self):
-        r = EntsoeActivatedBalancingQty(
-            timestamp_utc=self._TS,
-            area_code="10YGB----------A",
-            reserve_type="fcr",
-            direction="up",
-            quantity_mwh=320.0,
-        )
-        assert r.data_provider == "entsoe"
-        assert r.quantity_mwh == 320.0
-        assert r.reserve_type == "fcr"
-
-    def test_naive_timestamp_rejected(self):
-        from pydantic import ValidationError
-
-        with pytest.raises(ValidationError):
-            EntsoeActivatedBalancingQty(
-                timestamp_utc=datetime(2024, 1, 15),
-                area_code="10YGB----------A",
-                reserve_type="fcr",
-                direction="up",
-                quantity_mwh=320.0,
             )
 
 

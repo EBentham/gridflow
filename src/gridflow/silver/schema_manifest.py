@@ -137,7 +137,6 @@ DESIGNATED_DATE_COLS: dict[tuple[str, str], str] = {
     ("elexon", "uou2t14d"): "settlement_date",
     ("elexon", "windfor"): "timestamp_utc",
     ("entsoe", "activated_balancing_prices"): "timestamp_utc",
-    ("entsoe", "activated_balancing_qty"): "timestamp_utc",
     ("entsoe", "actual_generation"): "timestamp_utc",
     ("entsoe", "actual_generation_units"): "timestamp_utc",
     ("entsoe", "actual_load"): "timestamp_utc",

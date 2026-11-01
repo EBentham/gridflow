@@ -555,12 +555,6 @@ class TestEntsoeBronzeToSilverPipeline:
                 {"timestamp_utc", "area_code", "reserve_type", "direction", "price_eur_mwh"},
                 id="activated_balancing_prices",
             ),
-            # NOTE: activated_balancing_qty is intentionally NOT added here — it
-            # has no DOC_TYPES/connector config entry (pre-existing gap, unrelated
-            # to F-02, out of scope per this batch's ingest-changes scope fence).
-            # Its value-level published_at coverage lives at the unit level:
-            # tests/unit/test_entsoe.py::TestActivatedBalancingQtyTransformer::
-            # test_published_at_equals_document_vintage.
             pytest.param(
                 "contracted_reserves",
                 "contracted_reserves_gb.xml",

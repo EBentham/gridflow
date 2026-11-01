@@ -645,4 +645,5 @@ and what it does not establish, moved verbatim from `silver/entsoe/_event_window
   shape is tests/fixtures/entsoe/activated_balancing_qty_gb.xml (fixture only) (R3-RESEARCH.md:77).
   Limitation: Unwired (N-22): no live probe was possible for this dataset regardless of
   classification; the record supports no window verdict. Its unreachability is not fixed, wired, or
-  removed in B4 (out of scope).
+  removed in B4 (out of scope). The transformer was deleted on 2026-11-01, so the dataset no longer
+  needs a verdict.
