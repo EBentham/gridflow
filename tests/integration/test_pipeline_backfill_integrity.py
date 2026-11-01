@@ -164,7 +164,8 @@ def _decide(
     SILVER_ZERO_ROWS, BITEMPORAL_EVENT_TIME, BITEMPORAL_AVAILABLE_AT.
     SKIP last_error values: CADENCE_NOT_IN_WINDOW:<reason>, API_EMPTY_FOR_WINDOW.
     """
-    if (source, dataset) in pinned_known_empty:
+    # A pin excuses an empty window, never the silver that does exist.
+    if (source, dataset) in pinned_known_empty and silver_rows == 0:
         return "SKIP", f"CADENCE_NOT_IN_WINDOW: {pinned_known_empty[(source, dataset)]}"
     if bronze_files == 0 and silver_files == 0:
         if _api_call_succeeded(data_dir, source, dataset):
@@ -273,6 +274,25 @@ def test_skip_rationale_logic_pinned_known_empty(tmp_path: Path) -> None:
     assert verdict == "SKIP"
     assert err.startswith("CADENCE_NOT_IN_WINDOW:")
     assert "yearly cadence" in err
+
+
+def test_a_pinned_dataset_with_silver_is_still_validated(tmp_path: Path) -> None:
+    """The pin excuses an empty window only: silver that exists is checked, so a
+    pinned dataset whose rows lack the event-time column still fails."""
+    verdict, err = _decide(
+        "entsoe",
+        "load_forecast_yearly",
+        tmp_path,
+        bronze_files=1,
+        silver_files=1,
+        silver_rows=10,
+        has_event_time=False,
+        has_available_at=True,
+        et_tz=None,
+        aa_tz="UTC",
+        pinned_known_empty=_PINNED_KNOWN_EMPTY,
+    )
+    assert (verdict, err) == ("FAIL", "BITEMPORAL_EVENT_TIME")
 
 
 def test_skip_rationale_logic_generic_no_data_is_fail(tmp_path: Path) -> None:
