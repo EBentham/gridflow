@@ -21,10 +21,9 @@ class ImbalNGCTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "imbalngc"
     schema_cls = ElexonImbalNGC
-    ENTITY_KEY_COLUMNS = (
-        "settlement_date",
-        "settlement_period",
-    )  # D-8
+    DATASET_VERSION = "2.0.0"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("boundary",)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -37,6 +36,7 @@ class ImbalNGCTransformer(ElexonTransformer):
             "publishTime": "published_at",
             "indicatedImbalance": "indicated_imbalance",
             "imbalance": "indicated_imbalance",
+            "boundary": "boundary",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
@@ -101,6 +101,7 @@ class ImbalNGCTransformer(ElexonTransformer):
             "settlement_period",
             "timestamp_utc",
             "indicated_imbalance",
+            "boundary",
             "published_at",
             "data_provider",
             "ingested_at",

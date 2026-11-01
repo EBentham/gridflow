@@ -22,7 +22,8 @@ class BOALTransformer(ElexonTransformer):
     dataset = "boal"
     schema_cls = ElexonBOAL
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
-    OPTIONAL_ENTITY_KEY_COLUMNS = ("acceptance_number",)
+    DATASET_VERSION = "2.0.0"
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("acceptance_number", "time_from")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -78,6 +79,16 @@ class BOALTransformer(ElexonTransformer):
                 .dt.replace_time_zone("UTC")
             )
 
+        # A unit-period carries one row per segment (a ramp in PN, an
+        # acceptance's steps in BOAL); time_from tells them apart.
+        for col in ("time_from", "time_to"):
+            if col in df.columns:
+                df = df.with_columns(
+                    pl.col(col)
+                    .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                    .dt.replace_time_zone("UTC")
+                )
+
         df = df.with_columns(
             pl.struct(["settlement_date", "settlement_period"])
             .map_elements(
@@ -106,6 +117,8 @@ class BOALTransformer(ElexonTransformer):
             "bm_unit_id",
             "acceptance_number",
             "acceptance_time",
+            "time_from",
+            "time_to",
             "deem_flag",
             "so_flag",
             "stor_flag",

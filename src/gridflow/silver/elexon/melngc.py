@@ -21,10 +21,9 @@ class MelNGCTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "melngc"
     schema_cls = ElexonMelNGC
-    ENTITY_KEY_COLUMNS = (
-        "settlement_date",
-        "settlement_period",
-    )  # D-8
+    DATASET_VERSION = "2.0.0"
+    ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("boundary",)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -37,6 +36,7 @@ class MelNGCTransformer(ElexonTransformer):
             "publishTime": "published_at",
             "indicatedMargin": "indicated_margin",
             "margin": "indicated_margin",
+            "boundary": "boundary",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
@@ -100,6 +100,7 @@ class MelNGCTransformer(ElexonTransformer):
             "settlement_period",
             "timestamp_utc",
             "indicated_margin",
+            "boundary",
             "published_at",
             "data_provider",
             "ingested_at",

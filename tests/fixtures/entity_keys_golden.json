@@ -18,7 +18,7 @@
   },
   "elexon/boal": {
     "required": ["settlement_date", "settlement_period", "bm_unit_id"],
-    "optional": ["acceptance_number"]
+    "optional": ["acceptance_number", "time_from"]
   },
   "elexon/disbsad": {
     "required": ["settlement_date", "settlement_period"],
@@ -42,7 +42,7 @@
   },
   "elexon/imbalngc": {
     "required": ["settlement_date", "settlement_period"],
-    "optional": []
+    "optional": ["boundary"]
   },
   "elexon/inddem": {
     "required": ["settlement_date", "settlement_period"],
@@ -74,7 +74,7 @@
   },
   "elexon/melngc": {
     "required": ["settlement_date", "settlement_period"],
-    "optional": []
+    "optional": ["boundary"]
   },
   "elexon/mid": {
     "required": ["settlement_date", "settlement_period"],
@@ -98,7 +98,7 @@
   },
   "elexon/pn": {
     "required": ["settlement_date", "settlement_period", "bm_unit_id"],
-    "optional": []
+    "optional": ["time_from"]
   },
   "elexon/remit": {
     "required": ["mrid"],
@@ -106,7 +106,7 @@
   },
   "elexon/soso": {
     "required": ["settlement_date", "contract_identification"],
-    "optional": ["trade_direction"]
+    "optional": ["trade_direction", "trader_unit"]
   },
   "elexon/system_prices": {
     "required": ["settlement_date", "settlement_period"],

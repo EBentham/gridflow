@@ -22,7 +22,8 @@ class SOSOTransformer(ElexonTransformer):
     dataset = "soso"
     schema_cls = ElexonSOSO
     ENTITY_KEY_COLUMNS = ("settlement_date", "contract_identification")  # D-8
-    OPTIONAL_ENTITY_KEY_COLUMNS = ("trade_direction",)
+    DATASET_VERSION = "2.0.0"
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("trade_direction", "trader_unit")
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():

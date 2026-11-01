@@ -21,7 +21,9 @@ class PNTransformer(ElexonTransformer):
     source = "elexon"
     dataset = "pn"
     schema_cls = ElexonPN
+    DATASET_VERSION = "2.0.0"
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "bm_unit_id")  # D-8
+    OPTIONAL_ENTITY_KEY_COLUMNS = ("time_from",)
 
     def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
         if raw_df.is_empty():
@@ -33,6 +35,8 @@ class PNTransformer(ElexonTransformer):
             "bmUnit": "bm_unit_id",
             "levelFrom": "level_from",
             "levelTo": "level_to",
+            "timeFrom": "time_from",
+            "timeTo": "time_to",
         }
         rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
         if rename_map:
@@ -55,6 +59,16 @@ class PNTransformer(ElexonTransformer):
         for col in ["level_from", "level_to"]:
             if col in df.columns:
                 df = df.with_columns(pl.col(col).cast(pl.Float64))
+
+        # A unit-period carries one row per segment (a ramp in PN, an
+        # acceptance's steps in BOAL); time_from tells them apart.
+        for col in ("time_from", "time_to"):
+            if col in df.columns:
+                df = df.with_columns(
+                    pl.col(col)
+                    .str.to_datetime(format="%Y-%m-%dT%H:%M:%SZ", time_unit="us", strict=False)
+                    .dt.replace_time_zone("UTC")
+                )
 
         df = df.with_columns(
             pl.struct(["settlement_date", "settlement_period"])
@@ -82,6 +96,8 @@ class PNTransformer(ElexonTransformer):
             "settlement_period",
             "timestamp_utc",
             "bm_unit_id",
+            "time_from",
+            "time_to",
             "level_from",
             "level_to",
             "data_provider",

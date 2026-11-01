@@ -133,6 +133,8 @@ class ElexonBOAL(BaseSchema):
     bm_unit_id: str
     acceptance_number: int | None = None
     acceptance_time: datetime | None = None
+    time_from: datetime | None = None
+    time_to: datetime | None = None
     deem_flag: bool = False
     so_flag: bool = False
     stor_flag: bool = False
@@ -234,6 +236,8 @@ class ElexonPN(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     bm_unit_id: str
+    time_from: datetime | None = None
+    time_to: datetime | None = None
     level_from: float | None = None
     level_to: float | None = None
     data_provider: str = Field(default="elexon")
@@ -306,6 +310,7 @@ class ElexonImbalNGC(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     indicated_imbalance: float
+    boundary: str | None = None
     published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None
@@ -329,6 +334,7 @@ class ElexonMelNGC(BaseSchema):
     settlement_period: int = Field(ge=1, le=50)
     timestamp_utc: datetime
     indicated_margin: float
+    boundary: str | None = None
     published_at: datetime | None = None
     data_provider: str = Field(default="elexon")
     ingested_at: datetime | None = None

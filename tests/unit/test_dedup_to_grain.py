@@ -9,6 +9,7 @@ declares a grain, and the columns the grain was missing.
 from __future__ import annotations
 
 import ast
+import json
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import ClassVar
@@ -20,6 +21,12 @@ from pydantic import BaseModel
 import gridflow.silver.elexon
 import gridflow.silver.entsoe  # noqa: F401 -- registers every ENTSO-E transformer
 from gridflow.silver.base import BaseSilverTransformer
+from gridflow.silver.elexon.boal import BOALTransformer
+from gridflow.silver.elexon.imbalngc import ImbalNGCTransformer
+from gridflow.silver.elexon.melngc import MelNGCTransformer
+from gridflow.silver.elexon.pn import PNTransformer
+from gridflow.silver.elexon.soso import SOSOTransformer
+from gridflow.silver.elexon.uou2t14d import UOU2T14DTransformer
 from gridflow.silver.registry import get_transformer_class, list_transformers
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "elexon"
@@ -97,3 +104,120 @@ def test_no_elexon_or_entsoe_module_dedups_inline() -> None:
             ):
                 offenders.append(f"{path.name}:{node.lineno}")
     assert offenders == []
+
+
+def _pn_row(time_from: str, level: float) -> dict[str, object]:
+    return {
+        "settlementDate": "2026-09-15",
+        "settlementPeriod": 1,
+        "timeFrom": time_from,
+        "timeTo": "2026-09-14T23:30:00Z",
+        "levelFrom": level,
+        "levelTo": level,
+        "bmUnit": "T_ABC-1",
+    }
+
+
+def _boal_row(time_from: str, level: float) -> dict[str, object]:
+    return {
+        "settlementDate": "2026-09-15",
+        "settlementPeriodFrom": 3,
+        "timeFrom": time_from,
+        "timeTo": "2026-09-15T01:00:00Z",
+        "levelFrom": level,
+        "levelTo": level,
+        "acceptanceNumber": 11572,
+        "acceptanceTime": "2026-09-15T00:00:00Z",
+        "bmUnit": "T_ABC-1",
+    }
+
+
+@pytest.mark.parametrize(
+    ("cls", "row"),
+    [(PNTransformer, _pn_row), (BOALTransformer, _boal_row)],
+    ids=["pn", "boal"],
+)
+def test_segments_reach_silver(cls: type[BaseSilverTransformer], row) -> None:  # type: ignore[no-untyped-def]
+    """Two segments of one unit-period are two rows, each with its ``time_from``."""
+    raw = pl.DataFrame(
+        [row("2026-09-14T23:00:00Z", 1.0), row("2026-09-14T23:29:00Z", 0.0)]
+    )
+    transformer = _bare(cls)
+
+    out = transformer.transform(raw)
+
+    assert out["time_from"].sort().to_list() == [
+        datetime(2026, 9, 14, 23, 0, tzinfo=UTC),
+        datetime(2026, 9, 14, 23, 29, tzinfo=UTC),
+    ]
+    assert transformer.last_excluded_row_count == 0
+
+
+def _ngc_rows(value_field: str) -> list[dict[str, object]]:
+    base = {
+        "publishTime": "2026-09-15T23:47:00Z",
+        "settlementDate": "2026-09-16",
+        "settlementPeriod": 3,
+    }
+    return [
+        {**base, value_field: 1688, "boundary": "B1"},
+        {**base, value_field: 55, "boundary": "N"},
+    ]
+
+
+def _soso_rows() -> list[dict[str, object]]:
+    base = {
+        "publishTime": "2026-09-16T19:03:11Z",
+        "contractIdentification": "SO_20260916_2100_9",
+        "tradeDirection": "Bid",
+        "tradeQuantity": 25.0,
+        "tradePrice": 827.97,
+        "startTime": "2026-09-16T21:00:00Z",
+        "settlementDate": "2026-09-16",
+    }
+    return [{**base, "traderUnit": "MOYLE_SN"}, {**base, "traderUnit": "EWIC_SN"}]
+
+
+@pytest.mark.parametrize(
+    ("cls", "rows", "column"),
+    [
+        (ImbalNGCTransformer, _ngc_rows("imbalance"), "boundary"),
+        (MelNGCTransformer, _ngc_rows("margin"), "boundary"),
+        (SOSOTransformer, _soso_rows(), "trader_unit"),
+    ],
+    ids=["imbalngc-boundary", "melngc-boundary", "soso-trader_unit"],
+)
+def test_grain_columns_preserved(
+    cls: type[BaseSilverTransformer], rows: list[dict[str, object]], column: str
+) -> None:
+    """Two rows differing only in a grain column both survive, and validate."""
+    transformer = _bare(cls)
+
+    out = transformer.transform(pl.DataFrame(rows))
+
+    assert out.height == 2
+    assert out[column].n_unique() == 2
+    assert transformer.last_excluded_row_count == 0
+    assert transformer.schema_cls is not None
+    for row in out.iter_rows(named=True):
+        transformer.schema_cls(**row)
+
+
+@pytest.mark.parametrize(
+    ("cls", "fixture", "rows"),
+    [
+        (PNTransformer, "pn_response.json", 3),
+        (BOALTransformer, "boal_response.json", 3),
+        (UOU2T14DTransformer, "uou2t14d_response.json", 3),
+    ],
+    ids=["pn", "boal", "uou2t14d"],
+)
+def test_old_input_shapes_still_transform(
+    cls: type[BaseSilverTransformer], fixture: str, rows: int
+) -> None:
+    """Bronze without ``timeFrom`` or ``nationalGridBmUnit`` keeps the old grain."""
+    data = json.loads((FIXTURES / fixture).read_text(encoding="utf-8"))
+
+    out = _bare(cls).transform(pl.DataFrame(data["data"]))
+
+    assert out.height == rows
