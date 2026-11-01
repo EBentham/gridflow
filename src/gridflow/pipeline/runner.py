@@ -4,7 +4,8 @@ This module owns the *behavior* of the bronze / silver / gold pipeline: dataset
 and date resolution, the per-dataset step loops, the run-tracker lifecycle,
 error redaction before storage, view refresh, and watermark advancement. It
 returns structured :class:`RunReport` results and raises only plain exceptions
-(:class:`DatasetResolutionError`, :class:`NaiveDatetimeError`, ``TypeError``).
+(:class:`DatasetResolutionError`, :class:`NaiveDatetimeError`, :class:`PresetError`,
+``TypeError``).
 
 HARD RULE (keystone contract): this module imports no ``typer``/``argparse``,
 never calls ``print``/``echo``, and never raises ``typer.Exit``. Adapters
@@ -244,6 +245,10 @@ class NaiveDatetimeError(Exception):
     """
 
 
+class PresetError(Exception):
+    """Raised when a backfill preset cannot be found or does not fit the preset schema."""
+
+
 # --------------------------------------------------------------------------- #
 # Structured results
 # --------------------------------------------------------------------------- #
@@ -412,6 +417,21 @@ class RunReport:
     def ok(self) -> bool:
         """True when no result hard-failed; adapters map ``not ok`` to exit 1."""
         return not self.failed
+
+
+@dataclass(frozen=True)
+class Preset:
+    """A backfill preset: datasets grouped by source, in file order, and one window.
+
+    Attributes:
+        datasets: Source name to the datasets to backfill for it.
+        start_dt: Inclusive window start (tz-aware UTC).
+        end_dt: Exclusive window end (tz-aware UTC).
+    """
+
+    datasets: dict[str, list[str]]
+    start_dt: datetime
+    end_dt: datetime
 
 
 @dataclass
@@ -588,6 +608,78 @@ def resolve_datasets(
     if dataset:
         return [dataset]
     raise DatasetResolutionError("Specify a dataset name or use --all")
+
+
+def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
+    """Load a backfill preset: a packaged name, or a path to a ``.yaml`` file.
+
+    A preset is ``datasets: [{source, dataset}, ...]`` plus ``window:``, either
+    ``{last_days: N}`` (the N complete UTC days before today) or ``{start, end}``
+    read as ``--start``/``--end`` are (a bare end date is inclusive). Every
+    source and dataset must be configured, so a typo fails before any request.
+
+    Raises:
+        PresetError: The preset is missing, malformed, or names an unknown dataset.
+    """
+    from importlib.resources import files
+    from pathlib import Path
+
+    import yaml  # type: ignore[import-untyped]
+
+    if Path(name_or_path).suffix.lower() in (".yaml", ".yml"):
+        path = Path(name_or_path)
+        if not path.is_file():
+            raise PresetError(f"No preset file at {path}")
+        text = path.read_text(encoding="utf-8")
+    else:
+        packaged = files("gridflow.config") / "presets"
+        resource = packaged / f"{name_or_path}.yaml"
+        if not resource.is_file():
+            names = sorted(p.name.removesuffix(".yaml") for p in packaged.iterdir())
+            raise PresetError(
+                f"Unknown preset {name_or_path!r}: the packaged presets are "
+                f"{', '.join(names)}, or pass the path of a .yaml file"
+            )
+        text = resource.read_text(encoding="utf-8")
+
+    try:
+        data = yaml.safe_load(text)
+    except yaml.YAMLError as e:
+        raise PresetError(f"{name_or_path}: not valid YAML ({e})") from e
+    if not isinstance(data, dict) or set(data) != {"datasets", "window"}:
+        raise PresetError(f"{name_or_path}: a preset has exactly two keys, datasets and window")
+    entries = data["datasets"]
+    if not isinstance(entries, list) or not entries:
+        raise PresetError(f"{name_or_path}: datasets must be a non-empty list")
+    datasets: dict[str, list[str]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict) or set(entry) != {"source", "dataset"}:
+            raise PresetError(f"{name_or_path}: each dataset is {{source, dataset}}, not {entry}")
+        source, dataset = str(entry["source"]), str(entry["dataset"])
+        if source not in settings.sources:
+            raise PresetError(f"{name_or_path}: unknown source {source!r}")
+        if dataset not in settings.sources[source].datasets:
+            raise PresetError(f"{name_or_path}: {source} has no dataset {dataset!r}")
+        datasets.setdefault(source, []).append(dataset)
+
+    window = data["window"]
+    if isinstance(window, dict) and set(window) == {"last_days"}:
+        days = window["last_days"]
+        if not isinstance(days, int) or isinstance(days, bool) or days < 1:
+            raise PresetError(f"{name_or_path}: window last_days must be a positive integer")
+        today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+        start_dt, end_dt = today - timedelta(days=days), today
+    elif isinstance(window, dict) and set(window) == {"start", "end"}:
+        # YAML reads a bare date as a date; str() gives back the form --start takes.
+        try:
+            start_dt, end_dt = resolve_dates(str(window["start"]), str(window["end"]), None, 0)
+        except (NaiveDatetimeError, ValueError) as e:
+            raise PresetError(f"{name_or_path}: window {e}") from e
+    else:
+        raise PresetError(f"{name_or_path}: window is {{last_days: N}} or {{start, end}}")
+    if end_dt <= start_dt:
+        raise PresetError(f"{name_or_path}: the window ends before it starts")
+    return Preset(datasets=datasets, start_dt=start_dt, end_dt=end_dt)
 
 
 def resolve_incremental_start(

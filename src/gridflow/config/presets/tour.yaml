@@ -1,0 +1,17 @@
+# The data tour: what notebooks/00_overview.py and 01_sources.py read, over the
+# last 7 complete UTC days. `gridflow backfill --preset tour` fetches it, and
+# skips a source whose API key is unset. The keyless sources come first.
+# gold_eu_gas_storage, which 01_sources also reads, is a view over gie_agsi
+# storage, so it needs no entry of its own.
+datasets:
+  - {source: elexon, dataset: system_prices}
+  - {source: elexon, dataset: fuelhh}
+  - {source: neso, dataset: carbon_intensity}
+  - {source: open_meteo, dataset: historical_demand}
+  - {source: open_meteo, dataset: historical_wind}
+  - {source: open_meteo, dataset: historical_solar}
+  - {source: entsog, dataset: physical_flows}
+  - {source: entsoe, dataset: day_ahead_prices}
+  - {source: gie_agsi, dataset: storage}
+  - {source: gie_alsi, dataset: lng}
+window: {last_days: 7}

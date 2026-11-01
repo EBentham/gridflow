@@ -131,6 +131,10 @@ jobs:
           declared = yaml.safe_load(sources_yaml)["sources"]
           print("sources:", len(sources))
           assert set(sources) == set(declared), sorted(sources)
+
+          # `gridflow backfill --preset tour` reads its preset from the package.
+          tour = resources.files("gridflow.config") / "presets" / "tour.yaml"
+          assert tour.is_file(), "the wheel carries no tour preset"
           EOF
           # Logs go under the data root, not the current folder.
           test -d data/logs && test ! -e logs
