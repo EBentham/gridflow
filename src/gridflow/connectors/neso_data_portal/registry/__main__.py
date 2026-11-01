@@ -27,12 +27,7 @@ if TYPE_CHECKING:
 BEGIN_MARKER = "      # >>> generated: neso_data_portal datasets"
 END_MARKER = "      # <<< generated"
 
-# Master's three entries, verbatim and in master's order.
-_LEGACY_ORDER = (
-    "daily_wind_availability",
-    "historic_generation_mix",
-    "embedded_wind_solar_forecast",
-)
+# Master's three entries, verbatim and in master's order (LEGACY_KEYS).
 _LEGACY_ENTRY = (
     "      {key}:",
     '        endpoint: "/api/3/action/package_show"',
@@ -51,13 +46,13 @@ class YamlDriftError(Exception):
 def render_dataset_lines(keys: Iterable[str]) -> list[str]:
     """Return the generated block's lines (no markers) for the registry ``keys``."""
     keyset = set(keys)
-    missing = [key for key in _LEGACY_ORDER if key not in keyset]
+    missing = [key for key in registry_module.LEGACY_KEYS if key not in keyset]
     if missing:
         raise YamlDriftError(f"the registry lacks the legacy keys {missing}")
     lines: list[str] = []
-    for key in _LEGACY_ORDER:
+    for key in registry_module.LEGACY_KEYS:
         lines.extend(line.format(key=key) for line in _LEGACY_ENTRY)
-    for key in sorted(keyset - set(_LEGACY_ORDER)):
+    for key in sorted(keyset - set(registry_module.LEGACY_KEYS)):
         lines.append(_GENERATED_ENTRY.format(key=key))
     return lines
 

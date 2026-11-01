@@ -89,8 +89,12 @@ KEY_PATTERN = re.compile(r"^[a-z][a-z0-9_]{2,39}$")
 # The three keys onboarded before the registry existed. ``legacy`` now means only
 # fetch-time admission through their in-code header contracts (endpoints.DATASETS);
 # their silver runs through the generic engine on frozen records like any other.
-LEGACY_KEYS: frozenset[str] = frozenset(
-    {"daily_wind_availability", "historic_generation_mix", "embedded_wind_solar_forecast"}
+# Ordered: master's DATASETS order, which DATASETS and the configured dataset list
+# keep.
+LEGACY_KEYS: tuple[str, ...] = (
+    "daily_wind_availability",
+    "historic_generation_mix",
+    "embedded_wind_solar_forecast",
 )
 
 FROZEN_KEYS_FILE = "_frozen_keys.json"
@@ -384,7 +388,7 @@ def _validate_package(name: str, entry: PackageEntry) -> dict[str, frozenset[tup
         if family.legacy != (family.key in LEGACY_KEYS):
             raise RegistryError(
                 f"registry file {name}: family {family.key!r} has legacy={family.legacy}, "
-                f"but the legacy keys are exactly {sorted(LEGACY_KEYS)}"
+                f"but the legacy keys are exactly {list(LEGACY_KEYS)}"
             )
         if family.legacy != (family.transformer == "bespoke"):
             raise RegistryError(

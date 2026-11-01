@@ -147,13 +147,6 @@ _LEGACY_EXPECTED_COLUMNS: dict[str, tuple[str, ...]] = {
     ),
 }
 
-# Master's DATASETS order, kept so the generated dict iterates identically.
-_LEGACY_ORDER: tuple[str, ...] = (
-    "daily_wind_availability",
-    "historic_generation_mix",
-    "embedded_wind_solar_forecast",
-)
-
 
 @dataclass(frozen=True)
 class FamilySpec:
@@ -214,7 +207,7 @@ def build_datasets(families: dict[str, FamilySpec]) -> dict[str, CkanDataset]:
             seeded member; its single exact name is its selector (D-04).
     """
     datasets: dict[str, CkanDataset] = {}
-    for key in _LEGACY_ORDER:
+    for key in registry_module.LEGACY_KEYS:
         family = families.get(key)
         if family is None or not family.legacy:
             raise RuntimeError(f"registry has no legacy family {key!r}")
