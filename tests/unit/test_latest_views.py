@@ -359,16 +359,24 @@ _PIN_SPECS: tuple[tuple[str, str], ...] = (
     ("elexon", "system_prices"),
     ("elexon", "remit"),
     ("elexon", "fou2t14d"),
+)
+"""The hand-written ``LATEST_VIEW_SPECS`` keys that existed at master ``d7cf513``."""
+_PIN_GENERATED: tuple[tuple[str, str], ...] = (
     ("neso_data_portal", "daily_wind_availability"),
     ("neso_data_portal", "historic_generation_mix"),
     ("neso_data_portal", "embedded_wind_solar_forecast"),
 )
-"""The ``LATEST_VIEW_SPECS`` keys that existed at master ``d7cf513``."""
+"""Datasets pinned at ``d7cf513`` whose views are generated from their records now
+(ADR-034 P-8 superseded): seeded so their pre-existing aliases stay pinned."""
+_PIN_STAMPS = frozenset(
+    {"available_at", "timestamp_utc", "datetime", "issue_time", "capture_written_at"}
+)
 _BUILTIN_VIEW_PREFIXES = ("duckdb_", "sqlite_", "pragma_")
 
 
 def _pin_columns(spec: Any) -> set[str]:
     columns = set(spec.key_columns) | set(spec.optional_key_columns) | set(spec.order_columns)
+    columns |= set(spec.tiebreak_columns)
     if spec.rank_column is not None:
         columns.add(spec.rank_column)
     return columns
@@ -380,11 +388,11 @@ def _pin_seed(data_dir: Path) -> None:
 
     paths = PathBuilder(data_dir)
     stamp = datetime(2024, 1, 15, 8, tzinfo=UTC)
-    for source, dataset in _PIN_SPECS:
+    for source, dataset in (*_PIN_SPECS, *_PIN_GENERATED):
         spec = LATEST_VIEW_SPECS[(source, dataset)]
         values: dict[str, Any] = {}
         for column in sorted(_pin_columns(spec)):
-            if column == "available_at" or column == "timestamp_utc":
+            if column in _PIN_STAMPS:
                 values[column] = [stamp]
             elif column in {"settlement_date", "availability_date"}:
                 values[column] = [date(2024, 1, 15)]

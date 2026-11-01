@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     import pytest
 
-    from gridflow.connectors.neso_data_portal.registry import Registry
+    from gridflow.connectors.neso_data_portal.registry import Registry, ResourceEntry
 
 LEGACY_LEDGER = [
     {"key": "daily_wind_availability", "package": "daily-wind-availability"},
@@ -241,6 +241,11 @@ def install_registry(monkeypatch: pytest.MonkeyPatch, directory: Path) -> Regist
     monkeypatch.setattr(registry_module, "load_registry", _load)
     monkeypatch.setattr(endpoints, "FAMILIES", endpoints.build_families(loaded))
     return loaded
+
+
+def resource_entry(resource_id: str) -> ResourceEntry:
+    """The installed registry's resource: a container reader's ``resource=``."""
+    return registry_module.load_registry().resources[resource_id][1]
 
 
 def write_capture(

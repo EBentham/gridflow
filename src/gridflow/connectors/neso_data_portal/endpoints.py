@@ -3,8 +3,8 @@
 Since ADR-033 both tables are **generated from the registry**
 (``registry/<package>.json``): :data:`FAMILIES` holds every gridflow dataset
 key, and :data:`DATASETS` is the legacy view of the three keys onboarded before
-the registry, which keep their bespoke transformers and the in-code header
-contracts below. Nothing here lists a key by hand any more.
+the registry, which keep the in-code header contracts below for fetch-time
+admission. Nothing here lists a key by hand any more.
 
 CKAN identity lives **in code, not in YAML** (D-28). ``DatasetConfig`` and
 ``SourceConfig`` are declared with ``extra="ignore"``, so an unrecognised YAML
@@ -130,8 +130,8 @@ _HISTORIC_GENERATION_MIX_COLUMNS: tuple[str, ...] = (
 
 
 # The in-code header contracts of the three legacy keys, enforced at fetch
-# time by D-36's admission parse and again at transform time. The registry
-# carries membership and caps; it does not carry header contracts.
+# time by D-36's admission parse. Their registry records enforce the same
+# headers again at transform time.
 _LEGACY_EXPECTED_COLUMNS: dict[str, tuple[str, ...]] = {
     "daily_wind_availability": ("BMU_ID", "Date", "MW"),
     "historic_generation_mix": _HISTORIC_GENERATION_MIX_COLUMNS,

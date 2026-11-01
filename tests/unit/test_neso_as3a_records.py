@@ -744,7 +744,6 @@ def test_the_mixed_sell_family_cannot_take_ckan_last_modified() -> None:
             rec,
             key=SELL,
             kind="tabular",
-            legacy=False,
             package_families=siblings,
             family_url_types=kinds,
         )

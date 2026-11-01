@@ -964,7 +964,6 @@ def test_a_bsad_family_cannot_take_ckan_last_modified(key: str) -> None:
             rec,
             key=key,
             kind="tabular",
-            legacy=False,
             package_families=siblings,
             family_url_types=kinds,
         )

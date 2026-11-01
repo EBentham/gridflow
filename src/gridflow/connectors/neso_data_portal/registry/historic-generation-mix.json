@@ -17,7 +17,272 @@
       "empty_allowed": false,
       "max_download_bytes": 268435456,
       "name_regex": null,
-      "transformer": "bespoke"
+      "transformer": "bespoke",
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "DATETIME",
+              "GAS",
+              "COAL",
+              "NUCLEAR",
+              "WIND",
+              "WIND_EMB",
+              "HYDRO",
+              "IMPORTS",
+              "BIOMASS",
+              "OTHER",
+              "SOLAR",
+              "STORAGE",
+              "GENERATION",
+              "CARBON_INTENSITY",
+              "LOW_CARBON",
+              "ZERO_CARBON",
+              "RENEWABLE",
+              "FOSSIL",
+              "GAS_perc",
+              "COAL_perc",
+              "NUCLEAR_perc",
+              "WIND_perc",
+              "WIND_EMB_perc",
+              "HYDRO_perc",
+              "IMPORTS_perc",
+              "BIOMASS_perc",
+              "OTHER_perc",
+              "SOLAR_perc",
+              "STORAGE_perc",
+              "GENERATION_perc",
+              "LOW_CARBON_perc",
+              "ZERO_CARBON_perc",
+              "RENEWABLE_perc",
+              "FOSSIL_perc"
+            ],
+            "columns": [
+              {
+                "source": "DATETIME",
+                "name": "datetime",
+                "dtype": "datetime",
+                "format": "%Y-%m-%dT%H:%M:%S",
+                "nullable": false,
+                "zone": "UTC"
+              },
+              {
+                "source": "GAS",
+                "name": "gas",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "COAL",
+                "name": "coal",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NUCLEAR",
+                "name": "nuclear",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WIND",
+                "name": "wind",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WIND_EMB",
+                "name": "wind_emb",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "HYDRO",
+                "name": "hydro",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IMPORTS",
+                "name": "imports",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BIOMASS",
+                "name": "biomass",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "OTHER",
+                "name": "other",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SOLAR",
+                "name": "solar",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "STORAGE",
+                "name": "storage",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GENERATION",
+                "name": "generation",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "CARBON_INTENSITY",
+                "name": "carbon_intensity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "LOW_CARBON",
+                "name": "low_carbon",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ZERO_CARBON",
+                "name": "zero_carbon",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "RENEWABLE",
+                "name": "renewable",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "FOSSIL",
+                "name": "fossil",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GAS_perc",
+                "name": "gas_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "COAL_perc",
+                "name": "coal_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "NUCLEAR_perc",
+                "name": "nuclear_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WIND_perc",
+                "name": "wind_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "WIND_EMB_perc",
+                "name": "wind_emb_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "HYDRO_perc",
+                "name": "hydro_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "IMPORTS_perc",
+                "name": "imports_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "BIOMASS_perc",
+                "name": "biomass_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "OTHER_perc",
+                "name": "other_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "SOLAR_perc",
+                "name": "solar_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "STORAGE_perc",
+                "name": "storage_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "GENERATION_perc",
+                "name": "generation_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "LOW_CARBON_perc",
+                "name": "low_carbon_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "ZERO_CARBON_perc",
+                "name": "zero_carbon_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "RENEWABLE_perc",
+                "name": "renewable_pct",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "FOSSIL_perc",
+                "name": "fossil_pct",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "none"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "utc_instant",
+          "column": "datetime"
+        },
+        "entity_key": [
+          "datetime"
+        ],
+        "latest": "key_latest",
+        "vintage": "ckan_last_modified"
+      }
     }
   ],
   "resources": [

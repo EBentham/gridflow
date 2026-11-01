@@ -1289,7 +1289,7 @@ def run_transform(
     """
     from gridflow.observability import PipelineRunTracker
     from gridflow.silver.base import BronzeVouchReason, UnparseableBronzeError
-    from gridflow.silver.registry import get_transformer, ingest_only_reason, post_run_hooks
+    from gridflow.silver.registry import get_transformer, ingest_only_reason
     from gridflow.utils.time import date_range
 
     con = ctx.con
@@ -1381,10 +1381,6 @@ def run_transform(
                         reingest=reingest,
                     )
                     total_rows += rows
-                    # ADR-034 P-8: inside the same try, so a raising hook
-                    # fails the dataset exactly as a raising run() does.
-                    for hook in post_run_hooks(source, ds):
-                        hook(transformer, target_date)
                 except UnparseableBronzeError as exc:
                     # Refuse this date and carry on: nothing was written for
                     # it, so the old Parquet stays and the rung below fails

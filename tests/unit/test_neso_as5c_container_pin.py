@@ -28,7 +28,7 @@ from gridflow.connectors.neso_data_portal.captures import newest_by_resource, sc
 from gridflow.connectors.neso_data_portal.registry import load_registry
 from gridflow.silver.neso_data_portal.casting import ExclusionTally, finish_capture, type_child
 from gridflow.silver.neso_data_portal.completion import capture_context
-from gridflow.silver.neso_data_portal.generic import families_of
+from gridflow.silver.neso_data_portal.generic import families_of, resource_of
 from gridflow.silver.neso_data_portal.readers import read_children
 from gridflow.storage.paths import PathBuilder
 
@@ -146,7 +146,9 @@ def digest(family: str) -> dict[str, Any]:
         (capture,) = newest_by_resource(scan.captures).values()
         children = families_of(capture, body.dir_key, registry)[family]
         ctx = capture_context(capture, record, root)
-        typed = [type_child(t, record, ctx) for t in read_children(ctx.body, record, children)]
+        resource = resource_of(capture, body.dir_key, registry)
+        tables = read_children(ctx.body, record, children, resource=resource)
+        typed = [type_child(t, record, ctx) for t in tables]
         tally = ExclusionTally()
         for child in typed:
             tally.merge(child.tally)

@@ -141,7 +141,6 @@ def _validate(document: dict[str, Any]) -> None:
         SchemaRecord.model_validate(document),
         key="scn",
         kind="tabular",
-        legacy=False,
         package_families={"scn": True},
         family_url_types=frozenset({"upload"}),
     )

@@ -197,18 +197,16 @@ class TestRules:
         resources = [resource(R1, "Series", "gen_series", fmt="PDF")]
         _refused(tmp_path, "V-9", record(), resources=resources, family_kwargs={"kind": "files"})
 
-    def test_v9_record_on_a_legacy_family(self, tmp_path: Path) -> None:
-        """A legacy key carries no record (C-5). Driven directly: a legacy family
-        must also be one of the three named keys, which the loader checks first."""
-        with pytest.raises(ValueError, match="V-9:"):
-            validate_record(
-                SchemaRecord.model_validate(record()),
-                key="daily_wind_availability",
-                kind="tabular",
-                legacy=True,
-                package_families={"daily_wind_availability": True},
-                family_url_types=frozenset({"upload"}),
-            )
+    def test_v9_accepts_a_record_on_a_legacy_family(self) -> None:
+        """Detects V-9 still refusing a legacy key's record (ADR-034 P-8 superseded):
+        ``legacy`` now governs fetch-time admission only."""
+        validate_record(
+            SchemaRecord.model_validate(record()),
+            key="daily_wind_availability",
+            kind="tabular",
+            package_families={"daily_wind_availability": True},
+            family_url_types=frozenset({"upload"}),
+        )
 
     def test_v19_a_key_column_cannot_be_trimmed(self, tmp_path: Path) -> None:
         """Detects a trimmed key column: trimming would merge entity keys that
@@ -1139,6 +1137,19 @@ AS2_PACKAGE_FILES = {
     "stor-windows.json",
 }
 
+LEGACY_RECORDED = {
+    "daily_wind_availability",
+    "embedded_wind_solar_forecast",
+    "historic_generation_mix",
+}
+"""The three keys onboarded before the registry, on frozen records since ADR-034 P-8 was
+superseded."""
+LEGACY_PACKAGE_FILES = {
+    "daily-wind-availability.json",
+    "embedded-wind-and-solar-forecasts.json",
+    "historic-generation-mix.json",
+}
+
 X_RESOURCES_WITH_CHILDREN = 4 + 1 + 39 + 73 + 1
 """Unit X's committed inventories (ADR-037 P-8): CMP workbooks, the ResultSummary ZIP,
 frequency ZIPs, held data containers and the GSP archive with a CSV member."""
@@ -1196,6 +1207,7 @@ class TestSeededRegistry:
             | SCN3_RECORDED
             | FILE_RECORDED
             | H_RECORDED
+            | LEGACY_RECORDED
         )
         with_children = [res for _package, res in loaded.resources.values() if res.children]
         assert len(with_children) == X_RESOURCES_WITH_CHILDREN
@@ -1252,6 +1264,7 @@ class TestSeededRegistry:
             | SCN3_PACKAGE_FILES
             | FILE_PACKAGE_FILES
             | H_PACKAGE_FILES
+            | LEGACY_PACKAGE_FILES
         )
 
 

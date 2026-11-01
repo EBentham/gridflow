@@ -19,19 +19,13 @@ removes an earlier output or completion. Every field derives from bronze plus
 the record (no run id, no ``recorded_at``), so a rewrite is equal (B7).
 
 **Validity (the one predicate).** :func:`is_valid` is used by the generic
-engine's skip-if-valid, the bespoke hook's adoption, and reconcile.
-
-**Bespoke completion (P-8).** The three legacy transformers are untouched; a
-post-run hook (:func:`record_bespoke_completions`) records each of their
-outputs that passes :func:`is_valid`, and the drain's per-capture step
-(:func:`run_bespoke_capture`) adopts or re-transforms one capture.
+engine's skip-if-valid and by reconcile.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-import logging
 import os
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
@@ -40,7 +34,6 @@ from uuid import uuid4
 
 import polars as pl
 
-from gridflow.silver.base import append_only_run_stamp
 from gridflow.silver.neso_data_portal._bronze import provenance_for
 from gridflow.storage.parquet import write_parquet
 from gridflow.storage.paths import PathBuilder
@@ -50,12 +43,8 @@ if TYPE_CHECKING:
 
     from gridflow.connectors.neso_data_portal.captures import Capture
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
-    from gridflow.silver.base import BaseSilverTransformer
-
-logger = logging.getLogger(__name__)
 
 __all__ = [
-    "BESPOKE_ENGINE",
     "COMPLETION_COLUMNS",
     "COMPLETION_DUCKDB_COLUMNS",
     "COMPLETION_RELATION",
@@ -64,7 +53,6 @@ __all__ = [
     "CaptureContextError",
     "NesoCaptureFailedError",
     "Versions",
-    "bespoke_versions",
     "capture_context",
     "capture_id_for",
     "completion_dir",
@@ -75,15 +63,12 @@ __all__ = [
     "partition_date_of",
     "read_completion",
     "read_failure",
-    "record_bespoke_completions",
     "record_completion",
-    "run_bespoke_capture",
     "scan_completions",
     "write_failure",
 ]
 
 SOURCE = "neso_data_portal"
-BESPOKE_ENGINE = "bespoke"
 COMPLETION_RELATION = "state_neso_data_portal_completion"
 """The DuckDB relation over every completion record (ADR-034 P-11)."""
 
@@ -190,16 +175,14 @@ class Versions:
     """The versions a completion record must carry to be valid now.
 
     Attributes:
-        record_version: Generic: ``record.version``; bespoke: ``DATASET_VERSION``.
-        engine_version: Generic: ``ENGINE_VERSION``; bespoke: ``"bespoke"``.
+        record_version: The record's ``version``.
+        engine_version: The engine's ``ENGINE_VERSION``.
         dataset_version: The ``dataset_version`` every output row must carry.
-        generic: Whether the output must hold exactly the record's capture id.
     """
 
     record_version: str
     engine_version: str
     dataset_version: str
-    generic: bool
 
 
 def capture_id_for(body: Path, data_dir: Path) -> str:
@@ -265,11 +248,6 @@ def capture_context(capture: Capture, record: SchemaRecord, data_dir: Path) -> C
         empty_capture=params.get("empty_capture") is True,
         published_at=published_at,
     )
-
-
-def bespoke_versions(cls: type[BaseSilverTransformer]) -> Versions:
-    """The versions a legacy (bespoke) transformer's completions are judged by."""
-    return Versions(cls.DATASET_VERSION, BESPOKE_ENGINE, cls.DATASET_VERSION, generic=False)
 
 
 def _stem(capture_id: str) -> str:
@@ -380,8 +358,8 @@ def is_valid(row: dict[str, Any], data_dir: Path, versions: Versions) -> bool:
     Valid iff the record's ``(record_version, engine_version)`` are the
     current ones and: ``valid_empty`` has ``row_count == 0`` and no output;
     ``populated`` names an output that exists, holds ``row_count`` rows, every
-    row of which carries the current ``dataset_version`` and (generic only)
-    exactly this capture's id.
+    row of which carries the current ``dataset_version`` and exactly this
+    capture's id.
 
     Args:
         row: A completion record.
@@ -407,11 +385,7 @@ def is_valid(row: dict[str, Any], data_dir: Path, versions: Versions) -> bool:
         frame = pl.scan_parquet(path, hive_partitioning=False)
         count = frame.select(pl.len()).collect().item()
         stored = set(frame.select(pl.col("dataset_version").unique()).collect().to_series())
-        ids = (
-            set(frame.select(pl.col("bronze_capture_id").unique()).collect().to_series())
-            if versions.generic
-            else {row["bronze_capture_id"]}
-        )
+        ids = set(frame.select(pl.col("bronze_capture_id").unique()).collect().to_series())
     except (OSError, pl.exceptions.PolarsError):
         return False
     return bool(
@@ -445,165 +419,3 @@ def scan_completions(data_dir: Path, family: str | None = None) -> pl.LazyFrame:
     if not files:
         return pl.LazyFrame(schema=COMPLETION_SCHEMA)
     return pl.scan_parquet(files, hive_partitioning=False, schema=COMPLETION_SCHEMA)
-
-
-# --------------------------------------------------------------------------- #
-# Bespoke completion (P-8)
-# --------------------------------------------------------------------------- #
-
-
-def _bespoke_expected_path(transformer: BaseSilverTransformer, capture: Capture) -> Path | None:
-    """The append-only path ``_write_silver`` gives this capture's output."""
-    stamp = transformer._timestamp_from_sidecar(capture.sidecar)
-    if stamp is None:
-        return None
-    target = partition_date_of(capture.body)
-    out_dir = PathBuilder(transformer.data_dir).silver_partition_dir(
-        transformer.source, transformer.dataset, target, dataset_dir=transformer.silver_dir
-    )
-    run_stamp = append_only_run_stamp(stamp)
-    return out_dir / f"{transformer.dataset}_{target.strftime('%Y%m%d')}_run{run_stamp}.parquet"
-
-
-def _bespoke_candidate(
-    transformer: BaseSilverTransformer, capture: Capture, path: Path
-) -> dict[str, Any] | None:
-    """The ``populated`` record this capture's existing output would carry."""
-    if not path.is_file():
-        return None
-    try:
-        count = pl.scan_parquet(path, hive_partitioning=False).select(pl.len()).collect().item()
-    except (OSError, pl.exceptions.PolarsError):
-        return None
-    provenance = provenance_for(capture.body)
-    data_dir = transformer.data_dir
-    return completion_row(
-        family=transformer.dataset,
-        capture_id=capture_id_for(capture.body, data_dir),
-        source_key=transformer.dataset,
-        partition_date=partition_date_of(capture.body),
-        resource_id=capture.resource_id,
-        body_sha256=capture.body_sha256,
-        capture_written_at=capture.written_at,
-        published_at=provenance.published_at if provenance is not None else None,
-        outcome="populated",
-        row_count=int(count),
-        rows_excluded=0,
-        output_path=path.relative_to(data_dir).as_posix(),
-        children=[],
-        versions=bespoke_versions(type(transformer)),
-    )
-
-
-def bespoke_targets(
-    transformer: BaseSilverTransformer, target_date: date
-) -> tuple[dict[Path, Capture], list[tuple[Path, list[Capture]]]]:
-    """Map each usable capture of the date to its expected output path.
-
-    Args:
-        transformer: A legacy transformer instance.
-        target_date: The bronze date directory.
-
-    Returns:
-        ``(unique, collisions)``: paths claimed by exactly one capture, and
-        paths two or more captures resolve to (neither is recorded, RESEARCH §1).
-    """
-    from gridflow.connectors.neso_data_portal import registry as registry_module
-    from gridflow.connectors.neso_data_portal.captures import scan_dataset
-
-    scan = scan_dataset(
-        transformer.bronze_dir, registry_module.load_registry(), partition=target_date
-    )
-    by_path: dict[Path, list[Capture]] = {}
-    for capture in scan.captures:
-        path = _bespoke_expected_path(transformer, capture)
-        if path is not None:
-            by_path.setdefault(path, []).append(capture)
-    unique = {path: group[0] for path, group in by_path.items() if len(group) == 1}
-    collisions = [(path, group) for path, group in by_path.items() if len(group) > 1]
-    return unique, collisions
-
-
-def record_bespoke_completions(transformer: BaseSilverTransformer, target_date: date) -> None:
-    """Post-run hook: record each of the date's bespoke outputs that is valid (P-8).
-
-    A capture whose expected output is absent, or fails :func:`is_valid`, gets
-    no record (reconcile reports it). Two captures resolving to one output
-    path are both left unrecorded and logged (reconcile: ``duplicated``).
-
-    Args:
-        transformer: The legacy transformer that just ran.
-        target_date: The date it ran for.
-    """
-    unique, collisions = bespoke_targets(transformer, target_date)
-    for path, group in collisions:
-        logger.warning(
-            "%s/%s: %d captures resolve to one output %s; none is recorded complete",
-            SOURCE,
-            transformer.dataset,
-            len(group),
-            path.name,
-        )
-    versions = bespoke_versions(type(transformer))
-    for path, capture in unique.items():
-        row = _bespoke_candidate(transformer, capture, path)
-        if row is not None and is_valid(row, transformer.data_dir, versions):
-            record_completion(transformer.data_dir, row)
-
-
-def run_bespoke_capture(transformer: BaseSilverTransformer, body: Path, run_id: str) -> None:
-    """The drain's step for one bespoke capture: adopt, else re-transform (P-8).
-
-    A valid existing output is adopted (recorded, never rewritten). Otherwise
-    exactly the per-file branch's body steps run (sidecar stamp, read,
-    ``_process_frame``, ``_write_silver``, which replaces an outdated file at
-    the same path), then the hook's step records it.
-
-    Args:
-        transformer: A legacy transformer instance over the data root.
-        body: The capture's body path.
-        run_id: The lineage run id stamped into a rewritten output.
-
-    Raises:
-        NesoCaptureFailedError: Anything failed; a failure record was written.
-    """
-    data_dir = transformer.data_dir
-    capture_id = capture_id_for(body, data_dir)
-    target = partition_date_of(body)
-    try:
-        unique, collisions = bespoke_targets(transformer, target)
-        if any(body in (c.body for c in group) for _path, group in collisions):
-            raise CaptureContextError(f"{capture_id}: shares its output path with another capture")
-        match = [(path, capture) for path, capture in unique.items() if capture.body == body]
-        if not match:
-            raise CaptureContextError(f"{capture_id}: not a usable capture with a sidecar stamp")
-        path, capture = match[0]
-        versions = bespoke_versions(type(transformer))
-        row = _bespoke_candidate(transformer, capture, path)
-        if row is not None and is_valid(row, data_dir, versions):
-            record_completion(data_dir, row)
-            return
-        available_at = transformer._timestamp_from_sidecar(capture.sidecar)
-        if available_at is None:
-            raise CaptureContextError(f"{capture_id}: the sidecar has no usable timestamp")
-        raw_df = transformer.read_bronze_file(body)
-        if raw_df.is_empty():
-            raise CaptureContextError(f"{capture_id}: read as empty (provenance unusable)")
-        window_plan = transformer._resolve_publication_window_plan(
-            target
-        ) or transformer._resolve_event_window_plan(target)
-        clean_df = transformer._process_frame(raw_df, target, run_id, available_at, window_plan)
-        del raw_df
-        if clean_df is None:
-            raise CaptureContextError(f"{capture_id}: transform produced no rows")
-        transformer._write_silver(clean_df, target, available_at=available_at)
-        del clean_df
-        row = _bespoke_candidate(transformer, capture, path)
-        if row is None or not is_valid(row, data_dir, versions):
-            raise CaptureContextError(f"{capture_id}: the rewritten output does not validate")
-        record_completion(data_dir, row)
-    except Exception as exc:
-        write_failure(data_dir, transformer.dataset, capture_id, target, exc)
-        raise NesoCaptureFailedError(
-            transformer.dataset, target, [(capture_id, type(exc).__name__, str(exc))]
-        ) from exc

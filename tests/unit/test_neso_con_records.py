@@ -1027,7 +1027,10 @@ def test_workbook_date_spelling_is_the_calamine_spelling_and_is_frozen(data: Pat
     ``%Y-%m-%d`` of the CSV record does not."""
     capture(data, "x1")
     path = next((data / "bronze" / SOURCE / "thermal_constraint_costs_files").rglob("*.xlsx"))
-    (table,) = read_xlsx_body(path, _record("thermal_constraint_costs_xlsx"), ("Data",))
+    resource = registry_module.load_registry().resources[CAPTURES["x1"].resource_id][1]
+    (table,) = read_xlsx_body(
+        path, _record("thermal_constraint_costs_xlsx"), ("Data",), resource=resource
+    )
     dates = table.frame["Settlement Date"].to_list()
     assert dates[0] == "2019-08-01 00:00:00"
     assert all(len(d) == 19 and d.endswith(" 00:00:00") for d in dates)

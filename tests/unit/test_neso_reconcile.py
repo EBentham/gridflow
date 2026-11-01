@@ -17,7 +17,6 @@ import pytest
 from _neso_generic_support import assert_same_output, install_generated, snapshot, write_capture
 from _neso_registry_support import family, package, record, resource
 
-from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal.reconcile import main
 from gridflow.pipeline import runner as pipeline_runner
 from gridflow.silver.neso_data_portal.completion import (
@@ -28,16 +27,13 @@ from gridflow.silver.neso_data_portal.completion import (
     read_failure,
     record_completion,
 )
-from gridflow.silver.neso_data_portal.daily_wind_availability import (
-    DailyWindAvailabilityTransformer,
-)
 from gridflow.silver.neso_data_portal.equivalence import (
     Site,
     comparison_components,
     fingerprint_of,
     gather_inputs,
 )
-from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
+from gridflow.silver.neso_data_portal.reconcile import drain
 from gridflow.storage.duckdb import init_catalogue, refresh_views
 
 if TYPE_CHECKING:
@@ -527,96 +523,3 @@ class TestLateDrainEquality:
         report = drain(late, registry, ["fam_one"], date(2026, 10, 31), lambda: None)
         assert report.clean and report.drained == (("fam_one", DAY, 1),)
         assert_same_output(snapshot(on_time, "fam_one"), snapshot(late, "fam_one"), KEY)
-
-
-class TestBespoke:
-    DWA = "daily_wind_availability"
-
-    def test_a_bespoke_capture_without_its_hook_is_drained_by_adoption(
-        self, data: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """The legacy keys are in scope: an output the hook never recorded is
-        ``missing`` and the drain adopts it (mtime unchanged)."""
-        from pathlib import Path as _Path
-
-        fixture = (
-            _Path(__file__).resolve().parents[1]
-            / "fixtures"
-            / "neso_data_portal"
-            / "daily_wind_availability.csv"
-        )
-        day = date(2026, 8, 16)
-        path, _sidecar = write_capture(
-            data,
-            self.DWA,
-            package_slug="daily-wind-availability",
-            package_id="3758a0ed-6c96-4e36-88d0-107f5020ddf3",
-            resource_id="7aa508eb-36f5-4298-820f-2fa6745ae2e7",
-            resource_name="Daily Wind Availability",
-            body=fixture.read_bytes(),
-            written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC),
-            ckan_last_modified="2026-08-16T18:25:00",
-            partition=day,
-        )
-        capture_id = path.relative_to(data).as_posix()
-        DailyWindAvailabilityTransformer(data).run(day, run_id="r")
-        (output,) = (data / "silver" / SOURCE / self.DWA).rglob("*.parquet")
-        mtime = output.stat().st_mtime_ns
-        registry = registry_module.load_registry()
-        cutoff = date(2026, 8, 31)
-        report = reconcile(data, registry, [self.DWA], cutoff)
-        assert [(g.category, g.capture_id) for g in report.gaps] == [("missing", capture_id)]
-        after = drain(data, registry, [self.DWA], cutoff, lambda: None)
-        assert after.clean
-        assert output.stat().st_mtime_ns == mtime
-        ledger = read_completion(data, self.DWA, capture_id)
-        assert ledger is not None and ledger["engine_version"] == "bespoke"
-
-    def test_a_bespoke_stamp_collision_is_reported_and_never_drained(
-        self, data: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Detects the drain adopting a collided bespoke pair through its
-        ``missing`` gaps: P-8 records neither capture of a shared output path,
-        and the drain must not record them either (REVIEW-DIFF-1 tests #1)."""
-        from pathlib import Path as _Path
-
-        fixture = (
-            _Path(__file__).resolve().parents[1]
-            / "fixtures"
-            / "neso_data_portal"
-            / "daily_wind_availability.csv"
-        )
-        day = date(2026, 8, 16)
-        ids = []
-        for rid, body in (
-            ("7aa508eb-36f5-4298-820f-2fa6745ae2e7", fixture.read_bytes()),
-            (
-                "7aa508eb-36f5-4298-820f-2fa6745ae2e8",
-                fixture.read_bytes().replace(b"120.5", b"121.5"),
-            ),
-        ):
-            path, _sidecar = write_capture(
-                data,
-                self.DWA,
-                package_slug="daily-wind-availability",
-                package_id="3758a0ed-6c96-4e36-88d0-107f5020ddf3",
-                resource_id=rid,
-                resource_name="Daily Wind Availability",
-                body=body,
-                written_at=datetime(2026, 8, 16, 18, 25, tzinfo=UTC),
-                ckan_last_modified="2026-08-16T18:25:00",
-                partition=day,
-            )
-            ids.append(path.relative_to(data).as_posix())
-        DailyWindAvailabilityTransformer(data).run(day, run_id="r")
-        registry = registry_module.load_registry()
-        cutoff = date(2026, 8, 31)
-        report = reconcile(data, registry, [self.DWA], cutoff)
-        categories = sorted((g.category, g.capture_id) for g in report.gaps)
-        assert categories == sorted(
-            [*(("duplicated", i) for i in ids), *(("missing", i) for i in ids)]
-        )
-        assert not [g for g in report.gaps if g.drainable]
-        after = drain(data, registry, [self.DWA], cutoff, lambda: None)
-        assert after.drained == ()
-        assert all(read_completion(data, self.DWA, i) is None for i in ids)

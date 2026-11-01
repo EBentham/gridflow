@@ -933,7 +933,7 @@ class TestNesoDataPortalEndpointDefinitions:
         configured or cannot be fetched — this is the check that fails first.
 
         ADR-033 widens the contract: every registry family is configured, and
-        DATASETS is the legacy view of exactly the three bespoke keys. Asserted
+        DATASETS is the legacy view of exactly the three legacy keys. Asserted
         in a fresh interpreter: pytest has already imported the connector, so
         an in-process ``FAMILIES`` could be state something else populated.
         """

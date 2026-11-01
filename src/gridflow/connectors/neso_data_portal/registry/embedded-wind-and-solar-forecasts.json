@@ -17,7 +17,96 @@
       "empty_allowed": false,
       "max_download_bytes": 8388608,
       "name_regex": null,
-      "transformer": "bespoke"
+      "transformer": "bespoke",
+      "record": {
+        "version": "1",
+        "reader": "csv",
+        "encoding": "utf-8",
+        "epochs": [
+          {
+            "header": [
+              "DATE_GMT",
+              "TIME_GMT",
+              "SETTLEMENT_DATE",
+              "SETTLEMENT_PERIOD",
+              "EMBEDDED_WIND_FORECAST",
+              "EMBEDDED_WIND_CAPACITY",
+              "EMBEDDED_SOLAR_FORECAST",
+              "EMBEDDED_SOLAR_CAPACITY"
+            ],
+            "columns": [
+              {
+                "source": "DATE_GMT",
+                "name": "date_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "TIME_GMT",
+                "name": "time_gmt_raw",
+                "dtype": "string",
+                "nullable": true
+              },
+              {
+                "source": "SETTLEMENT_DATE",
+                "name": "settlement_date",
+                "dtype": "date",
+                "format": "%Y-%m-%dT00:00:00",
+                "nullable": false
+              },
+              {
+                "source": "SETTLEMENT_PERIOD",
+                "name": "settlement_period",
+                "dtype": "int64",
+                "nullable": false,
+                "min": 1,
+                "max": 50
+              },
+              {
+                "source": "EMBEDDED_WIND_FORECAST",
+                "name": "embedded_wind_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_WIND_CAPACITY",
+                "name": "embedded_wind_capacity",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_FORECAST",
+                "name": "embedded_solar_forecast",
+                "dtype": "float64",
+                "nullable": true
+              },
+              {
+                "source": "EMBEDDED_SOLAR_CAPACITY",
+                "name": "embedded_solar_capacity",
+                "dtype": "float64",
+                "nullable": true
+              }
+            ],
+            "issue": {
+              "kind": "filename_token",
+              "pattern": "([0-9]{12})_embedded_forecast\\.csv",
+              "format": "%Y%m%d%H%M"
+            }
+          }
+        ],
+        "temporal": {
+          "kind": "sp_pair",
+          "date_column": "settlement_date",
+          "period_column": "settlement_period"
+        },
+        "entity_key": [
+          "settlement_date",
+          "settlement_period",
+          "issue_time"
+        ],
+        "latest": "key_latest",
+        "vintage": "ckan_last_modified"
+      }
     },
     {
       "key": "embedded_wind_solar_forecast_archive",

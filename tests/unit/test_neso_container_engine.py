@@ -199,6 +199,17 @@ class TestWorkbookSheets:
         ledger = read_completion(data, CMP_KEY, capture_id)
         assert ledger is not None and ledger["children"] == ["II Output"]
 
+    def test_a_rotated_resource_id_reads_by_name_and_format(
+        self, data: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Detects a container reader resolving its resource by sidecar UUID only."""
+        _registry, generated = _install(monkeypatch, data, _package_doc(CMP_PKG))
+        rotated = "ffffffff-0000-4000-8000-000000000001"
+        capture_id = _cmp_capture(data, _fixture("cmp381_ii.xlsx"), resource_id=rotated)
+        assert generated.transformers[CMP_KEY](data).run(DAY, run_id="r") == 3550
+        ledger = read_completion(data, CMP_KEY, capture_id)
+        assert ledger is not None and ledger["children"] == ["II Output"]
+
     def test_synthetic_three_sheet_workbook(
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -299,16 +310,6 @@ class TestLoudFailures:
         _registry, generated = _install(monkeypatch, data, doc)
         capture_id = _cmp_capture(data, _fixture("cmp381_ii.xlsx"))
         with pytest.raises(NesoCaptureFailedError, match="Ghost"):
-            generated.transformers[CMP_KEY](data).run(DAY, run_id="r")
-        _assert_failed(data, CMP_KEY, capture_id, "ContainerInventoryError")
-
-    def test_x2_4b_an_unresolvable_resource(
-        self, data: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        _registry, generated = _install(monkeypatch, data, _package_doc(CMP_PKG))
-        stranger = "ffffffff-0000-4000-8000-000000000001"
-        capture_id = _cmp_capture(data, _fixture("cmp381_ii.xlsx"), resource_id=stranger)
-        with pytest.raises(NesoCaptureFailedError, match="not a registry resource"):
             generated.transformers[CMP_KEY](data).run(DAY, run_id="r")
         _assert_failed(data, CMP_KEY, capture_id, "ContainerInventoryError")
 
