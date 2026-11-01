@@ -54,7 +54,6 @@ class GieConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch GIE data for the half-open window ``[start, end)``."""
         # GIE takes inclusive gas days; convert the half-open window once, here.
@@ -66,18 +65,8 @@ class GieConnector(BaseConnector):
         self.last_skipped_units = 0
         if self.source_name == "gie_agsi":
             if dataset in _AGSI_STORAGE_DATASETS:
-                return await self._fetch_agsi_storage(
-                    dataset=dataset,
-                    start=start,
-                    end=end,
-                    **params,
-                )
-            return await self._fetch_agsi_endpoint(
-                dataset=dataset,
-                start=start,
-                end=end,
-                **params,
-            )
+                return await self._fetch_agsi_storage(dataset=dataset, start=start, end=end)
+            return await self._fetch_agsi_endpoint(dataset=dataset, start=start, end=end)
 
         return await self._fetch_legacy_country_dataset(
             dataset=dataset,
@@ -174,43 +163,17 @@ class GieConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
-        """Fetch AGSI storage reports for a documented query scope."""
-        scope = QueryScope(
-            params.pop(
-                "scope",
-                QueryScope.COUNTRY if dataset == "storage" else QueryScope.AGGREGATE_TYPE,
-            )
-        )
-        listing_payload = params.pop("listing_payload", None)
-        if scope in (QueryScope.COMPANY, QueryScope.FACILITY) and listing_payload is None:
-            listing_payload = await self._fetch_listing_payload()
-
-        plan = build_storage_query_plan(
-            scope=scope,
-            start=start,
-            end=end,
-            aggregate_types=_as_tuple(
-                params.pop("aggregate_types", None),
-                default=("EU",),
-            ),
-            countries=_as_optional_tuple(params.pop("countries", None)),
-            listing_payload=listing_payload,
-            size=int(params.pop("size", DEFAULT_PAGE_SIZE)),
-        )
-
+        """Fetch AGSI storage: every country for ``storage``, the EU aggregate otherwise."""
+        scope = QueryScope.COUNTRY if dataset == "storage" else QueryScope.AGGREGATE_TYPE
         responses: list[RawResponse] = []
-        for planned in plan:
-            if len(planned.expected_gas_days) != 1:
-                raise ValueError("AGSI exact-date storage plan must target one gas day")
-            gas_day = planned.expected_gas_days[0]
+        for planned in build_storage_query_plan(scope=scope, start=start, end=end):
             responses.extend(
                 await self._fetch_paginated(
                     dataset=dataset,
-                    path=planned.path,
+                    path=GIE_API_PATH,
                     params=planned.params,
-                    data_date=gas_day,
+                    data_date=planned.gas_day,
                     paginated=True,
                     validate_gas_day=True,
                 )
@@ -232,22 +195,17 @@ class GieConnector(BaseConnector):
         dataset: str,
         start: datetime,
         end: datetime,
-        **params: Any,
+        turl: str | None = None,
     ) -> list[RawResponse]:
-        """Fetch a non-storage AGSI endpoint family."""
+        """Fetch a non-storage AGSI endpoint family (one news item when ``turl`` is set)."""
         if dataset not in ENDPOINTS:
             raise ValueError(f"Unknown GIE AGSI dataset: {dataset!r}")
 
         endpoint = ENDPOINTS[dataset]
         query_params = dict(endpoint.default_params)
         if dataset == "news_item":
-            turl = params.pop("turl", params.pop("id", None))
             if turl is None:
-                return await self._fetch_agsi_news_items_from_listing(
-                    start=start,
-                    end=end,
-                    **params,
-                )
+                return await self._fetch_agsi_news_items_from_listing(start=start, end=end)
             query_params["turl"] = turl
         if dataset == "unavailability":
             query_params.update(
@@ -256,7 +214,6 @@ class GieConnector(BaseConnector):
                     "end": end.date().isoformat(),
                 }
             )
-        query_params.update(params)
 
         responses = await self._fetch_paginated(
             dataset=dataset,
@@ -278,15 +235,9 @@ class GieConnector(BaseConnector):
         *,
         start: datetime,
         end: datetime,
-        **params: Any,
     ) -> list[RawResponse]:
         """Fetch news item details by discovering item URLs from the news listing."""
-        listing_responses = await self._fetch_agsi_endpoint(
-            dataset="news",
-            start=start,
-            end=end,
-            **params,
-        )
+        listing_responses = await self._fetch_agsi_endpoint(dataset="news", start=start, end=end)
         turls = list(
             dict.fromkeys(
                 turl
@@ -311,13 +262,6 @@ class GieConnector(BaseConnector):
             )
         return responses
 
-    async def _fetch_listing_payload(self) -> dict[str, Any] | list[dict[str, Any]]:
-        raw = await self._request(
-            ENDPOINTS["about_listing"].path,
-            dict(ENDPOINTS["about_listing"].default_params),
-        )
-        return cast("dict[str, Any] | list[dict[str, Any]]", json.loads(raw.content))
-
     async def _fetch_paginated(
         self,
         *,
@@ -329,7 +273,7 @@ class GieConnector(BaseConnector):
         validate_gas_day: bool,
     ) -> list[RawResponse]:
         responses: list[RawResponse] = []
-        page = int(params.get("page", 1))
+        page = 1
 
         while True:
             query_params = {**params, "page": page} if paginated else dict(params)
@@ -451,22 +395,6 @@ class AlsiConnector(GieConnector):
 
 register_connector("gie_agsi", AgsiConnector)
 register_connector("gie_alsi", AlsiConnector)
-
-
-def _as_tuple(value: Any, *, default: tuple[str, ...]) -> tuple[str, ...]:
-    if value is None:
-        return default
-    if isinstance(value, str):
-        return (value,)
-    return tuple(value)
-
-
-def _as_optional_tuple(value: Any) -> tuple[str, ...] | None:
-    if value is None:
-        return None
-    if isinstance(value, str):
-        return (value,)
-    return tuple(value)
 
 
 def _record_count(body: bytes) -> int | None:
