@@ -1959,6 +1959,14 @@ class TestDateOnlyTimestampConvention:
         ts = result["timestamp_utc"][0]
         assert ts == expected == settlement_period_to_utc(date.fromisoformat(day), 1)
 
+    @pytest.mark.parametrize("dataset", ["indod", "tsdfd"])
+    def test_daily_dataset_ignores_a_stray_period_column(self, dataset: str):
+        """A daily dataset maps no period, so a stray ``settlement_period`` keeps period 1."""
+        cls, date_key, row = _DATE_ONLY_ROWS[dataset]
+        raw = pl.DataFrame([{date_key: "2024-07-15", **row, "settlement_period": 2}])
+        result = _make_transformer(cls, dataset).transform(raw)
+        assert result["timestamp_utc"][0] == datetime(2024, 7, 14, 23, 0, tzinfo=UTC)
+
 
 def test_soso_end_time_without_zone_is_kept_as_text():
     """SOSO sends ``endTime`` with no zone marker, while ``startTime`` ends in Z.

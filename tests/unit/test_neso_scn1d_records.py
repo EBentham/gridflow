@@ -32,7 +32,6 @@ import csv
 import io
 import json
 import re
-import tempfile
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -40,9 +39,7 @@ from typing import TYPE_CHECKING, Any
 
 import polars as pl
 import pytest
-from _neso_generic_support import write_capture
-from test_neso_multi_resource import both_as_of
-from test_neso_reconcile_adjudication import point_settings
+from _neso_generic_support import both_as_of, point_settings, write_recorded_capture
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
 from gridflow.connectors.neso_data_portal import skeleton
@@ -56,7 +53,6 @@ from gridflow.silver.neso_data_portal import generic
 from gridflow.silver.neso_data_portal.casting import DuplicateEntityKeyError
 from gridflow.silver.neso_data_portal.completion import (
     NesoCaptureFailedError,
-    capture_id_for,
     read_completion,
     read_failure,
 )
@@ -66,8 +62,6 @@ from gridflow.silver.registry import get_transformer
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gridflow.connectors.neso_data_portal.registry.record import SchemaRecord
 
 SOURCE = "neso_data_portal"
@@ -185,23 +179,11 @@ HOLD_REASONS = {
 }
 
 
-def _short_base() -> str:
-    """The drive root on Windows (the engine's run-id names pass MAX_PATH under the long
-    per-user temp directory); the system temp elsewhere."""
-    import os
-
-    drive = os.path.splitdrive(tempfile.gettempdir())[0]
-    return drive + os.sep if drive else tempfile.gettempdir()
-
-
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A short data root the settings point at."""
-    with tempfile.TemporaryDirectory(
-        prefix="sc", dir=_short_base(), ignore_cleanup_errors=True
-    ) as root:
-        point_settings(Path(root), monkeypatch)
-        yield Path(root)
+    point_settings(short_root, monkeypatch)
+    return short_root
 
 
 def body(alias: str) -> bytes:
@@ -251,21 +233,17 @@ def capture(
 ) -> str:
     """Write fixture ``alias`` (or ``raw``) as a committed capture with its real sidecar."""
     meta = CAPTURES[alias]
-    path, _sidecar = write_capture(
+    return write_recorded_capture(
         data,
-        ES1,
-        body=raw if raw is not None else body(alias),
-        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
-        partition=DAY,
-        package_slug=PACKAGE,
+        meta,
+        raw if raw is not None else body(alias),
+        day=DAY,
+        package=PACKAGE,
         package_id=PACKAGE_ID,
-        resource_id=meta.resource_id,
-        resource_name=meta.name,
+        key=ES1,
+        written_at=written or datetime.fromisoformat(meta.written).astimezone(UTC),
         resource_filename=filename or meta.filename,
-        ckan_last_modified=meta.modified,
-        url_type="upload",
     )
-    return capture_id_for(path, data)
 
 
 def _record() -> SchemaRecord:

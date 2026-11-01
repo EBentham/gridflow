@@ -9,9 +9,7 @@ short tmp data root; nothing touches ``C:/gridflow-data``.
 from __future__ import annotations
 
 import io
-import json
 import shutil
-import tempfile
 import zipfile
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -27,7 +25,13 @@ from _container_support import (  # noqa: F401 - forbid_zipfile_reads is a fixtu
     workbook,
     zip_bytes,
 )
-from _neso_generic_support import assert_same_output, install_generated, snapshot, write_capture
+from _neso_generic_support import (
+    assert_same_output,
+    install_generated,
+    package_doc,
+    snapshot,
+    write_capture,
+)
 from _neso_registry_support import family, package, record, resource
 
 from gridflow.connectors.neso_data_portal import registry as registry_module
@@ -42,8 +46,6 @@ from gridflow.silver.neso_data_portal.reconcile import drain, reconcile
 from gridflow.storage.duckdb import init_catalogue
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from gridflow.connectors.neso_data_portal.registry import Registry
 
 pytestmark = pytest.mark.usefixtures("forbid_zipfile_reads")
@@ -77,7 +79,7 @@ RS_MEMBERS = (
 
 
 @pytest.fixture
-def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
+def data(short_root: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A data root with a short path; transformer modules imported under the real registry.
 
     The activation keys run to 33 characters and appear twice in an output path,
@@ -86,19 +88,11 @@ def data(monkeypatch: pytest.MonkeyPatch) -> Iterator[Path]:
     """
     pipeline_runner.import_transformers()
     monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    with tempfile.TemporaryDirectory(prefix="x", ignore_cleanup_errors=True) as root:
-        yield Path(root)
+    return short_root
 
 
 def _fixture(name: str) -> bytes:
     return (FIXTURE_DIR / name).read_bytes()
-
-
-def _package_doc(slug: str) -> dict[str, Any]:
-    document: dict[str, Any] = json.loads(
-        (REGISTRY_DIR / f"{slug}.json").read_text(encoding="utf-8")
-    )
-    return document
 
 
 def _install(
@@ -165,7 +159,7 @@ class TestResultSummary:
     """T-X2-2: one output, both members' rows, one completion naming both."""
 
     def test_two_members_one_output(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        _registry, generated = _install(monkeypatch, data, _package_doc(RS_PKG))
+        _registry, generated = _install(monkeypatch, data, package_doc(RS_PKG))
         capture_id = _rs_capture(data, _fixture("result_summary.zip"))
         assert generated.transformers[RS_KEY](data).run(DAY, run_id="r") == 168
         (output,) = _outputs(data, RS_KEY)
@@ -190,7 +184,7 @@ class TestWorkbookSheets:
     def test_cmp_fixture_reads_ii_output_only(
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        _registry, generated = _install(monkeypatch, data, _package_doc(CMP_PKG))
+        _registry, generated = _install(monkeypatch, data, package_doc(CMP_PKG))
         capture_id = _cmp_capture(data, _fixture("cmp381_ii.xlsx"))
         assert generated.transformers[CMP_KEY](data).run(DAY, run_id="r") == 3550
         (output,) = _outputs(data, CMP_KEY)
@@ -203,7 +197,7 @@ class TestWorkbookSheets:
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Detects a container reader resolving its resource by sidecar UUID only."""
-        _registry, generated = _install(monkeypatch, data, _package_doc(CMP_PKG))
+        _registry, generated = _install(monkeypatch, data, package_doc(CMP_PKG))
         rotated = "ffffffff-0000-4000-8000-000000000001"
         capture_id = _cmp_capture(data, _fixture("cmp381_ii.xlsx"), resource_id=rotated)
         assert generated.transformers[CMP_KEY](data).run(DAY, run_id="r") == 3550
@@ -284,7 +278,7 @@ class TestLoudFailures:
     """T-X2-3, 3b, 4, 5: an inventory or member defect fails the capture loud."""
 
     def test_x2_3_an_unlisted_member(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        _registry, generated = _install(monkeypatch, data, _package_doc(RS_PKG))
+        _registry, generated = _install(monkeypatch, data, package_doc(RS_PKG))
         extra = (f"{RS_FOLDER}NGESO_FRA_2019-12-06_ResultSummary.csv", b"x\n")
         capture_id = _rs_capture(data, _rs_body([*_rs_entries(), extra]))
         with pytest.raises(NesoCaptureFailedError, match="ContainerInventoryError"):
@@ -292,7 +286,7 @@ class TestLoudFailures:
         _assert_failed(data, RS_KEY, capture_id, "ContainerInventoryError")
 
     def test_x2_3b_a_shadowed_member(self, data: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-        _registry, generated = _install(monkeypatch, data, _package_doc(RS_PKG))
+        _registry, generated = _install(monkeypatch, data, package_doc(RS_PKG))
         entries = _rs_entries()
         shadow = (entries[0][0], entries[0][1].replace(b"DLH", b"DLX"))
         capture_id = _rs_capture(data, _rs_body([*entries, shadow]))
@@ -303,7 +297,7 @@ class TestLoudFailures:
     def test_x2_4_a_missing_declared_sheet(
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        doc = _package_doc(CMP_PKG)
+        doc = package_doc(CMP_PKG)
         for res in doc["resources"]:
             if res["id"] == CMP_ID:
                 res["children"].append({"child": "Ghost", "disposition": {"kind": "DOC"}})
@@ -316,7 +310,7 @@ class TestLoudFailures:
     def test_x2_5_a_failing_member_leaves_the_family_incomplete(
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        registry, generated = _install(monkeypatch, data, _package_doc(RS_PKG))
+        registry, generated = _install(monkeypatch, data, package_doc(RS_PKG))
         name, raw = _rs_entries()[1]
         lines = raw.split(b"\n")
         cells = lines[1].split(b",")
@@ -336,9 +330,7 @@ class TestReplay:
     def test_run_twice_and_drain_after_a_wipe(
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        registry, generated = _install(
-            monkeypatch, data, _package_doc(CMP_PKG), _package_doc(RS_PKG)
-        )
+        registry, generated = _install(monkeypatch, data, package_doc(CMP_PKG), package_doc(RS_PKG))
         _cmp_capture(data, _fixture("cmp381_ii.xlsx"))
         _rs_capture(data, _fixture("result_summary.zip"))
         for key in (CMP_KEY, RS_KEY):
@@ -363,7 +355,7 @@ class TestCatalogue:
         self, data: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         _registry, generated = _install(
-            monkeypatch, data, _package_doc(CMP_PKG), _package_doc(RS_PKG)
+            monkeypatch, data, package_doc(CMP_PKG), package_doc(RS_PKG)
         )
         _cmp_capture(data, _fixture("cmp381_ii.xlsx"))
         _rs_capture(data, _fixture("result_summary.zip"))

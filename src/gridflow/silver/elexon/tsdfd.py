@@ -2,18 +2,11 @@
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
-
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonTSDFD
 from gridflow.silver.elexon._base import ElexonTransformer
-from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc_expr
-
-logger = logging.getLogger(__name__)
 
 
 class TSDFDTransformer(ElexonTransformer):
@@ -25,58 +18,17 @@ class TSDFDTransformer(ElexonTransformer):
     APPEND_ONLY = True
     DATASET_VERSION = "3.0.0"
     ENTITY_KEY_COLUMNS = ("forecast_date", "published_at")  # D-8
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        column_mapping = {
-            "forecastDate": "forecast_date",
-            "publishTime": "published_at",
-            "demand": "forecast_demand_mw",
-        }
-        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
-        if rename_map:
-            raw_df = raw_df.rename(rename_map)
-
-        required = ["forecast_date", "forecast_demand_mw"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error(f"Missing required columns in TSDFD: {missing}")
-            return pl.DataFrame()
-
-        df = raw_df.with_columns(
-            [
-                pl.col("forecast_date").cast(pl.Date),
-                pl.col("forecast_demand_mw").cast(pl.Float64),
-            ]
-        )
-
-        # The forecast date is a UK settlement day: stamp the start of period 1.
-        df = df.with_columns(settlement_period_to_utc_expr("forecast_date").alias("timestamp_utc"))
-
-        df = with_published_at(df, "published_at", dataset=self.dataset)
-
-        df = self.dedup_to_grain(df)
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("elexon").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        output_cols = [
-            "forecast_date",
-            "timestamp_utc",
-            "forecast_demand_mw",
-            "published_at",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("forecast_date")
+    COLUMN_MAP = {
+        "forecastDate": "forecast_date",
+        "publishTime": "published_at",
+        "demand": "forecast_demand_mw",
+    }
+    REQUIRED = ("forecast_date", "forecast_demand_mw")
+    CASTS = {"forecast_demand_mw": pl.Float64()}
+    # The forecast date is a UK settlement day: stamped at the start of period 1.
+    SETTLEMENT_DATE = "forecast_date"
+    OUTPUT_COLS = ("forecast_date", "timestamp_utc", "forecast_demand_mw", "published_at")
+    SORT = ("forecast_date",)
 
 
 register_transformer("elexon", "tsdfd", TSDFDTransformer)

@@ -255,3 +255,26 @@ class TestPilot:
         """T-SK4: detects a held output's question missing from its page."""
         holds = _pilot_render(slug).split("## Holds", 1)[1]
         assert fragment in holds and "(unit E-SEM)" in holds
+
+
+def test_every_registry_package_page_shows_each_family() -> None:
+    """Detects a committed record the docs generator cannot render (held questions, backticks,
+    dashes, non-ASCII headers, multi-epoch records, per-file date maps) or a family missing from
+    its package's page: every registry package renders, with a heading for each of its families.
+    This one check replaces the per-batch "the skeleton page renders the new records" tests."""
+    registry = registry_module.load_registry()
+    assert registry.packages
+    for entry in registry.packages:
+        page = skeleton.render_package(
+            registry,
+            {
+                "name": entry.package,
+                "title": entry.package,
+                "organization": {"title": "NESO"},
+                "license_title": "NESO Open Data Licence",
+                "extras": [],
+            },
+            None,
+        )
+        for member in entry.families:
+            assert f"### `{member.key}`" in page, (entry.package, member.key)

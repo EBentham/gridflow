@@ -280,3 +280,30 @@ def test_gap_check_skips_a_dataset_without_a_settlement_cadence(
         write_parquet(df, data_dir / "silver" / "entsoe" / "day_ahead_prices" / "part-0.parquet")
 
     assert _gap_results(tmp_path, monkeypatch, write) == []
+
+
+def test_gap_check_measures_a_revised_forecast_as_one_series(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """TSDF keeps every publication, so its entity key carries published_at. The
+    latest vintage of periods 1-3 mixes two publications (B revised period 2);
+    grouping that by publication reported a gap between A's periods 1 and 3."""
+
+    def write(data_dir: Path) -> None:
+        start = datetime(2024, 1, 1, 0, 0, tzinfo=UTC)
+        published_a = datetime(2023, 12, 31, 9, 0, tzinfo=UTC)
+        published_b = datetime(2023, 12, 31, 15, 0, tzinfo=UTC)
+        rows = [(published_a, period) for period in (1, 2, 3)] + [(published_b, 2)]
+        df = pl.DataFrame(
+            {
+                "settlement_date": [date(2024, 1, 1)] * len(rows),
+                "settlement_period": [period for _, period in rows],
+                "timestamp_utc": [start + timedelta(minutes=30 * (p - 1)) for _, p in rows],
+                "forecast_demand_mw": [30_000.0] * len(rows),
+                "published_at": [published for published, _ in rows],
+                "available_at": [published for published, _ in rows],
+            }
+        )
+        write_parquet(df, data_dir / "silver" / "elexon" / "tsdf" / "part-0.parquet")
+
+    assert _gap_results(tmp_path, monkeypatch, write) == [True]

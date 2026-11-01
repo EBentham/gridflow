@@ -11,27 +11,12 @@
     {
       "key": "ssel_contract_enactment",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "EVT",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Record",
-              "Unit",
-              "Start",
-              "End",
-              "Reduction (MW)",
-              "Price (£/MW/hr)"
-            ],
             "columns": [
               {
                 "source": "Record",
@@ -73,27 +58,9 @@
                 "dtype": "float64",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           },
           {
-            "header": [
-              "ID",
-              "StartTime",
-              "EndTime",
-              "Volume",
-              "Price",
-              "Cost",
-              "SO_Flag",
-              "Reason",
-              "AssetID",
-              "CP_Name",
-              "Area",
-              "Note",
-              "Last_Updated"
-            ],
             "columns": [
               {
                 "source": "ID",
@@ -179,10 +146,7 @@
                 "nullable": true,
                 "zone": "UTC"
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {

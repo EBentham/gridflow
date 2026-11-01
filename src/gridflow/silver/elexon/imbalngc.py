@@ -2,18 +2,11 @@
 
 from __future__ import annotations
 
-import logging
-from datetime import UTC, datetime
-
 import polars as pl
 
 from gridflow.schemas.elexon import ElexonImbalNGC
 from gridflow.silver.elexon._base import ElexonTransformer
-from gridflow.silver.published_at import with_published_at
 from gridflow.silver.registry import register_transformer
-from gridflow.utils.time import settlement_period_to_utc_expr
-
-logger = logging.getLogger(__name__)
 
 
 class ImbalNGCTransformer(ElexonTransformer):
@@ -26,73 +19,25 @@ class ImbalNGCTransformer(ElexonTransformer):
     DATASET_VERSION = "2.0.0"
     ENTITY_KEY_COLUMNS = ("settlement_date", "settlement_period", "published_at")  # D-8
     OPTIONAL_ENTITY_KEY_COLUMNS = ("boundary",)
-
-    def transform(self, raw_df: pl.DataFrame) -> pl.DataFrame:
-        if raw_df.is_empty():
-            return pl.DataFrame()
-
-        column_mapping = {
-            "settlementDate": "settlement_date",
-            "settlementPeriod": "settlement_period",
-            "publishDateTime": "published_at",
-            "publishTime": "published_at",
-            "indicatedImbalance": "indicated_imbalance",
-            "imbalance": "indicated_imbalance",
-            "boundary": "boundary",
-        }
-        rename_map = {k: v for k, v in column_mapping.items() if k in raw_df.columns}
-        if rename_map:
-            raw_df = raw_df.rename(rename_map)
-
-        required = ["settlement_date", "settlement_period", "indicated_imbalance"]
-        missing = [c for c in required if c not in raw_df.columns]
-        if missing:
-            logger.error(f"Missing required columns in IMBALNGC: {missing}")
-            return pl.DataFrame()
-
-        df = raw_df.with_columns(
-            [
-                pl.col("settlement_date").cast(pl.Date),
-                pl.col("settlement_period").cast(pl.Int32),
-                pl.col("indicated_imbalance").cast(pl.Float64),
-            ]
-        )
-
-        df = df.with_columns(
-            settlement_period_to_utc_expr("settlement_date", "settlement_period").alias(
-                "timestamp_utc"
-            )
-        )
-
-        # G6: cast `published_at` (rename map already produced it from
-        # publishDateTime / publishTime) to UTC datetime so it survives
-        # to silver well-typed. ElexonImbalNGC declares
-        # `published_at: datetime | None` — without this cast + output_cols
-        # entry below, the column was silently dropped (W2.2 pattern).
-        df = with_published_at(df, "published_at", dataset=self.dataset)
-
-        df = self.dedup_to_grain(df)
-
-        now = datetime.now(UTC)
-        df = df.with_columns(
-            [
-                pl.lit("elexon").alias("data_provider"),
-                pl.lit(now).cast(pl.Datetime("us", "UTC")).alias("ingested_at"),
-            ]
-        )
-
-        output_cols = [
-            "settlement_date",
-            "settlement_period",
-            "timestamp_utc",
-            "indicated_imbalance",
-            "boundary",
-            "published_at",
-            "data_provider",
-            "ingested_at",
-        ]
-        available = [c for c in output_cols if c in df.columns]
-        return df.select(available).sort("timestamp_utc")
+    COLUMN_MAP = {
+        "settlementDate": "settlement_date",
+        "settlementPeriod": "settlement_period",
+        "publishDateTime": "published_at",
+        "publishTime": "published_at",
+        "indicatedImbalance": "indicated_imbalance",
+        "imbalance": "indicated_imbalance",
+        "boundary": "boundary",
+    }
+    REQUIRED = ("settlement_date", "settlement_period", "indicated_imbalance")
+    CASTS = {"indicated_imbalance": pl.Float64()}
+    OUTPUT_COLS = (
+        "settlement_date",
+        "settlement_period",
+        "timestamp_utc",
+        "indicated_imbalance",
+        "boundary",
+        "published_at",
+    )
 
 
 register_transformer("elexon", "imbalngc", ImbalNGCTransformer)

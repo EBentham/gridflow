@@ -715,13 +715,23 @@ def quality(
                 and set(entity_key) <= set(df.columns)
                 and df["settlement_period"].n_unique() > 1
             ):
+                # After the latest-vintage selection a series is the latest
+                # view's key: the publication column an append-only entity key
+                # carries would split one revised forecast into a broken series
+                # per publication.
+                series_key = entity_key
+                if spec is not None and spec.mode == "key_latest":
+                    series_key = [
+                        *spec.key_columns,
+                        *(c for c in spec.optional_key_columns if c in df.columns),
+                    ]
                 reporter.add_result(
                     check_time_series_gaps(
                         df,
                         source=src,
                         dataset=ds,
                         expected_freq_minutes=settings.quality.expected_freq_minutes,
-                        group_by=[c for c in entity_key if c not in _SETTLEMENT_TIME_COLUMNS],
+                        group_by=[c for c in series_key if c not in _SETTLEMENT_TIME_COLUMNS],
                     )
                 )
 

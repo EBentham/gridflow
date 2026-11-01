@@ -33,6 +33,8 @@ from gridflow.storage.paths import PathBuilder
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from conftest import IsolatedPaths
+
 TARGET_DATE = date(2024, 1, 16)
 WINDOW_START = datetime(2024, 1, 16, tzinfo=UTC)
 WINDOW_END = datetime(2024, 1, 17, tzinfo=UTC)
@@ -104,18 +106,8 @@ def _write_wholly_out_of_window_chunk(tmp_path: Path) -> None:
     BronzeWriter(tmp_path).write(response)
 
 
-def _isolated_env(tmp_path: Path, monkeypatch) -> Path:
-    data_dir = tmp_path / "data"
-    db_path = tmp_path / "catalogue" / "gridflow.duckdb"
-    monkeypatch.setenv("GRIDFLOW_DATA_DIR", str(data_dir))
-    monkeypatch.setenv("GRIDFLOW_DUCKDB_PATH", str(db_path))
-    monkeypatch.setenv("GRIDFLOW_LOG_DIR", str(tmp_path / "logs"))
-    monkeypatch.setattr("gridflow.storage.duckdb._register_gold_views", lambda con: None)
-    return db_path
-
-
 def test_wholly_out_of_window_transform_surfaces_as_failed_not_success(
-    tmp_path: Path, monkeypatch
+    isolated_env: IsolatedPaths, tmp_path: Path
 ) -> None:
     """RED against pre-fix code: status was 'success', rows_out == 0, exit 0
     -- indistinguishable from a genuinely clean (empty) date. GREEN after the
@@ -125,7 +117,7 @@ def test_wholly_out_of_window_transform_surfaces_as_failed_not_success(
     from gridflow.pipeline import runner as pipeline_runner
     from gridflow.storage.duckdb import get_connection, init_catalogue
 
-    db_path = _isolated_env(tmp_path, monkeypatch)
+    db_path = isolated_env.duckdb_path
     data_dir = tmp_path / "data"
     _write_wholly_out_of_window_chunk(data_dir)
 

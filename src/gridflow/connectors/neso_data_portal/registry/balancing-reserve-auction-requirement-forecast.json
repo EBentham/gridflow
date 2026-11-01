@@ -11,30 +11,12 @@
     {
       "key": "br_auction_requirement_fc_da_archive",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Date",
-              "Service Delivery Date",
-              "Service Window",
-              "Service window start time",
-              "Service Window End Time",
-              "Positive Balancing Reserve Requirement MW",
-              "Negative Balancing Reserve Requirement MW",
-              "Forecast produced on",
-              "Forecast type"
-            ],
             "columns": [
               {
                 "source": "Auction Date",
@@ -93,10 +75,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -119,30 +98,12 @@
     {
       "key": "br_auction_requirement_fc_da",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Date",
-              "Service Delivery Date",
-              "Service Window",
-              "Service window start time",
-              "Service Window End Time",
-              "Positive Balancing Reserve Requirement MW",
-              "Negative Balancing Reserve Requirement MW",
-              "Forecast produced on",
-              "Forecast type"
-            ],
             "columns": [
               {
                 "source": "Auction Date",
@@ -201,10 +162,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
@@ -222,30 +180,12 @@
     {
       "key": "br_auction_requirement_fc_medium_term",
       "kind": "tabular",
-      "legacy": false,
-      "archetype": "FC",
-      "refresh": "daily",
-      "empty_allowed": false,
-      "max_download_bytes": 536870912,
-      "name_regex": null,
-      "transformer": null,
       "record": {
         "version": "1",
         "reader": "csv",
         "encoding": "utf-8",
         "epochs": [
           {
-            "header": [
-              "Auction Date",
-              "Service Delivery Date",
-              "Service Window",
-              "Service window start time",
-              "Service Window End Time",
-              "Positive Balancing Reserve Requirement MW",
-              "Negative Balancing Reserve Requirement MW",
-              "Forecast produced on",
-              "Forecast type"
-            ],
             "columns": [
               {
                 "source": "Auction Date",
@@ -304,10 +244,7 @@
                 "dtype": "string",
                 "nullable": true
               }
-            ],
-            "issue": {
-              "kind": "none"
-            }
+            ]
           }
         ],
         "temporal": {
