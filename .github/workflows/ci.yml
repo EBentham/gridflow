@@ -13,7 +13,8 @@ on:
       - "docs/audit/**"
       - "docs/endpoints/**"
   pull_request:
-  # Weekly run of the slow memory gates, which the PR run and the local gate skip.
+  # Weekly run of the slow memory gates, which the PR run and the local gate skip,
+  # and of package-smoke, whose unlocked wheel catches a breaking upstream release.
   schedule:
     - cron: "0 5 * * 1"
   workflow_dispatch:
@@ -72,7 +73,6 @@ jobs:
     # The wheel, installed into a clean venv and run outside the checkout, must
     # find its gold views and sources and write only under the data root. The
     # anchored steps run unchanged on Windows and macOS in cross-platform.
-    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
