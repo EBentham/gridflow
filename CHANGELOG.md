@@ -11,6 +11,13 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 
 ## [Unreleased]
 
+### Added
+- **A preset's Open-Meteo entry can set `chunk_days`**, from 1 to 35, to fetch that many days
+  per request instead of one. The packaged `tour` sets 7 on its three Open-Meteo datasets, so
+  it makes 53 requests without keys instead of 203. `chunk_days` on any other source, or 0, 36
+  or a non-integer, fails the preset with exit 2 before any request. `--chunk-days`, when
+  given, still sets every entry's chunk size.
+
 ### Fixed
 - **`gridflow status` exits 1 when its pipeline-runs query fails**, printing the error to stderr.
 - **Open-Meteo dates no longer drop out of silver when a backfill re-fetches them in other

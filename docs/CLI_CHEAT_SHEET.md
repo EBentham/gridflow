@@ -163,7 +163,8 @@ gridflow backfill --preset tour                # what the notebooks read, last 7
 gridflow backfill --preset my-preset.yaml      # your own datasets and window
 ```
 
-A preset skips each source whose API key is unset. Its format is in
+A preset skips each source whose API key is unset, and an Open-Meteo entry can
+set its own `chunk_days` (1 to 35). Its format is in
 [QUICKSTART.md](QUICKSTART.md#4-first-ingest-presets).
 
 ### `gridflow export-csv` — Export Silver to CSV

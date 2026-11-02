@@ -69,21 +69,23 @@ A preset is a list of datasets and one window. `gridflow backfill --preset`
 takes a packaged preset's name or the path of a `.yaml` file, skips each source
 whose API key is unset, and backfills the rest through the same path as
 `gridflow backfill <source>`: bronze, then silver, then the catalogue views,
-one day at a time unless `--chunk-days N` says otherwise.
+one day at a time unless an Open-Meteo entry's `chunk_days` or `--chunk-days N`
+says otherwise.
 
 | Preset | Datasets | Window | Requests | Time |
 |---|---|---|---|---|
-| `tour` | 10: the views `00_overview` and `01_sources` read | last 7 complete UTC days | 203 without keys | about 4 minutes without keys |
+| `tour` | 10: the views `00_overview` and `01_sources` read | last 7 complete UTC days | 53 without keys | not re-measured |
 
 Without keys the tour fetches 7 of its 10 datasets: Elexon system prices and
 generation by fuel (14 requests, one per day each), Open-Meteo demand, wind and
-solar weather (175, one per weather site per day, 25 sites), ENTSO-G physical
-flows (7, one per day) and NESO carbon intensity (7). A run on 2 November 2026
-with no keys set made those 203 requests in just under 4 minutes. Most of that
-was spent waiting on Open-Meteo: 30 of its connections failed after about 10
-seconds and succeeded when retried. With keys the tour also fetches ENTSO-E
-day-ahead prices and GIE storage and LNG, and gridflow sends both vendors one
-request a second.
+solar weather (25, one per weather site for the whole week, as the tour sets
+`chunk_days: 7` on them), ENTSO-G physical flows (7, one per day) and NESO
+carbon intensity (7). The time is not re-measured. A run on 2 November 2026
+with no keys set, when Open-Meteo still took one-day chunks (175 of 203
+requests), took just under 4 minutes. Most of that was spent waiting on
+Open-Meteo: 30 of its connections failed after about 10 seconds and succeeded
+when retried. With keys the tour also fetches ENTSO-E day-ahead prices and GIE
+storage and LNG, and gridflow sends both vendors one request a second.
 
 The run prints WARNING lines along the way, for example one per day for Elexon
 generation by fuel, which one-day windows raise by design, or one per retried
@@ -94,7 +96,7 @@ Your own preset is a YAML file with two keys:
 ```yaml
 datasets:
   - {source: elexon, dataset: indo}
-  - {source: open_meteo, dataset: historical_demand}
+  - {source: open_meteo, dataset: historical_demand, chunk_days: 31}
 window: {start: 2024-01-01, end: 2024-01-31}   # or {last_days: 30}
 ```
 
@@ -102,7 +104,15 @@ window: {start: 2024-01-01, end: 2024-01-31}   # or {last_days: 30}
 as `--start` and `--end` do, so a bare end date is included. Every source and
 dataset must be one gridflow configures (the `sources` of
 `gridflow.config.settings.load_settings()`), or the preset fails before any
-request. gridflow-models keeps its own preset, for the model notebooks, and runs
+request.
+
+`chunk_days` is optional and only for Open-Meteo: a whole number from 1 to 35,
+the days each request covers (one request per weather site per chunk). Without
+it an entry backfills one day at a time. On any other source, or outside 1 to
+35, the preset fails before any request. Other sources keep one-day chunks
+because NESO files a multi-day response under its first day, so a rerun a day
+later would write those days twice. `--chunk-days N` replaces every entry's
+chunk size, `chunk_days` included. gridflow-models keeps its own preset, for the model notebooks, and runs
 it the same way: `gridflow backfill --preset configs/ingest/models.yaml`.
 
 ## 5. Notebooks
