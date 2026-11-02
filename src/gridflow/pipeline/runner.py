@@ -702,6 +702,9 @@ def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
             raise PresetError(f"{name_or_path}: unknown source {source!r}")
         if dataset not in settings.sources[source].datasets:
             raise PresetError(f"{name_or_path}: {source} has no dataset {dataset!r}")
+        # Once each, so one entry's chunk_days cannot silently replace another's.
+        if (source, dataset) in chunk_days:
+            raise PresetError(f"{name_or_path}: {source}/{dataset} is listed twice")
         days = entry.get("chunk_days", 1)
         if "chunk_days" in entry:
             if source != "open_meteo":

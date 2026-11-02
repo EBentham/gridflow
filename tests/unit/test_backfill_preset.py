@@ -237,6 +237,15 @@ _TWO_WINDOWS = (
         ),
         pytest.param(
             [],
+            "datasets:\n"
+            "  - {source: open_meteo, dataset: historical_wind, chunk_days: 7}\n"
+            "  - {source: open_meteo, dataset: historical_wind}\n"
+            "window: {last_days: 7}\n",
+            "listed twice",
+            id="dataset-listed-twice",
+        ),
+        pytest.param(
+            [],
             _chunk_entry("neso", "carbon_intensity", "7"),
             "Open-Meteo",
             id="chunk-days-outside-open-meteo",
