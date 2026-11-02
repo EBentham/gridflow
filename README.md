@@ -79,6 +79,9 @@ explains each step: the data root, keys, presets and their measured cost, and
 the notebooks. [docs/CLI_CHEAT_SHEET.md](docs/CLI_CHEAT_SHEET.md) lists every
 command.
 
+Behind a corporate proxy, if `uv sync` fails with "invalid peer certificate", set
+`UV_SYSTEM_CERTS=1` or pass `--system-certs` so uv trusts your system's certificates.
+
 ### What needs a key
 
 Both keys are free. Put them in `.env`, in or above the folder you run gridflow
