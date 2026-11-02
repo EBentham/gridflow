@@ -54,5 +54,20 @@ class PNTransformer(ElexonTransformer):
     )
     SORT = ("timestamp_utc", "bm_unit_id")
 
+    def dedup_to_grain(self, df: pl.DataFrame) -> pl.DataFrame:
+        # A fetch can send a unit with bmUnit null that a later fetch fills in
+        # (AG-DSTK08 on 2026-09-21). Give the null row the id its National Grid
+        # id carries in the same period, so the grain keeps one row, the last
+        # read, instead of both. A unit no fetch names keeps its null.
+        if "national_grid_bm_unit" in df.columns:
+            same_unit = ["settlement_date", "settlement_period", "national_grid_bm_unit"]
+            named = pl.col("bm_unit_id").max().over(same_unit)
+            df = df.with_columns(
+                pl.col("bm_unit_id").fill_null(
+                    pl.when(pl.col("national_grid_bm_unit").is_not_null()).then(named)
+                )
+            )
+        return super().dedup_to_grain(df)
+
 
 register_transformer("elexon", "pn", PNTransformer)
