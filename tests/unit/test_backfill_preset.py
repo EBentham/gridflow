@@ -298,7 +298,9 @@ def test_preset_usage_errors_exit_2(
     result = cli.invoke(app, ["backfill", *args])
 
     assert result.exit_code == 2, result.output
-    assert message in _ANSI_RE.sub("", result.output)
+    # Typer wraps the error in a box at the terminal's width, which can split the message.
+    flat = " ".join(re.sub(r"[│╭╮╰╯─]", " ", _ANSI_RE.sub("", result.output)).split())
+    assert message in flat
     assert backfills == []
 
 
