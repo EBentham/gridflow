@@ -187,17 +187,6 @@ _HOURLY_VARS: dict[str, tuple[str, ...]] = {
     "forecast_solar": SOLAR_HOURLY_VARS,
 }
 
-# The ERA5 archive returns null at these hub heights, so historical_wind never
-# requests them, but the manifest declares the WindWeather schema it shares with
-# forecast_wind.
-_NOT_IN_ARCHIVE: dict[str, set[str]] = {
-    "historical_wind": {
-        f"wind_{measure}_{height}m_{unit}"
-        for height in (80, 120, 180)
-        for measure, unit in (("speed", "mps"), ("direction", "deg"))
-    },
-}
-
 
 @pytest.fixture(scope="module")
 def open_meteo_manifest() -> dict[str, SilverSchemaEntry]:
@@ -222,4 +211,4 @@ def test_silver_columns_equal_the_schema_manifest(
 
     entry = open_meteo_manifest[dataset]
     declared = set(entry.columns or ()) | set(entry.bitemporal_columns)
-    assert set(silver.columns) == declared - _NOT_IN_ARCHIVE.get(dataset, set())
+    assert set(silver.columns) == declared

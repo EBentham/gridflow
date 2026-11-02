@@ -48,6 +48,11 @@ dataset-coverage expansion) was paused before release and is intentionally absen
   many rows each response carried, as AGSI already did, so an incremental run where every
   country returns `{"data": []}` (a gas day not yet published) leaves the watermark where it was
   and the next run asks again.
+- **The schema manifest no longer lists hub-height columns for `open_meteo/historical_wind`.**
+  The ERA5 archive never carries 80m, 120m or 180m wind, so silver never had those six columns,
+  but the manifest declared them from the schema it shared with `forecast_wind`. The archive now
+  has its own schema, `ArchiveWindWeather`, without them. `forecast_wind` keeps all six, now
+  listed after the archive columns.
 
 ## [v0.23.0] - 2026-11-01
 

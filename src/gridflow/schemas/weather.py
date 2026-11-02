@@ -1,7 +1,8 @@
 """Pydantic v2 schemas for Open-Meteo weather silver-layer data contracts.
 
-F7.5 split: ``WeatherObservation`` is replaced by three role-specific
-schemas (``DemandWeather``, ``WindWeather``, ``SolarWeather``) so that
+F7.5 split: ``WeatherObservation`` is replaced by role-specific schemas
+(``DemandWeather``, ``ArchiveWindWeather`` / ``WindWeather``,
+``SolarWeather``) so that
 each silver dataset validates against its own field set without leaving
 unrelated nullable columns.
 
@@ -72,14 +73,12 @@ class DemandWeather(_BaseWeather):
     air_density_kg_m3: float | None = None  # P / (287.05 * T_K)
 
 
-class WindWeather(_BaseWeather):
-    """Silver-layer schema for the ``open_meteo/historical_wind`` and
-    ``open_meteo/forecast_wind`` datasets.
+class ArchiveWindWeather(_BaseWeather):
+    """Silver-layer schema for the ``open_meteo/historical_wind`` dataset.
 
-    Hub-height fields (80m / 120m / 180m) are typed permissively because
-    the ERA5 archive endpoint exposes only 10m + 100m reliably (verified
-    2026-05-09 against Hornsea and Whitelee — the others return null).
-    The forecast endpoint (UKMO/ECMWF) carries the wider set.
+    Only 10m and 100m: the ERA5 archive returns null at 80m / 120m / 180m
+    (verified 2026-05-09 against Hornsea and Whitelee), so the archive
+    never requests those heights and silver never has their columns.
     """
 
     temperature_2m_c: float | None = None
@@ -87,16 +86,10 @@ class WindWeather(_BaseWeather):
     precipitation_mm: float | None = None
 
     wind_speed_10m_mps: float | None = None
-    wind_speed_80m_mps: float | None = None
     wind_speed_100m_mps: float | None = None
-    wind_speed_120m_mps: float | None = None
-    wind_speed_180m_mps: float | None = None
 
     wind_direction_10m_deg: float | None = None
-    wind_direction_80m_deg: float | None = None
     wind_direction_100m_deg: float | None = None
-    wind_direction_120m_deg: float | None = None
-    wind_direction_180m_deg: float | None = None
 
     wind_gusts_10m_mps: float | None = None
 
@@ -108,6 +101,23 @@ class WindWeather(_BaseWeather):
     dew_point_2m_c: float | None = None  # °C — icing risk
 
     air_density_kg_m3: float | None = None
+
+
+class WindWeather(ArchiveWindWeather):
+    """Silver-layer schema for the ``open_meteo/forecast_wind`` dataset.
+
+    The archive fields plus the 80m / 120m / 180m hub heights, which the
+    forecast models (UKMO/ECMWF) carry. Typed permissively because
+    Open-Meteo nulls a height the underlying model lacks.
+    """
+
+    wind_speed_80m_mps: float | None = None
+    wind_speed_120m_mps: float | None = None
+    wind_speed_180m_mps: float | None = None
+
+    wind_direction_80m_deg: float | None = None
+    wind_direction_120m_deg: float | None = None
+    wind_direction_180m_deg: float | None = None
 
 
 class SolarWeather(_BaseWeather):
