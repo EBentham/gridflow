@@ -198,17 +198,17 @@ def _pn_ng_row(period: int, ng: str, bm_unit: str | None) -> dict[str, object]:
 def test_pn_filled_bm_unit_supersedes_the_earlier_null_row() -> None:
     """On 2026-09-21 a fetch sent AG-DSTK08 with bmUnit null and a later fetch
     filled it in; both rows survived the grain, so summing PN by National Grid
-    id counted those periods twice."""
-    first_fetch = _pn_ng_row(1, "AG-DSTK08", None)
-    later_fetch = _pn_ng_row(1, "AG-DSTK08", "2__DSTAT008")
+    id counted those periods twice. The later fetch's row is the one kept."""
+    first_fetch = {**_pn_ng_row(1, "AG-DSTK08", None), "levelFrom": 1.0}
+    later_fetch = {**_pn_ng_row(1, "AG-DSTK08", "2__DSTAT008"), "levelFrom": 2.0}
     transformer = _bare(PNTransformer)
 
     out = transformer.transform(pl.DataFrame([first_fetch, later_fetch]))
 
-    assert out.select("bm_unit_id", "national_grid_bm_unit").rows() == [
-        ("2__DSTAT008", "AG-DSTK08")
+    assert out.select("bm_unit_id", "national_grid_bm_unit", "level_from").rows() == [
+        ("2__DSTAT008", "AG-DSTK08", 2.0)
     ]
-    assert transformer.last_excluded_row_count == 0
+    assert transformer.last_excluded_row_count == 1
 
 
 def test_pn_keeps_null_bm_unit_rows_no_fetch_fills() -> None:
