@@ -13,6 +13,10 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 
 ### Fixed
 - **`gridflow status` exits 1 when its pipeline-runs query fails**, printing the error to stderr.
+- **Elexon PN keeps one row per unit, period and segment** when one fetch sends a unit with
+  `bmUnit` null and a later fetch fills it in. The earlier row used to survive beside the later
+  one, so summing by `national_grid_bm_unit` counted those periods twice (48 unit-periods on
+  21 Sep 2026).
 
 ## [v0.23.0] - 2026-11-01
 
