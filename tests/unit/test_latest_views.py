@@ -424,13 +424,44 @@ class TestFullTieIsDeterministic:
 
         assert rates == {"ab": {0.0}, "ba": {0.0}}
 
+    def test_partition_columns_cannot_overrule_a_row_column(self):
+        """Detects the hive ``year``/``month`` columns, which only the DuckDB views carry
+        (Polars readers such as NESO reconcile scan with ``hive_partitioning=False``),
+        deciding a tie that a column of the row itself breaks: the renderers then split."""
+        stamp = datetime(2024, 1, 15, 10, tzinfo=UTC)
+        frame = pl.DataFrame(
+            {
+                "mrid": ["m", "m"],
+                "available_at": [stamp, stamp],
+                "revision_number": [1, 1],
+                "zone": ["a", "b"],
+                "year": [2024, 2024],
+                "month": [12, 1],
+            }
+        )
+        spec = LATEST_VIEW_SPECS[("elexon", "remit")]
+        con = duckdb.connect(":memory:")
+        try:
+            con.register("base", frame.to_arrow())
+            sql = latest_view_sql("base", "base_latest", spec, set(frame.columns))
+            assert sql is not None
+            con.execute(sql)
+            sql_winner = [row[0] for row in con.execute("SELECT zone FROM base_latest").fetchall()]
+        finally:
+            con.close()
+        scan = frame.drop("year", "month").lazy()
+        polars_winner = select_latest_vintage(scan, spec).collect()["zone"].to_list()
+
+        assert (sql_winner, polars_winner) == (["b"], ["b"])
+
 
 class TestFullRowTieBreakSql:
     """The SQL builder's final tie-break: every other column, by name, DESC NULLS LAST."""
 
     def test_every_other_column_follows_the_spec_terms_in_name_order(self):
-        """Detects a payload column missing from, or out of order in, the tie-break."""
-        columns = _SP_COLUMNS | {"ingested_at"}
+        """Detects a payload column missing from, or out of order in, the tie-break, or the
+        partition columns ordered ahead of a row column."""
+        columns = _SP_COLUMNS | {"ingested_at", "year", "month"}
         sql = latest_view_sql("base", "base_latest", _SP_SPEC, columns)
         assert sql is not None
         order = sql.split("ORDER BY ", 1)[1]
@@ -438,7 +469,8 @@ class TestFullRowTieBreakSql:
             '"available_at" DESC NULLS LAST, '
             f'CASE "run_type" {_SP_RANK_WHENS} ELSE 0 END DESC, '
             '"ingested_at" DESC NULLS LAST, "run_type" DESC NULLS LAST, '
-            '"system_sell_price" DESC NULLS LAST) = 1'
+            '"system_sell_price" DESC NULLS LAST, "year" DESC NULLS LAST, '
+            '"month" DESC NULLS LAST) = 1'
         )
 
     def test_key_and_spec_columns_are_not_repeated(self):
