@@ -148,6 +148,30 @@ jobs:
           HOME="$RUNNER_TEMP/home" USERPROFILE="$RUNNER_TEMP/home" gridflow init
           test -f "$RUNNER_TEMP/home/gridflow-data/gridflow.duckdb"
 
+      - name: Transform and catalogue tests against the unlocked wheel
+        # The wheel resolved the newest dependencies pyproject allows, not
+        # uv.lock, so an upstream release that breaks gridflow (Polars 2 broke
+        # every Elexon transform) fails here before it reaches a wheel install.
+        # Not anchored, so ubuntu only. pytest puts nothing on pythonpath, so the
+        # tests import the installed gridflow, never src/.
+        shell: bash
+        run: |
+          wheel=$(echo "$RUNNER_TEMP"/dist/*.whl)
+          uv pip install --python "$RUNNER_TEMP/venv" "gridflow[dev] @ file://$wheel"
+          python - <<'EOF'
+          import os
+
+          import duckdb
+          import gridflow
+          import polars
+
+          print("gridflow:", gridflow.__file__)
+          print("polars", polars.__version__, "duckdb", duckdb.__version__)
+          assert not gridflow.__file__.startswith(os.environ["GITHUB_WORKSPACE"]), "imported src/"
+          EOF
+          python -m pytest -q -m "not live and not slow" tests/unit/test_silver_transforms.py \
+            tests/unit/test_duckdb_views.py tests/unit/test_latest_views.py
+
   cross-platform:
     # The full suite runs on ubuntu only (lint-and-test). Windows and macOS run
     # the settings, data-root and trust-store tests, the notebook smoke on the
