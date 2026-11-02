@@ -152,7 +152,10 @@ jobs:
     # The full suite runs on ubuntu only (lint-and-test). Windows and macOS run
     # the settings, data-root and trust-store tests, the notebook smoke on the
     # sample store, and the package smoke.
-    if: github.event_name == 'pull_request' || github.event_name == 'schedule'
+    # Not on master pushes; a manual run checks master's tip on both.
+    if: >-
+      github.event_name == 'pull_request' || github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
