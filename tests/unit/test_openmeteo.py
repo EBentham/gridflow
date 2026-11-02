@@ -432,12 +432,38 @@ def _write_openmeteo_bronze(
     location: str,
     partition_date: date,
     payload: dict,
-) -> None:
+    *,
+    request: dict | None = None,
+) -> Path:
+    """Write one body, plus a sidecar recording ``request`` as its request_params."""
     bronze_dir = PathBuilder(tmp_path).bronze_date_dir(
         "open_meteo", f"{dataset_prefix}__{location}", partition_date
     )
     bronze_dir.mkdir(parents=True, exist_ok=True)
-    (bronze_dir / "raw_test.json").write_text(json.dumps(payload))
+    body = bronze_dir / "raw_test.json"
+    body.write_text(json.dumps(payload))
+    if request is not None:
+        body.with_suffix(".meta.json").write_text(
+            json.dumps(
+                {
+                    "source": "open_meteo",
+                    "dataset": f"{dataset_prefix}__{location}",
+                    "written_at": "2026-11-02T00:00:00+00:00",
+                    "request_params": request,
+                }
+            )
+        )
+    return body
+
+
+def _days_payload(*days: date) -> dict:
+    """Every hour of ``days``, as the archive API answers."""
+    times = [f"{day.isoformat()}T{h:02d}:00" for day in days for h in range(24)]
+    return {
+        "latitude": 51.5074,
+        "longitude": -0.1278,
+        "hourly": {"time": times, "temperature_2m": [5.0] * len(times)},
+    }
 
 
 def _two_day_payload(day1: date, day2: date) -> dict:
@@ -520,6 +546,68 @@ class TestHistoricalReadBronzeTargetDateFilter:
         silver = PathBuilder(tmp_path).silver_dir("open_meteo", "historical_demand")
         df = scan_parquet_dir(silver).collect()
         assert df["timestamp_utc"].null_count() == 1
+
+
+class TestLookBackChecksTheRequestWindow:
+    """A date with no partition of its own reads the nearest earlier request
+    that reached it, not merely the nearest earlier partition."""
+
+    START = date(2024, 1, 1)
+    WEEK = [date(2024, 1, d) for d in range(1, 8)]
+
+    def test_skips_a_nearer_request_that_ended_before_the_date(self, tmp_path: Path) -> None:
+        """Detects the look-back taking a one-day request filed on 5 January for
+        7 January, which leaves 7 January out of silver although the week-long
+        request filed on 1 January holds it."""
+        week = _write_openmeteo_bronze(
+            tmp_path,
+            "historical_demand",
+            "london",
+            self.START,
+            _days_payload(*self.WEEK),
+            request={"start_date": "2024-01-01", "end_date": "2024-01-07"},
+        )
+        _write_openmeteo_bronze(
+            tmp_path,
+            "historical_demand",
+            "london",
+            date(2024, 1, 5),
+            _days_payload(date(2024, 1, 5)),
+            request={"start_date": "2024-01-05", "end_date": "2024-01-05"},
+        )
+        transformer = HistoricalDemandWeather(tmp_path)
+
+        assert transformer._bronze_candidates(date(2024, 1, 7)) == [week]
+        assert transformer.run(date(2024, 1, 7), run_id="look-back") == 24
+
+    @pytest.mark.parametrize(
+        "request_params",
+        [None, {"end_date": "2024-01-05"}, {"start_date": "5 Jan", "end_date": "2024-01-05"}],
+        ids=["no-sidecar", "no-start", "unparseable"],
+    )
+    def test_a_request_without_a_readable_window_is_still_taken(
+        self, tmp_path: Path, request_params: dict | None
+    ) -> None:
+        """Detects bronze whose window cannot be read being skipped, which would
+        change what older bronze reads as."""
+        _write_openmeteo_bronze(
+            tmp_path,
+            "historical_demand",
+            "london",
+            self.START,
+            _days_payload(*self.WEEK),
+            request={"start_date": "2024-01-01", "end_date": "2024-01-07"},
+        )
+        nearer = _write_openmeteo_bronze(
+            tmp_path,
+            "historical_demand",
+            "london",
+            date(2024, 1, 5),
+            _days_payload(date(2024, 1, 5)),
+            request=request_params,
+        )
+
+        assert HistoricalDemandWeather(tmp_path)._bronze_candidates(date(2024, 1, 7)) == [nearer]
 
 
 # ---------------------------------------------------------------------------

@@ -2,10 +2,11 @@
 
 Each chunk is one archive request per site, filed in bronze under the chunk's
 first day. Silver is one file per UTC date, rewritten from the rows of that
-date only, so a key can never land twice. But a date with no bronze partition
-of its own reads the NEAREST earlier partition per site
-(``_find_covering_bronze_partition``), whether or not that partition's request
-reached the date. HTTP is answered locally; nothing is fetched.
+date only, so a key can never land twice. A date with no bronze partition of
+its own looks back for the request that reached it; before that look-back
+checked each request's window, a nearer, shorter request (a one-day chunk, or
+a run that ended earlier) left the date out of silver while the backfill
+reported success. HTTP is answered locally; nothing is fetched.
 """
 
 from __future__ import annotations
@@ -57,34 +58,23 @@ def _day(n: int) -> datetime:
 
 
 @pytest.mark.parametrize(
-    ("first", "second", "missing"),
+    ("first", "second"),
     [
+        pytest.param((_day(0), _day(20), 10), (_day(1), _day(21), 10), id="second-run-a-day-later"),
         pytest.param(
-            (_day(0), _day(20), 10), (_day(1), _day(21), 10), [], id="second-run-starts-a-day-later"
+            (_day(9), _day(12), 5), (_day(4), _day(19), 15), id="second-run-before-a-shorter-first"
         ),
-        pytest.param(
-            (_day(9), _day(12), 5),
-            (_day(4), _day(19), 15),
-            [_day(n).date() for n in range(12, 19)],
-            id="second-run-starts-before-a-shorter-first-run",
-        ),
-        pytest.param(
-            (_day(0), _day(7), 1),
-            (_day(1), _day(8), 7),
-            [_day(7).date()],
-            id="tour-rerun-after-one-day-chunks",
-        ),
+        pytest.param((_day(0), _day(7), 1), (_day(1), _day(8), 7), id="tour-rerun-after-one-day"),
     ],
 )
 def test_two_backfills_with_shifted_chunks(
     isolated_env: IsolatedPaths,
     first: tuple[datetime, datetime, int],
     second: tuple[datetime, datetime, int],
-    missing: list[date],
 ) -> None:
-    """Every (hour, site) of the two windows' union lands in silver exactly once,
-    except the dates whose nearest earlier bronze partition is a request that
-    ended before them: those are missing, and the backfill still succeeds."""
+    """Detects a date dropping out of silver, or landing twice, when a second
+    backfill re-fetches overlapping dates in chunks that start on other days:
+    every (hour, site) of the two windows' union is there exactly once."""
     settings = load_settings()
     settings.sources["open_meteo"].rate_limit_per_second = 1000
     with respx.mock(assert_all_called=False) as router:
@@ -107,6 +97,4 @@ def test_two_backfills_with_shifted_chunks(
     )
     counts = dict(zip(landed["day"].to_list(), landed["len"].to_list(), strict=True))
     sites = len(DEMAND_LOCATIONS)
-    assert {d: counts.get(d, 0) for d in days} == {
-        d: 0 if d in missing else 24 * sites for d in days
-    }
+    assert {d: counts.get(d, 0) for d in days} == dict.fromkeys(days, 24 * sites)

@@ -44,6 +44,7 @@ from gridflow.silver.base import (
     VintagePolicy,
 )
 from gridflow.silver.registry import register_transformer
+from gridflow.storage.paths import PathBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -128,6 +129,23 @@ def _filter_rows_to_target_date(
     return kept
 
 
+def _request_reaches(body: Path, target_date: date) -> bool:
+    """Whether ``body``'s request covered ``target_date``, or its window is unreadable.
+
+    The window is the sidecar's ``request_params`` ``start_date..end_date``,
+    both bare dates and both inclusive, which is why
+    ``partition_window.request_window_from_sidecar`` (tz-aware instants, an
+    exclusive end) cannot read it: a one-day request would look empty.
+    """
+    try:
+        params = json.loads(body.with_suffix(".meta.json").read_text())["request_params"]
+        first = date.fromisoformat(params["start_date"])
+        last = date.fromisoformat(params["end_date"])
+    except (OSError, ValueError, TypeError, KeyError):
+        return True
+    return first <= target_date <= last
+
+
 class BaseOpenMeteoTransformer(BaseSilverTransformer):
     """Shared logic for all six role-split openmeteo transformers."""
 
@@ -186,14 +204,36 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         return self.bronze_dir.parent / f"{self.BRONZE_DATASET_PREFIX}__{loc.name}"
 
     def _bronze_candidates(self, target_date: date) -> list[Path]:
-        """Each location's exact partition, else its nearest covering one."""
-        return [
-            f
-            for loc in self.LOCATIONS
-            if (day := self._bronze_path_for_date(target_date, bronze_dir=self._location_dir(loc)))
-            for f in sorted(day.glob(self.BRONZE_BODY_GLOB))
-            if not f.name.endswith(".meta.json")
-        ]
+        """Each location's bodies whose request reached ``target_date``.
+
+        A request is filed under its first day, so a date with no partition of
+        its own looks back for one. The nearest earlier partition is not enough:
+        a shorter request there (a one-day chunk, say) ends before the date, and
+        reading it alone would leave the date out of silver. So an earlier
+        partition's body counts only if its sidecar's ``start_date..end_date``
+        reaches the date. A body whose window cannot be read is still taken, as
+        before windows were checked.
+        """
+        paths = PathBuilder(self.data_dir)
+        bodies: list[Path] = []
+        for loc in self.LOCATIONS:
+            for back in range(COVERING_LOOKBACK_DAYS + 1):
+                day = paths.bronze_date_dir(
+                    self.source,
+                    self.dataset,
+                    target_date - timedelta(days=back),
+                    dataset_dir=self._location_dir(loc),
+                )
+                found = [
+                    f
+                    for f in sorted(day.glob(self.BRONZE_BODY_GLOB))
+                    if not f.name.endswith(".meta.json")
+                    and (back == 0 or _request_reaches(f, target_date))
+                ]
+                if found:
+                    bodies.extend(found)
+                    break
+        return bodies
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         location_of = {self._location_dir(loc): loc.name for loc in self.LOCATIONS}
