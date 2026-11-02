@@ -13,6 +13,10 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 
 ### Fixed
 - **`gridflow status` exits 1 when its pipeline-runs query fails**, printing the error to stderr.
+- **`_latest` views pick the same row on every run.** When two vintages of a key tied on every
+  ordering column, scan order chose the winner, so a `_latest` read and the quality null rates
+  built on it could change between runs. Every other column, by name, now breaks the tie, in the
+  catalogue views, `gridflow quality` and the Polars selection alike.
 - **A MID or FUELHH reingest stamps each row from the capture it came from.** It used to stamp
   every row with the newest sidecar across all the day partitions it reads, so a row could carry
   another capture's time, or an earlier one when its own body had no sidecar.

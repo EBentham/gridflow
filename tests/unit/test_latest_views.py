@@ -351,6 +351,166 @@ class TestGoldReadsLatestSurface:
         assert df["spread"].to_list() == [10.0]
 
 
+def _fully_tied_row(price: float | None) -> pl.DataFrame:
+    """One system_prices row equal to its twin on every key and ordering column."""
+    return pl.DataFrame(
+        {
+            "settlement_date": [date(2024, 1, 15)],
+            "settlement_period": [1],
+            "run_type": ["SF"],
+            "available_at": [datetime(2024, 1, 15, 10, tzinfo=UTC)],
+            "system_sell_price": pl.Series([price], dtype=pl.Float64),
+        }
+    )
+
+
+def _write_layouts(root: Path, first: float | None, second: float | None) -> dict[str, Path]:
+    """The same two tied rows in two physical file orders (the glob reads ``a`` first)."""
+    layouts = {}
+    for name, (in_a, in_b) in {"ab": (first, second), "ba": (second, first)}.items():
+        directory = root / name
+        directory.mkdir()
+        _fully_tied_row(in_a).write_parquet(directory / "a.parquet")
+        _fully_tied_row(in_b).write_parquet(directory / "b.parquet")
+        layouts[name] = directory
+    return layouts
+
+
+class TestFullTieIsDeterministic:
+    """Rows equal on every ordering term must not let scan order pick the winner."""
+
+    def test_both_file_orders_and_both_renderers_pick_the_same_row(self, tmp_path: Path):
+        """Detects the winner of a full tie following file order: at the base the first
+        file read won, on DuckDB and on Polars alike."""
+        winners = {}
+        for name, directory in _write_layouts(tmp_path, 1.0, 2.0).items():
+            con = duckdb.connect(":memory:")
+            try:
+                con.execute(
+                    "CREATE VIEW base AS SELECT * FROM "
+                    f"read_parquet('{directory.as_posix()}/*.parquet')"
+                )
+                sql = latest_view_sql(
+                    "base", "base_latest", _SP_SPEC, set(con.view("base").columns)
+                )
+                assert sql is not None
+                con.execute(sql)
+                rows = con.execute("SELECT system_sell_price FROM base_latest").fetchall()
+                sql_winner = [row[0] for row in rows]
+            finally:
+                con.close()
+            scan = pl.scan_parquet(sorted(directory.glob("*.parquet")))
+            polars_winner = select_latest_vintage(scan, _SP_SPEC).collect()["system_sell_price"]
+            winners[name] = (sql_winner, polars_winner.to_list())
+
+        assert winners == {"ab": ([2.0], [2.0]), "ba": ([2.0], [2.0])}
+
+    def test_quality_null_rate_is_the_same_on_every_run(self, tmp_path: Path):
+        """Detects #172's null rates moving between runs: one tied row is null, the other
+        is not. At the base the "ab" layout's rate flipped between 0 and 1 across runs."""
+        from gridflow.quality.checks import check_null_rates
+        from gridflow.storage.duckdb import register_check_relation
+
+        rates: dict[str, set[float]] = {}
+        for name, directory in _write_layouts(tmp_path, None, 2.0).items():
+            for _ in range(10):
+                con = duckdb.connect(":memory:")
+                try:
+                    rel = register_check_relation(con, "elexon", "system_prices", directory)
+                    [result] = check_null_rates(rel, ["system_sell_price"], max_rate=0.0)
+                    rates.setdefault(name, set()).add(result.metric)
+                finally:
+                    con.close()
+
+        assert rates == {"ab": {0.0}, "ba": {0.0}}
+
+    def test_partition_columns_cannot_overrule_a_row_column(self):
+        """Detects the hive ``year``/``month`` columns, which only the DuckDB views carry
+        (Polars readers such as NESO reconcile scan with ``hive_partitioning=False``),
+        deciding a tie that a column of the row itself breaks: the renderers then split."""
+        stamp = datetime(2024, 1, 15, 10, tzinfo=UTC)
+        frame = pl.DataFrame(
+            {
+                "mrid": ["m", "m"],
+                "available_at": [stamp, stamp],
+                "revision_number": [1, 1],
+                "zone": ["a", "b"],
+                "year": [2024, 2024],
+                "month": [12, 1],
+            }
+        )
+        spec = LATEST_VIEW_SPECS[("elexon", "remit")]
+        con = duckdb.connect(":memory:")
+        try:
+            con.register("base", frame.to_arrow())
+            sql = latest_view_sql("base", "base_latest", spec, set(frame.columns))
+            assert sql is not None
+            con.execute(sql)
+            sql_winner = [row[0] for row in con.execute("SELECT zone FROM base_latest").fetchall()]
+        finally:
+            con.close()
+        scan = frame.drop("year", "month").lazy()
+        polars_winner = select_latest_vintage(scan, spec).collect()["zone"].to_list()
+
+        assert (sql_winner, polars_winner) == (["b"], ["b"])
+
+
+class TestFullRowTieBreakSql:
+    """The SQL builder's final tie-break: every other column, by name, DESC NULLS LAST."""
+
+    def test_every_other_column_follows_the_spec_terms_in_name_order(self):
+        """Detects a payload column missing from, or out of order in, the tie-break, or the
+        partition columns ordered ahead of a row column."""
+        columns = _SP_COLUMNS | {"ingested_at", "year", "month"}
+        sql = latest_view_sql("base", "base_latest", _SP_SPEC, columns)
+        assert sql is not None
+        order = sql.split("ORDER BY ", 1)[1]
+        assert order == (
+            '"available_at" DESC NULLS LAST, '
+            f'CASE "run_type" {_SP_RANK_WHENS} ELSE 0 END DESC, '
+            '"ingested_at" DESC NULLS LAST, "run_type" DESC NULLS LAST, '
+            '"system_sell_price" DESC NULLS LAST, "year" DESC NULLS LAST, '
+            '"month" DESC NULLS LAST) = 1'
+        )
+
+    def test_key_and_spec_columns_are_not_repeated(self):
+        """Detects a key column (constant per partition) or a spec term ordered twice."""
+        from gridflow.silver.latest_views import LatestViewSpec, latest_select_sql
+
+        spec = LatestViewSpec(
+            key_columns=("k",),
+            optional_key_columns=("k2",),
+            tiebreak_columns=("capture_written_at", "bronze_capture_id"),
+        )
+        columns = {"k", "k2", "available_at", "capture_written_at", "bronze_capture_id", "v"}
+        for as_of in (False, True):
+            sql = latest_select_sql("base", spec, columns, as_of_param=as_of)
+            assert sql is not None
+            assert sql.endswith(
+                'QUALIFY ROW_NUMBER() OVER (PARTITION BY "k", "k2" ORDER BY '
+                '"available_at" DESC NULLS LAST, "capture_written_at" DESC NULLS LAST, '
+                '"bronze_capture_id" DESC NULLS LAST, "v" DESC NULLS LAST) = 1'
+            )
+
+    def test_a_relation_of_only_spec_columns_renders_as_before(self):
+        """Detects the tie-break adding a term when no other column exists."""
+        spec = LATEST_VIEW_SPECS[("elexon", "remit")]
+        sql = latest_view_sql(
+            "base", "base_latest", spec, {"mrid", "available_at", "revision_number"}
+        )
+        assert sql == (
+            'CREATE OR REPLACE VIEW "base_latest" AS SELECT * FROM "base" QUALIFY '
+            'ROW_NUMBER() OVER (PARTITION BY "mrid" ORDER BY "available_at" DESC NULLS LAST, '
+            '"revision_number" DESC NULLS LAST) = 1'
+        )
+
+
+_SP_RANK_WHENS = " ".join(
+    f"WHEN '{run}' THEN {rank}"
+    for run, rank in (("II", 1), ("SF", 2), ("R1", 3), ("R2", 4), ("R3", 5), ("RF", 6), ("DF", 7))
+)
+
+
 # --------------------------------------------------------------------------- #
 # T-B8-3: byte pin of every pre-existing projection and the catalogue (P-10/P-11)
 # --------------------------------------------------------------------------- #
@@ -455,7 +615,9 @@ class TestPreExistingProjectionsAreByteUnchanged:
     ) -> None:
         """Detects any change to an existing ``_latest`` DDL or registered view.
 
-        The golden was captured by :func:`catalogue_pin` on master ``d7cf513``.
+        The golden was captured by :func:`catalogue_pin` on master ``d7cf513``;
+        the system_prices SQL and the three ``_latest`` definitions were
+        re-captured when every other column became the final tie-break.
         The generated views of recorded NESO families (base, ``_latest`` and
         the completion relation, ADR-034 P-11 I-1) are additions, derived from
         the registry; every other view must equal the golden byte for byte.
