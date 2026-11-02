@@ -228,6 +228,14 @@ class SidecarRead:
     payload: Any = None
 
 
+COVERING_LOOKBACK_DAYS = 35
+"""How many days back a date with no bronze partition of its own looks for one.
+
+A multi-day request is filed under its first day, so a backfill chunk wider than
+this leaves its later days unreadable; transformers that rely on the lookback
+cap the chunk through :attr:`BaseSilverTransformer.MAX_CHUNK_DAYS`.
+"""
+
 _EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe", "entsog"})
 """Sources whose connectors write one bronze partition per UTC day.
 
@@ -444,6 +452,13 @@ class BaseSilverTransformer(ABC):
     """
     DATASET_VERSION: ClassVar[str] = "1.0.0"
     VINTAGE_POLICY: ClassVar[VintagePolicy | None] = None
+    MAX_CHUNK_DAYS: ClassVar[int | None] = None
+    """The widest backfill chunk, in days, whose every date this transformer can read.
+
+    ``None`` is no limit. A transformer that finds a date's rows in an earlier
+    partition sets :data:`COVERING_LOOKBACK_DAYS`; ``run_backfill`` refuses a
+    wider chunk before any request.
+    """
     _listed_bronze: tuple[date, list[Path]] | None = None
     """The plain ``run()``'s one listing while it reads; see :meth:`_bronze_read_set`."""
     APPEND_ONLY: ClassVar[bool] = False
@@ -1901,7 +1916,7 @@ class BaseSilverTransformer(ABC):
     def _find_covering_bronze_partition(
         self,
         target_date: date,
-        max_lookback_days: int = 35,
+        max_lookback_days: int = COVERING_LOOKBACK_DAYS,
         *,
         bronze_dir: Path | None = None,
     ) -> Path | None:
@@ -1931,7 +1946,7 @@ class BaseSilverTransformer(ABC):
     def _bronze_path_for_date(
         self,
         target_date: date,
-        max_lookback_days: int = 35,
+        max_lookback_days: int = COVERING_LOOKBACK_DAYS,
         *,
         bronze_dir: Path | None = None,
     ) -> Path | None:

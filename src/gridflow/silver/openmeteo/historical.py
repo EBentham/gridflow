@@ -37,7 +37,12 @@ from gridflow.connectors.openmeteo.endpoints import (
     WeatherLocation,
 )
 from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
-from gridflow.silver.base import BaseSilverTransformer, UnparseableBronzeError, VintagePolicy
+from gridflow.silver.base import (
+    COVERING_LOOKBACK_DAYS,
+    BaseSilverTransformer,
+    UnparseableBronzeError,
+    VintagePolicy,
+)
 from gridflow.silver.registry import register_transformer
 
 logger = logging.getLogger(__name__)
@@ -128,6 +133,7 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
 
     source = "open_meteo"
     DATASET_VERSION: ClassVar[str] = "2.0.0"
+    MAX_CHUNK_DAYS: ClassVar[int | None] = COVERING_LOOKBACK_DAYS
 
     HOURLY_VARS: ClassVar[tuple[str, ...]] = ()
     LOCATIONS: ClassVar[tuple[WeatherLocation, ...]] = ()
