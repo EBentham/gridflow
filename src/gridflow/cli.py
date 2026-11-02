@@ -347,7 +347,11 @@ def backfill(
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     start: str | None = typer.Option(None, help="Start date (YYYY-MM-DD) or ISO datetime"),
     end: str | None = typer.Option(None, help=_END_HELP),
-    chunk_days: int = typer.Option(1, min=1, help="Days per chunk"),
+    chunk_days: int | None = typer.Option(
+        None,
+        min=1,
+        help="Days per chunk [default: 1]. With --preset, it replaces each entry's chunk_days.",
+    ),
     all_datasets: bool = typer.Option(False, "--all", help="Backfill all datasets for source"),
     preset: str | None = typer.Option(
         None,
@@ -379,10 +383,10 @@ def backfill(
 
     datasets = _resolve_datasets(source, dataset, all_datasets, settings)
     start_dt, end_dt = _resolve_dates(start, end, None, 0)
-    _run_backfills(settings, {source: datasets}, start_dt, end_dt, chunk_days)
+    _run_backfills(settings, [(source, datasets, chunk_days or 1)], start_dt, end_dt)
 
 
-def _backfill_preset(name_or_path: str, chunk_days: int) -> None:
+def _backfill_preset(name_or_path: str, chunk_days: int | None) -> None:
     """Backfill a preset's datasets, source by source, skipping a source without its key."""
     settings = _load_and_log()
     try:
@@ -393,40 +397,42 @@ def _backfill_preset(name_or_path: str, chunk_days: int) -> None:
     for source in preset.datasets:
         runner.assert_backfillable(source)
 
-    jobs: dict[str, list[str]] = {}
+    # One run per source and chunk size: each entry's own chunk_days (1 unless an
+    # Open-Meteo entry sets it), or --chunk-days for every entry when given.
+    jobs: list[tuple[str, list[str], int]] = []
     for source, datasets in preset.datasets.items():
         key = settings.sources[source].api_key_env
         if key and not settings.get_source_config(source).api_key:
             typer.echo(f"Skipping {source}: {key} is not set (see .env.example)")
-        else:
-            jobs[source] = datasets
-    # The same one-day chunks as any backfill, though Open-Meteo then costs a request
-    # per site per day: NESO files a multi-day response under its first day, so a
-    # wider chunk would duplicate rows in silver when the tour reruns a day later.
-    _run_backfills(settings, jobs, preset.start_dt, preset.end_dt, chunk_days)
+            continue
+        by_chunk: dict[int, list[str]] = {}
+        for ds in datasets:
+            by_chunk.setdefault(chunk_days or preset.chunk_days[(source, ds)], []).append(ds)
+        jobs.extend((source, group, days) for days, group in by_chunk.items())
+    _run_backfills(settings, jobs, preset.start_dt, preset.end_dt)
 
 
 def _run_backfills(
     settings: GridflowConfig,
-    jobs: dict[str, list[str]],
+    jobs: list[tuple[str, list[str], int]],
     start_dt: datetime,
     end_dt: datetime,
-    chunk_days: int,
 ) -> None:
-    """Run ``runner.run_backfill`` per source, echoing chunks, and exit 1 on any failed step."""
+    """Run ``runner.run_backfill`` per ``(source, datasets, chunk_days)`` job, echoing
+    chunks, and exit 1 on any failed step."""
     from gridflow.utils.time import window_dates
 
     runner.import_connectors()
     runner.import_transformers()
-    # Every source's chunk size, before the first request to any of them.
-    for source, datasets in jobs.items():
+    # Every job's chunk size, before the first request to any of them.
+    for source, datasets, chunk_days in jobs:
         try:
             runner.check_chunk_days(source, datasets, chunk_days)
         except ValueError as e:
             raise typer.BadParameter(str(e), param_hint="--chunk-days") from e
 
     failed: list[DatasetResult] = []
-    for source, datasets in jobs.items():
+    for source, datasets, chunk_days in jobs:
 
         def _echo_chunk(
             ds: str, number: int, chunk_start: datetime, chunk_end: datetime, source: str = source

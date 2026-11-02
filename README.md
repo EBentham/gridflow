@@ -73,8 +73,8 @@ uv run --group notebooks python notebooks/01_sources.py   # a notebook, run as a
 uv run --group notebooks jupyter lab notebooks/
 ```
 
-Without keys, the tour skips ENTSO-E and GIE with one line each that names the
-variable to set, and fetches everything else. [docs/QUICKSTART.md](docs/QUICKSTART.md)
+Without keys, the tour makes 53 requests: it skips ENTSO-E and GIE with one
+line each that names the variable to set, and fetches everything else. [docs/QUICKSTART.md](docs/QUICKSTART.md)
 explains each step: the data root, keys, presets and their measured cost, and
 the notebooks. [docs/CLI_CHEAT_SHEET.md](docs/CLI_CHEAT_SHEET.md) lists every
 command.
