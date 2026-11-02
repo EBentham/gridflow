@@ -3,13 +3,15 @@
 # skips a source whose API key is unset. The keyless sources come first.
 # gold_eu_gas_storage, which 01_sources also reads, is a view over gie_agsi
 # storage, so it needs no entry of its own.
+# Open-Meteo takes the whole week in one chunk, one request per weather site (25
+# instead of 175). The other sources keep one-day chunks.
 datasets:
   - {source: elexon, dataset: system_prices}
   - {source: elexon, dataset: fuelhh}
   - {source: neso, dataset: carbon_intensity}
-  - {source: open_meteo, dataset: historical_demand}
-  - {source: open_meteo, dataset: historical_wind}
-  - {source: open_meteo, dataset: historical_solar}
+  - {source: open_meteo, dataset: historical_demand, chunk_days: 7}
+  - {source: open_meteo, dataset: historical_wind, chunk_days: 7}
+  - {source: open_meteo, dataset: historical_solar, chunk_days: 7}
   - {source: entsog, dataset: physical_flows}
   - {source: entsoe, dataset: day_ahead_prices}
   - {source: gie_agsi, dataset: storage}
