@@ -28,6 +28,7 @@ October 2026 code review of the connectors, the silver layer and the CLI.
   on 0.x, any change to it is a minor version bump.
 - **`GridflowClient.require_con()`**: the connection accessor models already uses, now public
   and listed in `gridflow.contract`.
+- **`gridflow --version`** prints the installed version.
 - **`gridflow backfill --preset NAME|PATH`**: backfills a preset's datasets over its window,
   skipping each source whose API key is unset with a line naming the variable. gridflow ships
   `tour`, the datasets the data-layer notebooks read over the last 7 complete days; a path loads
@@ -113,8 +114,10 @@ October 2026 code review of the connectors, the silver layer and the CLI.
   fail at once (ENTSO-G still retries a 404); the NESO portal retries a temporary DNS failure.
   GIE requests are paced to its 60 calls a minute, shared across every connector in the process.
 - **Catalogue setup is faster**: every `_latest` view is built from one column query (about 8 s
-  less per init on a large catalogue, 3.5 s to 0.6 s on an empty one). Each gold view that fails
-  to register logs one WARNING with DuckDB's message.
+  less per init on a large catalogue, 3.5 s to 0.6 s on an empty one).
+- **A fresh `gridflow init` prints only the catalogue's path.** A gold view whose silver input
+  has not been backfilled yet logs one INFO line naming the dataset it waits for, instead of a
+  multi-line WARNING; any other gold view failure still logs one WARNING with DuckDB's message.
 - **CI** runs on pushes to master and on pull requests, skips master pushes that change only
   prose, and type-checks at Python 3.11, the lowest supported version.
 - **Line endings** are normalised by a root `.gitattributes`; test fixtures stay byte for byte.
