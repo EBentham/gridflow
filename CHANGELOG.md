@@ -16,6 +16,10 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 - **A MID or FUELHH reingest stamps each row from the capture it came from.** It used to stamp
   every row with the newest sidecar across all the day partitions it reads, so a row could carry
   another capture's time, or an earlier one when its own body had no sidecar.
+- **Elexon PN keeps one row per unit, period and segment** when one fetch sends a unit with
+  `bmUnit` null and a later fetch fills it in. The earlier row used to survive beside the later
+  one, so summing by `national_grid_bm_unit` counted those periods twice (48 unit-periods on
+  21 Sep 2026).
 
 ## [v0.23.0] - 2026-11-01
 

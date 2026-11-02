@@ -82,7 +82,13 @@ GIE AGSI `unavailability` is designated by `ingested_at` in this
 manifest. Its event-overlap handling remains a follow-up: the transformer
 filters records whose event window overlaps the target date, but the
 stable query date for downstream consumers is still the ingestion
-timestamp until a reviewed event-date contract is added.
+timestamp until a reviewed event-date contract is added. (2026-10-31:
+[gridflow PR #133](https://github.com/EBentham/gridflow/pull/133) added that
+contract. `unavailability` is now designated by `outage_date`, a DATE column
+holding the calendar day a vendor notice overlaps, and silver writes one row
+per notice per day it overlaps. `ingested_at` is only the transform stamp. The
+[gridflow-models PR #140](https://github.com/EBentham/gridflow-models/pull/140)
+pins were updated to match.)
 
 `CANONICAL_SCHEMA.yaml` remains subordinate documentation and test
 input. It is not the source for the runtime manifest. (2026-11-01: the

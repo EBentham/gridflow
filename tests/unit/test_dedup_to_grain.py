@@ -186,6 +186,55 @@ def test_pn_keeps_units_known_only_by_national_grid_id() -> None:
     assert transformer.last_excluded_row_count == 0
 
 
+def _pn_ng_row(period: int, ng: str, bm_unit: str | None) -> dict[str, object]:
+    return {
+        **_pn_row("2026-09-14T23:00:00Z", 1.0),
+        "settlementPeriod": period,
+        "bmUnit": bm_unit,
+        "nationalGridBmUnit": ng,
+    }
+
+
+def test_pn_filled_bm_unit_supersedes_the_earlier_null_row() -> None:
+    """On 2026-09-21 a fetch sent AG-DSTK08 with bmUnit null and a later fetch
+    filled it in; both rows survived the grain, so summing PN by National Grid
+    id counted those periods twice. The later fetch's row is the one kept."""
+    first_fetch = {**_pn_ng_row(1, "AG-DSTK08", None), "levelFrom": 1.0}
+    later_fetch = {**_pn_ng_row(1, "AG-DSTK08", "2__DSTAT008"), "levelFrom": 2.0}
+    transformer = _bare(PNTransformer)
+
+    out = transformer.transform(pl.DataFrame([first_fetch, later_fetch]))
+
+    assert out.select("bm_unit_id", "national_grid_bm_unit", "level_from").rows() == [
+        ("2__DSTAT008", "AG-DSTK08", 2.0)
+    ]
+    assert transformer.last_excluded_row_count == 1
+
+
+def test_pn_keeps_null_bm_unit_rows_no_fetch_fills() -> None:
+    """Only a filled row for the same unit and period supersedes a null bmUnit:
+    a period the later fetch did not send, and a unit no fetch names, keep theirs."""
+    raw = pl.DataFrame(
+        [
+            _pn_ng_row(1, "AG-DSTK08", None),
+            _pn_ng_row(2, "AG-DSTK08", None),
+            _pn_ng_row(1, "NG-ONLY", None),
+            _pn_ng_row(1, "AG-DSTK08", "2__DSTAT008"),
+        ]
+    )
+
+    out = _bare(PNTransformer).transform(raw)
+
+    assert sorted(
+        out.select("settlement_period", "national_grid_bm_unit", "bm_unit_id").rows(),
+        key=str,
+    ) == [
+        (1, "AG-DSTK08", "2__DSTAT008"),
+        (1, "NG-ONLY", None),
+        (2, "AG-DSTK08", None),
+    ]
+
+
 def _ngc_rows(value_field: str) -> list[dict[str, object]]:
     base = {
         "publishTime": "2026-09-15T23:47:00Z",
