@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -450,9 +451,46 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
         except Exception as exc:
             if _is_strict_mode():
                 raise
-            # DuckDB's message says what is missing or broken; an absent upstream
-            # relation and a misspelt one raise the same CatalogException.
-            logger.warning("Gold view registration failed for %s: %s", sql_file.name, exc)
+            awaited = _awaited_silver(con, exc)
+            if awaited is not None:
+                logger.info(
+                    "Gold view %s registers after %s/%s is backfilled", sql_file.name, *awaited
+                )
+            else:
+                logger.warning("Gold view registration failed for %s: %s", sql_file.name, exc)
+
+
+_MISSING_TABLE_RE = re.compile(r'Table with name "?(\w+)"? does not exist')
+
+
+def _awaited_silver(con: duckdb.DuckDBPyConnection, exc: Exception) -> tuple[str, str] | None:
+    """The ``(source, dataset)`` a gold view failed for only because it has no silver yet.
+
+    A fresh data root fails every gold view this way, which is expected, not a
+    fault. A misspelt relation raises the same CatalogException, so the missing
+    name must be a view a backfill registers (``silver_<source>_<dataset>`` or its
+    ``_latest``), and that dataset's base view must be absent: a ``_latest``
+    missing beside its base is a build failure, not a wait.
+    """
+    if not isinstance(exc, duckdb.CatalogException):
+        return None
+    match = _MISSING_TABLE_RE.search(str(exc))
+    if match is None:
+        return None
+    from gridflow.silver.registry import list_transformers
+    from gridflow.silver.schema_manifest import _ensure_silver_transformers_registered
+
+    _ensure_silver_transformers_registered()
+    inputs = {f"silver_{s}_{d}": (s, d) for s, d in list_transformers()}
+    inputs |= {f"silver_{s}_{d}_latest": (s, d) for s, d in LATEST_VIEW_SPECS}
+    awaited = inputs.get(match.group(1))
+    if awaited is None:
+        return None
+    base_registered = con.execute(
+        "SELECT 1 FROM information_schema.tables WHERE table_schema = 'main' AND table_name = ?",
+        [f"silver_{awaited[0]}_{awaited[1]}"],
+    ).fetchone()
+    return None if base_registered else awaited
 
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:

@@ -85,32 +85,82 @@ def test_production_mode_swallows(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
         con.close()
 
 
-@pytest.mark.integration
-def test_production_mode_warns_on_a_failed_gold_view(
-    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """In production a gold view that fails to register is swallowed and logged
-    at WARNING, naming the SQL file and carrying DuckDB's message.
-
-    With no silver registered, every real gold SQL file fails to bind. Whether
-    the missing relation is one a later transform writes or a misspelling,
-    the operator sees the same WARNING and the message says which.
-    """
+def _gold_view_logs(
+    con: duckdb.DuckDBPyConnection,
+    caplog: pytest.LogCaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+) -> dict[int, list[str]]:
+    """Register the gold views in production mode; return their log lines by level."""
     from gridflow.storage.duckdb import _register_gold_views
 
     monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
     monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+    with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
+        _register_gold_views(con)
+    by_level: dict[int, list[str]] = {}
+    for record in caplog.records:
+        by_level.setdefault(record.levelno, []).append(record.getMessage())
+    return by_level
 
+
+@pytest.mark.integration
+def test_production_mode_logs_one_info_line_for_a_gold_view_without_silver(
+    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A fresh catalogue has no silver, so every gold view fails to bind. That is
+    the expected state before a backfill: one INFO line per view naming the
+    dataset it waits for, and no WARNING.
+    """
     con = duckdb.connect(":memory:")
     try:
-        with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
-            _register_gold_views(con)
+        logs = _gold_view_logs(con, caplog, monkeypatch)
     finally:
         con.close()
 
-    warning_messages = [
-        record.getMessage() for record in caplog.records if record.levelno == logging.WARNING
-    ]
-    assert any(
-        "uk_imbalance_context.sql" in msg and "does not exist" in msg for msg in warning_messages
-    ), f"expected a WARNING naming uk_imbalance_context.sql, got: {warning_messages}"
+    assert logs.get(logging.WARNING, []) == []
+    assert set(logs[logging.INFO]) == {
+        "Gold view eu_gas_storage.sql registers after gie_agsi/storage is backfilled",
+        "Gold view gb_day_ahead_benchmark.sql registers after elexon/mid is backfilled",
+        "Gold view uk_imbalance_context.sql registers after elexon/system_prices is backfilled",
+    }
+
+
+@pytest.mark.integration
+def test_production_mode_warns_when_a_gold_view_fails_for_another_reason(
+    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """System prices silver exists but its ``_latest`` view could not be built, so
+    uk_imbalance_context is not waiting for a backfill: it keeps the WARNING with
+    DuckDB's message.
+    """
+    con = duckdb.connect(":memory:")
+    try:
+        con.execute("CREATE VIEW silver_elexon_system_prices AS SELECT 1 AS settlement_period")
+        logs = _gold_view_logs(con, caplog, monkeypatch)
+    finally:
+        con.close()
+
+    (warning,) = logs[logging.WARNING]
+    assert warning.startswith("Gold view registration failed for uk_imbalance_context.sql")
+    assert "silver_elexon_system_prices_latest does not exist" in warning
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    "query",
+    [
+        "SELECT * FROM silver_elxon_mid",  # misspelt source
+        "SELECT * FROM silver_elexon_mid_latest",  # mid has no _latest view
+        "SELECT no_such_function(1)",
+    ],
+)
+def test_a_relation_no_backfill_registers_is_not_awaited(query: str) -> None:
+    from gridflow.storage.duckdb import _awaited_silver
+
+    con = duckdb.connect(":memory:")
+    try:
+        with pytest.raises(duckdb.CatalogException) as caught:
+            con.execute(query)
+        assert _awaited_silver(con, caught.value) is None
+    finally:
+        con.close()
