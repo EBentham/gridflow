@@ -158,7 +158,7 @@ class PipelineSettings(BaseSettings):
             if windows.drive and not windows.root:
                 raise ValueError(
                     f"{name} {str(path)!r} is drive-relative (a drive with no root); "
-                    "write it as an absolute path with forward slashes, e.g. C:/gridflow-data"
+                    "write it as an absolute path with forward slashes, e.g. D:/gridflow-data"
                 )
             if name != "data_dir" and name not in self.model_fields_set:
                 path = self.data_dir / path
