@@ -323,13 +323,26 @@ def test_p_t11_sidecar_less_capture_never_borrows_a_neighbours_stamp(
     assert "have no usable sidecar" in caplog.text
 
 
-def test_p_t11_live_run_stamps_every_row_with_the_clock(
+def test_p_t11_live_run_stamps_every_row_with_the_clock_read_after_the_bronze(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
+    """A clock read before the bronze could predate a body that lands mid-run."""
+    transformer = MIDTransformer(tmp_path)
+    reads: list[date] = []
+    read_bronze = transformer.read_bronze
+    monkeypatch.setattr(
+        transformer, "read_bronze", lambda day: reads.append(day) or read_bronze(day)
+    )
+
+    class _ClockAfterReads(datetime):
+        @classmethod
+        def now(cls, tz: object = None) -> datetime:
+            return FIXED_NOW if len(reads) == 2 else datetime(2000, 1, 1, tzinfo=UTC)
+
+    monkeypatch.setattr("gridflow.silver.base.datetime", _ClockAfterReads)
     _two_captures(tmp_path)
 
-    assert MIDTransformer(tmp_path).run(STAMPED_DESTINATION, run_id="live") == 2
+    assert transformer.run(STAMPED_DESTINATION, run_id="live") == 2
 
     assert _stamps_by_period(tmp_path) == {1: FIXED_NOW, 2: FIXED_NOW}
 
