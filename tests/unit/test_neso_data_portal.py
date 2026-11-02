@@ -62,6 +62,7 @@ from gridflow.connectors.neso_data_portal.client import (
     _resolve_host_addresses,
 )
 from gridflow.connectors.neso_data_portal.endpoints import DATASETS
+from gridflow.connectors.neso_data_portal.registry import load_registry
 from gridflow.schemas.common import BaseSchema, SettlementPeriodMixin
 from gridflow.schemas.neso_data_portal import is_valid_settlement_period
 from gridflow.silver.base import BaseSilverTransformer
@@ -648,7 +649,7 @@ class TestWindowAdmission:
             for dataset in config.datasets:
                 connector._assert_window_admissible(dataset, end - timedelta(days=4), end)
 
-        assert len(config.datasets) == 326
+        assert len(config.datasets) == len(load_registry().families)
         assert not [r for r in caplog.records if "max_query_days" in r.getMessage()]
 
     def test_max_ingest_window_is_coupled_to_the_declared_pipeline_ceiling(self) -> None:
