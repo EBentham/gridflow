@@ -44,6 +44,10 @@ dataset-coverage expansion) was paused before release and is intentionally absen
   `bmUnit` null and a later fetch fills it in. The earlier row used to survive beside the later
   one, so summing by `national_grid_bm_unit` counted those periods twice (48 unit-periods on
   21 Sep 2026).
+- **An empty GIE ALSI response no longer advances the watermark.** ALSI `lng` now records how
+  many rows each response carried, as AGSI already did, so an incremental run where every
+  country returns `{"data": []}` (a gas day not yet published) leaves the watermark where it was
+  and the next run asks again.
 
 ## [v0.23.0] - 2026-11-01
 

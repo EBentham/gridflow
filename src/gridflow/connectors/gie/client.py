@@ -286,6 +286,7 @@ class GieConnector(BaseConnector):
                     params=query_params,
                     page=page,
                     data_date=start.date(),
+                    record_count=_record_count(body),
                 )
             )
 
@@ -325,7 +326,7 @@ register_connector("gie_alsi", AlsiConnector)
 
 
 def _record_count(body: bytes) -> int | None:
-    """The number of records in an AGSI body, stamped as ``record_count``.
+    """The number of records in an AGSI or ALSI body, stamped as ``record_count``.
 
     An HTTP 200 ``{"data": []}`` (a gas day not yet published, a quiet window)
     is a confirmed zero, so it is not evidence that advances the watermark

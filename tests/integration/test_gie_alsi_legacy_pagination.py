@@ -84,3 +84,23 @@ async def test_alsi_legacy_paginator_follows_last_page_not_total() -> None:
     assert len(responses) == 2 * len(ALSI_COUNTRIES)
     assert all(r.source == "gie_alsi" for r in responses)
     assert all(r.dataset == "lng" for r in responses)
+
+
+@respx.mock
+@pytest.mark.asyncio
+@pytest.mark.parametrize("rows", [0, 3])
+async def test_alsi_responses_carry_their_record_count(rows: int) -> None:
+    """ALSI stamps ``record_count`` like AGSI, so an HTTP 200 ``{"data": []}``
+    is a confirmed zero (C-8) and does not advance the watermark."""
+    respx.get(re.compile(rf"^{re.escape(ALSI_BASE_URL)}/.*")).mock(
+        return_value=httpx.Response(
+            200,
+            content=_alsi_lng_body(last_page=1, page=1, rows=rows),
+            headers={"content-type": "application/json"},
+        )
+    )
+
+    async with AlsiConnector(_alsi_config()) as connector:
+        responses = await connector.fetch("lng", START, END)
+
+    assert [r.record_count for r in responses] == [rows] * len(ALSI_COUNTRIES)
