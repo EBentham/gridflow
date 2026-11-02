@@ -255,33 +255,83 @@ def test_p_t08_declared_source_sets_are_exact_and_ordered(
     assert SystemPriceTransformer.PARTITION_SOURCE_OFFSETS == (0,)
 
 
-def _write_sidecar(root: Path, source_date: date, stamp: object) -> None:
+# After MID's vintage-policy cutover, so the rows keep their bronze stamps.
+STAMPED_DESTINATION = date(2026, 9, 2)
+REFETCHED_AT = datetime(2026, 9, 20, 8, tzinfo=UTC)
+OWN_CAPTURED_AT = datetime(2026, 9, 3, 1, tzinfo=UTC)
+
+
+def _write_mid_capture(
+    root: Path, source_date: date, rows: list[dict[str, object]], written_at: datetime | None
+) -> Path:
+    """Write one MID bronze body, with a sidecar unless ``written_at`` is None."""
     directory = PathBuilder(root).bronze_date_dir("elexon", "mid", source_date)
     directory.mkdir(parents=True, exist_ok=True)
-    (directory / "raw_probe.meta.json").write_text(json.dumps({"written_at": stamp}))
+    body = directory / f"raw_{source_date:%Y%m%d}.json"
+    body.write_text(json.dumps({"data": rows}))
+    if written_at is not None:
+        body.with_suffix(".meta.json").write_text(
+            json.dumps({"written_at": written_at.isoformat()})
+        )
+    return body
 
 
-def test_p_t11_combined_availability_and_sidecar_less_own_rule(
+def _two_captures(root: Path, *, predecessor_sidecar: bool = True) -> None:
+    """D-1's capture (re-fetched on 20 Sep) and D's (3 Sep) both cover destination D."""
+    _write_mid_capture(
+        root,
+        STAMPED_DESTINATION - timedelta(days=1),
+        [_mid_row(STAMPED_DESTINATION, 1, "P", 11.0)],
+        REFETCHED_AT if predecessor_sidecar else None,
+    )
+    _write_mid_capture(
+        root,
+        STAMPED_DESTINATION,
+        [_mid_row(STAMPED_DESTINATION, 2, "P", 22.0)],
+        OWN_CAPTURED_AT,
+    )
+
+
+def _stamps_by_period(root: Path) -> dict[int, datetime]:
+    frame = pl.read_parquet(PathBuilder(root).silver_file("elexon", "mid", STAMPED_DESTINATION))
+    return dict(frame.select("settlement_period", "available_at").rows())
+
+
+def test_p_t11_reingest_stamps_each_row_from_its_own_capture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Neither capture lends its stamp to the other capture's rows."""
+    monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
+    _two_captures(tmp_path)
+
+    assert MIDTransformer(tmp_path).run(STAMPED_DESTINATION, run_id="re", reingest=True) == 2
+
+    assert _stamps_by_period(tmp_path) == {1: REFETCHED_AT, 2: OWN_CAPTURED_AT}
+
+
+def test_p_t11_sidecar_less_capture_never_borrows_a_neighbours_stamp(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
-    _write_sidecar(tmp_path, PREDECESSOR, "2024-01-15T02:00:00+00:00")
-    inputs = {
-        PREDECESSOR: pl.DataFrame([_mid_row(DESTINATION, 1, "P", 10.0)]),
-        DESTINATION: pl.DataFrame([_mid_row(DESTINATION, 2, "P", 20.0)]),
-    }
-    transformer = _fixed_mid(tmp_path, monkeypatch, inputs)
+    """The re-fetched body without a sidecar stamps the clock, not D's earlier capture."""
+    monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
+    _two_captures(tmp_path, predecessor_sidecar=False)
 
-    with caplog.at_level("WARNING"):
-        transformer.run(DESTINATION, run_id="fallback", reingest=True)
-    frame = pl.read_parquet(PathBuilder(tmp_path).silver_file("elexon", "mid", DESTINATION))
-    assert "sidecar-less-own fallback" in caplog.text
-    assert frame["vintage_policy"].unique().to_list() == ["elexon-mid/vp-2026-09b"]
-    assert (frame["available_at"] >= frame["event_time"]).all()
+    with caplog.at_level("WARNING", logger="gridflow.silver.base"):
+        MIDTransformer(tmp_path).run(STAMPED_DESTINATION, run_id="orphan", reingest=True)
 
-    _write_sidecar(tmp_path, DESTINATION, "2024-01-15T03:00:00+00:00")
-    caplog.clear()
-    transformer.run(DESTINATION, run_id="combined", reingest=True)
-    assert "sidecar-less-own fallback" not in caplog.text
+    assert _stamps_by_period(tmp_path) == {1: FIXED_NOW, 2: OWN_CAPTURED_AT}
+    assert "have no usable sidecar" in caplog.text
+
+
+def test_p_t11_live_run_stamps_every_row_with_the_clock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
+    _two_captures(tmp_path)
+
+    assert MIDTransformer(tmp_path).run(STAMPED_DESTINATION, run_id="live") == 2
+
+    assert _stamps_by_period(tmp_path) == {1: FIXED_NOW, 2: FIXED_NOW}
 
 
 def test_p_t06_empty_overwrite_is_bounded_by_destination_existence(
@@ -498,28 +548,22 @@ def test_declaring_reingest_logs_corrupt_neighbour_sidecar(
     caplog: pytest.LogCaptureFixture,
     sidecar_text: str,
 ) -> None:
-    predecessor_dir = PathBuilder(tmp_path).bronze_date_dir("elexon", "mid", PREDECESSOR)
-    predecessor_dir.mkdir(parents=True, exist_ok=True)
-    corrupt_sidecar = predecessor_dir / "raw_corrupt.meta.json"
-    corrupt_sidecar.write_text(sidecar_text)
-    _write_sidecar(tmp_path, DESTINATION, "2024-01-15T03:00:00+00:00")
-    transformer = _fixed_mid(
-        tmp_path,
-        monkeypatch,
-        {
-            PREDECESSOR: pl.DataFrame([_mid_row(DESTINATION, 1, "P", 10.0)]),
-            DESTINATION: pl.DataFrame([_mid_row(DESTINATION, 2, "P", 20.0)]),
-        },
+    _two_captures(tmp_path, predecessor_sidecar=False)
+    neighbour = PathBuilder(tmp_path).bronze_date_dir(
+        "elexon", "mid", STAMPED_DESTINATION - timedelta(days=1)
     )
+    corrupt_sidecar = next(neighbour.glob("raw_*.json")).with_suffix(".meta.json")
+    corrupt_sidecar.write_text(sidecar_text)
+    monkeypatch.setattr("gridflow.silver.base.datetime", _Clock)
 
     with caplog.at_level("WARNING", logger="gridflow.silver.base"):
-        assert transformer.run(DESTINATION, run_id="corrupt-neighbour", reingest=True) == 2
+        assert (
+            MIDTransformer(tmp_path).run(STAMPED_DESTINATION, run_id="corrupt", reingest=True) == 2
+        )
 
+    stem = corrupt_sidecar.name.removesuffix(".meta.json")
     assert any(
-        record.levelname == "WARNING"
-        and "Failed to parse bronze sidecar" in record.getMessage()
-        and str(corrupt_sidecar) in record.getMessage()
-        for record in caplog.records
+        record.levelname == "WARNING" and stem in record.getMessage() for record in caplog.records
     )
 
 

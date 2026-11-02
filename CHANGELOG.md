@@ -13,6 +13,9 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 
 ### Fixed
 - **`gridflow status` exits 1 when its pipeline-runs query fails**, printing the error to stderr.
+- **A MID or FUELHH reingest stamps each row from the capture it came from.** It used to stamp
+  every row with the newest sidecar across all the day partitions it reads, so a row could carry
+  another capture's time, or an earlier one when its own body had no sidecar.
 
 ## [v0.23.0] - 2026-11-01
 

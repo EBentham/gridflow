@@ -334,9 +334,8 @@ class TestWrapperContractIsUnchanged:
         """T1-l (N-18): the classifier is hardened; the wrapper is NOT.
 
         Softening the wrapper would convert a loud fail-closed crash into a
-        fail-open ``None`` for `_available_at_from_bronze` and the
-        `VINTAGE_PER_BRONZE_FILE` branch -- i.e. into a SIBLING file's stamp,
-        a now() fallback, or silently skipped rows, for every source.
+        fail-open ``None`` for the `VINTAGE_PER_BRONZE_FILE` branches -- i.e.
+        into silently skipped rows, for every source.
         """
         body = _body(tmp_path, "raw_a.json")
         sidecar = body.with_suffix(".meta.json")
