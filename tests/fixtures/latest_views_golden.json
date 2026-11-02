@@ -2,7 +2,7 @@
   "sql": {
     "elexon/fou2t14d": "CREATE OR REPLACE VIEW \"silver_elexon_fou2t14d_latest\" AS SELECT * FROM \"silver_elexon_fou2t14d\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"settlement_date\", \"fuel_type\", \"settlement_period\" ORDER BY \"available_at\" DESC NULLS LAST) = 1",
     "elexon/remit": "CREATE OR REPLACE VIEW \"silver_elexon_remit_latest\" AS SELECT * FROM \"silver_elexon_remit\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"mrid\" ORDER BY \"available_at\" DESC NULLS LAST, \"revision_number\" DESC NULLS LAST) = 1",
-    "elexon/system_prices": "CREATE OR REPLACE VIEW \"silver_elexon_system_prices_latest\" AS SELECT * FROM \"silver_elexon_system_prices\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"settlement_date\", \"settlement_period\" ORDER BY \"available_at\" DESC NULLS LAST, CASE \"run_type\" WHEN 'II' THEN 1 WHEN 'SF' THEN 2 WHEN 'R1' THEN 3 WHEN 'R2' THEN 4 WHEN 'R3' THEN 5 WHEN 'RF' THEN 6 WHEN 'DF' THEN 7 ELSE 0 END DESC) = 1"
+    "elexon/system_prices": "CREATE OR REPLACE VIEW \"silver_elexon_system_prices_latest\" AS SELECT * FROM \"silver_elexon_system_prices\" QUALIFY ROW_NUMBER() OVER (PARTITION BY \"settlement_date\", \"settlement_period\" ORDER BY \"available_at\" DESC NULLS LAST, CASE \"run_type\" WHEN 'II' THEN 1 WHEN 'SF' THEN 2 WHEN 'R1' THEN 3 WHEN 'R2' THEN 4 WHEN 'R3' THEN 5 WHEN 'RF' THEN 6 WHEN 'DF' THEN 7 ELSE 0 END DESC, \"run_type\" DESC NULLS LAST) = 1"
   },
   "views": [
     [
@@ -11,7 +11,7 @@
     ],
     [
       "silver_elexon_fou2t14d_latest",
-      "CREATE VIEW silver_elexon_fou2t14d_latest AS SELECT * FROM silver_elexon_fou2t14d QUALIFY (row_number() OVER (PARTITION BY settlement_date, fuel_type, settlement_period ORDER BY available_at DESC NULLS LAST) = 1);"
+      "CREATE VIEW silver_elexon_fou2t14d_latest AS SELECT * FROM silver_elexon_fou2t14d QUALIFY (row_number() OVER (PARTITION BY settlement_date, fuel_type, settlement_period ORDER BY available_at DESC NULLS LAST, \"value\" DESC NULLS LAST, \"year\" DESC NULLS LAST, \"month\" DESC NULLS LAST) = 1);"
     ],
     [
       "silver_elexon_mid",
@@ -23,7 +23,7 @@
     ],
     [
       "silver_elexon_remit_latest",
-      "CREATE VIEW silver_elexon_remit_latest AS SELECT * FROM silver_elexon_remit QUALIFY (row_number() OVER (PARTITION BY mrid ORDER BY available_at DESC NULLS LAST, revision_number DESC NULLS LAST) = 1);"
+      "CREATE VIEW silver_elexon_remit_latest AS SELECT * FROM silver_elexon_remit QUALIFY (row_number() OVER (PARTITION BY mrid ORDER BY available_at DESC NULLS LAST, revision_number DESC NULLS LAST, \"value\" DESC NULLS LAST, \"year\" DESC NULLS LAST, \"month\" DESC NULLS LAST) = 1);"
     ],
     [
       "silver_elexon_system_prices",
@@ -31,7 +31,7 @@
     ],
     [
       "silver_elexon_system_prices_latest",
-      "CREATE VIEW silver_elexon_system_prices_latest AS SELECT * FROM silver_elexon_system_prices QUALIFY (row_number() OVER (PARTITION BY settlement_date, settlement_period ORDER BY available_at DESC NULLS LAST, CASE  WHEN ((run_type = 'II')) THEN (1) WHEN ((run_type = 'SF')) THEN (2) WHEN ((run_type = 'R1')) THEN (3) WHEN ((run_type = 'R2')) THEN (4) WHEN ((run_type = 'R3')) THEN (5) WHEN ((run_type = 'RF')) THEN (6) WHEN ((run_type = 'DF')) THEN (7) ELSE 0 END DESC) = 1);"
+      "CREATE VIEW silver_elexon_system_prices_latest AS SELECT * FROM silver_elexon_system_prices QUALIFY (row_number() OVER (PARTITION BY settlement_date, settlement_period ORDER BY available_at DESC NULLS LAST, CASE  WHEN ((run_type = 'II')) THEN (1) WHEN ((run_type = 'SF')) THEN (2) WHEN ((run_type = 'R1')) THEN (3) WHEN ((run_type = 'R2')) THEN (4) WHEN ((run_type = 'R3')) THEN (5) WHEN ((run_type = 'RF')) THEN (6) WHEN ((run_type = 'DF')) THEN (7) ELSE 0 END DESC, run_type DESC NULLS LAST, \"value\" DESC NULLS LAST, \"year\" DESC NULLS LAST, \"month\" DESC NULLS LAST) = 1);"
     ]
   ]
 }

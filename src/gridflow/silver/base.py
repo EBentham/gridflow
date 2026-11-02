@@ -973,9 +973,22 @@ class BaseSilverTransformer(ABC):
         run_id: str,
         reingest: bool,
     ) -> int:
-        """Prepare declared source inputs, combine, deduplicate, trim, and write once."""
-        raw_inputs = [(source_date, self.read_bronze(source_date)) for source_date in source_dates]
-        if all(raw_df.is_empty() for _, raw_df in raw_inputs):
+        """Prepare declared source inputs, combine, deduplicate, trim, and write once.
+
+        On reingest each source's rows carry that source's own capture stamp
+        (:meth:`_vintage_of` over the bodies it read), so after the combine no
+        row holds another capture's stamp.
+        """
+        reads: list[tuple[date, list[Path], pl.DataFrame]] = []
+        for source_date in source_dates:
+            # One listing per source feeds both its read and its reingest stamp.
+            bodies = self._bronze_candidates(source_date)
+            self._listed_bronze = (source_date, bodies)
+            try:
+                reads.append((source_date, bodies, self.read_bronze(source_date)))
+            finally:
+                self._listed_bronze = None
+        if all(raw_df.is_empty() for _, _, raw_df in reads):
             logger.warning(
                 "No bronze data for %s/%s on %s",
                 self.source,
@@ -984,27 +997,24 @@ class BaseSilverTransformer(ABC):
             )
             return 0
 
+        # Read after the bronze, so a live stamp never predates a body read.
+        now = datetime.now(UTC)
+        raw_inputs = [
+            (source_date, raw_df, self._vintage_of(bodies, source_date) if reingest else now)
+            for source_date, bodies, raw_df in reads
+            if not raw_df.is_empty()
+        ]
         own_input_nonempty = any(
-            source_date == destination_date and not raw_df.is_empty()
-            for source_date, raw_df in raw_inputs
+            source_date == destination_date for source_date, _, _ in raw_inputs
         )
-        available_at = (
-            self._available_at_from_bronze(
-                destination_date,
-                source_dates=source_dates,
-                own_input_nonempty=own_input_nonempty,
-            )
-            if reingest
-            else datetime.now(UTC)
-        )
+        # Names an append-only file; MID and FUELHH replace one file per date.
+        available_at = max(stamp for _, _, stamp in raw_inputs)
         prepared: list[tuple[date, pl.DataFrame]] = []
         fallback_total = 0
         own_unaccounted = 0
         own_all_dropped = 0
         try:
-            for source_date, raw_df in raw_inputs:
-                if raw_df.is_empty():
-                    continue
+            for source_date, raw_df, stamp in raw_inputs:
                 unaccounted_before = self.last_unaccounted_empty_frames
                 all_dropped_before = self.last_partition_filter_all_dropped_count
                 self.last_start_time_fallback_count = 0
@@ -1013,7 +1023,7 @@ class BaseSilverTransformer(ABC):
                         raw_df,
                         source_date,
                         run_id,
-                        available_at,
+                        stamp,
                         self._source_window_plan(source_date),
                     )
                 finally:
@@ -1854,65 +1864,6 @@ class BaseSilverTransformer(ABC):
             now.isoformat(),
         )
         return now
-
-    def _available_at_from_bronze(
-        self,
-        target_date: date,
-        *,
-        source_dates: tuple[date, ...],
-        own_input_nonempty: bool = False,
-    ) -> datetime:
-        """One covering-set stamp from the exact directories of ``source_dates``.
-
-        Used by declaring (``PARTITION_DATE_COLUMN``) transformers, which read
-        exactly these directories. A sidecar-less nonempty own partition takes
-        the clock fallback.
-        """
-        timestamps: list[datetime] = []
-        own_has_timestamp = False
-        paths = PathBuilder(self.data_dir)
-        for source_date in source_dates:
-            date_dir = paths.bronze_date_dir(
-                self.source, self.dataset, source_date, dataset_dir=self.bronze_dir
-            )
-            if not date_dir.exists():
-                continue
-            for meta_path in sorted(date_dir.glob("raw_*.meta.json")):
-                read = self._read_sidecar_timestamp(meta_path)
-                if source_date != target_date:
-                    self._log_sidecar_parse_warnings(meta_path, read)
-                    if read.non_object_json:
-                        logger.warning(
-                            "Failed to parse bronze sidecar %s: JSON payload is not an object",
-                            meta_path,
-                        )
-                if read.timestamp is not None:
-                    timestamps.append(read.timestamp)
-                    own_has_timestamp = own_has_timestamp or source_date == target_date
-
-        if own_input_nonempty and not own_has_timestamp:
-            fallback = datetime.now(UTC)
-            logger.warning(
-                "No usable own-partition bronze sidecar timestamp for %s/%s on %s; "
-                "using %s (sidecar-less-own fallback)",
-                self.source,
-                self.dataset,
-                target_date,
-                fallback.isoformat(),
-            )
-            return fallback
-        if timestamps:
-            return max(timestamps)
-
-        fallback = datetime.now(UTC)
-        logger.warning(
-            "No bronze sidecar timestamp found for %s/%s on %s; using %s",
-            self.source,
-            self.dataset,
-            target_date,
-            fallback.isoformat(),
-        )
-        return fallback
 
     def _find_covering_bronze_partition(
         self,

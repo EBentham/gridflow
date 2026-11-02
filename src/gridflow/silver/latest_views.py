@@ -38,7 +38,11 @@ the columns actually present: silver written BEFORE v0.18 R1-A from the live
 DISEBSP feed has no ``run_type`` column at all (the transformer now always
 emits it, typed-null when the raw field is absent — F-13), so the
 rank-column-absent path is legacy-file compatibility, and pre-F0 legacy files
-union in null ``available_at`` (sorted last).
+union in null ``available_at`` (sorted last). Every other column, by name and
+with the hive ``year``/``month`` last, is the final tie-break, so rows equal on
+every spec term never win by scan order. DuckDB and Polars order the scalar
+types silver holds alike; nested and Enum columns, which no dataset with a spec
+carries, can order differently.
 
 Kept dependency-light (polars + stdlib only) so ``storage.duckdb`` can import
 it without dragging in the transformer stack.
@@ -88,12 +92,13 @@ class LatestViewSpec:
     of the newest COMPLETE capture (ADR-034 P-10), so a valid-empty newest
     capture yields zero rows."""
     tiebreak_columns: tuple[str, ...] = ()
-    """Final ``DESC NULLS LAST`` ordering terms after the rank (ADR-034 P-10).
+    """``DESC NULLS LAST`` ordering terms after the rank (ADR-034 P-10).
 
     Unlike ``order_columns`` these are REQUIRED: a relation missing any of them
     skips the selection (the view fails closed), because a tie-break that
-    silently disappears makes the winner depend on scan order. Empty for every
-    pre-existing spec, whose SQL is byte-identical (T-B8-3)."""
+    silently disappears makes the winner depend on scan order. Every other
+    column of the relation follows them as the final tie-break
+    (:func:`_resolve_selection`)."""
     completion_relation: str | None = None
     """``whole_capture`` only: the relation of completion records to select from."""
     completion_family: str | None = None
@@ -209,6 +214,11 @@ _WHOLE_CAPTURE_ORDER: tuple[str, ...] = ("available_at", "capture_written_at", "
 _AS_OF_SQL = "CAST($as_of AS TIMESTAMPTZ)"
 """The as-of bound: an ISO string parameter cast in SQL (no ``pytz`` needed, C-7)."""
 
+_PARTITION_COLUMNS: tuple[str, ...] = ("year", "month")
+"""The hive keys of the silver path (``PathBuilder``), which the DuckDB views add.
+
+Polars readers that scan with ``hive_partitioning=False`` do not see them."""
+
 
 def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Selection | None:
     """Resolve the shared latest-vintage skip decision (R1-A/F-18).
@@ -242,8 +252,9 @@ def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Se
 
     Returns:
         A :class:`_Selection` with the resolved key columns, the
-        ``order_columns`` members present (in spec order), and whether the
-        rank column is present and usable — or ``None`` when the selection is
+        ``order_columns`` members present (in spec order), whether the rank
+        column is present and usable, and the tie-break columns (the spec's,
+        then every other column by name) — or ``None`` when the selection is
         impossible.
     """
     if spec.mode == "whole_capture":
@@ -269,11 +280,19 @@ def _resolve_selection(spec: LatestViewSpec, available_columns: set[str]) -> _Se
     key_columns = tuple(spec.key_columns) + tuple(
         c for c in spec.optional_key_columns if c in available_columns
     )
+    # Rows equal on every spec term would otherwise win by scan order, which
+    # neither DuckDB nor Polars fixes, so every remaining column, by name,
+    # breaks the tie. The raw rank column stays in: unmapped values share rank 0.
+    # The partition columns go last: only the DuckDB views carry them, so they
+    # must never decide a tie that the row's own columns break.
+    spec_columns = {*key_columns, *order_columns, *spec.tiebreak_columns}
+    partition = tuple(c for c in _PARTITION_COLUMNS if c in available_columns - spec_columns)
+    row_columns = tuple(sorted(available_columns - spec_columns - set(_PARTITION_COLUMNS)))
     return _Selection(
         key_columns=key_columns,
         order_columns=order_columns,
         has_rank=has_rank,
-        tiebreak_columns=spec.tiebreak_columns,
+        tiebreak_columns=spec.tiebreak_columns + row_columns + partition,
     )
 
 
@@ -436,7 +455,8 @@ def select_latest_vintage(
     Returns:
         ``key_latest``: one row per ``spec.key_columns``, the winning vintage
         first by ``order_columns`` (DESC, nulls last), then the optional rank,
-        then ``tiebreak_columns``. ``whole_capture``: every row of the newest
+        then ``tiebreak_columns``, then every other column by name.
+        ``whole_capture``: every row of the newest
         complete capture, or none.
 
     Raises:
