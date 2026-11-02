@@ -458,7 +458,7 @@ def export_csv(
     source: str = typer.Argument(help="Data source"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     output_dir: str | None = typer.Option(
-        None, "--output", "-o", help="Output directory (default: data/exports/)"
+        None, "--output", "-o", help="Output directory (default: <data-root>/exports/)"
     ),
     all_datasets: bool = typer.Option(
         False, "--all", "-all", help="Export all datasets for source"

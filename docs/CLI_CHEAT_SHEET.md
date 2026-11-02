@@ -67,7 +67,7 @@ gridflow transform elexon --all --last 7d
 Ingest + transform in date-chunked batches (avoids API rate limits).
 
 ```bash
-# Single dataset, 7-day chunks (default)
+# Single dataset, one-day chunks (default)
 gridflow backfill elexon system_prices --start 2024-01-01 --end 2024-12-31
 
 # Custom chunk size (3 days)
@@ -97,9 +97,9 @@ gridflow export-csv elexon --all
 gridflow export-csv elexon --all --output ./my_exports
 ```
 
-Output goes to `data/exports/{source}/{dataset}.csv` by default.
+Output goes to `<data-root>/exports/{source}/{dataset}.csv` by default.
 
-> **Note:** Silver transforms also auto-write per-date CSVs to `data/silver/{source}/{dataset}/` during `transform`.
+> **Note:** With `GRIDFLOW_WRITE_SILVER_CSV=true`, `transform` also writes per-date CSVs to `<data-root>/silver/{source}/{dataset}/`.
 
 ---
 
@@ -191,6 +191,18 @@ gridflow reset elexon --yes                       # all elexon data
 gridflow reset elexon system_prices --yes         # one dataset
 gridflow reset elexon system_prices --silver --yes  # silver only
 ```
+
+### `gridflow prune` — Delete Old Partitions
+
+```bash
+gridflow prune silver elexon system_prices --older-than 2025-01-01   # dry run: lists what would go
+gridflow prune bronze --keep-days 90 --execute                       # delete bronze older than 90 days
+gridflow prune gold system_marginal_price --older-than 2024-01-01 --execute
+```
+
+Without `--execute`, prune only lists what it would delete. Give exactly one of
+`--older-than` or `--keep-days`. Bronze goes by day; silver keeps the month the
+cutoff falls in, and gold the year.
 
 ### `gridflow init` — Initialise Catalogue
 
@@ -293,4 +305,4 @@ the catalogue follows it unless `GRIDFLOW_DUCKDB_PATH` is set.
 | Analytics data (gold) | `<data-root>/gold/{dataset}/year=YYYY/` |
 | CSV exports | `<data-root>/exports/{source}/{dataset}.csv` |
 | DuckDB catalogue | `<data-root>/gridflow.duckdb` |
-| Logs | `logs/` |
+| Logs | `<data-root>/logs/` |

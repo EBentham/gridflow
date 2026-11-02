@@ -272,6 +272,15 @@ def test_export_csv_custom_output_dir(tmp_path: Path, monkeypatch: pytest.Monkey
     assert (out_root / "elexon" / "system_prices.csv").exists()
 
 
+def test_export_csv_help_gives_the_default_under_the_data_root() -> None:
+    """The default is ``exports`` under the data root, not a ``data/`` folder."""
+    import typer.main
+
+    command = typer.main.get_command(app).commands["export-csv"]  # type: ignore[attr-defined]
+    (output,) = [param for param in command.params if param.name == "output_dir"]
+    assert output.help == "Output directory (default: <data-root>/exports/)"
+
+
 @pytest.mark.integration
 def test_export_csv_missing_silver_skips(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """A dataset with no silver data is skipped (not an error) and exits 0."""
