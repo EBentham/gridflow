@@ -1,0 +1,76 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Check the tag equals the pyproject version
+        shell: bash
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match the pyproject version $version"
+            exit 1
+          fi
+
+      - name: Take the release notes from CHANGELOG.md
+        shell: bash
+        run: |
+          # The tag's section runs from its heading to the next release heading.
+          awk -v heading="## [$GITHUB_REF_NAME]" '
+            /^## \[/ { if (found) exit; found = (index($0, heading) == 1); next }
+            found
+          ' CHANGELOG.md > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "::error::CHANGELOG.md has no section for $GITHUB_REF_NAME"
+            exit 1
+          fi
+
+      - name: Build the wheel and sdist
+        run: uv build --out-dir dist
+
+      - name: Install the wheel and run it outside the checkout
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        env:
+          GRIDFLOW_DATA_DIR: ${{ runner.temp }}/data
+        run: |
+          uv venv venv
+          uv pip install --python venv "$GITHUB_WORKSPACE"/dist/*.whl
+          venv/bin/gridflow init
+          test -f data/gridflow.duckdb
+          venv/bin/python - <<'EOF'
+          import importlib.resources as resources
+
+          from gridflow.config.settings import load_settings
+
+          views = sorted(p.name for p in (resources.files("gridflow.gold") / "views").iterdir())
+          print("views:", views)
+          assert any(name.endswith(".sql") for name in views), "the wheel carries no gold views"
+          sources = load_settings().sources
+          print("sources:", len(sources))
+          assert sources, "the wheel loads no sources"
+          EOF
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME" dist/*
+          --title "gridflow ${GITHUB_REF_NAME#v}"
+          --notes-file "$RUNNER_TEMP/notes.md"
+          --verify-tag

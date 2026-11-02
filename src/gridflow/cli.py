@@ -36,6 +36,27 @@ logger = logging.getLogger(__name__)
 _END_HELP = "End date, inclusive (YYYY-MM-DD), or an exclusive ISO datetime"
 
 
+def _print_version(value: bool) -> None:
+    if value:
+        from importlib.metadata import version
+
+        typer.echo(f"gridflow {version('gridflow')}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _main(
+    _version: bool = typer.Option(
+        False,
+        "--version",
+        callback=_print_version,
+        is_eager=True,
+        help="Print the installed gridflow version and exit.",
+    ),
+) -> None:
+    """Take the options that come before the command name."""
+
+
 def _is_dangerous_delete_target(target: Path, project_root: Path) -> bool:
     """Return True if recursively deleting ``target`` would be catastrophic.
 
@@ -437,7 +458,7 @@ def export_csv(
     source: str = typer.Argument(help="Data source"),
     dataset: str | None = typer.Argument(default=None, help="Dataset name"),
     output_dir: str | None = typer.Option(
-        None, "--output", "-o", help="Output directory (default: data/exports/)"
+        None, "--output", "-o", help="Output directory (default: <data-root>/exports/)"
     ),
     all_datasets: bool = typer.Option(
         False, "--all", "-all", help="Export all datasets for source"

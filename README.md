@@ -3,9 +3,9 @@
 **Local-first Python data pipeline for UK/EU power and gas market data.**
 
 Pulls electricity prices, generation, demand, gas storage, weather, and carbon
-intensity from 7 public APIs into a clean, queryable analytical store backed by
-DuckDB and Parquet. No cloud, no database server — just files on your disk and
-SQL.
+intensity from 8 public APIs, run by 6 vendors, into a clean, queryable
+analytical store backed by DuckDB and Parquet. No cloud, no database server —
+just files on your disk and SQL.
 
 [![CI](https://github.com/EBentham/gridflow/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/EBentham/gridflow/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -29,7 +29,7 @@ them into modelling-ready tables:
         ▲                                            │
         │                                            ▼
    API sources                                DuckDB catalogue
-   (7 vendors)                                (SQL views)
+   (6 vendors)                                (SQL views)
 ```
 
 | Layer  | Contents                                          | Format                     | CLI verb     |
@@ -42,15 +42,16 @@ them into modelling-ready tables:
 
 ## Data sources
 
-| Source       | CLI name     | Auth                 | Coverage                                          |
-|--------------|--------------|----------------------|---------------------------------------------------|
-| Elexon BMRS  | `elexon`     | none                 | UK electricity: prices, generation, demand, BM    |
-| ENTSO-E      | `entsoe`     | `ENTSOE_API_KEY`     | EU electricity: prices, load, flows, outages      |
-| ENTSO-G      | `entsog`     | none                 | EU gas: physical flows, nominations, capacities   |
-| GIE AGSI     | `gie_agsi`   | `GIE_API_KEY`        | EU gas storage levels                             |
-| GIE ALSI     | `gie_alsi`   | `GIE_API_KEY`        | EU LNG terminal data                              |
-| Open-Meteo   | `open_meteo` | none                 | Weather: temperature, wind, solar irradiance      |
-| NESO         | `neso`       | none                 | UK carbon intensity (current + regional + fcst)   |
+| Source                | CLI name           | Auth             | Coverage                                                  |
+|-----------------------|--------------------|------------------|-----------------------------------------------------------|
+| Elexon BMRS           | `elexon`           | none             | UK electricity: prices, generation, demand, BM            |
+| ENTSO-E               | `entsoe`           | `ENTSOE_API_KEY` | EU electricity: prices, load, flows, outages              |
+| ENTSO-G               | `entsog`           | none             | EU gas: physical flows, nominations, capacities           |
+| GIE AGSI              | `gie_agsi`         | `GIE_API_KEY`    | EU gas storage levels                                     |
+| GIE ALSI              | `gie_alsi`         | `GIE_API_KEY`    | EU LNG terminal data                                      |
+| Open-Meteo            | `open_meteo`       | none             | Weather: temperature, wind, solar irradiance              |
+| NESO Carbon Intensity | `neso`             | none             | UK carbon intensity (current + regional + fcst)           |
+| NESO Data Portal      | `neso_data_portal` | none             | UK system: demand, balancing, ancillary services, tariffs |
 
 Each vendor's terms, the attribution it asks for and which test fixtures hold real
 responses are in [DATA-SOURCES.md](DATA-SOURCES.md).
@@ -77,6 +78,9 @@ variable to set, and fetches everything else. [docs/QUICKSTART.md](docs/QUICKSTA
 explains each step: the data root, keys, presets and their measured cost, and
 the notebooks. [docs/CLI_CHEAT_SHEET.md](docs/CLI_CHEAT_SHEET.md) lists every
 command.
+
+Behind a corporate proxy, if `uv sync` fails with "invalid peer certificate", set
+`UV_SYSTEM_CERTS=1` or pass `--system-certs` so uv trusts your system's certificates.
 
 ### What needs a key
 

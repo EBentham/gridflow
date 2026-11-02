@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -22,6 +23,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 _SAFE_PARQUET_GLOB = "**/[!.]*.parquet"
+# Views whose Parquet exists but would not register in the current
+# _register_views pass, so a gold view missing one is broken, not waiting.
+_failed_over_parquet: set[str] = set()
 
 
 def _is_strict_mode() -> bool:
@@ -170,6 +174,7 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
     # which `gridflow init` would otherwise never import (E9).
     from gridflow.silver.schema_manifest import _ensure_silver_transformers_registered
 
+    _failed_over_parquet.clear()
     _ensure_silver_transformers_registered()
     owners = _registered_relation_owners()
 
@@ -492,6 +497,7 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
         else:
             # Deterministic DDL/binder error — make the silent-corruption case
             # visible rather than letting a later SELECT fail opaquely.
+            _failed_over_parquet.add(view_name)
             logger.warning(
                 "View registration failed for %s (not absent-data): %s",
                 view_name,
@@ -515,9 +521,50 @@ def _register_gold_views(con: duckdb.DuckDBPyConnection) -> None:
         except Exception as exc:
             if _is_strict_mode():
                 raise
-            # DuckDB's message says what is missing or broken; an absent upstream
-            # relation and a misspelt one raise the same CatalogException.
-            logger.warning("Gold view registration failed for %s: %s", sql_file.name, exc)
+            awaited = _awaited_silver(con, exc)
+            if awaited is not None:
+                logger.info(
+                    "Gold view %s registers after %s/%s is backfilled", sql_file.name, *awaited
+                )
+            else:
+                logger.warning("Gold view registration failed for %s: %s", sql_file.name, exc)
+
+
+_MISSING_TABLE_RE = re.compile(r'Table with name "?(\w+)"? does not exist')
+
+
+def _awaited_silver(con: duckdb.DuckDBPyConnection, exc: Exception) -> tuple[str, str] | None:
+    """The ``(source, dataset)`` a gold view failed for only because it has no silver yet.
+
+    A fresh data root fails every gold view this way, which is expected, not a
+    fault. A misspelt relation raises the same CatalogException, so the missing
+    name must be a view a backfill registers (``silver_<source>_<dataset>`` or its
+    ``_latest``), and that dataset's base view must be absent without having
+    failed over existing Parquet: a ``_latest`` missing beside its base, or a
+    base whose files would not read, is a fault, not a wait.
+    """
+    if not isinstance(exc, duckdb.CatalogException):
+        return None
+    match = _MISSING_TABLE_RE.search(str(exc))
+    if match is None:
+        return None
+    from gridflow.silver.registry import list_transformers
+    from gridflow.silver.schema_manifest import _ensure_silver_transformers_registered
+
+    _ensure_silver_transformers_registered()
+    inputs = {f"silver_{s}_{d}": (s, d) for s, d in list_transformers()}
+    inputs |= {f"silver_{s}_{d}_latest": (s, d) for s, d in LATEST_VIEW_SPECS}
+    awaited = inputs.get(match.group(1))
+    if awaited is None:
+        return None
+    base = f"silver_{awaited[0]}_{awaited[1]}"
+    if base in _failed_over_parquet:
+        return None
+    base_registered = con.execute(
+        "SELECT 1 FROM information_schema.tables WHERE table_schema = 'main' AND table_name = ?",
+        [base],
+    ).fetchone()
+    return None if base_registered else awaited
 
 
 def refresh_views(db_path: Path, data_dir: Path) -> None:

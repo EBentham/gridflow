@@ -112,7 +112,7 @@ def test_drive_relative_path_is_refused(field: str, monkeypatch: pytest.MonkeyPa
     in a POSIX shell arrives in exactly this form."""
     monkeypatch.setenv(f"GRIDFLOW_{field.upper()}", "C:gridflow-x.duckdb")
 
-    with pytest.raises(ValueError, match="drive-relative"):
+    with pytest.raises(ValueError, match="drive-relative.*e.g. D:/gridflow-data"):
         PipelineSettings()
 
 

@@ -13,7 +13,8 @@ uv sync --group notebooks
 `uv sync` installs gridflow and its `gridflow` command into `.venv`, fetching
 Python 3.12 if needed (gridflow supports 3.11 and later). `--group notebooks`
 adds JupyterLab, jupytext and plotly. To run the tests as well, add
-`--extra dev` for pytest, ruff and mypy.
+`--extra dev` for pytest, ruff and mypy. `uv run gridflow --version` prints the
+installed version.
 
 ## 2. The data root
 
@@ -21,7 +22,9 @@ adds JupyterLab, jupytext and plotly. To run the tests as well, add
 uv run gridflow init
 ```
 
-`init` creates the data root and its DuckDB catalogue. By default, gridflow
+`init` creates the data root and its DuckDB catalogue, and prints the
+catalogue's path. Gold views register later, once a backfill fetches their
+inputs. By default, gridflow
 stores data in `~/gridflow-data`, with the catalogue at
 `~/gridflow-data/gridflow.duckdb`, whichever folder you run it from. To move
 the data root, set one variable in your shell or in an untracked `.env` in
@@ -70,21 +73,21 @@ one day at a time unless `--chunk-days N` says otherwise.
 
 | Preset | Datasets | Window | Requests | Time |
 |---|---|---|---|---|
-| `tour` | 10: the views `00_overview` and `01_sources` read | last 7 complete UTC days | 203 without keys | not measured yet |
+| `tour` | 10: the views `00_overview` and `01_sources` read | last 7 complete UTC days | 203 without keys | about 4 minutes without keys |
 
 Without keys the tour fetches 7 of its 10 datasets: Elexon system prices and
 generation by fuel (14 requests, one per day each), Open-Meteo demand, wind and
 solar weather (175, one per weather site per day, 25 sites), ENTSO-G physical
-flows (7, one per day) and NESO carbon intensity (7). The counts come from a
-run on 1 November 2026, from a fresh clone with no keys set, which fetched the
-same datasets in a single 7-day chunk: 47 requests in 25 seconds. One-day
-chunks multiply only the Open-Meteo and NESO requests, by the 7 days. With keys
-the tour also fetches ENTSO-E day-ahead prices and GIE storage and LNG, and
-gridflow sends both vendors one request a second.
+flows (7, one per day) and NESO carbon intensity (7). A run on 2 November 2026
+with no keys set made those 203 requests in just under 4 minutes. Most of that
+was spent waiting on Open-Meteo: 30 of its connections failed after about 10
+seconds and succeeded when retried. With keys the tour also fetches ENTSO-E
+day-ahead prices and GIE storage and LNG, and gridflow sends both vendors one
+request a second.
 
-The run prints WARNING lines along the way, for example for gold views whose
-inputs you haven't fetched. They don't mean data is missing; afterwards
-`01_sources.py` shows every dataset the tour fetched.
+The run prints WARNING lines along the way, for example one per day for Elexon
+generation by fuel, which one-day windows raise by design, or one per retried
+request. Afterwards `01_sources.py` shows every dataset the tour fetched.
 
 Your own preset is a YAML file with two keys:
 
