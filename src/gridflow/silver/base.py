@@ -419,8 +419,9 @@ class BaseSilverTransformer(ABC):
     (``last_excluded_row_count`` or ``last_unmapped_count`` moved inside
     ``transform()``), and a silent failure when neither moved, as when
     ``system_prices`` meets a missing required column. Only per-file and
-    partition-owning transformers count it; covering-set runs may count the
-    same body again for an adjacent destination.
+    partition-owning transformers count it, plus Open-Meteo's ``read_bronze``
+    when the bodies it read hold no row for the date; covering-set runs may
+    count the same body again for an adjacent destination.
     """
     last_total_unaccounted_exclusion: bool = False
     """``True`` when the most recent ``run()`` examined bronze, produced no

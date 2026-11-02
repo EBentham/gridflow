@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
 import polars as pl
@@ -37,6 +38,9 @@ from gridflow.silver.openmeteo.historical import (
 )
 from gridflow.storage.parquet import scan_parquet_dir
 from gridflow.storage.paths import PathBuilder
+
+if TYPE_CHECKING:
+    from conftest import IsolatedPaths
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "openmeteo"
 
@@ -608,6 +612,35 @@ class TestLookBackChecksTheRequestWindow:
         )
 
         assert HistoricalDemandWeather(tmp_path)._bronze_candidates(date(2024, 1, 7)) == [nearer]
+
+
+def test_bronze_without_the_date_fails_the_transform(
+    isolated_env: IsolatedPaths, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Detects a date whose bronze holds none of its rows passing as success:
+    nothing is written for it, so an older silver file would pass as current."""
+    from gridflow.config.settings import load_settings
+    from gridflow.pipeline import runner
+
+    day = date(2024, 1, 2)
+    _write_openmeteo_bronze(
+        isolated_env.data_dir,
+        "historical_demand",
+        "london",
+        day,
+        _days_payload(date(2024, 1, 1)),
+        request={"start_date": "2024-01-02", "end_date": "2024-01-02"},
+    )
+    midnight = datetime(2024, 1, 2, tzinfo=UTC)
+    with caplog.at_level("WARNING"), runner.build_context(load_settings()) as ctx:
+        (result,) = runner.run_transform(
+            ctx, "open_meteo", ["historical_demand"], midnight, midnight
+        )
+
+    assert result.status == "failed", result
+    assert "produced NO frame" in (result.error or "")
+    assert "unaccounted_empty_frames=1" in (result.error or "")
+    assert "No bronze data for open_meteo/historical_demand on 2024-01-02" in caplog.text
 
 
 # ---------------------------------------------------------------------------

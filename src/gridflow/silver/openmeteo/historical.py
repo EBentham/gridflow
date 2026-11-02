@@ -239,7 +239,8 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         location_of = {self._location_dir(loc): loc.name for loc in self.LOCATIONS}
         rows: list[dict[str, Any]] = []
         unparseable: list[Path] = []
-        for f in self._bronze_read_set(target_date):
+        read_set = self._bronze_read_set(target_date)
+        for f in read_set:
             try:
                 data = json.loads(f.read_text())
                 rows.extend(
@@ -254,6 +255,12 @@ class BaseOpenMeteoTransformer(BaseSilverTransformer):
         rows = _filter_rows_to_target_date(rows, target_date)
 
         if not rows:
+            if read_set:
+                # Bronze was read and none of it is this date's: run() writes
+                # nothing, so run_transform must fail rather than let an older
+                # file pass as current (the D-42 rung).
+                self.last_unaccounted_empty_frames += 1
+                self.last_total_unaccounted_exclusion = True
             return pl.DataFrame()
         return pl.DataFrame(rows)
 
