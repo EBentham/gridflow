@@ -89,17 +89,23 @@ def _gold_view_logs(
     con: duckdb.DuckDBPyConnection,
     caplog: pytest.LogCaptureFixture,
     monkeypatch: pytest.MonkeyPatch,
+    data_dir: Path | None = None,
 ) -> dict[int, list[str]]:
-    """Register the gold views in production mode; return their log lines by level."""
-    from gridflow.storage.duckdb import _register_gold_views
+    """Register the gold views in production mode, after the silver views under
+    ``data_dir`` when given; return the gold-view log lines by level."""
+    from gridflow.storage.duckdb import _register_gold_views, _register_views
 
     monkeypatch.delenv("PYTEST_CURRENT_TEST", raising=False)
     monkeypatch.delenv("GRIDFLOW_ENV", raising=False)
+    monkeypatch.setattr("gridflow.storage.duckdb._failed_over_parquet", set())
     with caplog.at_level(logging.DEBUG, logger="gridflow.storage.duckdb"):
+        if data_dir is not None:
+            _register_views(con, data_dir / "silver", data_dir / "gold")
         _register_gold_views(con)
     by_level: dict[int, list[str]] = {}
     for record in caplog.records:
-        by_level.setdefault(record.levelno, []).append(record.getMessage())
+        if record.getMessage().startswith("Gold view"):
+            by_level.setdefault(record.levelno, []).append(record.getMessage())
     return by_level
 
 
@@ -118,11 +124,11 @@ def test_production_mode_logs_one_info_line_for_a_gold_view_without_silver(
         con.close()
 
     assert logs.get(logging.WARNING, []) == []
-    assert set(logs[logging.INFO]) == {
+    assert sorted(logs[logging.INFO]) == [
         "Gold view eu_gas_storage.sql registers after gie_agsi/storage is backfilled",
         "Gold view gb_day_ahead_benchmark.sql registers after elexon/mid is backfilled",
         "Gold view uk_imbalance_context.sql registers after elexon/system_prices is backfilled",
-    }
+    ]
 
 
 @pytest.mark.integration
@@ -143,6 +149,29 @@ def test_production_mode_warns_when_a_gold_view_fails_for_another_reason(
     (warning,) = logs[logging.WARNING]
     assert warning.startswith("Gold view registration failed for uk_imbalance_context.sql")
     assert "silver_elexon_system_prices_latest does not exist" in warning
+
+
+@pytest.mark.integration
+def test_production_mode_warns_when_a_gold_views_silver_will_not_read(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Elexon MID silver exists but is not valid Parquet, so its view fails to
+    register. gb_day_ahead_benchmark then lacks silver_elexon_mid, but a backfill
+    would not fix that: it keeps the WARNING.
+    """
+    mid = tmp_path / "silver" / "elexon" / "mid" / "year=2024" / "month=01"
+    mid.mkdir(parents=True)
+    (mid / "mid_20240115.parquet").write_bytes(b"not parquet")
+
+    con = duckdb.connect(":memory:")
+    try:
+        logs = _gold_view_logs(con, caplog, monkeypatch, data_dir=tmp_path)
+    finally:
+        con.close()
+
+    (warning,) = logs[logging.WARNING]
+    assert warning.startswith("Gold view registration failed for gb_day_ahead_benchmark.sql")
+    assert "silver_elexon_mid does not exist" in warning
 
 
 @pytest.mark.integration

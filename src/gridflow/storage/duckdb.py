@@ -23,6 +23,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 _SAFE_PARQUET_GLOB = "**/[!.]*.parquet"
+# Views whose Parquet exists but would not register in the current
+# _register_views pass, so a gold view missing one is broken, not waiting.
+_failed_over_parquet: set[str] = set()
 
 
 def _is_strict_mode() -> bool:
@@ -171,6 +174,7 @@ def _register_views(con: duckdb.DuckDBPyConnection, silver_root: Path, gold_root
     # which `gridflow init` would otherwise never import (E9).
     from gridflow.silver.schema_manifest import _ensure_silver_transformers_registered
 
+    _failed_over_parquet.clear()
     _ensure_silver_transformers_registered()
     owners = _registered_relation_owners()
 
@@ -428,6 +432,7 @@ def _try_create_view(con: duckdb.DuckDBPyConnection, view_name: str, pattern: st
         else:
             # Deterministic DDL/binder error — make the silent-corruption case
             # visible rather than letting a later SELECT fail opaquely.
+            _failed_over_parquet.add(view_name)
             logger.warning(
                 "View registration failed for %s (not absent-data): %s",
                 view_name,
@@ -469,8 +474,9 @@ def _awaited_silver(con: duckdb.DuckDBPyConnection, exc: Exception) -> tuple[str
     A fresh data root fails every gold view this way, which is expected, not a
     fault. A misspelt relation raises the same CatalogException, so the missing
     name must be a view a backfill registers (``silver_<source>_<dataset>`` or its
-    ``_latest``), and that dataset's base view must be absent: a ``_latest``
-    missing beside its base is a build failure, not a wait.
+    ``_latest``), and that dataset's base view must be absent without having
+    failed over existing Parquet: a ``_latest`` missing beside its base, or a
+    base whose files would not read, is a fault, not a wait.
     """
     if not isinstance(exc, duckdb.CatalogException):
         return None
@@ -486,9 +492,12 @@ def _awaited_silver(con: duckdb.DuckDBPyConnection, exc: Exception) -> tuple[str
     awaited = inputs.get(match.group(1))
     if awaited is None:
         return None
+    base = f"silver_{awaited[0]}_{awaited[1]}"
+    if base in _failed_over_parquet:
+        return None
     base_registered = con.execute(
         "SELECT 1 FROM information_schema.tables WHERE table_schema = 'main' AND table_name = ?",
-        [f"silver_{awaited[0]}_{awaited[1]}"],
+        [base],
     ).fetchone()
     return None if base_registered else awaited
 
