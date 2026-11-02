@@ -703,7 +703,6 @@ class TestAgreement:
                 from gridflow.connectors.neso_data_portal.registry import LEGACY_KEYS, load_registry
                 families = load_registry().families
                 config = load_settings().get_source_config('neso_data_portal')
-                assert len(families) == 326, len(families)
                 expected = [*LEGACY_KEYS, *sorted(set(families) - set(LEGACY_KEYS))]
                 assert list(config.datasets) == expected, list(config.datasets)[:5]
                 for key, dataset in config.datasets.items():

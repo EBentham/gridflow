@@ -1,8 +1,8 @@
 """Silver transformers for Open-Meteo forecast weather data.
 
 F7.5 split: three role-specific subclasses of the corresponding historical
-transformers — same locations, same schemas, same derived columns; only
-the dataset name and (for wind) the variable list differ.
+transformers — same locations, same derived columns; only the dataset
+name and (for wind) the variable list and schema differ.
 
 Wind forecast carries the wider hub-height set ``WIND_FORECAST_VARS``
 because UKMO/ECMWF forecast models do publish 80m/120m/180m for areas
@@ -17,6 +17,7 @@ from gridflow.connectors.openmeteo.endpoints import (
     DATASET_SPECS,
     WIND_FORECAST_VARS,
 )
+from gridflow.schemas.weather import WindWeather
 from gridflow.silver.openmeteo.historical import (
     HistoricalDemandWeather,
     HistoricalSolarWeather,
@@ -45,6 +46,7 @@ class ForecastWindWeather(HistoricalWindWeather):
     VINTAGE_POLICY = None
     BRONZE_DATASET_PREFIX = "forecast_wind"
     HOURLY_VARS = WIND_FORECAST_VARS
+    schema_cls = WindWeather
 
 
 class ForecastSolarWeather(HistoricalSolarWeather):

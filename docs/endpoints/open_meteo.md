@@ -108,6 +108,8 @@ and the matching directions to avoid silver carrying empty columns.
 IFS / GFS forecast models do publish hub-height data; Open-Meteo nulls
 fields the underlying model does not carry, and `WindWeather` accepts
 the null-degradation cleanly (all hub-height fields typed `float | None`).
+`historical_wind` uses `ArchiveWindWeather`, the same schema without the
+80m / 120m / 180m fields.
 
 ---
 
@@ -142,7 +144,7 @@ limited to `{10m, 100m}` per the archive limitation above.
 
 **API path:** `https://archive-api.open-meteo.com/v1/archive`
 **Hourly variables (13):** `temperature_2m, surface_pressure, wind_speed_10m, wind_speed_100m, wind_direction_10m, wind_direction_100m, wind_gusts_10m, cloud_cover, cloud_cover_low, cloud_cover_mid, cloud_cover_high, dew_point_2m, precipitation`
-**Silver schema:** `WindWeather`
+**Silver schema:** `ArchiveWindWeather` (no 80m / 120m / 180m columns)
 **Derived:** `air_density_kg_m3`.
 
 ---

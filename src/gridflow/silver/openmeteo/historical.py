@@ -36,7 +36,7 @@ from gridflow.connectors.openmeteo.endpoints import (
     WIND_LOCATIONS,
     WeatherLocation,
 )
-from gridflow.schemas.weather import DemandWeather, SolarWeather, WindWeather
+from gridflow.schemas.weather import ArchiveWindWeather, DemandWeather, SolarWeather
 from gridflow.silver.base import (
     COVERING_LOOKBACK_DAYS,
     BaseSilverTransformer,
@@ -370,7 +370,7 @@ class HistoricalWindWeather(BaseOpenMeteoTransformer):
     BRONZE_DATASET_PREFIX = "historical_wind"
     LOCATIONS = WIND_LOCATIONS
     HOURLY_VARS = WIND_ARCHIVE_VARS
-    schema_cls = WindWeather
+    schema_cls = ArchiveWindWeather
     DERIVE_AIR_DENSITY = True
 
 

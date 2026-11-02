@@ -59,11 +59,7 @@ REGISTRY: dict[str, _RegistryEntry] = {
         ),
     ),
     "gie/client.py:_fetch_paginated": _RegistryEntry("STAMPED", 1),
-    "gie/client.py:_fetch_country": _RegistryEntry(
-        "EXEMPT",
-        1,
-        reason="module parsers run on other paths; no parse at this construction site",
-    ),
+    "gie/client.py:_fetch_country": _RegistryEntry("STAMPED", 1),
     "neso_data_portal/client.py:_capture_member": _RegistryEntry(
         "EXEMPT",
         1,
