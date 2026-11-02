@@ -13,6 +13,13 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 
 ### Fixed
 - **`gridflow status` exits 1 when its pipeline-runs query fails**, printing the error to stderr.
+- **Open-Meteo dates no longer drop out of silver when a backfill re-fetches them in other
+  chunks.** A date with no bronze partition of its own read each site's nearest earlier
+  partition, even when that request ended before the date, so a tour rerun in wider chunks after
+  a one-day run left days out while reporting success. It now reads the earlier request whose
+  recorded `start_date..end_date` reaches the date. A date whose bronze holds none of its rows
+  now fails the transform instead of passing, and `--chunk-days` above 35 (the look-back) is
+  refused for Open-Meteo before any request.
 
 ## [v0.23.0] - 2026-11-01
 
