@@ -58,6 +58,9 @@ October 2026 code review of the connectors, the silver layer and the CLI.
   for `gridflow quality`'s checks, past which they spill to a temporary folder.
 
 ### Changed
+- **Polars and DuckDB are capped below 2.** A wheel or tag install used to resolve the newest
+  releases, and Polars 2 removed the string-to-date casts the Elexon transforms use, so every
+  Elexon step of the tour preset failed. The cap matches what the lock and CI test (1.x).
 - **One data root.** gridflow keeps its data in `~/gridflow-data` on every OS unless
   `GRIDFLOW_DATA_DIR` names another folder. The catalogue and logs default to
   `<root>/gridflow.duckdb` and `<root>/logs`; `GRIDFLOW_DUCKDB_PATH` and `GRIDFLOW_LOG_DIR` are
