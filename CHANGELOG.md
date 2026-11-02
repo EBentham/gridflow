@@ -20,6 +20,12 @@ dataset-coverage expansion) was paused before release and is intentionally absen
   recorded `start_date..end_date` reaches the date. A date whose bronze holds none of its rows
   now fails the transform instead of passing, and `--chunk-days` above 35 (the look-back) is
   refused for Open-Meteo before any request.
+- **GIE ALSI gas days no longer drop out of silver when a backfill re-fetches them in other
+  chunks.** The same look-back read the nearest earlier partition even when its request ended
+  before the day, so a rerun in wider chunks after a one-day run left days out while reporting
+  success. It now reads the earlier request whose recorded `from..till` reaches the day, and
+  `--chunk-days` above 35 is refused for ALSI too. A day whose bronze holds none of its rows
+  still only warns, because GIE publishes a gas day the next afternoon.
 - **`_latest` views pick the same row on every run.** When two vintages of a key tied on every
   ordering column, scan order chose the winner, so a `_latest` read and the quality null rates
   built on it could change between runs. Every other column, by name, now breaks the tie, in the

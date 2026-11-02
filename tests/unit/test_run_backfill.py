@@ -157,15 +157,18 @@ def test_chunk_days_below_one_is_refused(
         runner.run_backfill(sample_config, "elexon", ["system_prices"], D, D + ONE, chunk_days=0)
 
 
-@pytest.mark.parametrize("dataset", ["historical_demand", "forecast_wind"])
-def test_open_meteo_chunks_past_the_look_back_are_refused(
-    sample_config: GridflowConfig, calls: Calls, dataset: str
+@pytest.mark.parametrize(
+    ("source", "dataset"),
+    [("open_meteo", "historical_demand"), ("open_meteo", "forecast_wind"), ("gie_alsi", "lng")],
+)
+def test_chunks_past_the_look_back_are_refused(
+    sample_config: GridflowConfig, calls: Calls, source: str, dataset: str
 ) -> None:
-    """Detects an Open-Meteo chunk wider than the 35 days a date looks back for
-    its request being fetched: its later days would never reach silver."""
+    """Detects an Open-Meteo or ALSI chunk wider than the 35 days a date looks
+    back for its request being fetched: its later days would never reach silver."""
     with pytest.raises(ValueError, match="at most 35 days, not 36"):
-        runner.run_backfill(sample_config, "open_meteo", [dataset], D, D + 40 * ONE, chunk_days=36)
+        runner.run_backfill(sample_config, source, [dataset], D, D + 40 * ONE, chunk_days=36)
     assert calls.ingest == []
 
-    runner.run_backfill(sample_config, "open_meteo", [dataset], D, D + 40 * ONE, chunk_days=35)
+    runner.run_backfill(sample_config, source, [dataset], D, D + 40 * ONE, chunk_days=35)
     assert calls.ingest == [(D, D + 35 * ONE), (D + 35 * ONE, D + 40 * ONE)]

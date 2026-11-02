@@ -5,12 +5,13 @@ from __future__ import annotations
 import json
 import logging
 from datetime import UTC, date, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import polars as pl
 
 from gridflow.schemas.gie import LNGTerminal
 from gridflow.silver.base import (
+    COVERING_LOOKBACK_DAYS,
     BaseSilverTransformer,
     UnparseableBronzeError,
     gas_day_event_time_expr,
@@ -30,18 +31,20 @@ class LNGTerminalTransformer(BaseSilverTransformer):
     dataset = "lng"
     schema_cls = LNGTerminal
     DATASET_VERSION = "2.0.0"
+    MAX_CHUNK_DAYS: ClassVar[int | None] = COVERING_LOOKBACK_DAYS
 
     def _event_time_expr(self, df: pl.DataFrame, target_date: date) -> pl.Expr:
         return gas_day_event_time_expr("gas_day")
 
     def _bronze_candidates(self, target_date: date) -> list[Path]:
-        """The exact partition's bodies, else the nearest covering partition's."""
-        bronze_path = self._bronze_path_for_date(target_date)
-        if bronze_path is None:
-            return []
-        return sorted(
-            f for f in bronze_path.glob(self.BRONZE_BODY_GLOB) if not f.name.endswith(".meta.json")
-        )
+        """The bodies whose ``from..till`` reached ``target_date``.
+
+        Unlike Open-Meteo, bodies holding none of the day's rows are not a
+        failure: GIE publishes a gas day the next afternoon, so a request made
+        sooner (an incremental run, a morning tour) has no rows for its newest
+        days, and that day stays "No bronze data" until a later fetch.
+        """
+        return self._covering_request_bodies(target_date, ("from", "till"))
 
     def read_bronze(self, target_date: date) -> pl.DataFrame:
         rows: list[dict[str, Any]] = []

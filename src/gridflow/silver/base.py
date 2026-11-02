@@ -236,6 +236,25 @@ this leaves its later days unreadable; transformers that rely on the lookback
 cap the chunk through :attr:`BaseSilverTransformer.MAX_CHUNK_DAYS`.
 """
 
+
+def _request_reaches(body: Path, target_date: date, window_keys: tuple[str, str]) -> bool:
+    """Whether ``body``'s request covered ``target_date``, or its window is unreadable.
+
+    ``window_keys`` name the sidecar ``request_params`` holding the first and
+    last day, both bare dates and both inclusive (Open-Meteo's ``start_date``
+    and ``end_date``, ALSI's ``from`` and ``till``), which is why
+    ``partition_window.request_window_from_sidecar`` (tz-aware instants, an
+    exclusive end) cannot read it: a one-day request would look empty.
+    """
+    try:
+        params = json.loads(body.with_suffix(".meta.json").read_text())["request_params"]
+        first = date.fromisoformat(params[window_keys[0]])
+        last = date.fromisoformat(params[window_keys[1]])
+    except (OSError, ValueError, TypeError, KeyError):
+        return True
+    return first <= target_date <= last
+
+
 _EXACT_PARTITION_ONLY_SOURCES: frozenset[str] = frozenset({"entsoe", "entsog"})
 """Sources whose connectors write one bronze partition per UTC day.
 
@@ -1894,6 +1913,42 @@ class BaseSilverTransformer(ABC):
             if candidate_path.exists() and any(candidate_path.glob("raw_*")):
                 return candidate_path
         return None
+
+    def _covering_request_bodies(
+        self,
+        target_date: date,
+        window_keys: tuple[str, str],
+        *,
+        bronze_dir: Path | None = None,
+    ) -> list[Path]:
+        """The bodies whose request reached ``target_date``.
+
+        A request is filed under its first day, so a date with no partition of
+        its own looks back for one. The nearest earlier partition is not enough:
+        a shorter request there (a one-day chunk, say) ends before the date, and
+        reading it alone would leave the date out of silver. So an earlier
+        partition's body counts only if its sidecar window (``window_keys``, see
+        :func:`_request_reaches`) reaches the date. A body whose window cannot be
+        read is still taken, as before windows were checked. Pass ``bronze_dir``
+        to search one Open-Meteo location's directory.
+        """
+        paths = PathBuilder(self.data_dir)
+        for back in range(COVERING_LOOKBACK_DAYS + 1):
+            day = paths.bronze_date_dir(
+                self.source,
+                self.dataset,
+                target_date - timedelta(days=back),
+                dataset_dir=bronze_dir if bronze_dir is not None else self.bronze_dir,
+            )
+            found = [
+                f
+                for f in sorted(day.glob(self.BRONZE_BODY_GLOB))
+                if not f.name.endswith(".meta.json")
+                and (back == 0 or _request_reaches(f, target_date, window_keys))
+            ]
+            if found:
+                return found
+        return []
 
     def _bronze_path_for_date(
         self,
