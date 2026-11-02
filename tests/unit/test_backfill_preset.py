@@ -147,6 +147,24 @@ _TWO_WINDOWS = (
             ["--preset", "tour", "--start", "2024-01-01"], None, "--preset", id="window-with-preset"
         ),
         pytest.param(["--preset", "no-such-preset"], None, "tour", id="unknown-name"),
+        pytest.param(
+            ["--preset", "tour", "--chunk-days", "36"], None, "at most 35", id="tour-past-look-back"
+        ),
+        pytest.param(
+            [
+                "open_meteo",
+                "historical_wind",
+                "--start",
+                "2024-01-01",
+                "--end",
+                "2024-03-01",
+                "--chunk-days",
+                "36",
+            ],
+            None,
+            "--chunk-days",
+            id="open-meteo-past-look-back",
+        ),
         pytest.param([], _TWO_WINDOWS, "window", id="two-window-forms"),
         pytest.param(
             [],

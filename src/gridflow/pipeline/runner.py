@@ -610,6 +610,31 @@ def resolve_datasets(
     raise DatasetResolutionError("Specify a dataset name or use --all")
 
 
+def check_chunk_days(source: str, datasets: list[str], chunk_days: int) -> None:
+    """Refuse a backfill chunk size before any request.
+
+    Below 1 the chunk loop never advances. Above a dataset's
+    ``MAX_CHUNK_DAYS`` the chunk's later days could not find the bronze it is
+    filed under, so they would fetch and never reach silver.
+
+    Raises:
+        ValueError: Naming the limit, for the CLI to show as a usage error.
+    """
+    from gridflow.silver.registry import get_transformer_class
+
+    if chunk_days < 1:
+        raise ValueError("chunk_days must be >= 1")
+    import_transformers()
+    for ds in datasets:
+        transformer = get_transformer_class(source, ds)
+        limit = transformer.MAX_CHUNK_DAYS if transformer is not None else None
+        if limit is not None and chunk_days > limit:
+            raise ValueError(
+                f"{source}/{ds} takes chunks of at most {limit} days, not {chunk_days}: "
+                f"a date looks back {limit} days for the request it was fetched in"
+            )
+
+
 def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
     """Load a backfill preset: a packaged name, or a path to a ``.yaml`` file.
 
@@ -1801,14 +1826,14 @@ def run_backfill(
         A :class:`RunReport` aggregating every chunk's ingest + transform results.
 
     Raises:
-        ValueError: ``chunk_days`` is below 1 (the loop would never advance).
+        ValueError: ``chunk_days`` is below 1 (the loop would never advance), or
+            wider than a dataset's ``MAX_CHUNK_DAYS``.
     """
     # D-35: before date resolution and before the chunk loop. A snapshot-only
     # source is refused for EVERY window shape and every chunk size, because the
     # refusal is decided by the capability, not by what the window looks like.
     assert_backfillable(source)
-    if chunk_days < 1:
-        raise ValueError("chunk_days must be >= 1")
+    check_chunk_days(source, datasets, chunk_days)
 
     results: list[DatasetResult] = []
     with build_context(settings) as ctx:

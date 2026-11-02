@@ -418,6 +418,12 @@ def _run_backfills(
 
     runner.import_connectors()
     runner.import_transformers()
+    # Every source's chunk size, before the first request to any of them.
+    for source, datasets in jobs.items():
+        try:
+            runner.check_chunk_days(source, datasets, chunk_days)
+        except ValueError as e:
+            raise typer.BadParameter(str(e), param_hint="--chunk-days") from e
 
     failed: list[DatasetResult] = []
     for source, datasets in jobs.items():

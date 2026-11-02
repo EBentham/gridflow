@@ -73,6 +73,9 @@ gridflow backfill elexon system_prices --start 2024-01-01 --end 2024-12-31
 # Custom chunk size (3 days)
 gridflow backfill elexon system_prices --start 2024-01-01 --end 2024-06-30 --chunk-days 3
 
+# Open-Meteo takes chunks of up to 35 days (one request per site per chunk)
+gridflow backfill open_meteo historical_wind --start 2024-01-01 --end 2024-12-31 --chunk-days 31
+
 # ALL datasets for a source
 gridflow backfill elexon --all --start 2024-01-01 --end 2024-12-31
 
