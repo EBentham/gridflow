@@ -36,7 +36,7 @@ def _archive_reply(request: httpx.Request) -> httpx.Response:
     first = date.fromisoformat(params["start_date"])
     last = date.fromisoformat(params["end_date"])
     hours = [
-        datetime(first.year, first.month, first.day) + timedelta(hours=h)
+        datetime(first.year, first.month, first.day, tzinfo=UTC) + timedelta(hours=h)
         for h in range(((last - first).days + 1) * 24)
     ]
     variables = params["hourly"].split(",")
