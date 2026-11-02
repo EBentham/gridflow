@@ -637,9 +637,11 @@ def status() -> None:
             ):
                 typer.echo(str(result))
     except Exception as e:
-        typer.echo(f"Could not query pipeline runs: {e}")
-
-    con.close()
+        # A broken catalogue must not look healthy to a script or CI step.
+        typer.echo(f"Could not query pipeline runs: {e}", err=True)
+        raise typer.Exit(1) from e
+    finally:
+        con.close()
 
 
 # The time coordinates of a settlement-grain key. What is left of the key once
