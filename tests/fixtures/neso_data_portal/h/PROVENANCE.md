@@ -36,3 +36,5 @@ CRLF, no BOM, strict UTF-8.
 
 `base_pin.json` is not a vendor cut: it is the byte-unchanged golden written on the untouched base
 (master `4c4b8ec`) by `tests/unit/_neso_h_pin.py`.
+Its `sql` entries for the seven `key_latest` families were later re-rendered when every other
+column became the final `_latest` tie-break; every other entry is unchanged.
