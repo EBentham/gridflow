@@ -103,8 +103,8 @@ window: {start: 2024-01-01, end: 2024-01-31}   # or {last_days: 30}
 `last_days: N` is the N complete UTC days before today. `start` and `end` read
 as `--start` and `--end` do, so a bare end date is included. Every source and
 dataset must be one gridflow configures (the `sources` of
-`gridflow.config.settings.load_settings()`), or the preset fails before any
-request.
+`gridflow.config.settings.load_settings()`), listed once, or the preset fails
+before any request.
 
 `chunk_days` is optional and only for Open-Meteo: a whole number from 1 to 35,
 the days each request covers (one request per weather site per chunk). Without
