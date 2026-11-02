@@ -427,11 +427,14 @@ class Preset:
         datasets: Source name to the datasets to backfill for it.
         start_dt: Inclusive window start (tz-aware UTC).
         end_dt: Exclusive window end (tz-aware UTC).
+        chunk_days: ``(source, dataset)`` to its days per chunk, 1 unless the
+            entry sets ``chunk_days``.
     """
 
     datasets: dict[str, list[str]]
     start_dt: datetime
     end_dt: datetime
+    chunk_days: dict[tuple[str, str], int]
 
 
 @dataclass
@@ -643,6 +646,12 @@ def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
     read as ``--start``/``--end`` are (a bare end date is inclusive). Every
     source and dataset must be configured, so a typo fails before any request.
 
+    An Open-Meteo entry may set ``chunk_days`` from 1 to the 35-day look-back:
+    a date's silver finds the request that reached it within that look-back, so
+    a rerun in other chunks neither drops nor repeats a date. Every other source
+    keeps one-day chunks, because NESO files a multi-day response under its
+    first day and a rerun a day later would write those days twice.
+
     Raises:
         PresetError: The preset is missing, malformed, or names an unknown dataset.
     """
@@ -650,6 +659,8 @@ def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
     from pathlib import Path
 
     import yaml  # type: ignore[import-untyped]
+
+    from gridflow.silver.base import COVERING_LOOKBACK_DAYS
 
     if Path(name_or_path).suffix.lower() in (".yaml", ".yml"):
         path = Path(name_or_path)
@@ -677,15 +688,38 @@ def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
     if not isinstance(entries, list) or not entries:
         raise PresetError(f"{name_or_path}: datasets must be a non-empty list")
     datasets: dict[str, list[str]] = {}
+    chunk_days: dict[tuple[str, str], int] = {}
     for entry in entries:
-        if not isinstance(entry, dict) or set(entry) != {"source", "dataset"}:
-            raise PresetError(f"{name_or_path}: each dataset is {{source, dataset}}, not {entry}")
+        if not isinstance(entry, dict) or not (
+            {"source", "dataset"} <= set(entry) <= {"source", "dataset", "chunk_days"}
+        ):
+            raise PresetError(
+                f"{name_or_path}: each dataset is {{source, dataset}} "
+                f"or {{source, dataset, chunk_days}}, not {entry}"
+            )
         source, dataset = str(entry["source"]), str(entry["dataset"])
         if source not in settings.sources:
             raise PresetError(f"{name_or_path}: unknown source {source!r}")
         if dataset not in settings.sources[source].datasets:
             raise PresetError(f"{name_or_path}: {source} has no dataset {dataset!r}")
+        days = entry.get("chunk_days", 1)
+        if "chunk_days" in entry:
+            if source != "open_meteo":
+                raise PresetError(
+                    f"{name_or_path}: chunk_days is for Open-Meteo datasets only, not "
+                    f"{source}/{dataset}, which backfills in one-day chunks"
+                )
+            if (
+                not isinstance(days, int)
+                or isinstance(days, bool)
+                or not 1 <= days <= COVERING_LOOKBACK_DAYS
+            ):
+                raise PresetError(
+                    f"{name_or_path}: {source}/{dataset} chunk_days is a whole number of "
+                    f"days from 1 to {COVERING_LOOKBACK_DAYS}, not {days!r}"
+                )
         datasets.setdefault(source, []).append(dataset)
+        chunk_days[(source, dataset)] = days
 
     window = data["window"]
     if isinstance(window, dict) and set(window) == {"last_days"}:
@@ -704,7 +738,7 @@ def load_preset(name_or_path: str, settings: GridflowConfig) -> Preset:
         raise PresetError(f"{name_or_path}: window is {{last_days: N}} or {{start, end}}")
     if end_dt <= start_dt:
         raise PresetError(f"{name_or_path}: the window ends before it starts")
-    return Preset(datasets=datasets, start_dt=start_dt, end_dt=end_dt)
+    return Preset(datasets=datasets, start_dt=start_dt, end_dt=end_dt, chunk_days=chunk_days)
 
 
 def resolve_incremental_start(

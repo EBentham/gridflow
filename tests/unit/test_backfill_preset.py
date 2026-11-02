@@ -62,9 +62,10 @@ def test_backfill_preset_tour_expands_to_datasets(
 ) -> None:
     """Detects the tour preset drifting from what 00_overview and 01_sources read
     (their 11 datasets, counting the gold storage view as its silver input), a
-    window other than the last 7 complete UTC days, or chunks wider than a day:
-    NESO files a multi-day response under its first day, so a tour rerun a day
-    later would leave six days twice in silver."""
+    window other than the last 7 complete UTC days, or chunks wider than a day
+    outside Open-Meteo: NESO files a multi-day response under its first day, so a
+    tour rerun a day later would leave six days twice in silver. Open-Meteo takes
+    the week in one chunk, one request per site."""
     monkeypatch.setenv("ENTSOE_API_KEY", "test-key")
     monkeypatch.setenv("GIE_API_KEY", "test-key")
     today = datetime.now(UTC).date()
@@ -75,12 +76,14 @@ def test_backfill_preset_tour_expands_to_datasets(
     fetched = [(source, ds) for source, datasets, *_ in backfills for ds in datasets]
     assert len(fetched) == len(set(fetched)) == 10
     assert set(fetched) == _notebook_datasets()
-    windows = {(start, end, chunk) for *_, start, end, chunk in backfills}
+    windows = {(start, end) for _, _, start, end, _ in backfills}
     assert len(windows) == 1
-    ((start, end, chunk),) = windows
+    ((start, end),) = windows
     assert end.date() in {today, datetime.now(UTC).date()}
     assert end == datetime(end.year, end.month, end.day, tzinfo=UTC)
-    assert (end - start, chunk) == (timedelta(days=7), 1)
+    assert end - start == timedelta(days=7)
+    chunks = {source: chunk for source, *_, chunk in backfills}
+    assert chunks == {source: 7 if source == "open_meteo" else 1 for source in chunks}
     assert "Backfill complete" in result.output
 
 
@@ -127,10 +130,64 @@ def test_preset_path_loads_yaml(backfills: list[Any], tmp_path: Path) -> None:
 
 
 def test_preset_takes_chunk_days(backfills: list[Any]) -> None:
+    """``--chunk-days`` replaces every entry's own chunk size, Open-Meteo's included."""
     result = cli.invoke(app, ["backfill", "--preset", "tour", "--chunk-days", "3"])
 
     assert result.exit_code == 0, result.output
     assert {chunk for *_, chunk in backfills} == {3}
+
+
+def test_preset_entry_chunk_days_reaches_the_backfill(backfills: list[Any], tmp_path: Path) -> None:
+    """Detects an entry's chunk_days not reaching ``run_backfill``, reaching
+    another dataset of the same source, or an entry without one getting other
+    than one-day chunks."""
+    preset = tmp_path / "chunks.yaml"
+    preset.write_text(
+        "datasets:\n"
+        "  - {source: open_meteo, dataset: historical_wind, chunk_days: 31}\n"
+        "  - {source: elexon, dataset: fuelhh}\n"
+        "  - {source: open_meteo, dataset: historical_demand}\n"
+        "  - {source: open_meteo, dataset: historical_solar, chunk_days: 31}\n"
+        "window: {start: 2024-01-01, end: 2024-02-29}\n",
+        encoding="utf-8",
+    )
+
+    result = cli.invoke(app, ["backfill", "--preset", str(preset)])
+
+    assert result.exit_code == 0, result.output
+    start, end = datetime(2024, 1, 1, tzinfo=UTC), datetime(2024, 3, 1, tzinfo=UTC)
+    assert backfills == [
+        ("open_meteo", ["historical_wind", "historical_solar"], start, end, 31),
+        ("open_meteo", ["historical_demand"], start, end, 1),
+        ("elexon", ["fuelhh"], start, end, 1),
+    ]
+
+
+@pytest.mark.parametrize("days", [1, 35])
+def test_preset_loader_takes_open_meteo_chunk_days(tmp_path: Path, days: int) -> None:
+    """Detects either end of Open-Meteo's chunk range (1 to the 35-day look-back) being refused."""
+    preset = tmp_path / "ok.yaml"
+    preset.write_text(
+        "datasets:\n"
+        f"  - {{source: open_meteo, dataset: forecast_wind, chunk_days: {days}}}\n"
+        "  - {source: neso, dataset: carbon_intensity}\n"
+        "window: {last_days: 7}\n",
+        encoding="utf-8",
+    )
+
+    loaded = runner.load_preset(str(preset), load_settings())
+
+    assert loaded.chunk_days == {
+        ("open_meteo", "forecast_wind"): days,
+        ("neso", "carbon_intensity"): 1,
+    }
+
+
+def _chunk_entry(source: str, dataset: str, chunk_days: str) -> str:
+    return (
+        f"datasets: [{{source: {source}, dataset: {dataset}, chunk_days: {chunk_days}}}]\n"
+        "window: {last_days: 7}\n"
+    )
 
 
 _TWO_WINDOWS = (
@@ -177,6 +234,42 @@ _TWO_WINDOWS = (
             "datasets: [{source: elexon, dataset: nothing}]\nwindow: {last_days: 7}\n",
             "nothing",
             id="unknown-dataset",
+        ),
+        pytest.param(
+            [],
+            _chunk_entry("neso", "carbon_intensity", "7"),
+            "Open-Meteo",
+            id="chunk-days-outside-open-meteo",
+        ),
+        pytest.param(
+            [], _chunk_entry("elexon", "fuelhh", "1"), "Open-Meteo", id="chunk-days-1-elexon"
+        ),
+        pytest.param(
+            [], _chunk_entry("open_meteo", "historical_wind", "0"), "1 to 35", id="chunk-days-0"
+        ),
+        pytest.param(
+            [], _chunk_entry("open_meteo", "historical_wind", "36"), "1 to 35", id="chunk-days-36"
+        ),
+        pytest.param(
+            [], _chunk_entry("open_meteo", "historical_wind", "7.5"), "1 to 35", id="chunk-days-7.5"
+        ),
+        pytest.param(
+            [], _chunk_entry("open_meteo", "historical_wind", "7.0"), "1 to 35", id="chunk-days-7.0"
+        ),
+        pytest.param(
+            [], _chunk_entry("open_meteo", "historical_wind", "'7'"), "1 to 35", id="chunk-days-str"
+        ),
+        pytest.param(
+            [],
+            _chunk_entry("open_meteo", "historical_wind", "true"),
+            "1 to 35",
+            id="chunk-days-bool",
+        ),
+        pytest.param(
+            [],
+            _chunk_entry("open_meteo", "historical_wind", "null"),
+            "1 to 35",
+            id="chunk-days-null",
         ),
     ],
 )
