@@ -11,6 +11,9 @@ dataset-coverage expansion) was paused before release and is intentionally absen
 
 ## [Unreleased]
 
+### Fixed
+- **`gridflow status` exits 1 when its pipeline-runs query fails**, printing the error to stderr.
+
 ## [v0.23.0] - 2026-11-01
 
 gridflow installs as a normal package, and this is its first release under SemVer. A wheel or

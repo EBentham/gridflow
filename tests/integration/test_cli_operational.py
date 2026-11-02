@@ -7,7 +7,8 @@ golden suite (``test_cli_runner_golden.py``) already covers the PIPELINE command
 ``test_cli_prune.py``. This file covers the remaining OPERATIONAL commands those
 files do not touch:
 
-  - ``status``  — the no-catalogue guard and the populated-runs path;
+  - ``status``  — the no-catalogue guard, the populated, empty and
+    failed-query paths;
   - ``quality`` — the no-silver guard and a real run over a tiny silver tree;
   - ``export-csv`` — the happy path (silver Parquet -> CSV) and the skip paths.
 
@@ -129,6 +130,39 @@ def test_status_with_runs_reports(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert "elexon" in result.output
     assert "fuelhh" in result.output
     assert "Could not query pipeline runs" not in result.output
+
+
+@pytest.mark.integration
+def test_status_empty_catalogue_exits_0(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A healthy catalogue with no recent runs is not an error."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    db_path = _isolated_env(data_dir, tmp_path, monkeypatch)
+
+    from gridflow.storage.duckdb import init_catalogue
+
+    init_catalogue(db_path, data_dir)
+
+    result = runner.invoke(app, ["status"])
+
+    assert result.exit_code == 0, result.output
+    assert "No pipeline runs in the last 24 hours." in result.output
+    assert "Could not query pipeline runs" not in result.output
+
+
+@pytest.mark.integration
+def test_status_failed_query_exits_1(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """A catalogue whose runs query fails exits 1, so a script can tell it from a healthy one."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    db_path = _isolated_env(data_dir, tmp_path, monkeypatch)
+    duckdb.connect(str(db_path)).close()  # a catalogue file with no pipeline_runs table
+
+    result = runner.invoke(app, ["status"])
+
+    assert result.exit_code == 1, result.output
+    assert "Could not query pipeline runs:" in result.stderr
+    assert "pipeline_runs" in result.stderr
 
 
 # --------------------------------------------------------------------------- #
